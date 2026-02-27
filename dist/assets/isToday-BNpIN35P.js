@@ -1,1 +1,0 @@
-import{x as a,E as c,G as o}from"./index-Dr2KRFhZ.js";function e(t){return a(t,Date.now())}function u(t,n,r){const[s,i]=c(r?.in,t,n);return+o(s)==+o(i)}function m(t,n){return u(a(t,t),e(t))}export{m as a,e as c,u as i};
