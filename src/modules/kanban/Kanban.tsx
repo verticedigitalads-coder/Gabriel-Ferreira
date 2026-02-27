@@ -1,0 +1,279 @@
+import { useDroppable } from '@dnd-kit/core';
+import { useMemo, useState } from 'react';
+import { useStore } from '@/store/useStore';
+import {
+  DndContext,
+  DragOverlay,
+  rectIntersection,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { TemperatureBadge, PriorityBadge } from '@/components/ui/Badge';
+import { SlidePanel } from '@/components/ui/Modal';
+import { LeadDetail } from '@/modules/leads/LeadDetail';
+import type { Lead, LeadStatus, KanbanColumn } from '@/types';
+import { differenceInDays, parseISO, isToday, isBefore } from 'date-fns';
+import { GripVertical, DollarSign } from 'lucide-react';
+
+const COLUMNS: { id: LeadStatus; title: string; color: string }[] = [
+  { id: 'novo', title: 'Novo', color: 'border-t-blue-500' },
+  { id: 'atendimento', title: 'Em Atendimento', color: 'border-t-purple-500' },
+  { id: 'orcado', title: 'Orçado', color: 'border-t-yellow-500' },
+  { id: 'fechado', title: 'Fechado', color: 'border-t-green-500' },
+  { id: 'perdido', title: 'Perdido', color: 'border-t-gray-400' },
+];
+
+export function Kanban() {
+  const leads = useStore(state => state.leads);
+  const updateLeadStatus = useStore(state => state.updateLeadStatus);
+  const selectLead = useStore(state => state.selectLead);
+  const selectedLeadId = useStore(state => state.selectedLeadId);
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor)
+  );
+
+  const columns = useMemo<KanbanColumn[]>(() => {
+    return COLUMNS.map(col => {
+      const columnLeads = leads
+        .filter(l => l.status === col.id)
+        .sort((a, b) => b.prioridadeScore - a.prioridadeScore);
+
+      const valorTotal = columnLeads.reduce((sum, l) => sum + l.valorOrcado, 0);
+
+      return {
+        id: col.id,
+        title: col.title,
+        leads: columnLeads,
+        valorTotal,
+      };
+    });
+  }, [leads]);
+
+  const selectedLead = useMemo(
+    () => leads.find(l => l.id === selectedLeadId),
+    [leads, selectedLeadId]
+  );
+
+  const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+    }).format(value);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over) return;
+
+    const leadId = active.id as string;
+    const newStatus =
+      over.data.current?.sortable?.containerId || over.id;
+
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    if (lead.status !== newStatus) {
+      updateLeadStatus(leadId, newStatus as LeadStatus);
+    }
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="p-6 border-b bg-white">
+        <h1 className="text-2xl font-bold text-gray-900">Kanban</h1>
+        <p className="text-sm text-gray-500">
+          Arraste os leads entre as colunas para atualizar o status
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-x-auto p-6">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={rectIntersection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex gap-4 h-full min-w-max">
+            {columns.map((column, index) => (
+              <KanbanColumnComponent
+                key={column.id}
+                column={column}
+                colorClass={COLUMNS[index].color}
+                onLeadClick={selectLead}
+                formatCurrency={formatCurrency}
+              />
+            ))}
+          </div>
+
+          <DragOverlay>
+            {activeLead && (
+              <div className="bg-white border rounded-md shadow-lg p-3 w-64 opacity-90">
+                <p className="font-semibold text-gray-900">{activeLead.nome}</p>
+                <p className="text-sm text-gray-500">{activeLead.servico}</p>
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
+      </div>
+
+      <SlidePanel
+        isOpen={!!selectedLead}
+        onClose={() => selectLead(null)}
+        title="Detalhes do Lead"
+      >
+        {selectedLead && (
+          <LeadDetail lead={selectedLead} onClose={() => selectLead(null)} />
+        )}
+      </SlidePanel>
+    </div>
+  );
+}
+
+function KanbanColumnComponent({ column, colorClass, onLeadClick, formatCurrency }: any) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`w-72 flex-shrink-0 bg-gray-50 rounded-md border-t-4 ${colorClass} flex flex-col`}
+    >
+      <div className="p-3 border-b bg-white rounded-t-md">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">{column.title}</h3>
+          <span className="text-sm text-gray-500">{column.leads.length}</span>
+        </div>
+
+        {column.valorTotal > 0 && (
+          <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+            <DollarSign className="w-3 h-3" />
+            {formatCurrency(column.valorTotal)}
+          </div>
+        )}
+      </div>
+
+      <SortableContext
+        id={column.id}
+        items={column.leads.map((l: Lead) => l.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div
+          className={`flex-1 overflow-y-auto p-2 space-y-2 min-h-[600px] pb-32 transition
+          ${isOver ? 'bg-gray-100' : ''}`}
+        >
+          {column.leads.length === 0 ? (
+            <div className="text-center py-8 text-sm text-gray-400">
+              Arraste leads para cá
+            </div>
+          ) : (
+            column.leads.map((lead: Lead) => (
+              <SortableLeadCard
+                key={lead.id}
+                lead={lead}
+                onClick={() => onLeadClick(lead.id)}
+                formatCurrency={formatCurrency}
+              />
+            ))
+          )}
+        </div>
+      </SortableContext>
+    </div>
+  );
+}
+
+function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lead.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const diasSemContato = lead.ultimoContato
+    ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
+    : null;
+
+  const followUpAtrasado =
+    (diasSemContato !== null && diasSemContato > 5) ||
+    (lead.proximoContato &&
+      (isToday(parseISO(lead.proximoContato)) ||
+        isBefore(parseISO(lead.proximoContato), new Date())));
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-md p-3 cursor-pointer transition-shadow
+        ${followUpAtrasado ? 'bg-red-50 border-red-300' : 'bg-white'}
+        hover:shadow-md`}
+      onClick={onClick}
+    >
+      <div className="flex items-start gap-2">
+        <button
+          {...attributes}
+          {...listeners}
+          className="mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
+          onClick={e => e.stopPropagation()}
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-semibold text-gray-900 text-sm truncate">
+              {lead.nome}
+            </p>
+            <PriorityBadge level={lead.prioridadeLevel} />
+          </div>
+
+          <p className="text-xs text-gray-500 truncate mb-2">
+            {lead.servico}
+          </p>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <TemperatureBadge temperatura={lead.temperatura} />
+            {lead.valorOrcado > 0 && (
+              <span className="text-xs font-medium text-gray-600">
+                {formatCurrency(lead.valorOrcado)}
+              </span>
+            )}
+          </div>
+
+          {followUpAtrasado && (
+            <p className="text-xs text-red-600 mt-2 font-semibold">
+              ⚠ Follow-up atrasado
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

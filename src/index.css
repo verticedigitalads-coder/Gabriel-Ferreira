@@ -1,0 +1,287 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CSS VARIABLES - Design System Corporativo
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Fontes */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  /* Cores Neutras */
+  --cor-fundo: #F5F5F5;
+  --cor-surface: #FFFFFF;
+  --cor-borda: #D1D5DB;
+  --cor-borda-leve: #E5E7EB;
+  --cor-texto-principal: #111827;
+  --cor-texto-secundario: #6B7280;
+  --cor-texto-terciario: #9CA3AF;
+  --cor-sidebar: #1F2937;
+  --cor-sidebar-hover: #374151;
+  
+  /* Cores Funcionais */
+  --cor-primaria: #2563EB;      /* Azul - Ações */
+  --cor-primaria-hover: #1D4ED8;
+  --cor-sucesso: #16A34A;       /* Verde - Fechados/Receitas */
+  --cor-sucesso-hover: #15803D;
+  --cor-perigo: #DC2626;        /* Vermelho - Crítico/Erros */
+  --cor-perigo-hover: #B91C1C;
+  --cor-alerta: #EA580C;        /* Laranja - Alta prioridade */
+  --cor-atencao: #CA8A04;       /* Amarelo - Média prioridade */
+  --cor-ia: #7C3AED;            /* Roxo - IA/Premium */
+  
+  /* Estados */
+  --hover-claro: #F9FAFB;
+  --hover-escuro: #E5E7EB;
+  --hover-ativo: #DBEAFE;
+  --focus-ring: #3B82F6;
+  
+  /* Radius (não exagerado) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  
+  /* Sombras (leves) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-principal);
+}
+
+/* Tipografia profissional */
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cor-texto-principal);
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--cor-texto-principal);
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cor-texto-principal);
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMAÇÕES (discretas e rápidas)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.2s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBAR (discreta)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cor-fundo);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C1C1C1;
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A8A8A8;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FOCUS STYLES (acessibilidade)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITÁRIOS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Number input - hide spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Text selection */
+::selection {
+  background-color: var(--hover-ativo);
+  color: var(--cor-texto-principal);
+}
+
+/* Links */
+a {
+  color: var(--cor-primaria);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTES GLOBAIS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Card base style */
+.card-corporate {
+  background-color: var(--cor-surface);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease-in-out;
+}
+
+.card-corporate:hover {
+  border-color: var(--cor-borda-leve);
+  box-shadow: var(--shadow-md);
+}
+
+/* Input base style */
+.input-corporate {
+  background-color: var(--cor-surface);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.input-corporate:focus {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Badge base style */
+.badge-corporate {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  line-height: 1.4;
+}
+
+/* Animations */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Focus styles */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Number input - hide spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
