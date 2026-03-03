@@ -62,7 +62,7 @@ export function TemperatureBadge({ temperatura }: { temperatura: LeadTemperature
   );
 }
 
-export function PriorityBadge({ level, score }: { level: PriorityLevel; score?: number }) {
+export function PriorityBadge({ level, score }: { level?: PriorityLevel; score?: number }) {
   const config: Record<PriorityLevel, { label: string; className: string }> = {
     critico: { label: 'CRÍTICO', className: 'bg-red-600 text-white' },
     alto: { label: 'ALTO', className: 'bg-orange-600 text-white' },
@@ -70,11 +70,23 @@ export function PriorityBadge({ level, score }: { level: PriorityLevel; score?: 
     baixo: { label: 'BAIXO', className: 'bg-green-600 text-white' },
   };
 
-  const { label, className } = config[level];
+  const safeLevel: PriorityLevel = config[level as PriorityLevel]
+    ? (level as PriorityLevel)
+    : 'baixo';
+
+  const { label, className } = config[safeLevel];
+
   return (
-    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wide', className)}>
+    <span
+      className={cn(
+        'inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wide',
+        className
+      )}
+    >
       {label}
-      {score !== undefined && <span className="ml-1 opacity-80">({score})</span>}
+      {score !== undefined && (
+        <span className="ml-1 opacity-80">({score})</span>
+      )}
     </span>
   );
 }

@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import type { LeadAnalysisStatus } from '@/types';
 import {
   criarHistoricoStatusChange,
@@ -17,7 +18,6 @@ import type {
   DashboardStats,
   OperacionalTask
 } from '@/types';
-import * as db from '@/lib/db';
 import { calculatePriority } from '@/lib/priority';
 
 export const useStore = create<any>((set, get) => ({
@@ -46,49 +46,37 @@ export const useStore = create<any>((set, get) => ({
 
   // ================= INITIALIZE =================
 
-initialize: async () => {
-  console.log("INIT START");
-
+initialize: async (workspaceId: string) => {
   try {
     set({ isLoading: true });
 
-    const workspaceId = get().workspaceId;
-if (!workspaceId) {
-  console.warn("Workspace não definido");
-  return;
-}
+    if (!workspaceId) {
+      set({ isLoading: false });
+      return;
+    }
 
-    console.log("ANTES DO PROMISE ALL");
+    // 🔍 DEBUG IMPORTANTE
+    console.log("WORKSPACE ATUAL:", workspaceId);
 
-    const [
-      leads,
-      orcamentos,
-      transactions,
-      notas,
-      operacionalTasks,
-    ] = await Promise.all([
-      db.getAllLeads(workspaceId),
-      db.getAllOrcamentos(workspaceId),
-      db.getAllTransactions(workspaceId),
-      db.getAllNotas(workspaceId),
-      db.getAllOperacionalTasks(workspaceId),
-    ]);
+    const { data: leads, error } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false });
 
-    console.log("DEPOIS DO PROMISE ALL");
+    if (error) {
+      console.error("ERRO AO BUSCAR LEADS:", error);
+      set({ isLoading: false });
+      return;
+    }
 
     set({
-      leads,
-      orcamentos,
-      transactions,
-      notas,
-      operacionalTasks,
+      leads: leads || [],
       isLoading: false,
     });
 
-    console.log("INIT END");
-
   } catch (error) {
-    console.error("INIT ERROR:", error);
+    console.error('INIT ERROR:', error);
     set({ isLoading: false });
   }
 },
@@ -150,245 +138,149 @@ logout: async () => {
 
   // ================= LEADS =================
 
-addLead: async (leadData: any) => {
-  const { workspaceId, leads } = get();
+addLead: async (data: Partial<Lead>) => {
+  const { workspaceId } = get();
+  console.log("WORKSPACE ID NO ADDLEAD:", workspaceId);
   const now = new Date().toISOString();
 
-  const baseLead: Lead = {
-    ...leadData,
-    id: uuid(),
-    workspaceId,
-    prioridadeScore: 0,
-    prioridadeLevel: 'baixo',
-    historico: [],
-    dataOrcamento: null,
-    dataExecucao: null,
-    syncStatus: 'local',
-    createdAt: now,
-    updatedAt: now,
-  };
+  const { data: inserted, error } = await supabase
+    .from('leads')
+    .insert([
+      {
+        nome: data.nome,
+        telefone: data.telefone,
+        email: data.email,
+        servico: data.servico,
+        status: data.status || 'novo',
+        temperatura: data.temperatura,
+        orcamento_enviado: data.orcamentoEnviado ?? false,
+        valor_orcado: data.valorOrcado ?? null,
+        resumo: data.resumo,
+        observacoes: data.observacoes,
+        ultimo_contato: data.ultimoContato ? new Date(data.ultimoContato).toISOString() : null,
+        proximo_contato: data.proximoContato ? new Date(data.proximoContato).toISOString() : null,
+        workspace_id: workspaceId,
+        created_at: now,
+        updated_at: now,
+      },
+    ])
+    .select()
+    .single();
 
-  const priority = calculatePriority(baseLead);
+  if (error) {
+  console.error('Erro completo Supabase:', error);
+  alert(JSON.stringify(error, null, 2));
+  return null;
+}
 
-  const lead: Lead = {
-    ...baseLead,
-    prioridadeScore: priority.score,
-    prioridadeLevel: priority.level,
-  };
+  set((state: any) => ({
+    leads: [...state.leads, inserted],
+  }));
 
-  await db.saveLead(lead);
-  set({ leads: [...leads, lead] });
-
-  return lead;
+  return inserted;
 },
 
 updateLead: async (id: string, updates: Partial<Lead>) => {
-  const { leads, operacionalTasks } = get();
-  const index = leads.findIndex((l: Lead) => l.id === id);
-  if (index === -1) return;
+  try {
+    const now = new Date().toISOString();
 
-  const previousLead = leads[index];
+    const { data: updatedLead, error } = await supabase
+      .from('leads')
+      .update({
+        ...updates,
+        updated_at: now,
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-  const mergedLead: Lead = {
-    ...previousLead,
-    ...updates,
-    updatedAt: new Date().toISOString(),
-    syncStatus:
-      previousLead.syncStatus === 'local'
-        ? 'local'
-        : 'pending',
-  };
-
-  const historicoEntries = [];
-
-  const camposEstrategicos: (keyof Lead)[] = [
-    'temperatura',
-    'prazoCliente',
-    'probabilidadeManual',
-    'valorOrcado',
-  ];
-
-  camposEstrategicos.forEach((campo) => {
-    if (previousLead[campo] !== mergedLead[campo]) {
-      historicoEntries.push(
-        criarHistoricoAlteracaoEstrategica(
-          campo,
-          previousLead[campo],
-          mergedLead[campo]
-        )
-      );
+    if (error) {
+      console.error('Erro ao atualizar lead:', error);
+      return;
     }
-  });
 
-  const priority = calculatePriority(mergedLead);
+    set((state: any) => ({
+      leads: state.leads.map((lead: Lead) =>
+        lead.id === id ? updatedLead : lead
+      ),
+    }));
 
-  const updated: Lead = {
-  ...mergedLead,
-  prioridadeScore: priority.score,
-  prioridadeLevel: priority.level,
-  historico: [
-    ...(updates.historico || previousLead.historico || []),
-    ...historicoEntries,
-  ],
-};
-
-  const existingTask = operacionalTasks.find(
-    (t: OperacionalTask) =>
-      t.leadId === id && t.tipo === 'orcamento'
-  );
-
-  if (updates.dataOrcamento) {
-    if (existingTask) {
-      await get().updateOperacionalTask(existingTask.id, {
-        data: updates.dataOrcamento,
-        titulo: `Orçamento - ${updated.nome}`,
-        descricao: `Cliente: ${updated.nome}
-Serviço: ${updated.servico}
-Telefone: ${updated.telefone}`,
-      });
-    } else {
-      await get().addOperacionalTask({
-        leadId: id,
-        titulo: `Orçamento - ${updated.nome}`,
-        data: updates.dataOrcamento,
-        prioridade: 'media',
-        tipo: 'orcamento',
-        descricao: `Cliente: ${updated.nome}
-Serviço: ${updated.servico}
-Telefone: ${updated.telefone}`,
-      });
-    }
+  } catch (error) {
+    console.error('UPDATE LEAD ERROR:', error);
   }
-
-  if (updates.dataOrcamento === null && existingTask) {
-    await get().deleteOperacionalTask(existingTask.id);
-  }
-
-  await db.saveLead(updated);
-
-  const newLeads = [...leads];
-  newLeads[index] = updated;
-  set({ leads: newLeads });
 },
 
 deleteLead: async (id: string) => {
-  const { leads } = get();
-  await db.deleteLead(id);
-  set({ leads: leads.filter((l: Lead) => l.id !== id) });
+  const { error } = await supabase
+    .from('leads')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Erro ao deletar lead:', error);
+    return;
+  }
+
+  set((state: any) => ({
+    leads: state.leads.filter((l: Lead) => l.id !== id),
+  }));
 },
 
-updateLeadStatus: async (id: string, status: LeadStatus) => {
-  const { leads } = get();
-  const index = leads.findIndex((l: Lead) => l.id === id);
-  if (index === -1) return;
-
-  const lead = leads[index];
-  if (lead.status === status) return;
-
-  const now = new Date().toISOString();
-
-  const historicoEntry = criarHistoricoStatusChange(
-    lead.status,
-    status
-  );
-
-  const updatedLead: Lead = {
-    ...lead,
-    status,
-    updatedAt: now,
-    historico: [...(lead.historico || []), historicoEntry],
-    syncStatus:
-      lead.syncStatus === 'local'
-        ? 'local'
-        : 'pending',
-  };
-
-  const priority = calculatePriority(updatedLead);
-
-  updatedLead.prioridadeScore = priority.score;
-  updatedLead.prioridadeLevel = priority.level;
-
-  await db.saveLead(updatedLead);
-
-  const newLeads = [...leads];
-  newLeads[index] = updatedLead;
-
-  set({ leads: newLeads });
-},
+// ================= MARCAR COMO ORÇADO =================
 
 markAsOrcado: async (id: string, valor: number) => {
-  const { leads } = get();
-  const index = leads.findIndex((l: Lead) => l.id === id);
-  if (index === -1) return;
-
-  const lead = leads[index];
   const now = new Date().toISOString();
 
-  const historicoEntry = criarHistoricoOrcamentoCriado(valor);
+  const { data: updatedLead, error } = await supabase
+    .from('leads')
+    .update({
+      status: 'orcado',
+      orcamento_enviado: true,
+      valor_orcado: valor,
+      data_orcamento: now,
+      updated_at: now,
+    })
+    .eq('id', id)
+    .select()
+    .single();
 
-  const updatedLead: Lead = {
-    ...lead,
-    status: 'orcado',
-    orcamentoEnviado: true,
-    valorOrcado: valor,
-    dataOrcamento: now,
-    updatedAt: now,
-    historico: [...(lead.historico || []), historicoEntry],
-    syncStatus:
-      lead.syncStatus === 'local'
-        ? 'local'
-        : 'pending',
-  };
+  if (error) {
+    console.error('Erro ao marcar como orçado:', error);
+    return;
+  }
 
-  const priority = calculatePriority(updatedLead);
-
-  updatedLead.prioridadeScore = priority.score;
-  updatedLead.prioridadeLevel = priority.level;
-
-  await db.saveLead(updatedLead);
-
-  const newLeads = [...leads];
-  newLeads[index] = updatedLead;
-
-  set({ leads: newLeads });
+  set((state: any) => ({
+    leads: state.leads.map((lead: Lead) =>
+      lead.id === id ? updatedLead : lead
+    ),
+  }));
 },
 
+// ================= MARCAR COMO FECHADO =================
+
 markAsFechado: async (id: string) => {
-  const { leads } = get();
-  const index = leads.findIndex((l: Lead) => l.id === id);
-  if (index === -1) return;
-
-  const lead = leads[index];
-  if (lead.status === 'fechado') return;
-
   const now = new Date().toISOString();
 
-  const historicoEntry = criarHistoricoLeadFechado(
-    lead.valorOrcado || undefined
-  );
+  const { data: updatedLead, error } = await supabase
+    .from('leads')
+    .update({
+      status: 'fechado',
+      updated_at: now,
+    })
+    .eq('id', id)
+    .select()
+    .single();
 
-  const updatedLead: Lead = {
-    ...lead,
-    status: 'fechado',
-    updatedAt: now,
-    historico: [...(lead.historico || []), historicoEntry],
-    syncStatus:
-      lead.syncStatus === 'local'
-        ? 'local'
-        : 'pending',
-  };
+  if (error) {
+    console.error('Erro ao marcar como fechado:', error);
+    return;
+  }
 
-  const priority = calculatePriority(updatedLead);
-
-  updatedLead.prioridadeScore = priority.score;
-  updatedLead.prioridadeLevel = priority.level;
-
-  await db.saveLead(updatedLead);
-
-  const newLeads = [...leads];
-  newLeads[index] = updatedLead;
-
-  set({ leads: newLeads });
+  set((state: any) => ({
+    leads: state.leads.map((lead: Lead) =>
+      lead.id === id ? updatedLead : lead
+    ),
+  }));
 },
 
   // ================= ORÇAMENTOS =================

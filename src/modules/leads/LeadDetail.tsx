@@ -32,19 +32,32 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const deleteLead = useStore(state => state.deleteLead);
   const { registerContact, markAsOrcado, markAsFechado, openWhatsApp, copyPhone } = useLeadActions();
 
+  // 🔒 Proteção crítica contra undefined (Realtime safe)
+  if (!lead) {
+    return (
+      <div className="p-6 text-gray-500">
+        Carregando lead...
+      </div>
+    );
+  }
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
-  const [valorOrcamento, setValorOrcamento] = useState(lead.valorOrcado.toString());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const [valorOrcamento, setValorOrcamento] = useState(
+    lead.valorOrcado ? lead.valorOrcado.toString() : ""
+  );
 
   const diasSemContato = lead.ultimoContato
     ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
     : null;
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+  const formatCurrency = (value?: number | null) => {
+    if (!value) return "R$ 0,00";
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
@@ -54,9 +67,15 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   };
 
   const handleMarkAsOrcado = async () => {
-    await markAsOrcado(lead.id, Number(valorOrcamento));
+    const valor = Number(valorOrcamento);
+
+    if (!valor || isNaN(valor)) return;
+
+    await markAsOrcado(lead.id, valor);
     setShowOrcamentoModal(false);
   };
+
+  // 🔥 Resto do seu JSX continua normalmente abaixo
 
   return (
     <div className="h-full flex flex-col">
@@ -198,18 +217,21 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             Histórico
           </h3>
           <div className="space-y-2">
-            {lead.historico.slice().reverse().map(entry => (
-              <div key={entry.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-md">
-                <div className="w-2 h-2 mt-1.5 rounded-full bg-blue-500" />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{entry.descricao}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {entry.createdAt
-  ? format(parseISO(entry.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
-  : ''}
-                  </p>
-                </div>
-              </div>
+            {(Array.isArray(lead.historico) ? lead.historico : [])
+  .slice()
+  .reverse()
+  .map(entry => (
+    <div key={entry.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-md">
+      <div className="w-2 h-2 mt-1.5 rounded-full bg-blue-500" />
+      <div className="flex-1">
+        <p className="text-sm text-gray-900">{entry.descricao}</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {entry.createdAt
+            ? format(parseISO(entry.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+            : ''}
+        </p>
+      </div>
+    </div>
             ))}
           </div>
         </div>

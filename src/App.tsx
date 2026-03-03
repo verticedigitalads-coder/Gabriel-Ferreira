@@ -91,7 +91,7 @@ export function App() {
     };
   }, []);
 
-  // 🚀 Inicializa store apenas se estiver autenticado
+// 🚀 Inicializa store apenas se estiver autenticado
 useEffect(() => {
   const init = async () => {
     if (!session) return;
@@ -99,18 +99,23 @@ useEffect(() => {
     try {
       const workspaceId = await ensureWorkspaceForUser();
 
-      if (!workspaceId) return;
+      if (!workspaceId) {
+        console.warn("Usuário sem workspace — fazendo logout");
+        await supabase.auth.signOut();
+        return;
+      }
 
       setWorkspaceId(workspaceId);
+      await initialize(workspaceId);
 
-      await initialize();
     } catch (error) {
       console.error("Erro na inicialização:", error);
+      await supabase.auth.signOut();
     }
   };
 
   init();
-}, [session, initialize, setWorkspaceId]);
+}, [session]);
 
 if (!authChecked) {
   return null;
@@ -128,7 +133,7 @@ if (!authChecked) {
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
           <div className="text-center">
-            <h1 className="text-xl font-semibold text-gray-900">CRM Pro</h1>
+            <h1 className="text-xl font-semibold text-gray-900">Vértice Digital</h1>
             <p className="text-sm text-gray-500 mt-1">Carregando dados...</p>
           </div>
         </div>
