@@ -31,6 +31,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
     nome: '',
     telefone: '',
     email: '',
+    endereco: '',
     servico: '',
     status: 'novo' as LeadStatus,
     temperatura: 'morno' as LeadTemperature,
@@ -48,6 +49,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
         nome: lead.nome,
         telefone: lead.telefone,
         email: lead.email,
+        endereco: lead.endereco || '',
         servico: lead.servico,
         status: lead.status,
         temperatura: lead.temperatura,
@@ -87,6 +89,12 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
           placeholder="Nome do cliente"
           required
         />
+	<Input
+  	 label="Endereço da Obra"
+  	 value={formData.endereco}
+  	 onChange={e => handleChange('endereco', e.target.value)}
+  	 placeholder="Rua, número, bairro, cidade"
+	/>
         <Input
           label="Telefone *"
           value={formData.telefone}

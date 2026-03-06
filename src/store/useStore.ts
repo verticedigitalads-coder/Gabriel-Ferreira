@@ -55,28 +55,53 @@ initialize: async (workspaceId: string) => {
       return;
     }
 
-    // 🔍 DEBUG IMPORTANTE
-    console.log("WORKSPACE ATUAL:", workspaceId);
+    const [leadsRes, orcamentosRes] = await Promise.all([
+      supabase
+        .from('leads')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false }),
 
-    const { data: leads, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('workspace_id', workspaceId)
-      .order('created_at', { ascending: false });
+      supabase
+        .from('orcamentos')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false }),
+    ]);
 
-    if (error) {
-      console.error("ERRO AO BUSCAR LEADS:", error);
-      set({ isLoading: false });
-      return;
+    if (leadsRes.error) {
+      console.error("Erro ao buscar leads:", leadsRes.error);
     }
 
-    set({
-      leads: leads || [],
-      isLoading: false,
-    });
+    if (orcamentosRes.error) {
+      console.error("Erro ao buscar orçamentos:", orcamentosRes.error);
+    }
+
+    const formattedOrcamentos = (orcamentosRes.data || []).map(o => ({
+  id: o.id,
+  workspaceId: o.workspace_id,
+  leadId: o.lead_id,
+  numero: o.numero,
+  itens: o.itens,
+  subtotal: o.subtotal,
+  desconto: o.desconto,
+  total: o.total,
+  status: o.status,
+  observacoes: o.observacoes,
+  validadeEmDias: o.validade_em_dias,
+  historico: o.historico,
+  createdAt: o.created_at,
+  updatedAt: o.updated_at,
+}));
+
+set({
+  leads: leadsRes.data || [],
+  orcamentos: formattedOrcamentos,
+  isLoading: false,
+});
 
   } catch (error) {
-    console.error('INIT ERROR:', error);
+    console.error("INIT ERROR:", error);
     set({ isLoading: false });
   }
 },
@@ -150,6 +175,7 @@ addLead: async (data: Partial<Lead>) => {
         nome: data.nome,
         telefone: data.telefone,
         email: data.email,
+        endereco: data.endereco || '',
         servico: data.servico,
         status: data.status || 'novo',
         temperatura: data.temperatura,
@@ -289,10 +315,10 @@ addOrcamento: async (data: Partial<Orcamento>) => {
   const { workspaceId, orcamentos } = get();
   const now = new Date().toISOString();
 
-  const orcamento: Orcamento = {
+  const novoOrcamento = {
     id: uuid(),
-    workspaceId,
-    leadId: data.leadId!,
+    workspace_id: workspaceId,
+    lead_id: data.leadId!,
     numero: data.numero || `ORC-${Date.now()}`,
     itens: data.itens || [],
     subtotal: data.subtotal || 0,
@@ -300,41 +326,76 @@ addOrcamento: async (data: Partial<Orcamento>) => {
     total: data.total || 0,
     status: data.status || 'rascunho',
     observacoes: data.observacoes || '',
-    validadeEmDias: data.validadeEmDias || 7,
+    validade_em_dias: data.validadeEmDias || 7,
     historico: [],
-    createdAt: now,
-    updatedAt: now,
+    created_at: now,
+    updated_at: now,
   };
 
-  await db.saveOrcamento(orcamento);
+  const { error } = await supabase
+    .from('orcamentos')
+    .insert([novoOrcamento]);
 
-  set({ orcamentos: [...orcamentos, orcamento] });
+  if (error) {
+    console.error("Erro ao salvar orçamento:", error);
+    return;
+  }
 
-  return orcamento;
+  // Converter de volta para camelCase no state
+  const orcamentoState = {
+    ...data,
+    id: novoOrcamento.id,
+    workspaceId: workspaceId,
+    leadId: data.leadId!,
+    validadeEmDias: novoOrcamento.validade_em_dias,
+    createdAt: now,
+    updatedAt: now,
+  } as Orcamento;
+
+  set({ orcamentos: [...orcamentos, orcamentoState] });
+
+  return orcamentoState;
 },
 
 updateOrcamento: async (id: string, updates: Partial<Orcamento>) => {
-  const { orcamentos } = get();
-  const index = orcamentos.findIndex(o => o.id === id);
-  if (index === -1) return;
 
-  const updated = {
-    ...orcamentos[index],
-    ...updates,
-    updatedAt: new Date().toISOString(),
+  const updateData: any = {
+    updated_at: new Date().toISOString(),
   };
 
-  await db.saveOrcamento(updated);
+  if (updates.status) updateData.status = updates.status;
+  if (updates.total !== undefined) updateData.total = updates.total;
+  if (updates.desconto !== undefined) updateData.desconto = updates.desconto;
+  if (updates.subtotal !== undefined) updateData.subtotal = updates.subtotal;
+  if (updates.itens) updateData.itens = updates.itens;
+  if (updates.observacoes !== undefined) updateData.observacoes = updates.observacoes;
+  if (updates.validadeEmDias !== undefined)
+    updateData.validade_em_dias = updates.validadeEmDias;
 
-  const newList = [...orcamentos];
-  newList[index] = updated;
+  const { error } = await supabase
+    .from('orcamentos')
+    .update(updateData)
+    .eq('id', id);
 
-  set({ orcamentos: newList });
+  if (error) {
+    console.error("Erro ao atualizar orçamento:", error);
+    return;
+  }
 },
 
 deleteOrcamento: async (id: string) => {
   const { orcamentos } = get();
-  await db.deleteOrcamento(id);
+
+  const { error } = await supabase
+    .from('orcamentos')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error("Erro ao excluir orçamento:", error);
+    return;
+  }
+
   set({ orcamentos: orcamentos.filter(o => o.id !== id) });
 },
 

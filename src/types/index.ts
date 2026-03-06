@@ -99,6 +99,7 @@ export interface Lead {
   nome: string;
   telefone: string;
   email: string;
+  endereco?: string;
   servico: string;
 
   status: LeadStatus;

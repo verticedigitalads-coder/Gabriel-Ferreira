@@ -22,6 +22,7 @@
     "idb": "^8.0.3",
     "lucide-react": "^0.574.0",
     "node-fetch": "^3.3.2",
+    "puppeteer": "^24.37.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "3.4.0",

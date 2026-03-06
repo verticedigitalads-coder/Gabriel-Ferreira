@@ -70,39 +70,56 @@ export function Orcamentos() {
     }
   };
 
-  const generatePDF = (orc: Orcamento) => {
+  const generatePDF = async (orc: Orcamento) => {
+  try {
     const lead = leads.find(l => l.id === orc.leadId);
-    const content = `
-ORÇAMENTO ${orc.numero}
-==============================
-Data: ${format(parseISO(orc.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-Cliente: ${lead?.nome || 'N/A'}
-Telefone: ${lead?.telefone || 'N/A'}
-Email: ${lead?.email || 'N/A'}
 
-ITENS:
-${orc.itens.map((item, i) => `${i + 1}. ${item.descricao}
-   Qtd: ${item.quantidade} x ${formatCurrency(item.valorUnitario)} = ${formatCurrency(item.valorTotal)}`).join('\n\n')}
+    if (!lead) {
+      addToast({ type: "error", message: "Lead não encontrado" });
+      return;
+    }
 
-==============================
-Subtotal: ${formatCurrency(orc.subtotal)}
-Desconto: ${formatCurrency(orc.desconto)}
-TOTAL: ${formatCurrency(orc.total)}
+    const response = await fetch("http://127.0.0.1:3001/api/gerar-orcamento", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: orc.id,
+        cliente_nome: lead.nome,
+        cliente_telefone: lead.telefone,
+        cliente_endereco: lead.endereco || "",
+        itens: orc.itens,
+        subtotal: orc.subtotal,
+        desconto: orc.desconto,
+        total: orc.total,
+        observacoes: orc.observacoes,
+        validade: orc.validadeEmDias,
+      })
+    });
 
-Validade: ${orc.validadeEmDias} dias
+    if (!response.ok) {
+      addToast({ type: "error", message: "Erro ao gerar PDF" });
+      return;
+    }
 
-${orc.observacoes ? `Observações: ${orc.observacoes}` : ''}
-    `;
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
 
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${orc.numero}.txt`;
+    a.download = `orcamento-${orc.numero}.pdf`;
     a.click();
-    URL.revokeObjectURL(url);
-    addToast({ type: 'success', message: 'Orçamento exportado!' });
-  };
+
+    window.URL.revokeObjectURL(url);
+
+    addToast({ type: "success", message: "PDF gerado com sucesso!" });
+
+  } catch (error) {
+    console.error("Erro:", error);
+    addToast({ type: "error", message: "Erro na conexão com o servidor" });
+  }
+};
 
   return (
     <div className="h-full flex flex-col">
@@ -388,6 +405,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         value={observacoes}
         onChange={e => setObservacoes(e.target.value)}
         rows={3}
+        placeholder="Ex: Instalação no mesmo dia. Não incluso serviço de pedreiro..."
       />
 
       <div className="flex justify-end gap-2 pt-4 border-t">
