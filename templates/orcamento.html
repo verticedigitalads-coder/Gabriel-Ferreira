@@ -7,7 +7,7 @@
 
 body{
 font-family:"Segoe UI", Arial, sans-serif;
-padding:40px;
+padding:28px 32px;
 color:#222;
 background:#ffffff;
 position:relative;
@@ -20,7 +20,7 @@ top:50%;
 left:50%; 
 transform:translate(-50%,-50%); 
 opacity:0.06; 
-width:620px; 
+width:500px; 
 z-index:0; 
 }
  
@@ -108,7 +108,7 @@ align-items:flex-start;
 .client-box{
 background:#f8f8f8;
 border-left:6px solid #ff6a00;
-padding:22px;
+padding:14px 18px;
 border-radius:8px;
 width:65%;
 box-shadow:0 4px 10px rgba(0,0,0,0.05);
@@ -199,7 +199,7 @@ margin-bottom:8px;
 margin-top:12px;
 background:linear-gradient(135deg,#ff6a00,#ff7f2a);
 color:white;
-padding:26px;
+padding:16px;
 border-radius:10px;
 text-align:center;
 box-shadow:0 6px 14px rgba(0,0,0,0.15);
@@ -212,14 +212,14 @@ margin-bottom:6px;
 }
 
 .total-value{
-font-size:30px;
+font-size:26px;
 font-weight:700;
 }
 
 /* OBSERVAÇÕES */
 
 .conditions{
-margin-top:35px;
+margin-top:20px;
 background:#fafafa;
 padding:20px;
 border-radius:8px;
@@ -236,12 +236,21 @@ margin-bottom:10px;
 /* FOOTER */
 
 .footer{
-margin-top:40px;
+margin-top:18px;
 border-top:1px solid #ddd;
 padding-top:20px;
 text-align:center;
 font-size:13px;
 color:#666;
+}
+
+/* PROTEÇÃO PARA NÃO QUEBRAR PÁGINA */
+
+table,
+.client-box,
+.totals,
+.conditions{
+page-break-inside: avoid;
 }
 
 </style>

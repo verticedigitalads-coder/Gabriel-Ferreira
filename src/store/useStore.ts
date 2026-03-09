@@ -1,3 +1,4 @@
+import { createLeadSlice } from './slices/leadSlice'
 import { supabase } from '@/lib/supabase';
 import type { LeadAnalysisStatus } from '@/types';
 import {
@@ -21,6 +22,9 @@ import type {
 import { calculatePriority } from '@/lib/priority';
 
 export const useStore = create<any>((set, get) => ({
+
+  ...createLeadSlice(set, get),
+
   workspaceId: null as string | null,
 
   leads: [],
@@ -161,154 +165,6 @@ logout: async () => {
     }
   }),
 
-  // ================= LEADS =================
-
-addLead: async (data: Partial<Lead>) => {
-  const { workspaceId } = get();
-  console.log("WORKSPACE ID NO ADDLEAD:", workspaceId);
-  const now = new Date().toISOString();
-
-  const { data: inserted, error } = await supabase
-    .from('leads')
-    .insert([
-      {
-        nome: data.nome,
-        telefone: data.telefone,
-        email: data.email,
-        endereco: data.endereco || '',
-        servico: data.servico,
-        status: data.status || 'novo',
-        temperatura: data.temperatura,
-        orcamento_enviado: data.orcamentoEnviado ?? false,
-        valor_orcado: data.valorOrcado ?? null,
-        resumo: data.resumo,
-        observacoes: data.observacoes,
-        ultimo_contato: data.ultimoContato ? new Date(data.ultimoContato).toISOString() : null,
-        proximo_contato: data.proximoContato ? new Date(data.proximoContato).toISOString() : null,
-        workspace_id: workspaceId,
-        created_at: now,
-        updated_at: now,
-      },
-    ])
-    .select()
-    .single();
-
-  if (error) {
-  console.error('Erro completo Supabase:', error);
-  alert(JSON.stringify(error, null, 2));
-  return null;
-}
-
-  set((state: any) => ({
-    leads: [...state.leads, inserted],
-  }));
-
-  return inserted;
-},
-
-updateLead: async (id: string, updates: Partial<Lead>) => {
-  try {
-    const now = new Date().toISOString();
-
-    const { data: updatedLead, error } = await supabase
-      .from('leads')
-      .update({
-        ...updates,
-        updated_at: now,
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Erro ao atualizar lead:', error);
-      return;
-    }
-
-    set((state: any) => ({
-      leads: state.leads.map((lead: Lead) =>
-        lead.id === id ? updatedLead : lead
-      ),
-    }));
-
-  } catch (error) {
-    console.error('UPDATE LEAD ERROR:', error);
-  }
-},
-
-deleteLead: async (id: string) => {
-  const { error } = await supabase
-    .from('leads')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Erro ao deletar lead:', error);
-    return;
-  }
-
-  set((state: any) => ({
-    leads: state.leads.filter((l: Lead) => l.id !== id),
-  }));
-},
-
-// ================= MARCAR COMO ORÇADO =================
-
-markAsOrcado: async (id: string, valor: number) => {
-  const now = new Date().toISOString();
-
-  const { data: updatedLead, error } = await supabase
-    .from('leads')
-    .update({
-      status: 'orcado',
-      orcamento_enviado: true,
-      valor_orcado: valor,
-      data_orcamento: now,
-      updated_at: now,
-    })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Erro ao marcar como orçado:', error);
-    return;
-  }
-
-  set((state: any) => ({
-    leads: state.leads.map((lead: Lead) =>
-      lead.id === id ? updatedLead : lead
-    ),
-  }));
-},
-
-// ================= MARCAR COMO FECHADO =================
-
-markAsFechado: async (id: string) => {
-  const now = new Date().toISOString();
-
-  const { data: updatedLead, error } = await supabase
-    .from('leads')
-    .update({
-      status: 'fechado',
-      updated_at: now,
-    })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Erro ao marcar como fechado:', error);
-    return;
-  }
-
-  set((state: any) => ({
-    leads: state.leads.map((lead: Lead) =>
-      lead.id === id ? updatedLead : lead
-    ),
-  }));
-},
-
   // ================= ORÇAMENTOS =================
 
 addOrcamento: async (data: Partial<Orcamento>) => {
@@ -405,21 +261,28 @@ addTransaction: async (data: Partial<Transaction>) => {
   const { workspaceId, transactions } = get();
   const now = new Date().toISOString();
 
-  const transaction: Transaction = {
+  const transaction = {
     id: uuid(),
-    workspaceId,
-    leadId: data.leadId,
+    workspace_id: workspaceId,
+    lead_id: data.leadId,
     tipo: data.tipo || 'receita',
     descricao: data.descricao || '',
     valor: data.valor || 0,
     data: data.data || now,
     categoria: data.categoria || '',
     observacoes: data.observacoes || '',
-    createdAt: now,
-    updatedAt: now,
+    created_at: now,
+    updated_at: now,
   };
 
-  await db.saveTransaction(transaction);
+  const { error } = await supabase
+    .from('transactions')
+    .insert([transaction]);
+
+  if (error) {
+    console.error("Erro ao salvar transação:", error);
+    return;
+  }
 
   set({ transactions: [...transactions, transaction] });
 
@@ -428,8 +291,15 @@ addTransaction: async (data: Partial<Transaction>) => {
 
 deleteTransaction: async (id: string) => {
   const { transactions } = get();
-  await db.deleteTransaction(id);
-  set({ transactions: transactions.filter(t => t.id !== id) });
+
+  await supabase
+    .from('transactions')
+    .delete()
+    .eq('id', id);
+
+  set({
+    transactions: transactions.filter(t => t.id !== id),
+  });
 },
 
   // ================= NOTAS =================
@@ -438,20 +308,27 @@ addNota: async (data: Partial<Nota>) => {
   const { workspaceId, notas } = get();
   const now = new Date().toISOString();
 
-  const nota: Nota = {
+  const nota = {
     id: uuid(),
-    workspaceId,
-    leadId: data.leadId,
+    workspace_id: workspaceId,
+    lead_id: data.leadId,
     numero: data.numero || `NF-${Date.now()}`,
     valor: data.valor || 0,
     data: data.data || now,
     status: data.status || 'pendente',
     observacoes: data.observacoes || '',
-    createdAt: now,
-    updatedAt: now,
+    created_at: now,
+    updated_at: now,
   };
 
-  await db.saveNota(nota);
+  const { error } = await supabase
+    .from('notas')
+    .insert([nota]);
+
+  if (error) {
+    console.error("Erro ao salvar nota:", error);
+    return;
+  }
 
   set({ notas: [...notas, nota] });
 
@@ -459,28 +336,40 @@ addNota: async (data: Partial<Nota>) => {
 },
 
 updateNota: async (id: string, updates: Partial<Nota>) => {
-  const { notas } = get();
-  const index = notas.findIndex(n => n.id === id);
-  if (index === -1) return;
 
-  const updated: Nota = {
-    ...notas[index],
-    ...updates,
-    updatedAt: new Date().toISOString(),
+  const updateData: any = {
+    updated_at: new Date().toISOString(),
   };
 
-  await db.saveNota(updated);
+  if (updates.numero) updateData.numero = updates.numero;
+  if (updates.valor !== undefined) updateData.valor = updates.valor;
+  if (updates.status) updateData.status = updates.status;
+  if (updates.observacoes !== undefined)
+    updateData.observacoes = updates.observacoes;
 
-  const newNotas = [...notas];
-  newNotas[index] = updated;
+  const { error } = await supabase
+    .from('notas')
+    .update(updateData)
+    .eq('id', id);
 
-  set({ notas: newNotas });
+  if (error) {
+    console.error("Erro ao atualizar nota:", error);
+    return;
+  }
+
 },
 
 deleteNota: async (id: string) => {
   const { notas } = get();
-  await db.deleteNota(id);
-  set({ notas: notas.filter(n => n.id !== id) });
+
+  await supabase
+    .from('notas')
+    .delete()
+    .eq('id', id);
+
+  set({
+    notas: notas.filter(n => n.id !== id),
+  });
 },
 
   // ================= OPERACIONAL =================
@@ -498,7 +387,16 @@ addOperacionalTask: async (taskData: any) => {
     updatedAt: now,
   };
 
-  await db.saveOperacionalTask(task); // 🔥 SALVA NO BANCO
+  await supabase
+.from('operacional_tasks')
+.update({
+  titulo: updatedTask.titulo,
+  data: updatedTask.data,
+  tipo: updatedTask.tipo,
+  concluido: updatedTask.concluido,
+  updated_at: new Date().toISOString()
+})
+.eq('id', id); // 🔥 SALVA NO BANCO
 
   set({ operacionalTasks: [...operacionalTasks, task] });
 },
@@ -535,7 +433,10 @@ updateOperacionalTask: async (id: string, updates: Partial<OperacionalTask>) => 
         updatedAt: new Date().toISOString(),
       };
 
-      await db.saveLead(updatedLead);
+      await supabase
+  	.from('leads')
+  	.update(updatedLead)
+  	.eq('id', updatedLead.id);
 
       const newLeads = [...leads];
       newLeads[leadIndex] = updatedLead;
@@ -543,7 +444,10 @@ updateOperacionalTask: async (id: string, updates: Partial<OperacionalTask>) => 
     }
   }
 
-  await db.saveOperacionalTask(updatedTask); // 🔥 SALVA NO BANCO
+  await supabase
+  .from('operacional_tasks')
+  .update(updatedTask)
+  .eq('id', id); // 🔥 SALVA NO BANCO
 
   const newTasks = [...operacionalTasks];
   newTasks[index] = updatedTask;
@@ -554,7 +458,10 @@ updateOperacionalTask: async (id: string, updates: Partial<OperacionalTask>) => 
 deleteOperacionalTask: async (id: string) => {
   const { operacionalTasks } = get();
 
-  await db.deleteOperacionalTaskDB(id); // 🔥 REMOVE DO BANCO
+  await supabase
+  .from('operacional_tasks')
+  .delete()
+  .eq('id', id); // 🔥 REMOVE DO BANCO
 
   set({
     operacionalTasks: operacionalTasks.filter(t => t.id !== id),
