@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useStore, useDashboardStats } from '@/store/useStore';
+import { useStore } from '@/store/useStore'
+import { useDashboardStats } from '@/store/selectors/dashboardSelectors'
 import { StatCard, Card } from '@/components/ui/Card';
 import { PriorityBadge } from '@/components/ui/Badge';
 import { format, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';

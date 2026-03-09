@@ -1,4 +1,5 @@
-import { useStore, useDashboardStats } from '@/store/useStore';
+import { useStore } from '@/store/useStore';
+import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Bell, Building2 } from 'lucide-react';

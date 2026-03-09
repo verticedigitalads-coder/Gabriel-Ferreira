@@ -42,10 +42,11 @@ export function Orcamentos() {
   const [editingOrcamento, setEditingOrcamento] = useState<Orcamento | null>(null);
 
   const sortedOrcamentos = useMemo(() => {
-    return [...orcamentos].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }, [orcamentos]);
+  return [...orcamentos].sort((a, b) =>
+    new Date(b.createdAt || 0).getTime() -
+    new Date(a.createdAt || 0).getTime()
+  );
+}, [orcamentos]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -54,23 +55,26 @@ export function Orcamentos() {
     }).format(value);
   };
 
-  const getLeadName = (leadId: string) => {
-    const lead = leads.find(l => l.id === leadId);
-    return lead?.nome || 'Lead não encontrado';
-  };
+  const leadsMap = useMemo(() => {
+  const map: Record<string,string> = {}
+  leads.forEach(l => map[l.id] = l.nome)
+  return map
+}, [leads])
+
+const getLeadName = (leadId: string) =>
+  leadsMap[leadId] || "Lead não encontrado"
 
   const handleEdit = (orc: Orcamento) => {
-    setEditingOrcamento(orc);
-    setShowModal(true);
-  };
+  setEditingOrcamento(orc);
+  setShowModal(true);
+};
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este orçamento?')) {
-      await deleteOrcamento(id);
-    }
-  };
+const handleDelete = async (id: string) => {
+  if (!confirm('Tem certeza que deseja excluir este orçamento?')) return;
+  await deleteOrcamento(id);
+};
 
-  const generatePDF = async (orc: Orcamento) => {
+const generatePDF = async (orc: Orcamento) => {
   try {
     const lead = leads.find(l => l.id === orc.leadId);
 
@@ -79,7 +83,9 @@ export function Orcamentos() {
       return;
     }
 
-    const response = await fetch("http://127.0.0.1:3001/api/gerar-orcamento", {
+    const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:3001"
+
+const response = await fetch(`${API_URL}/api/gerar-orcamento`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -169,8 +175,10 @@ export function Orcamentos() {
                         {getLeadName(orc.leadId)}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {format(parseISO(orc.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+  <Calendar className="w-4 h-4" />
+  {orc.createdAt
+    ? format(parseISO(orc.createdAt), "dd/MM/yyyy", { locale: ptBR })
+    : "-"}
                       </span>
                     </div>
                   </div>

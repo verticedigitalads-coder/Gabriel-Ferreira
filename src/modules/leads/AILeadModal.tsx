@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bot, X, Clipboard, Check, AlertTriangle, UserPlus, RefreshCcw, Loader2 } from 'lucide-react';
-import { AIService, AIAnalysisResult } from '../../services/ai.service';
+import { AIService } from "@/services/ai/ai.service";
 import { Lead } from '../../types';
 import { useStore } from '../../store/useStore';
 import { Card } from '../../components/ui/Card';

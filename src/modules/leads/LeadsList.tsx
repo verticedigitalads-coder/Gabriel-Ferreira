@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useStore, useFilteredLeads } from '@/store/useStore';
+import { useStore } from '@/store/useStore'
+import { useFilteredLeads } from '@/store/selectors/leadSelectors'
 import { useDebounce } from '@/hooks/useDebounce';
 import { useLeadActions } from '@/hooks/useLeadActions';
 import { Button } from '@/components/ui/Button';
