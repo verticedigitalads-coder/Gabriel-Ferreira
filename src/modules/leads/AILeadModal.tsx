@@ -1,3 +1,4 @@
+import { AIAnalysisResult } from "@/services/ai/ai.service";
 import React, { useState } from 'react';
 import { Bot, X, Clipboard, Check, AlertTriangle, UserPlus, RefreshCcw, Loader2 } from 'lucide-react';
 import { AIService } from "@/services/ai/ai.service";
@@ -120,78 +121,162 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({ isOpen, onClose }) => 
               </div>
             </div>
           ) : (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {duplicateLead && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-md flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                  <div>
-                    <h4 className="text-sm font-bold text-amber-800">Lead Existente Detectado</h4>
-                    <p className="text-sm text-amber-700">
-                      Identificamos que <strong>{duplicateLead.nome}</strong> já está cadastrado.
-                    </p>
-                  </div>
-                </div>
-              )}
+<div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nome do Lead</label>
-                  <input 
-                    type="text" 
-                    value={analysis.nome || ''} 
-                    onChange={(e) => setAnalysis({...analysis, nome: e.target.value})}
-                    className="w-full p-2 text-sm border border-slate-200 rounded bg-white font-medium" 
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Telefone</label>
-                  <input 
-                    type="text" 
-                    value={analysis.telefone || ''} 
-                    onChange={(e) => setAnalysis({...analysis, telefone: e.target.value})}
-                    className="w-full p-2 text-sm border border-slate-200 rounded bg-white font-medium" 
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Serviço</label>
-                  <input 
-                    type="text" 
-                    value={analysis.servico || ''} 
-                    onChange={(e) => setAnalysis({...analysis, servico: e.target.value})}
-                    className="w-full p-2 text-sm border border-slate-200 rounded bg-white font-medium" 
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Data Follow-up</label>
-                  <input 
-                    type="date" 
-                    value={analysis.dataSugeridaFollowUp} 
-                    onChange={(e) => setAnalysis({...analysis, dataSugeridaFollowUp: e.target.value})}
-                    className="w-full p-2 text-sm border border-slate-200 rounded bg-white font-medium" 
-                  />
-                </div>
-              </div>
+{duplicateLead && (
+<div className="p-4 bg-amber-50 border border-amber-200 rounded-md flex gap-3">
+<AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+<div>
+<h4 className="text-sm font-bold text-amber-800">Lead Existente Detectado</h4>
+<p className="text-sm text-amber-700">
+Identificamos que <strong>{duplicateLead.nome}</strong> já está cadastrado.
+</p>
+</div>
+</div>
+)}
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Resumo Gerado</label>
-                <textarea 
-                  value={analysis.resumo} 
-                  onChange={(e) => setAnalysis({...analysis, resumo: e.target.value})}
-                  className="w-full p-3 text-sm border border-slate-200 rounded bg-white h-24 resize-none font-medium leading-relaxed"
-                />
-              </div>
+<div className="grid grid-cols-2 gap-4">
 
-              <div className="flex gap-4">
-                <div className="flex-1 p-3 bg-slate-50 rounded border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Temperatura</span>
-                  <span className="text-sm font-bold uppercase text-slate-700">{analysis.temperatura}</span>
-                </div>
-                <div className="flex-1 p-3 bg-slate-50 rounded border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Próxima Ação</span>
-                  <span className="text-sm font-medium text-slate-700 italic">"{analysis.proximaAcao}"</span>
-                </div>
-              </div>
-            </div>
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Nome</label>
+<input
+value={analysis.nome || ""}
+onChange={(e)=>setAnalysis({...analysis,nome:e.target.value})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Telefone</label>
+<input
+value={analysis.telefone || ""}
+onChange={(e)=>setAnalysis({...analysis,telefone:e.target.value})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Email</label>
+<input
+value={analysis.email || ""}
+onChange={(e)=>setAnalysis({...analysis,email:e.target.value})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Endereço da Obra</label>
+<input
+value={analysis.endereco || ""}
+onChange={(e)=>setAnalysis({...analysis,endereco:e.target.value})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Serviço</label>
+<input
+value={analysis.servico || ""}
+onChange={(e)=>setAnalysis({...analysis,servico:e.target.value})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Status</label>
+<select
+value={analysis.status}
+onChange={(e)=>setAnalysis({...analysis,status:e.target.value as any})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+>
+<option value="novo">Novo</option>
+<option value="atendimento">Atendimento</option>
+<option value="orcado">Orçado</option>
+<option value="fechado">Fechado</option>
+</select>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Temperatura</label>
+<select
+value={analysis.temperatura}
+onChange={(e)=>setAnalysis({...analysis,temperatura:e.target.value as any})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+>
+<option value="frio">Frio</option>
+<option value="morno">Morno</option>
+<option value="quente">Quente</option>
+</select>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Valor Orçado</label>
+<input
+type="number"
+value={analysis.valorOrcado || 0}
+onChange={(e)=>setAnalysis({...analysis,valorOrcado:Number(e.target.value)})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Último Contato</label>
+<input
+type="date"
+value={analysis.ultimoContato?.split("T")[0] || ""}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase">Próximo Contato</label>
+<input
+type="date"
+value={analysis.dataSugeridaFollowUp}
+onChange={(e)=>setAnalysis({...analysis,dataSugeridaFollowUp:e.target.value})}
+className="w-full p-2 text-sm border border-slate-200 rounded"
+/>
+</div>
+
+</div>
+
+<div className="space-y-1">
+<label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+Resumo Gerado
+</label>
+
+<textarea
+value={analysis.resumo}
+onChange={(e)=>setAnalysis({...analysis,resumo:e.target.value})}
+className="w-full p-3 text-sm border border-slate-200 rounded bg-white h-24 resize-none font-medium leading-relaxed"
+/>
+</div>
+
+<div className="flex gap-4">
+
+<div className="flex-1 p-3 bg-slate-50 rounded border border-slate-200">
+<span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+Temperatura
+</span>
+
+<span className="text-sm font-bold uppercase text-slate-700">
+{analysis.temperatura}
+</span>
+</div>
+
+<div className="flex-1 p-3 bg-slate-50 rounded border border-slate-200">
+<span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+Próxima Ação
+</span>
+
+<span className="text-sm font-medium text-slate-700 italic">
+"{analysis.proximaAcao}"
+</span>
+</div>
+
+</div>
+
+</div>
           )}
         </div>
 

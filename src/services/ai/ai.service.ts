@@ -16,6 +16,7 @@ export interface AIAnalysisResult {
   resumo: string;
   proximaAcao: string;
   dataSugeridaFollowUp: string;
+  ultimoContato?: string;
 }
 
 export class AIService {
@@ -91,30 +92,60 @@ export class AIService {
   // =========================
   // DETECTAR SERVIÇO
   // =========================
-  static detectService(text: string) {
+  static detectService(text: string){
 
-    const services = [
-      "varanda",
-      "portão",
-      "grade",
-      "serralheria",
-      "cobertura",
-      "telhado",
-      "estrutura metálica",
-      "corrimão",
-      "escada"
-    ];
+  const lower = text.toLowerCase()
 
-    const lower = text.toLowerCase();
+  const services = [
 
-    for (const s of services) {
-      if (lower.includes(s)) {
-        return s.charAt(0).toUpperCase() + s.slice(1);
-      }
+    "varanda",
+    "cobertura",
+    "telhado",
+    "estrutura metálica",
+    "mezanino",
+
+    "portão",
+    "porta",
+    "grade",
+    "corrimão",
+    "escada",
+
+    "mesa",
+    "cadeira",
+    "banco",
+    "armário",
+    "guarda roupa",
+    "estante",
+
+    "lixeira",
+    "suporte",
+    "prateleira",
+    "base metálica",
+
+    "solda",
+    "serralheria",
+    "reparo",
+    "manutenção",
+
+    "pintura",
+    "pintura de portão",
+    "pintura de grade",
+    "pintura de estrutura",
+    "pintura de peça"
+
+  ]
+
+  for(const service of services){
+
+    if(lower.includes(service)){
+      return service.charAt(0).toUpperCase() + service.slice(1)
     }
 
-    return "Serviço geral";
   }
+
+  return "Serviço de serralheria"
+
+}
 
   // =========================
   // DETECTAR ORIGEM DO LEAD
@@ -141,7 +172,7 @@ export class AIService {
 
   lines.forEach(line => {
 
-    const match = line.match(/(\d{2,5}[.,]?\d{0,2})/)
+    const match = line.match(/R\$?\s?(\d+[.,]?\d{0,2})/)
 
     if (match) {
 
@@ -196,15 +227,15 @@ static detectBuyingSignals(text: string) {
   const lower = text.toLowerCase()
 
   const strongSignals = [
-    "vou fazer",
-    "vamos fazer",
-    "fechou",
-    "pode fazer",
-    "pode instalar",
-    "quando pode instalar",
-    "manda a proposta",
-    "vou fechar"
-  ]
+ "vou fazer",
+ "vamos fazer",
+ "fechou",
+ "pode fazer",
+ "pode ser",
+ "agendar",
+ "confirmar",
+ "marcar horário"
+]
 
   const mediumSignals = [
     "orçamento",
@@ -391,35 +422,44 @@ if(stage === "fechamento"){
 }
 
   // =========================
-  // ANÁLISE PRINCIPAL
-  // =========================
-  static async analyzeConversation(text: string): Promise<AIAnalysisResult> {
+// ANÁLISE PRINCIPAL
+// =========================
+static async analyzeConversation(text: string): Promise<AIAnalysisResult> {
 
   const clean = this.cleanConversation(text);
 
-const ultimoContato = this.extractLastContact(text);
-const bairro = this.extractNeighborhood(clean);
+  const ultimoContato = this.extractLastContact(text);
+  const bairro = this.extractNeighborhood(clean);
 
-const nome = this.extractName(clean);
-const telefone = this.extractPhone(clean);
-const email = this.extractEmail(clean);
-const endereco = this.extractAddress(clean);
-const servico = this.detectService(clean);
-const origem = this.detectOrigin(clean);
+  let nome = this.extractName(clean);
 
-const hasAudio = this.detectAudioMessages(clean);
+  const telefone = this.extractPhone(clean);
+  const email = this.extractEmail(clean);
+  const endereco = this.extractAddress(clean);
+  const servico = this.detectService(clean);
+  const origem = this.detectOrigin(clean);
 
-const buyingScore = this.detectBuyingSignals(clean);
+  const hasAudio = this.detectAudioMessages(clean);
 
-const stage = this.detectSalesStage(clean)
+  const buyingScore = this.detectBuyingSignals(clean);
 
-const valor = this.extractBudget(clean);
+  const stage = this.detectSalesStage(clean);
+
+  const valor = this.extractBudget(clean);
+
+  // detectar nome quando cliente escreve "meu nome é"
+  const nameMatch = clean.match(/meu nome é ([A-Za-zÀ-ÿ\s]+)/i);
+
+  if (nameMatch) {
+    nome = nameMatch[1].trim();
+  }
 
   let temperatura: LeadTemperature = "frio";
-  
-  if(hasAudio && buyingScore >= 20){
-  temperatura = "quente"
+
+  if (hasAudio && buyingScore >= 20) {
+    temperatura = "quente";
   }
+
   if (buyingScore >= 40) {
     temperatura = "quente";
   }
@@ -427,19 +467,19 @@ const valor = this.extractBudget(clean);
     temperatura = "morno";
   }
 
-  let status: LeadStatus = "novo"
+  let status: LeadStatus = "novo";
 
-if(stage === "orcamento"){
-  status = "atendimento"
-}
+  if (stage === "orcamento") {
+    status = "atendimento";
+  }
 
-if(valor){
-  status = "orcado"
-}
+  if (valor) {
+    status = "orcado";
+  }
 
-if(stage === "fechamento"){
-  status = "orcado"
-}
+  if (stage === "fechamento") {
+    status = "orcado";
+  }
 
   const resumo = this.generateSummary({
   nome,
