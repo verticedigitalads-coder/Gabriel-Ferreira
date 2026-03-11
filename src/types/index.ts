@@ -102,6 +102,9 @@ export interface Lead {
   endereco?: string;
   servico: string;
 
+  visitaOrcamentoData?: string
+  visitaOrcamentoPeriodo?: "manha" | "almoco" | "tarde"
+
   status: LeadStatus;
   temperatura: LeadTemperature;
 
@@ -302,6 +305,12 @@ export type OperacionalPrioridade =
   | 'media'
   | 'alta';
 
+export type OperacionalStatus =
+  | 'pendente'
+  | 'em_producao'
+  | 'pronto'
+  | 'instalado';
+
 export interface OperacionalTask {
   id: string;
   workspaceId: string;
@@ -314,6 +323,8 @@ export interface OperacionalTask {
 
   tipo: OperacionalTipo;
   prioridade: OperacionalPrioridade;
+
+  status: OperacionalStatus;
 
   concluido: boolean;
 

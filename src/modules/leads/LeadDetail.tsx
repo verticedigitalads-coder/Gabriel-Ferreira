@@ -30,6 +30,7 @@ interface LeadDetailProps {
 
 export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const deleteLead = useStore(state => state.deleteLead);
+  const addOperacionalTask = useStore(state => state.addOperacionalTask);
   const { registerContact, markAsOrcado, markAsFechado, openWhatsApp, copyPhone } = useLeadActions();
 
   // 🔒 Proteção crítica contra undefined (Realtime safe)
@@ -44,6 +45,9 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+   
+  const [showVisitModal, setShowVisitModal] = useState(false)
+  const [visitDate, setVisitDate] = useState("")
 
   const [valorOrcamento, setValorOrcamento] = useState(
     lead.valorOrcado ? lead.valorOrcado.toString() : ""
@@ -74,6 +78,21 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     await markAsOrcado(lead.id, valor);
     setShowOrcamentoModal(false);
   };
+
+const handleScheduleVisit = async () => {
+
+  if (!visitDate) return
+
+  await addOperacionalTask({
+    titulo: `Visita orçamento - ${lead.nome}`,
+    data: visitDate,
+    tipo: "visita",
+    prioridade: "media",
+    leadId: lead.id
+  })
+
+  setShowVisitModal(false)
+};
 
   // 🔥 Resto do seu JSX continua normalmente abaixo
 
@@ -115,25 +134,37 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             WhatsApp
           </Button>
           {lead.status !== 'fechado' && lead.status !== 'perdido' && (
-            <>
-              <Button
-                variant="secondary"
-                onClick={() => setShowOrcamentoModal(true)}
-                className="gap-2"
-              >
-                <FileText className="w-4 h-4" />
-                Marcar Orçado
-              </Button>
-              <Button
-                variant="success"
-                onClick={() => markAsFechado(lead.id)}
-                className="gap-2"
-              >
-                <CheckCircle className="w-4 h-4" />
-                Fechar Negócio
-              </Button>
-            </>
-          )}
+  <>
+  
+  <Button
+    variant="secondary"
+    onClick={() => setShowVisitModal(true)}
+    className="gap-2"
+>
+    <Calendar className="w-4 h-4" />
+    Marcar Visita
+  </Button>
+
+  <Button
+    variant="secondary"
+    onClick={() => setShowOrcamentoModal(true)}
+    className="gap-2"
+  >
+    <FileText className="w-4 h-4" />
+    Marcar Orçado
+  </Button>
+
+  <Button
+    variant="success"
+    onClick={() => markAsFechado(lead.id)}
+    className="gap-2"
+  >
+    <CheckCircle className="w-4 h-4" />
+    Fechar Negócio
+  </Button>
+
+  </>
+)}
         </div>
 
         {/* Info Cards */}
@@ -311,6 +342,44 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           </div>
         </div>
       </Modal>
-    </div>
+    
+   <Modal
+  isOpen={showVisitModal}
+  onClose={() => setShowVisitModal(false)}
+  title="Agendar Visita"
+>
+
+<div className="p-6 space-y-4">
+
+<Input
+label="Data da visita"
+type="date"
+value={visitDate}
+onChange={(e)=>setVisitDate(e.target.value)}
+/>
+
+<div className="flex justify-end gap-2">
+
+<Button
+variant="secondary"
+onClick={()=>setShowVisitModal(false)}
+>
+Cancelar
+</Button>
+
+<Button
+variant="primary"
+onClick={handleScheduleVisit}
+>
+Confirmar
+</Button>
+
+</div>
+
+</div>
+
+</Modal>
+
+   </div>
   );
 }

@@ -164,24 +164,35 @@ updateLead: async (id: string, updates: Partial<Lead>) => {
 
   markAsFechado: async (id: string) => {
 
-    const now = new Date().toISOString()
+  const now = new Date().toISOString()
 
-    const { data: updatedLead, error } = await supabase
-      .from('leads')
-      .update({
-        status: 'fechado',
-        updated_at: now
-      })
-      .eq('id', id)
-      .select()
-      .single()
+  const { data: updatedLead, error } = await supabase
+    .from('leads')
+    .update({
+      status: 'fechado',
+      updated_at: now
+    })
+    .eq('id', id)
+    .select()
+    .single()
 
-    if (error) {
-      console.error('Erro ao marcar como fechado:', error)
-      return
-    }
+  if (error) {
+    console.error('Erro ao marcar como fechado:', error)
+    return
+  }
 
-    set((state: any) => ({
+  // 🔹 criar tarefa operacional automaticamente
+  const { addOperacionalTask } = get()
+
+  await addOperacionalTask({
+    titulo: `Executar serviço - ${updatedLead.nome}`,
+    data: new Date().toISOString().split('T')[0],
+    tipo: 'execucao',
+    prioridade: 'media',
+    leadId: updatedLead.id
+  })
+
+      set((state: any) => ({
       leads: state.leads.map((lead: Lead) =>
         lead.id === id ? updatedLead : lead
       )

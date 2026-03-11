@@ -147,6 +147,45 @@ export class AIService {
 
 }
 
+// =========================
+// DETECTAR INTENÇÃO DE VISITA
+// =========================
+static detectVisitIntent(text: string){
+
+  const lower = text.toLowerCase()
+
+  const visitSignals = [
+
+    "pode vir",
+    "pode vir ver",
+    "pode vir aqui",
+    "quando vocês podem vir",
+    "vamos marcar",
+    "marcar visita",
+    "vir ver",
+    "vir medir",
+    "pode passar aqui",
+    "podemos marcar",
+    "pode vir amanhã",
+    "vir dar uma olhada",
+    "vir olhar",
+    "vir avaliar",
+    "ver no local",
+    "ver pessoalmente"
+
+]
+
+  for(const signal of visitSignals){
+
+    if(lower.includes(signal)){
+      return true
+    }
+
+  }
+
+  return false
+}
+
   // =========================
   // DETECTAR ORIGEM DO LEAD
   // =========================
@@ -444,6 +483,9 @@ static async analyzeConversation(text: string): Promise<AIAnalysisResult> {
   const buyingScore = this.detectBuyingSignals(clean);
 
   const stage = this.detectSalesStage(clean);
+  
+  const visitIntent = this.detectVisitIntent(clean)
+  const visitDate = this.detectVisitDate(clean)
 
   const valor = this.extractBudget(clean);
 
@@ -495,26 +537,85 @@ static async analyzeConversation(text: string): Promise<AIAnalysisResult> {
 });
 
   return {
-    nome,
-    telefone,
-    email,
-    endereco,
-    servico,
-    origem,
-    temperatura,
-    status,
-    risco: "baixo",
-    orcamentoEnviado: !!valor,
-    valorOrcado: valor,
-    ultimoContato: ultimoContato
-      ? new Date(ultimoContato.split("/").reverse().join("-")).toISOString()
-      : new Date().toISOString(),
-    resumo,
-    proximaAcao: "Realizar contato para confirmação do serviço.",
-    dataSugeridaFollowUp: new Date(Date.now() + 86400000)
-      .toISOString()
-      .split("T")[0]
-  };
+
+  nome,
+  telefone,
+  email,
+  endereco,
+  servico,
+
+  visitaSugerida: visitIntent,
+  dataVisitaSugerida: visitDate,
+
+  origem,
+  temperatura,
+  status,
+  risco: "baixo",
+
+  orcamentoEnviado: !!valor,
+  valorOrcado: valor,
+
+  ultimoContato: ultimoContato
+    ? new Date(ultimoContato.split("/").reverse().join("-")).toISOString()
+    : new Date().toISOString(),
+
+  resumo,
+
+  proximaAcao: "Realizar contato para confirmação do serviço.",
+
+  dataSugeridaFollowUp: new Date(Date.now() + 86400000)
+    .toISOString()
+    .split("T")[0]
+
+};
+}
+
+static detectVisitDate(text: string) {
+
+  const lower = text.toLowerCase()
+
+  if (lower.includes("amanhã")) {
+    const d = new Date()
+    d.setDate(d.getDate() + 1)
+    return d.toISOString().split("T")[0]
+  }
+
+  const match = text.match(/\d{1,2}\/\d{1,2}/)
+
+  if(match){
+    const year = new Date().getFullYear()
+    return `${year}-${match[0].split("/").reverse().join("-")}`
+  }
+
+  return null
+}
+
+static detectVisitPeriod(text: string){
+
+  const lower = text.toLowerCase()
+
+  if(
+    lower.includes("manhã") ||
+    lower.includes("manha") ||
+    lower.includes("cedo")
+  ){
+    return "manha"
+  }
+
+  if(
+    lower.includes("almoço") ||
+    lower.includes("meio dia")
+  ){
+    return "almoco"
+  }
+
+  if(
+    lower.includes("tarde")
+  ){
+    return "tarde"
+  }
+
+  return null
 }
 
   // =========================

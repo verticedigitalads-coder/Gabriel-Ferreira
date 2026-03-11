@@ -17,10 +17,17 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({ isOpen, onClose }) => 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AIAnalysisResult | null>(null);
   const [duplicateLead, setDuplicateLead] = useState<Lead | null>(null);
-  const { leads, workspaceId, addLead, updateLead, addToast } = useStore();
+  const {
+    leads,
+    workspaceId,
+    addLead,
+    updateLead,
+    addToast,
+    addOperacionalTask
+  } = useStore();
 
   if (!isOpen) return null;
-
+  
   const handleAnalyze = async () => {
     if (!conversation.trim()) {
       addToast({ type: 'warning', message: 'Cole uma conversa para analisar.' });
@@ -37,23 +44,71 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({ isOpen, onClose }) => 
       const duplicate = AIService.checkDuplicity(leadData, leads);
       setDuplicateLead(duplicate);
     } catch (error) {
-      addToast({ type: 'error', message: 'Erro ao analisar conversa.' });
-    } finally {
-      setIsAnalyzing(false);
-    }
+
+  console.error("ERRO NA ANALISE DA IA:", error)
+
+  addToast({
+    type: 'error',
+    message: 'Erro ao analisar conversa. Veja o console (F12).'
+  });
+
+} finally {
+  setIsAnalyzing(false);
+}
   };
 
-  const handleCreateNew = () => {
-    if (!analysis) return;
-    // Omit fields that addLead generates
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, workspaceId: wId, prioridadeScore, prioridadeLevel, historico, createdAt, updatedAt, ...leadData } = AIService.convertToLead(analysis, workspaceId) as Lead;
-    
-    addLead(leadData);
-    addToast({ type: 'success', message: 'Lead criado com sucesso via IA!' });
-    onClose();
-    resetState();
-  };
+  const handleCreateNew = async () => {
+
+  console.log("ANALYSIS RESULT:", analysis)
+
+  if (!analysis) return;
+
+  const {
+    id,
+    workspaceId: wId,
+    prioridadeScore,
+    prioridadeLevel,
+    historico,
+    createdAt,
+    updatedAt,
+    ...leadData
+  } = AIService.convertToLead(analysis, workspaceId) as Lead;
+
+  const createdLead = await addLead(leadData);
+
+  if (!createdLead) {
+    console.error("Lead não foi criado");
+    return;
+  }
+
+  const visitaSugerida =
+  analysis.visitaSugerida === true ||
+  analysis.visitaSugerida === "true";
+
+if (visitaSugerida) {
+
+  const dataVisita =
+    analysis.dataVisitaSugerida ||
+    new Date().toISOString().split("T")[0];
+
+  await addOperacionalTask({
+    titulo: `Visita orçamento - ${analysis.nome || "Cliente"}`,
+    data: dataVisita,
+    tipo: "visita",
+    prioridade: "media",
+    leadId: createdLead.id
+  });
+
+}
+
+  addToast({
+    type: 'success',
+    message: 'Lead criado com sucesso via IA!'
+  });
+
+  onClose();
+  resetState();
+};
 
   const handleUpdateExisting = () => {
     if (!analysis || !duplicateLead) return;
@@ -185,7 +240,7 @@ className="w-full p-2 text-sm border border-slate-200 rounded"
 <div className="space-y-1">
 <label className="text-[10px] font-bold text-slate-500 uppercase">Status</label>
 <select
-value={analysis.status}
+value={analysis.status || ""}
 onChange={(e)=>setAnalysis({...analysis,status:e.target.value as any})}
 className="w-full p-2 text-sm border border-slate-200 rounded"
 >
@@ -199,7 +254,7 @@ className="w-full p-2 text-sm border border-slate-200 rounded"
 <div className="space-y-1">
 <label className="text-[10px] font-bold text-slate-500 uppercase">Temperatura</label>
 <select
-value={analysis.temperatura}
+value={analysis.temperatura || ""}
 onChange={(e)=>setAnalysis({...analysis,temperatura:e.target.value as any})}
 className="w-full p-2 text-sm border border-slate-200 rounded"
 >
@@ -213,8 +268,11 @@ className="w-full p-2 text-sm border border-slate-200 rounded"
 <label className="text-[10px] font-bold text-slate-500 uppercase">Valor Orçado</label>
 <input
 type="number"
-value={analysis.valorOrcado || 0}
-onChange={(e)=>setAnalysis({...analysis,valorOrcado:Number(e.target.value)})}
+value={analysis.valorOrcado || ""}
+onChange={(e)=>setAnalysis({
+  ...analysis,
+  valorOrcado: e.target.value ? Number(e.target.value) : null
+})}
 className="w-full p-2 text-sm border border-slate-200 rounded"
 />
 </div>
@@ -224,6 +282,7 @@ className="w-full p-2 text-sm border border-slate-200 rounded"
 <input
 type="date"
 value={analysis.ultimoContato?.split("T")[0] || ""}
+readOnly
 className="w-full p-2 text-sm border border-slate-200 rounded"
 />
 </div>
@@ -232,7 +291,7 @@ className="w-full p-2 text-sm border border-slate-200 rounded"
 <label className="text-[10px] font-bold text-slate-500 uppercase">Próximo Contato</label>
 <input
 type="date"
-value={analysis.dataSugeridaFollowUp}
+value={analysis.dataSugeridaFollowUp || ""}
 onChange={(e)=>setAnalysis({...analysis,dataSugeridaFollowUp:e.target.value})}
 className="w-full p-2 text-sm border border-slate-200 rounded"
 />
@@ -246,7 +305,7 @@ Resumo Gerado
 </label>
 
 <textarea
-value={analysis.resumo}
+value={analysis.resumo || ""}
 onChange={(e)=>setAnalysis({...analysis,resumo:e.target.value})}
 className="w-full p-3 text-sm border border-slate-200 rounded bg-white h-24 resize-none font-medium leading-relaxed"
 />

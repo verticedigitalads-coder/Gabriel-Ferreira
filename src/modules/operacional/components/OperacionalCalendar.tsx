@@ -17,6 +17,13 @@ const prioridadeColor: Record<string, string> = {
   alta: 'bg-red-50 border-red-500 text-red-700',
 };
 
+const statusColor: Record<string, string> = {
+  pendente: 'bg-gray-50 border-gray-400 text-gray-700',
+  em_producao: 'bg-yellow-50 border-yellow-500 text-yellow-700',
+  pronto: 'bg-green-50 border-green-500 text-green-700',
+  instalado: 'bg-blue-50 border-blue-500 text-blue-700',
+};
+
 type FilterMode = 'all' | 'critical' | 'urgent' | 'delayed';
 
 function DraggableTask({ task }: any) {
@@ -66,7 +73,7 @@ function DraggableTask({ task }: any) {
         border-l-4 p-3 rounded-lg text-xs
         transition-all duration-200
         hover:shadow-md
-        ${prioridadeColor[task.prioridade]}
+        ${statusColor[task.status] || prioridadeColor[task.prioridade]}
         ${task.concluido ? 'opacity-50 line-through' : ''}
         ${isCritical ? 'ring-2 ring-red-600' : ''}
       `}
@@ -83,11 +90,16 @@ function DraggableTask({ task }: any) {
           }
         >
           <p className="font-semibold">{task.titulo}</p>
-          {lead && (
-            <p className="text-[10px] opacity-70">
-              {lead.nome} • {lead.status}
-            </p>
-          )}
+
+<p className="text-[10px] opacity-70 capitalize">
+  Status: {task.status?.replace("_", " ")}
+</p>
+
+{lead && (
+  <p className="text-[10px] opacity-70">
+    {lead.nome} • {lead.status}
+  </p>
+)}
           {isCritical && (
             <span className="text-[9px] bg-red-700 text-white px-1 rounded">
               CRÍTICA
@@ -154,7 +166,8 @@ function DroppableDay({ day, tasks }: any) {
           {day.label}
         </p>
         <p className="text-xs text-gray-400">
-          {format(day.date, 'dd/MM')}
+          {format(day.date, "EEEE, dd/MM/yyyy", { locale: ptBR })
+}
         </p>
       </div>
 
@@ -208,7 +221,9 @@ function OperacionalCalendar() {
   }, []);
 
   const getTasksForDay = (dateString: string) =>
-    filteredTasks.filter(t => t.data === dateString);
+  filteredTasks.filter(t =>
+    t.data?.substring(0, 10) === dateString
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
 
