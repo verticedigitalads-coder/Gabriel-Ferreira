@@ -120,7 +120,7 @@ function DroppableDay({ day, tasks }: any) {
     id: day.dateString,
   });
 
-  const leads = useStore.getState().leads;
+  const leads = useStore(state => state.leads);
 
   const sortedTasks = [...tasks].sort((a, b) => {
     const leadA = a.leadId
@@ -211,15 +211,27 @@ function OperacionalCalendar() {
     filteredTasks.filter(t => t.data === dateString);
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return;
 
-    const updateTask = useStore.getState().updateOperacionalTask;
+  const { active, over } = event;
 
-    updateTask(active.id as string, {
-      data: over.id as string,
-    });
-  };
+  if (!over) return;
+
+  const updateTask = useStore.getState().updateOperacionalTask
+
+  const taskId = active.id as string
+  const newDate = over.id as string
+
+  const task = useStore.getState().operacionalTasks.find(
+    (t: any) => t.id === taskId
+  )
+
+  if (!task) return
+
+  if (task.data !== newDate) {
+    updateTask(taskId, { data: newDate })
+  }
+
+}
 
   return (
     <DndContext onDragEnd={handleDragEnd}>

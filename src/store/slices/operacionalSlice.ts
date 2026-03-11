@@ -37,6 +37,48 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       operacionalTasks: [...operacionalTasks, task]
     })
 
+  },
+
+	deleteOperacionalTask: async (taskId: string) => {
+
+  const { operacionalTasks } = get()
+
+  await supabase
+    .from('operacional_tasks')
+    .delete()
+    .eq('id', taskId)
+
+  set({
+    operacionalTasks: operacionalTasks.filter(
+      (task: OperacionalTask) => task.id !== taskId
+    )
+  })
+
+},
+
+  updateOperacionalTask: async (taskId: string, updates: Partial<OperacionalTask>) => {
+
+    const { operacionalTasks } = get()
+    const now = new Date().toISOString()
+
+    await supabase
+      .from('operacional_tasks')
+      .update({
+        ...updates,
+        updated_at: now
+      })
+      .eq('id', taskId)
+
+    const updatedTasks = operacionalTasks.map((task: OperacionalTask) =>
+      task.id === taskId
+        ? { ...task, ...updates, updatedAt: now }
+        : task
+    )
+
+    set({
+      operacionalTasks: updatedTasks
+    })
+
   }
 
 })
