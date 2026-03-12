@@ -46,6 +46,15 @@ const sections: { title: string; items: MenuItem[] }[] = [
       { id: 'ia', label: 'IA Assistente', icon: Sparkles },
     ],
   },
+  
+  {
+  title: 'Suprimentos',
+  items: [
+    { id: 'fornecedores', label: 'Fornecedores', icon: Users },
+    { id: 'comparador', label: 'Comparador de Preços', icon: DollarSign },
+    { id: 'estoque', label: 'Estoque', icon: FileText },
+  ],
+},
   {
     title: 'Sistema',
     items: [

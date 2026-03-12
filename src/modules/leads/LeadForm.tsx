@@ -24,28 +24,16 @@ const temperaturaOptions = [
 ];
 
 export function LeadForm({ lead, onClose }: LeadFormProps) {
-  const addLead = useStore(state => state.addLead);
-  const updateLead = useStore(state => state.updateLead);
+  const addLead = useStore(state => state.addLead)
+  const updateLead = useStore(state => state.updateLead)
 
-  const [formData, setFormData] = useState({
-    nome: '',
-    telefone: '',
-    email: '',
-    endereco: '',
-    servico: '',
-    status: 'novo' as LeadStatus,
-    temperatura: 'morno' as LeadTemperature,
-    valorOrcado: 0,
-    orcamentoEnviado: false,
-    ultimoContato: '',
-    proximoContato: '',
-    resumo: '',
-    observacoes: '',
-  });
+  const formData = useStore(state => state.leadForm)
+  const setLeadForm = useStore(state => state.setLeadForm)
+  const resetLeadForm = useStore(state => state.resetLeadForm)
 
   useEffect(() => {
     if (lead) {
-      setFormData({
+      setLeadForm({
         nome: lead.nome,
         telefone: lead.telefone,
         email: lead.email,
@@ -72,12 +60,13 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
       await addLead(formData);
     }
 
-    onClose();
+    resetLeadForm()
+    onClose()
   };
 
   const handleChange = (field: string, value: string | number | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  setLeadForm({ [field]: value })
+}
 
   return (
     <form onSubmit={handleSubmit} className="p-6 space-y-6">

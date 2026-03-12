@@ -331,3 +331,61 @@ export interface OperacionalTask {
   createdAt: string;
   updatedAt: string;
 }
+
+// =========================
+// FORNECEDORES
+// =========================
+
+export interface Fornecedor {
+  id: string
+  workspaceId: string
+
+  nome: string
+  telefone?: string
+  endereco?: string
+  observacoes?: string
+
+  createdAt?: string
+}
+
+// =========================
+// MATERIAIS / ESTOQUE
+// =========================
+
+export interface Material {
+  id: string
+  workspaceId: string
+
+  nome: string
+  categoria?: string
+  unidade?: string
+
+  quantidade: number
+  estoqueMinimo?: number
+
+  estoque:number
+  estoqueMinimo:number
+
+  createdAt?: string
+}
+
+// =========================
+// COTAÇÃO DE MATERIAIS
+// =========================
+
+export interface CotacaoMaterial {
+  id: string
+  workspaceId: string
+
+  fornecedorId: string
+
+  material: string
+  quantidade: number
+
+  valor: number
+  formaPagamento?: string
+
+  observacoes?: string
+
+  createdAt?: string
+}

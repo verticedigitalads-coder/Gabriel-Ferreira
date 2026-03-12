@@ -1,3 +1,6 @@
+import Fornecedores from "@/modules/suprimentos/Fornecedores"
+import ComparadorPrecos from "@/modules/suprimentos/ComparadorPrecos"
+import Estoque from "@/modules/suprimentos/Estoque"
 import { supabase } from '@/lib/supabase'
 import { ensureWorkspaceForUser } from '@/lib/supabaseWorkspace'
 import { Central } from '@/modules/central/Central';
@@ -61,6 +64,10 @@ function ModuleRouter() {
       {activeModule === 'settings' && <Settings />}
       {activeModule === 'operacional' && <Operacional />}
       {activeModule === 'central' && <Central />}
+
+      {activeModule === 'fornecedores' && <Fornecedores />}
+      {activeModule === 'comparador' && <ComparadorPrecos />}
+      {activeModule === 'estoque' && <Estoque />}
     </Suspense>
   );
 }
