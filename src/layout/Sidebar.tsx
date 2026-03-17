@@ -1,5 +1,4 @@
 import { useStore } from '@/store/useStore';
-import { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { AlertTriangle } from 'lucide-react';
 import {
@@ -70,8 +69,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
+  
   const activeModule = useStore(state => state.activeModule);
   const setActiveModule = useStore(state => state.setActiveModule);
   const exportData = useStore(state => state.exportData);
