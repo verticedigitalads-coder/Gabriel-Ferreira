@@ -212,8 +212,6 @@ Não incluso serviços adicionais não descritos neste orçamento.
 
 });
 
-app.listen(3001, "127.0.0.1", () => {
-
-  console.log("🔥 Backend rodando em http://127.0.0.1:3001");
-
+app.listen(3001, "0.0.0.0", () => {
+  console.log("🔥 Backend rodando em http://192.168.18.11:3001");
 });

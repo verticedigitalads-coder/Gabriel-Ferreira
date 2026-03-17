@@ -4,9 +4,12 @@ import { Sparkles } from 'lucide-react'
 export function AuthPage() {
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    })
-  }
+  provider: "google",
+  options: {
+    redirectTo: window.location.origin
+   }
+ })
+}
 
   return (
     <div className="flex h-screen w-full">

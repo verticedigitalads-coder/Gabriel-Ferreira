@@ -9,11 +9,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+  server: {
+    host: "0.0.0.0",
+    port: 5173
+  },
+
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
-      registerType: "autoUpdate",
+    VitePWA({      registerType: "autoUpdate",
       manifest: {
         name: "Vértice Digital CRM Inteligente",
         short_name: "Vértice CRM",
@@ -42,9 +46,11 @@ export default defineConfig({
       },
     }),
   ],
+
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
-    },
-  },
-});
+      "@": path.resolve(__dirname, "src")
+    }
+  }
+
+})
