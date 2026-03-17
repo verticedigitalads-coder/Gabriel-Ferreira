@@ -1,4 +1,5 @@
 import { useStore } from '@/store/useStore';
+import { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { AlertTriangle } from 'lucide-react';
 import {
@@ -63,7 +64,14 @@ const sections: { title: string; items: MenuItem[] }[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
+}
+
+export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const activeModule = useStore(state => state.activeModule);
   const setActiveModule = useStore(state => state.setActiveModule);
   const exportData = useStore(state => state.exportData);
@@ -154,7 +162,18 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-[#0F172A] text-white flex flex-col h-screen border-r border-[#1E293B]">
+    <aside
+  className={cn(
+    "fixed md:relative top-0 left-0 z-40 w-64 bg-[#0F172A] text-white flex flex-col h-screen border-r border-[#1E293B] transition-transform",
+    mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+  )}
+>
+<button
+  className="md:hidden absolute top-4 right-4 text-gray-400"
+  onClick={() => setMobileOpen(false)}
+>
+  ✕
+</button>
   
   {/* Logo */}
 <div className="px-5 py-5 border-b border-white/5 bg-gradient-to-b from-slate-900 to-slate-950">

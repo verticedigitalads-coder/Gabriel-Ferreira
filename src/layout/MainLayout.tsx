@@ -11,6 +11,8 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const logout = useStore(state => state.logout);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -37,14 +39,21 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex h-screen bg-slate-100 overflow-hidden">
       
-      <Sidebar />
+      <Sidebar mobileOpen={sidebarOpen} setMobileOpen={setSidebarOpen} />
 
       <div className="flex flex-col flex-1 overflow-hidden">
         
         {/* Header Global */}
         <div className="flex items-center justify-between px-6 py-3 bg-white border-b">
-          
-          <HeaderGlobal />
+
+  <button
+    className="md:hidden mr-4 text-gray-700"
+    onClick={() => setSidebarOpen(true)}
+  >
+    ☰
+  </button>
+
+  <HeaderGlobal />
 
           <div className="flex items-center gap-4">
             
