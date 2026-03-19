@@ -13,21 +13,11 @@ export type LeadStatus =
   | 'fechado'
   | 'perdido';
 
-export type LeadTemperature =
-  | 'frio'
-  | 'morno'
-  | 'quente';
+export type LeadTemperature = 'frio' | 'morno' | 'quente';
 
-export type PriorityLevel =
-  | 'baixo'
-  | 'medio'
-  | 'alto'
-  | 'critico';
+export type PriorityLevel = 'baixo' | 'medio' | 'alto' | 'critico';
 
-export type LeadAnalysisStatus =
-  | 'all'
-  | 'analisado'
-  | 'nao_analisado';
+export type LeadAnalysisStatus = 'all' | 'analisado' | 'nao_analisado';
 
 export type LeadOrigin =
   | 'indicacao'
@@ -43,11 +33,7 @@ export type LeadPrazo =
   | 'longo'
   | 'nao_definido';
 
-export type OrcamentoStatus =
-  | 'rascunho'
-  | 'enviado'
-  | 'aprovado'
-  | 'recusado';
+export type OrcamentoStatus = 'rascunho' | 'enviado' | 'aprovado' | 'recusado';
 
 export type TransactionType =
   | 'receita'
@@ -55,10 +41,7 @@ export type TransactionType =
   | 'comissao'
   | 'pagamento_funcionario';
 
-export type NotaStatus =
-  | 'pendente'
-  | 'emitida'
-  | 'cancelada';
+export type NotaStatus = 'pendente' | 'emitida' | 'cancelada';
 
 // =========================
 // HISTÓRICO (ARQUITETURA ORIENTADA A EVENTOS)
@@ -102,8 +85,8 @@ export interface Lead {
   endereco?: string;
   servico: string;
 
-  visitaOrcamentoData?: string
-  visitaOrcamentoPeriodo?: "manha" | "almoco" | "tarde"
+  visitaOrcamentoData?: string;
+  visitaOrcamentoPeriodo?: 'manha' | 'almoco' | 'tarde';
 
   status: LeadStatus;
   temperatura: LeadTemperature;
@@ -158,6 +141,8 @@ export interface Orcamento {
   subtotal: number;
   desconto: number;
   total: number;
+
+  multiplicador?: number;
 
   status: OrcamentoStatus;
   observacoes: string;
@@ -300,10 +285,7 @@ export type OperacionalTipo =
   | 'execucao'
   | 'tarefa';
 
-export type OperacionalPrioridade =
-  | 'baixa'
-  | 'media'
-  | 'alta';
+export type OperacionalPrioridade = 'baixa' | 'media' | 'alta';
 
 export type OperacionalStatus =
   | 'pendente'
@@ -337,15 +319,15 @@ export interface OperacionalTask {
 // =========================
 
 export interface Fornecedor {
-  id: string
-  workspaceId: string
+  id: string;
+  workspaceId: string;
 
-  nome: string
-  telefone?: string
-  endereco?: string
-  observacoes?: string
+  nome: string;
+  telefone?: string;
+  endereco?: string;
+  observacoes?: string;
 
-  createdAt?: string
+  createdAt?: string;
 }
 
 // =========================
@@ -353,20 +335,19 @@ export interface Fornecedor {
 // =========================
 
 export interface Material {
-  id: string
-  workspaceId: string
+  id: string;
+  workspaceId: string;
 
-  nome: string
-  categoria?: string
-  unidade?: string
+  nome: string;
+  categoria?: string;
+  unidade?: string;
 
-  quantidade: number
-  estoqueMinimo?: number
+  quantidade: number;
+  estoqueMinimo?: number;
 
-  estoque:number
-  estoqueMinimo:number
+  estoque: number;
 
-  createdAt?: string
+  createdAt?: string;
 }
 
 // =========================
@@ -374,18 +355,18 @@ export interface Material {
 // =========================
 
 export interface CotacaoMaterial {
-  id: string
-  workspaceId: string
+  id: string;
+  workspaceId: string;
 
-  fornecedorId: string
+  fornecedorId: string;
 
-  material: string
-  quantidade: number
+  material: string;
+  quantidade: number;
 
-  valor: number
-  formaPagamento?: string
+  valor: number;
+  formaPagamento?: string;
 
-  observacoes?: string
+  observacoes?: string;
 
-  createdAt?: string
+  createdAt?: string;
 }
