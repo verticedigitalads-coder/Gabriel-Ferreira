@@ -1,3 +1,4 @@
+import type { Lead } from '@/types';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
@@ -34,7 +35,7 @@ const statusColors: Record<OrcamentoStatus, string> = {
 
 export function Orcamentos() {
   const orcamentos = useStore((state) => state.orcamentos);
-  const leads = useStore((state) => state.leads);
+  const leads = useStore((state) => state.leads) as Lead[];
   const deleteOrcamento = useStore((state) => state.deleteOrcamento);
   const addToast = useStore((state) => state.addToast);
 
@@ -275,6 +276,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const [multiplicador, setMultiplicador] = useState(
     orcamento?.multiplicador || 1,
   );
+
   const [validadeEmDias, setValidadeEmDias] = useState(
     orcamento?.validadeEmDias || 15,
   );
@@ -282,12 +284,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
   const subtotal = itens.reduce((sum, item) => sum + item.valorTotal, 0);
 
-  const total =
-    multiplicador > 0
-      ? subtotal * multiplicador - desconto
-      : subtotal - desconto;
+  const total = subtotal * multiplicador - desconto;
 
-  const maoDeObra = total - subtotal;
+  const maoDeObra = subtotal * multiplicador - subtotal;
 
   const activeLeads = leads.filter((l) => l.status !== 'perdido');
 

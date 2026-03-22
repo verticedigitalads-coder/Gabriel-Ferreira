@@ -2,17 +2,29 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { Orcamento } from '@/types';
 
-export const createOrcamentoSlice = (set: any, get: any) => ({
+export const createOrcamentoSlice = (_set: any, get: any) => ({
   orcamentos: [],
 
+  // ================= ADD =================
+
   addOrcamento: async (data: Partial<Orcamento>) => {
-    const { workspaceId, orcamentos } = get();
+    const { workspaceId } = get();
     const now = new Date().toISOString();
+
+    if (!workspaceId) {
+      console.error('❌ workspaceId está null');
+      return;
+    }
+
+    if (!data.leadId) {
+      console.error('❌ leadId está null');
+      return;
+    }
 
     const novoOrcamento = {
       id: uuid(),
       workspace_id: workspaceId,
-      lead_id: data.leadId!,
+      lead_id: data.leadId,
       numero: data.numero || `ORC-${Date.now()}`,
 
       itens: data.itens || [],
@@ -20,7 +32,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       desconto: data.desconto || 0,
       total: data.total || 0,
 
-      multiplicador: data.multiplicador || 1,
+      multiplicador: data.multiplicador ?? 1,
 
       status: data.status || 'rascunho',
       observacoes: data.observacoes || '',
@@ -30,33 +42,34 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       updated_at: now,
     };
 
-    const { error } = await supabase.from('orcamentos').insert([novoOrcamento]);
+    const { error } = await supabase
+      .from('orcamentos')
+      .insert([novoOrcamento]);
 
     if (error) {
-      console.error('Erro ao salvar orçamento:', error);
+      console.error('Erro ao criar orçamento:', error);
       return;
     }
-
-    set({ orcamentos: [...orcamentos, novoOrcamento] });
-
-    return novoOrcamento;
   },
+
+  // ================= DELETE =================
 
   deleteOrcamento: async (id: string) => {
-    const { orcamentos } = get();
+    const { error } = await supabase
+      .from('orcamentos')
+      .delete()
+      .eq('id', id);
 
-    await supabase.from('orcamentos').delete().eq('id', id);
-
-    set({
-      orcamentos: orcamentos.filter((o: Orcamento) => o.id !== id),
-    });
+    if (error) {
+      console.error('Erro ao deletar orçamento:', error);
+    }
   },
 
+  // ================= UPDATE =================
+
   updateOrcamento: async (id: string, data: Partial<Orcamento>) => {
-    const { orcamentos } = get();
     const now = new Date().toISOString();
 
-    // 1. Atualiza no banco
     const { error } = await supabase
       .from('orcamentos')
       .update({
@@ -65,6 +78,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
         subtotal: data.subtotal,
         desconto: data.desconto,
         total: data.total,
+        multiplicador: data.multiplicador,
         status: data.status,
         observacoes: data.observacoes,
         validade_em_dias: data.validadeEmDias,
@@ -74,20 +88,6 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('Erro ao atualizar orçamento:', error);
-      return;
     }
-
-    // 2. Atualiza no estado local (Zustand)
-    set({
-      orcamentos: orcamentos.map((o: Orcamento) =>
-        o.id === id
-          ? {
-              ...o,
-              ...data,
-              updatedAt: now,
-            }
-          : o,
-      ),
-    });
   },
 });

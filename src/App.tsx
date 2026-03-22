@@ -1,8 +1,9 @@
-import Fornecedores from "@/modules/suprimentos/Fornecedores"
-import ComparadorPrecos from "@/modules/suprimentos/ComparadorPrecos"
-import Estoque from "@/modules/suprimentos/Estoque"
-import { supabase } from '@/lib/supabase'
-import { ensureWorkspaceForUser } from '@/lib/supabaseWorkspace'
+import { useRef } from 'react';
+import Fornecedores from '@/modules/suprimentos/Fornecedores';
+import ComparadorPrecos from '@/modules/suprimentos/ComparadorPrecos';
+import Estoque from '@/modules/suprimentos/Estoque';
+import { supabase } from '@/lib/supabase';
+import { ensureWorkspaceForUser } from '@/lib/supabaseWorkspace';
 import { Central } from '@/modules/central/Central';
 import { useEffect, Suspense, lazy, useState } from 'react';
 import { useStore } from '@/store/useStore';
@@ -11,31 +12,41 @@ import { AuthPage } from '@/modules/auth/AuthPage';
 
 // Lazy load modules for code splitting
 const Dashboard = lazy(() =>
-  import('@/modules/dashboard/Dashboard').then(m => ({ default: m.Dashboard }))
+  import('@/modules/dashboard/Dashboard').then((m) => ({
+    default: m.Dashboard,
+  })),
 );
 const LeadsList = lazy(() =>
-  import('@/modules/leads/LeadsList').then(m => ({ default: m.LeadsList }))
+  import('@/modules/leads/LeadsList').then((m) => ({ default: m.LeadsList })),
 );
 const Kanban = lazy(() =>
-  import('@/modules/kanban/Kanban').then(m => ({ default: m.Kanban }))
+  import('@/modules/kanban/Kanban').then((m) => ({ default: m.Kanban })),
 );
 const Orcamentos = lazy(() =>
-  import('@/modules/orcamentos/Orcamentos').then(m => ({ default: m.Orcamentos }))
+  import('@/modules/orcamentos/Orcamentos').then((m) => ({
+    default: m.Orcamentos,
+  })),
 );
 const Financeiro = lazy(() =>
-  import('@/modules/financeiro/Financeiro').then(m => ({ default: m.Financeiro }))
+  import('@/modules/financeiro/Financeiro').then((m) => ({
+    default: m.Financeiro,
+  })),
 );
 const Notas = lazy(() =>
-  import('@/modules/notas/Notas').then(m => ({ default: m.Notas }))
+  import('@/modules/notas/Notas').then((m) => ({ default: m.Notas })),
 );
 const IAAssistente = lazy(() =>
-  import('@/modules/ia/IAAssistente').then(m => ({ default: m.IAAssistente }))
+  import('@/modules/ia/IAAssistente').then((m) => ({
+    default: m.IAAssistente,
+  })),
 );
 const Settings = lazy(() =>
-  import('@/modules/settings/Settings').then(m => ({ default: m.Settings }))
+  import('@/modules/settings/Settings').then((m) => ({ default: m.Settings })),
 );
 const Operacional = lazy(() =>
-  import('@/modules/operacional/Operacional').then(m => ({ default: m.Operacional }))
+  import('@/modules/operacional/Operacional').then((m) => ({
+    default: m.Operacional,
+  })),
 );
 
 function LoadingFallback() {
@@ -50,7 +61,7 @@ function LoadingFallback() {
 }
 
 function ModuleRouter() {
-  const activeModule = useStore(state => state.activeModule);
+  const activeModule = useStore((state) => state.activeModule);
 
   return (
     <Suspense fallback={<LoadingFallback />}>
@@ -73,9 +84,10 @@ function ModuleRouter() {
 }
 
 export function App() {
-  const initialize = useStore(state => state.initialize);
-  const setWorkspaceId = useStore(state => state.setWorkspaceId);
-  const isLoading = useStore(state => state.isLoading);
+  const initialize = useStore((state) => state.initialize);
+  const setWorkspaceId = useStore((state) => state.setWorkspaceId);
+  const isLoading = useStore((state) => state.isLoading);
+  const realtimeStarted = useRef(false);
 
   const [session, setSession] = useState<any>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -90,7 +102,7 @@ export function App() {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
-      }
+      },
     );
 
     return () => {
@@ -98,35 +110,41 @@ export function App() {
     };
   }, []);
 
-// 🚀 Inicializa store apenas se estiver autenticado
-useEffect(() => {
-  const init = async () => {
-    if (!session) return;
+  // 🚀 Inicializa store apenas se estiver autenticado
+  useEffect(() => {
+    const init = async () => {
+      if (!session) return;
 
-    try {
-      const workspaceId = await ensureWorkspaceForUser();
+      // 🔒 Evita iniciar 2x
+      if (realtimeStarted.current) return;
 
-      if (!workspaceId) {
-        console.warn("Usuário sem workspace — fazendo logout");
+      try {
+        const workspaceId = await ensureWorkspaceForUser();
+
+        if (!workspaceId) {
+          console.warn('Usuário sem workspace — fazendo logout');
+          await supabase.auth.signOut();
+          return;
+        }
+
+        setWorkspaceId(workspaceId);
+        await initialize(workspaceId);
+
+        useStore.getState().startRealtime();
+
+        realtimeStarted.current = true; // ✅ trava aqui
+      } catch (error) {
+        console.error('Erro na inicialização:', error);
         await supabase.auth.signOut();
-        return;
       }
+    };
 
-      setWorkspaceId(workspaceId);
-      await initialize(workspaceId);
+    init();
+  }, [session]);
 
-    } catch (error) {
-      console.error("Erro na inicialização:", error);
-      await supabase.auth.signOut();
-    }
-  };
-
-  init();
-}, [session]);
-
-if (!authChecked) {
-  return null;
-}
+  if (!authChecked) {
+    return null;
+  }
 
   // 🔒 Se não estiver logado → Tela de Login
   if (!session) {
@@ -140,7 +158,9 @@ if (!authChecked) {
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
           <div className="text-center">
-            <h1 className="text-xl font-semibold text-gray-900">Vértice Digital</h1>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Vértice Digital
+            </h1>
             <p className="text-sm text-gray-500 mt-1">Carregando dados...</p>
           </div>
         </div>
