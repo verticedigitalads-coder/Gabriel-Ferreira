@@ -187,14 +187,13 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              console.log('🔥 REALTIME LEADS:', payload);
-
               set((state: any) => {
                 const leads = state.leads || [];
 
                 if (payload.eventType === 'INSERT') {
-                  if (leads.find((l: any) => l.id === payload.new.id))
+                  if (leads.find((l: any) => l.id === payload.new.id)) {
                     return state;
+                  }
 
                   return {
                     leads: [payload.new, ...leads],
@@ -220,7 +219,6 @@ export const useStore = create<StoreState>()(
             },
           )
           .subscribe();
-
         // ================= ORÇAMENTOS =================
         supabase
           .channel('realtime-orcamentos')
@@ -233,8 +231,6 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              console.log('🔥 REALTIME ORCAMENTOS:', payload);
-
               const format = (o: any) => ({
                 id: o.id,
                 workspaceId: o.workspace_id,
@@ -256,15 +252,20 @@ export const useStore = create<StoreState>()(
               set((state: any) => {
                 const orcamentos = state.orcamentos || [];
 
+                // ================= INSERT =================
                 if (payload.eventType === 'INSERT') {
-                  if (orcamentos.find((o: any) => o.id === payload.new.id))
-                    return state;
+                  const exists = orcamentos.find(
+                    (o: any) => o.id === payload.new.id,
+                  );
+
+                  if (exists) return state;
 
                   return {
                     orcamentos: [format(payload.new), ...orcamentos],
                   };
                 }
 
+                // ================= UPDATE =================
                 if (payload.eventType === 'UPDATE') {
                   return {
                     orcamentos: orcamentos.map((o: any) =>
@@ -273,6 +274,7 @@ export const useStore = create<StoreState>()(
                   };
                 }
 
+                // ================= DELETE =================
                 if (payload.eventType === 'DELETE') {
                   return {
                     orcamentos: orcamentos.filter(
@@ -287,9 +289,9 @@ export const useStore = create<StoreState>()(
           )
           .subscribe();
 
-        // ================= TASKS =================
+        // ================= OPERACIONAL TASKS =================
         supabase
-          .channel('realtime-tasks')
+          .channel('realtime-operacional')
           .on(
             'postgres_changes',
             {
@@ -299,14 +301,14 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              console.log('🔥 REALTIME TASK:', payload);
-
               set((state: any) => {
                 const tasks = state.operacionalTasks || [];
 
                 if (payload.eventType === 'INSERT') {
-                  if (tasks.find((t: any) => t.id === payload.new.id))
-                    return state;
+                  const exists = tasks.find(
+                    (t: any) => t.id === payload.new.id,
+                  );
+                  if (exists) return state;
 
                   return {
                     operacionalTasks: [payload.new, ...tasks],
@@ -347,34 +349,38 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              console.log('Realtime financeiro:', payload);
+              set((state: any) => {
+                const transactions = state.transactions || [];
 
-              const transactions = get().transactions;
+                if (payload.eventType === 'INSERT') {
+                  const exists = transactions.find(
+                    (t: any) => t.id === payload.new.id,
+                  );
+                  if (exists) return state;
 
-              if (payload.eventType === 'INSERT') {
-                if (transactions.find((t: any) => t.id === payload.new.id))
-                  return;
+                  return {
+                    transactions: [payload.new, ...transactions],
+                  };
+                }
 
-                set({
-                  transactions: [payload.new, ...transactions],
-                });
-              }
+                if (payload.eventType === 'UPDATE') {
+                  return {
+                    transactions: transactions.map((t: any) =>
+                      t.id === payload.new.id ? payload.new : t,
+                    ),
+                  };
+                }
 
-              if (payload.eventType === 'UPDATE') {
-                set({
-                  transactions: transactions.map((t: any) =>
-                    t.id === payload.new.id ? payload.new : t,
-                  ),
-                });
-              }
+                if (payload.eventType === 'DELETE') {
+                  return {
+                    transactions: transactions.filter(
+                      (t: any) => t.id !== payload.old.id,
+                    ),
+                  };
+                }
 
-              if (payload.eventType === 'DELETE') {
-                set({
-                  transactions: transactions.filter(
-                    (t: any) => t.id !== payload.old.id,
-                  ),
-                });
-              }
+                return state;
+              });
             },
           )
           .subscribe();

@@ -1,14 +1,18 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 
-export const createFinanceiroSlice = (_set: any, get: any) => ({
+export const createFinanceiroSlice = (set: any, get: any) => ({
   transactions: [],
 
   // ================= ADD =================
-
   addTransaction: async (data: any) => {
     const { workspaceId } = get();
     const now = new Date().toISOString();
+
+    if (!workspaceId) {
+      console.error('❌ workspaceId não encontrado');
+      return;
+    }
 
     const transaction = {
       id: uuid(),
@@ -32,15 +36,13 @@ export const createFinanceiroSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => {
-      if (!inserted) return state;
-
+    set((state: any) => {
       const exists = state.transactions.some((t: any) => t.id === inserted.id);
 
       if (exists) return state;
 
       return {
-        transactions: [...state.transactions, inserted],
+        transactions: [inserted, ...state.transactions],
       };
     });
 
@@ -48,7 +50,6 @@ export const createFinanceiroSlice = (_set: any, get: any) => ({
   },
 
   // ================= UPDATE =================
-
   updateTransaction: async (id: string, data: any) => {
     const now = new Date().toISOString();
 
@@ -73,14 +74,12 @@ export const createFinanceiroSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => {
-      if (!updated) return state;
-
+    set((state: any) => {
       const exists = state.transactions.some((t: any) => t.id === id);
 
       if (!exists) {
         return {
-          transactions: [...state.transactions, updated],
+          transactions: [updated, ...state.transactions],
         };
       }
 
@@ -95,7 +94,6 @@ export const createFinanceiroSlice = (_set: any, get: any) => ({
   },
 
   // ================= DELETE =================
-
   deleteTransaction: async (id: string) => {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
 
@@ -104,7 +102,7 @@ export const createFinanceiroSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => ({
+    set((state: any) => ({
       transactions: state.transactions.filter((t: any) => t.id !== id),
     }));
   },

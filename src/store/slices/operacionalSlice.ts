@@ -2,16 +2,15 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { OperacionalTask } from '@/types';
 
-export const createOperacionalSlice = (_set: any, get: any) => ({
+export const createOperacionalSlice = (set: any, get: any) => ({
   operacionalTasks: [],
 
   // ================= ADD =================
-
   addOperacionalTask: async (taskData: any) => {
     const { workspaceId } = get();
     const now = new Date().toISOString();
 
-    const task = {
+    const newTask = {
       id: uuid(),
       workspace_id: workspaceId,
       lead_id: taskData.leadId,
@@ -27,7 +26,7 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
 
     const { data, error } = await supabase
       .from('operacional_tasks')
-      .insert([task])
+      .insert([newTask])
       .select()
       .single();
 
@@ -36,15 +35,14 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => {
-      if (!data) return state;
-
+    // ✅ atualização imediata (UX)
+    set((state: any) => {
       const exists = state.operacionalTasks.some((t: any) => t.id === data.id);
 
-      if (exists) return state; // evita duplicação (realtime)
+      if (exists) return state;
 
       return {
-        operacionalTasks: [...state.operacionalTasks, data],
+        operacionalTasks: [data, ...state.operacionalTasks],
       };
     });
 
@@ -52,7 +50,6 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
   },
 
   // ================= DELETE =================
-
   deleteOperacionalTask: async (taskId: string) => {
     const { error } = await supabase
       .from('operacional_tasks')
@@ -64,7 +61,7 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => ({
+    set((state: any) => ({
       operacionalTasks: state.operacionalTasks.filter(
         (t: any) => t.id !== taskId,
       ),
@@ -72,7 +69,6 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
   },
 
   // ================= UPDATE =================
-
   updateOperacionalTask: async (
     taskId: string,
     updates: Partial<OperacionalTask>,
@@ -83,14 +79,13 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
       updated_at: now,
     };
 
-    // 🔒 mapeamento seguro (evita camelCase → snake_case bug)
     if (updates.titulo !== undefined) payload.titulo = updates.titulo;
     if (updates.data !== undefined) payload.data = updates.data;
     if (updates.tipo !== undefined) payload.tipo = updates.tipo;
     if (updates.prioridade !== undefined)
       payload.prioridade = updates.prioridade;
-    if (updates.status !== undefined) payload.status = updates.status;
     if (updates.concluido !== undefined) payload.concluido = updates.concluido;
+    if (updates.status !== undefined) payload.status = updates.status;
 
     const { data, error } = await supabase
       .from('operacional_tasks')
@@ -104,24 +99,11 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => {
-      if (!data) return state;
-
-      const exists = state.operacionalTasks.some((t: any) => t.id === taskId);
-
-      if (!exists) {
-        // fallback (caso ainda não esteja no state)
-        return {
-          operacionalTasks: [...state.operacionalTasks, data],
-        };
-      }
-
-      return {
-        operacionalTasks: state.operacionalTasks.map((t: any) =>
-          t.id === taskId ? data : t,
-        ),
-      };
-    });
+    set((state: any) => ({
+      operacionalTasks: state.operacionalTasks.map((t: any) =>
+        t.id === taskId ? data : t,
+      ),
+    }));
 
     return data;
   },

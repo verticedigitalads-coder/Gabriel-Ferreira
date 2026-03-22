@@ -2,14 +2,23 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { Orcamento } from '@/types';
 
-export const createOrcamentoSlice = (_set: any, get: any) => ({
+export const createOrcamentoSlice = (set: any, get: any) => ({
   orcamentos: [],
 
   // ================= ADD =================
-
   addOrcamento: async (data: Partial<Orcamento>) => {
     const { workspaceId } = get();
     const now = new Date().toISOString();
+
+    if (!workspaceId) {
+      console.error('❌ workspaceId está null');
+      return;
+    }
+
+    if (!data.leadId) {
+      console.error('❌ leadId está null');
+      return;
+    }
 
     const novo = {
       id: uuid(),
@@ -39,15 +48,13 @@ export const createOrcamentoSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => {
-      if (!inserted) return state;
-
+    set((state: any) => {
       const exists = state.orcamentos.some((o: any) => o.id === inserted.id);
 
-      if (exists) return state; // evita duplicação
+      if (exists) return state;
 
       return {
-        orcamentos: [...state.orcamentos, inserted],
+        orcamentos: [inserted, ...state.orcamentos],
       };
     });
 
@@ -55,7 +62,6 @@ export const createOrcamentoSlice = (_set: any, get: any) => ({
   },
 
   // ================= DELETE =================
-
   deleteOrcamento: async (id: string) => {
     const { error } = await supabase.from('orcamentos').delete().eq('id', id);
 
@@ -64,17 +70,15 @@ export const createOrcamentoSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => ({
+    set((state: any) => ({
       orcamentos: state.orcamentos.filter((o: any) => o.id !== id),
     }));
   },
 
   // ================= UPDATE =================
-
   updateOrcamento: async (id: string, data: Partial<Orcamento>) => {
     const now = new Date().toISOString();
 
-    // 🔒 mapeamento seguro (camel → snake)
     const payload: any = {
       updated_at: now,
     };
@@ -103,15 +107,12 @@ export const createOrcamentoSlice = (_set: any, get: any) => ({
       return;
     }
 
-    _set((state: any) => {
-      if (!updated) return state;
-
+    set((state: any) => {
       const exists = state.orcamentos.some((o: any) => o.id === id);
 
       if (!exists) {
-        // fallback (caso ainda não esteja no state)
         return {
-          orcamentos: [...state.orcamentos, updated],
+          orcamentos: [updated, ...state.orcamentos],
         };
       }
 
