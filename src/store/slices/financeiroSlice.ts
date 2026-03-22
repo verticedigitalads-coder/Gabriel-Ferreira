@@ -1,43 +1,111 @@
-import { supabase } from '@/lib/supabase'
-import { v4 as uuid } from 'uuid'
-import type { Transaction } from '@/types'
+import { supabase } from '@/lib/supabase';
+import { v4 as uuid } from 'uuid';
 
-export const createFinanceiroSlice = (set: any, get: any) => ({
-
+export const createFinanceiroSlice = (_set: any, get: any) => ({
   transactions: [],
 
-  addTransaction: async (data: Partial<Transaction>) => {
+  // ================= ADD =================
 
-    const { workspaceId, transactions } = get()
-    const now = new Date().toISOString()
+  addTransaction: async (data: any) => {
+    const { workspaceId } = get();
+    const now = new Date().toISOString();
 
     const transaction = {
       id: uuid(),
       workspace_id: workspaceId,
-      lead_id: data.leadId,
-      tipo: data.tipo || 'receita',
-      descricao: data.descricao || '',
-      valor: data.valor || 0,
-      data: data.data || now,
-      categoria: data.categoria || '',
-      observacoes: data.observacoes || '',
+      descricao: data.descricao,
+      valor: data.valor,
+      tipo: data.tipo, // entrada | saida
+      data: data.data,
       created_at: now,
       updated_at: now,
-    }
+    };
 
-    const { error } = await supabase
+    const { data: inserted, error } = await supabase
       .from('transactions')
       .insert([transaction])
+      .select()
+      .single();
 
     if (error) {
-      console.error("Erro ao salvar transação:", error)
-      return
+      console.error('Erro ao criar transação:', error);
+      return;
     }
 
-    set({
-      transactions: [...transactions, transaction]
-    })
+    _set((state: any) => {
+      if (!inserted) return state;
 
-  }
+      const exists = state.transactions.some((t: any) => t.id === inserted.id);
 
-})
+      if (exists) return state;
+
+      return {
+        transactions: [...state.transactions, inserted],
+      };
+    });
+
+    return inserted;
+  },
+
+  // ================= UPDATE =================
+
+  updateTransaction: async (id: string, data: any) => {
+    const now = new Date().toISOString();
+
+    const payload: any = {
+      updated_at: now,
+    };
+
+    if (data.descricao !== undefined) payload.descricao = data.descricao;
+    if (data.valor !== undefined) payload.valor = data.valor;
+    if (data.tipo !== undefined) payload.tipo = data.tipo;
+    if (data.data !== undefined) payload.data = data.data;
+
+    const { data: updated, error } = await supabase
+      .from('transactions')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar transação:', error);
+      return;
+    }
+
+    _set((state: any) => {
+      if (!updated) return state;
+
+      const exists = state.transactions.some((t: any) => t.id === id);
+
+      if (!exists) {
+        return {
+          transactions: [...state.transactions, updated],
+        };
+      }
+
+      return {
+        transactions: state.transactions.map((t: any) =>
+          t.id === id ? updated : t,
+        ),
+      };
+    });
+
+    return updated;
+  },
+
+  // ================= DELETE =================
+
+  deleteTransaction: async (id: string) => {
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+
+    if (error) {
+      console.error('Erro ao deletar transação:', error);
+      return;
+    }
+
+    _set((state: any) => ({
+      transactions: state.transactions.filter((t: any) => t.id !== id),
+    }));
+  },
+});

@@ -34,8 +34,8 @@ const statusColors: Record<OrcamentoStatus, string> = {
 };
 
 export function Orcamentos() {
-  const orcamentos = useStore((state) => state.orcamentos);
   const leads = useStore((state) => state.leads) as Lead[];
+  const orcamentos = useStore((state) => state.orcamentos);
   const deleteOrcamento = useStore((state) => state.deleteOrcamento);
   const addToast = useStore((state) => state.addToast);
 
@@ -288,7 +288,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
   const maoDeObra = subtotal * multiplicador - subtotal;
 
-  const activeLeads = leads.filter((l) => l.status !== 'perdido');
+  const activeLeads = leads.filter((l: Lead) => l.status !== 'perdido');
 
   const addItem = () => {
     setItens([
@@ -356,7 +356,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
     // Update lead value
     if (leadId && total > 0) {
-      const lead = leads.find((l) => l.id === leadId);
+      const lead = leads.find((l: Lead) => l.id === leadId);
+
       if (lead) {
         await updateLead(leadId, {
           valorOrcado: total,

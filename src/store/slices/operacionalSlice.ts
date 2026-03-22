@@ -5,51 +5,73 @@ import type { OperacionalTask } from '@/types';
 export const createOperacionalSlice = (_set: any, get: any) => ({
   operacionalTasks: [],
 
+  // ================= ADD =================
+
   addOperacionalTask: async (taskData: any) => {
-    console.log('ADD OPERACIONAL TASK CHAMADO:', taskData);
-
     const { workspaceId } = get();
-
     const now = new Date().toISOString();
 
     const task = {
-      ...taskData,
       id: uuid(),
-      workspaceId,
+      workspace_id: workspaceId,
+      lead_id: taskData.leadId,
+      titulo: taskData.titulo,
+      data: taskData.data,
+      tipo: taskData.tipo,
+      prioridade: taskData.prioridade,
+      status: 'pendente',
       concluido: false,
-      createdAt: now,
-      updatedAt: now,
+      created_at: now,
+      updated_at: now,
     };
 
     const { data, error } = await supabase
       .from('operacional_tasks')
-      .insert([
-        {
-          id: task.id,
-          workspace_id: workspaceId,
-          lead_id: task.leadId,
-          titulo: task.titulo,
-          data: task.data,
-          tipo: task.tipo,
-          prioridade: task.prioridade,
-          status: 'pendente',
-          concluido: false,
-          created_at: now,
-          updated_at: now,
-        },
-      ])
-      .select();
+      .insert([task])
+      .select()
+      .single();
 
     if (error) {
-      console.error('ERRO AO CRIAR TAREFA OPERACIONAL:', error);
-    } else {
-      console.log('TAREFA CRIADA:', data);
+      console.error('ERRO AO CRIAR TAREFA:', error);
+      return;
     }
+
+    _set((state: any) => {
+      if (!data) return state;
+
+      const exists = state.operacionalTasks.some((t: any) => t.id === data.id);
+
+      if (exists) return state; // evita duplicação (realtime)
+
+      return {
+        operacionalTasks: [...state.operacionalTasks, data],
+      };
+    });
+
+    return data;
   },
 
+  // ================= DELETE =================
+
   deleteOperacionalTask: async (taskId: string) => {
-    await supabase.from('operacional_tasks').delete().eq('id', taskId);
+    const { error } = await supabase
+      .from('operacional_tasks')
+      .delete()
+      .eq('id', taskId);
+
+    if (error) {
+      console.error('Erro ao deletar tarefa:', error);
+      return;
+    }
+
+    _set((state: any) => ({
+      operacionalTasks: state.operacionalTasks.filter(
+        (t: any) => t.id !== taskId,
+      ),
+    }));
   },
+
+  // ================= UPDATE =================
 
   updateOperacionalTask: async (
     taskId: string,
@@ -61,22 +83,46 @@ export const createOperacionalSlice = (_set: any, get: any) => ({
       updated_at: now,
     };
 
+    // 🔒 mapeamento seguro (evita camelCase → snake_case bug)
     if (updates.titulo !== undefined) payload.titulo = updates.titulo;
     if (updates.data !== undefined) payload.data = updates.data;
     if (updates.tipo !== undefined) payload.tipo = updates.tipo;
     if (updates.prioridade !== undefined)
       payload.prioridade = updates.prioridade;
-    if (updates.concluido !== undefined) payload.concluido = updates.concluido;
     if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.concluido !== undefined) payload.concluido = updates.concluido;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('operacional_tasks')
       .update(payload)
-      .eq('id', taskId);
+      .eq('id', taskId)
+      .select()
+      .single();
 
     if (error) {
       console.error('Erro ao atualizar tarefa:', error);
       return;
     }
+
+    _set((state: any) => {
+      if (!data) return state;
+
+      const exists = state.operacionalTasks.some((t: any) => t.id === taskId);
+
+      if (!exists) {
+        // fallback (caso ainda não esteja no state)
+        return {
+          operacionalTasks: [...state.operacionalTasks, data],
+        };
+      }
+
+      return {
+        operacionalTasks: state.operacionalTasks.map((t: any) =>
+          t.id === taskId ? data : t,
+        ),
+      };
+    });
+
+    return data;
   },
 });

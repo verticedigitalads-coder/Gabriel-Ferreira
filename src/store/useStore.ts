@@ -15,6 +15,7 @@ import { createCotacaoMaterialSlice } from './slices/cotacaoMaterialSlice';
 import { createMaterialSlice } from './slices/materialSlice';
 import { createConsumoMaterialSlice } from './slices/consumoMaterialSlice';
 import { createFormSlice } from './slices/formSlice';
+let realtimeStarted = false;
 
 type StoreState = {
   startRealtime: () => void;
@@ -31,6 +32,11 @@ type StoreState = {
   deleteOrcamento: (id: string) => Promise<void>;
 
   transactions: any[];
+
+  addTransaction: (data: any) => Promise<any>;
+  updateTransaction: (id: string, data: any) => Promise<any>;
+  deleteTransaction: (id: string) => Promise<void>;
+
   notas: any[];
   operacionalTasks: any[];
 
@@ -96,19 +102,32 @@ export const useStore = create<StoreState>()(
             return;
           }
 
-          const [leadsRes, orcamentosRes] = await Promise.all([
-            supabase
-              .from('leads')
-              .select('*')
-              .eq('workspace_id', workspaceId)
-              .order('created_at', { ascending: false }),
+          const [leadsRes, orcamentosRes, tasksRes, transactionsRes] =
+            await Promise.all([
+              supabase
+                .from('leads')
+                .select('*')
+                .eq('workspace_id', workspaceId)
+                .order('created_at', { ascending: false }),
 
-            supabase
-              .from('orcamentos')
-              .select('*')
-              .eq('workspace_id', workspaceId)
-              .order('created_at', { ascending: false }),
-          ]);
+              supabase
+                .from('orcamentos')
+                .select('*')
+                .eq('workspace_id', workspaceId)
+                .order('created_at', { ascending: false }),
+
+              supabase
+                .from('operacional_tasks')
+                .select('*')
+                .eq('workspace_id', workspaceId)
+                .order('created_at', { ascending: false }),
+
+              supabase
+                .from('transactions')
+                .select('*')
+                .eq('workspace_id', workspaceId)
+                .order('created_at', { ascending: false }),
+            ]);
 
           const formattedOrcamentos = (orcamentosRes.data || []).map(
             (o: any) => ({
@@ -134,6 +153,8 @@ export const useStore = create<StoreState>()(
             workspaceId,
             leads: leadsRes.data || [],
             orcamentos: formattedOrcamentos,
+            operacionalTasks: tasksRes.data || [],
+            transactions: transactionsRes.data || [],
             isLoading: false,
           });
         } catch (error) {
@@ -145,9 +166,12 @@ export const useStore = create<StoreState>()(
       // ================= REALTIME =================
 
       startRealtime: () => {
-        const workspaceId = get().workspaceId;
+        if (realtimeStarted) return;
 
+        const workspaceId = get().workspaceId;
         if (!workspaceId) return;
+
+        realtimeStarted = true;
 
         console.log('🔌 Realtime conectado');
 
@@ -163,26 +187,36 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              const leads = get().leads;
+              console.log('🔥 REALTIME LEADS:', payload);
 
-              if (payload.eventType === 'INSERT') {
-                if (leads.find((l) => l.id === payload.new.id)) return;
-                set({ leads: [payload.new, ...leads] });
-              }
+              set((state: any) => {
+                const leads = state.leads || [];
 
-              if (payload.eventType === 'UPDATE') {
-                set({
-                  leads: leads.map((l) =>
-                    l.id === payload.new.id ? payload.new : l,
-                  ),
-                });
-              }
+                if (payload.eventType === 'INSERT') {
+                  if (leads.find((l: any) => l.id === payload.new.id))
+                    return state;
 
-              if (payload.eventType === 'DELETE') {
-                set({
-                  leads: leads.filter((l) => l.id !== payload.old.id),
-                });
-              }
+                  return {
+                    leads: [payload.new, ...leads],
+                  };
+                }
+
+                if (payload.eventType === 'UPDATE') {
+                  return {
+                    leads: leads.map((l: any) =>
+                      l.id === payload.new.id ? payload.new : l,
+                    ),
+                  };
+                }
+
+                if (payload.eventType === 'DELETE') {
+                  return {
+                    leads: leads.filter((l: any) => l.id !== payload.old.id),
+                  };
+                }
+
+                return state;
+              });
             },
           )
           .subscribe();
@@ -199,7 +233,7 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              const orcamentos = get().orcamentos;
+              console.log('🔥 REALTIME ORCAMENTOS:', payload);
 
               const format = (o: any) => ({
                 id: o.id,
@@ -219,31 +253,43 @@ export const useStore = create<StoreState>()(
                 updatedAt: o.updated_at,
               });
 
-              if (payload.eventType === 'INSERT') {
-                if (orcamentos.find((o) => o.id === payload.new.id)) return;
-                set({ orcamentos: [format(payload.new), ...orcamentos] });
-              }
+              set((state: any) => {
+                const orcamentos = state.orcamentos || [];
 
-              if (payload.eventType === 'UPDATE') {
-                set({
-                  orcamentos: orcamentos.map((o) =>
-                    o.id === payload.new.id ? format(payload.new) : o,
-                  ),
-                });
-              }
+                if (payload.eventType === 'INSERT') {
+                  if (orcamentos.find((o: any) => o.id === payload.new.id))
+                    return state;
 
-              if (payload.eventType === 'DELETE') {
-                set({
-                  orcamentos: orcamentos.filter((o) => o.id !== payload.old.id),
-                });
-              }
+                  return {
+                    orcamentos: [format(payload.new), ...orcamentos],
+                  };
+                }
+
+                if (payload.eventType === 'UPDATE') {
+                  return {
+                    orcamentos: orcamentos.map((o: any) =>
+                      o.id === payload.new.id ? format(payload.new) : o,
+                    ),
+                  };
+                }
+
+                if (payload.eventType === 'DELETE') {
+                  return {
+                    orcamentos: orcamentos.filter(
+                      (o: any) => o.id !== payload.old.id,
+                    ),
+                  };
+                }
+
+                return state;
+              });
             },
           )
           .subscribe();
 
-        // ================= OPERACIONAL TASKS =================
+        // ================= TASKS =================
         supabase
-          .channel('realtime-operacional')
+          .channel('realtime-tasks')
           .on(
             'postgres_changes',
             {
@@ -253,33 +299,38 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              console.log('Realtime tarefas:', payload);
+              console.log('🔥 REALTIME TASK:', payload);
 
-              const tasks = get().operacionalTasks;
+              set((state: any) => {
+                const tasks = state.operacionalTasks || [];
 
-              if (payload.eventType === 'INSERT') {
-                if (tasks.find((t) => t.id === payload.new.id)) return;
+                if (payload.eventType === 'INSERT') {
+                  if (tasks.find((t: any) => t.id === payload.new.id))
+                    return state;
 
-                set({
-                  operacionalTasks: [payload.new, ...tasks],
-                });
-              }
+                  return {
+                    operacionalTasks: [payload.new, ...tasks],
+                  };
+                }
 
-              if (payload.eventType === 'UPDATE') {
-                set({
-                  operacionalTasks: tasks.map((t) =>
-                    t.id === payload.new.id ? payload.new : t,
-                  ),
-                });
-              }
+                if (payload.eventType === 'UPDATE') {
+                  return {
+                    operacionalTasks: tasks.map((t: any) =>
+                      t.id === payload.new.id ? payload.new : t,
+                    ),
+                  };
+                }
 
-              if (payload.eventType === 'DELETE') {
-                set({
-                  operacionalTasks: tasks.filter(
-                    (t) => t.id !== payload.old.id,
-                  ),
-                });
-              }
+                if (payload.eventType === 'DELETE') {
+                  return {
+                    operacionalTasks: tasks.filter(
+                      (t: any) => t.id !== payload.old.id,
+                    ),
+                  };
+                }
+
+                return state;
+              });
             },
           )
           .subscribe();
