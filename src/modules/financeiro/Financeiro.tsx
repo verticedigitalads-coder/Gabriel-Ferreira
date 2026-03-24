@@ -1,3 +1,4 @@
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
@@ -53,6 +54,9 @@ export function Financeiro() {
   // 🔥 NOVO
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
   const [selectedMonth, setSelectedMonth] = useState(() =>
     format(new Date(), 'yyyy-MM'),
@@ -113,10 +117,9 @@ export function Financeiro() {
     };
   }, [monthTransactions]);
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta transação?')) {
-      await deleteTransaction(id);
-    }
+  const handleDelete = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setConfirmOpen(true);
   };
 
   const getLeadName = (leadId?: string) => {
@@ -230,7 +233,7 @@ export function Financeiro() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => handleDelete(t)}
                   >
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
@@ -261,6 +264,24 @@ export function Financeiro() {
           onClose={() => setShowEditModal(false)}
         />
       </Modal>
+
+      {/* 🔥 CONFIRM DELETE */}
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        description="Tem certeza que deseja excluir esta transação?"
+        onCancel={() => {
+          setConfirmOpen(false);
+          setSelectedTransaction(null);
+        }}
+        onConfirm={async () => {
+          if (selectedTransaction) {
+            await deleteTransaction(selectedTransaction.id);
+          }
+
+          setConfirmOpen(false);
+          setSelectedTransaction(null);
+        }}
+      />
     </div>
   );
 }
@@ -275,8 +296,13 @@ function TransactionForm({ onClose, initialData }: any) {
   const [tipo, setTipo] = useState(initialData?.tipo || 'receita');
   const [descricao, setDescricao] = useState(initialData?.descricao || '');
   const [valor, setValor] = useState(initialData?.valor || 0);
+  const normalizeDate = (date: string) => {
+    return date.includes('T') ? date.split('T')[0] : date;
+  };
   const [data, setData] = useState(
-    initialData?.data || format(new Date(), 'yyyy-MM-dd'),
+    initialData?.data
+      ? normalizeDate(initialData.data)
+      : format(new Date(), 'yyyy-MM-dd'),
   );
   const [categoria, setCategoria] = useState(
     initialData?.categoria || 'Serviços',

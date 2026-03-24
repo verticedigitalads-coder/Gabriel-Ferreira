@@ -14,6 +14,49 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (!inserted) return;
 
+    const { addOperacionalTask } = get();
+
+    // 🔥 NORMALIZAÇÃO (evita null da IA)
+    const nome = inserted.nome || 'Cliente';
+    const temperatura = inserted.temperatura || 'frio';
+
+    const hoje = new Date().toISOString().split('T')[0];
+
+    // ================= AUTOMAÇÃO =================
+
+    // 🔥 LEAD QUENTE → CRIAR TAREFA DE ORÇAMENTO
+    if (temperatura === 'quente') {
+      await addOperacionalTask({
+        titulo: `Criar orçamento - ${nome}`,
+        data: hoje,
+        tipo: 'orcamento',
+        prioridade: 'alta',
+        leadId: inserted.id,
+      });
+    }
+
+    // 🔥 LEAD MORNO → FOLLOW-UP
+    if (temperatura === 'morno') {
+      await addOperacionalTask({
+        titulo: `Entrar em contato - ${nome}`,
+        data: hoje,
+        tipo: 'followup',
+        prioridade: 'media',
+        leadId: inserted.id,
+      });
+    }
+
+    // 🔥 LEAD FRIO → NUTRIÇÃO
+    if (temperatura === 'frio') {
+      await addOperacionalTask({
+        titulo: `Reativar lead - ${nome}`,
+        data: hoje,
+        tipo: 'followup',
+        prioridade: 'baixa',
+        leadId: inserted.id,
+      });
+    }
+
     return inserted;
   },
 

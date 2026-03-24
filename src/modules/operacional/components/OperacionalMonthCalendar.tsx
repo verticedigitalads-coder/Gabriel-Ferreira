@@ -17,11 +17,13 @@ const prioridadeColor: Record<string, string> = {
   media: 'bg-yellow-100 border-yellow-400 text-yellow-800',
   alta: 'bg-red-100 border-red-400 text-red-800',
 };
+type Props = {
+  onDelete: (task: any) => void;
+  onEdit: (task: any) => void;
+};
 
-function OperacionalMonthCalendar() {
-  const tasks = useStore(state => state.operacionalTasks);
-  const updateTask = useStore(state => state.updateOperacionalTask);
-  const deleteTask = useStore(state => state.deleteOperacionalTask);
+function OperacionalMonthCalendar({ onDelete, onEdit }: Props) {
+  const tasks = useStore((state) => state.operacionalTasks);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const hoje = format(new Date(), 'yyyy-MM-dd');
@@ -40,20 +42,7 @@ function OperacionalMonthCalendar() {
   }
 
   const getTasksForDay = (dateString: string) =>
-    tasks.filter(t => t.data === dateString);
-
-  const handleEdit = (task: any) => {
-    const novoTitulo = prompt('Editar título:', task.titulo);
-    if (novoTitulo && novoTitulo.trim() !== '') {
-      updateTask(task.id, { titulo: novoTitulo });
-    }
-  };
-
-  const handleDelete = (task: any) => {
-    if (confirm('Excluir tarefa?')) {
-      deleteTask(task.id);
-    }
-  };
+    tasks.filter((t) => t.data === dateString);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -78,7 +67,7 @@ function OperacionalMonthCalendar() {
       </div>
 
       <div className="grid grid-cols-7 gap-2 text-xs font-semibold text-center mb-2">
-        {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => (
+        {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>
@@ -88,8 +77,7 @@ function OperacionalMonthCalendar() {
           const dateString = format(date, 'yyyy-MM-dd');
           const dayTasks = getTasksForDay(dateString);
           const isToday = dateString === hoje;
-          const isCurrentMonth =
-            date.getMonth() === currentMonth.getMonth();
+          const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
 
           return (
             <div
@@ -105,7 +93,7 @@ function OperacionalMonthCalendar() {
               </div>
 
               <div className="space-y-1 overflow-hidden">
-                {dayTasks.map(task => (
+                {dayTasks.map((task) => (
                   <div
                     key={task.id}
                     className={`
@@ -119,14 +107,14 @@ function OperacionalMonthCalendar() {
 
                       <div className="flex gap-1">
                         <button
-                          onClick={() => handleEdit(task)}
+                          onClick={() => onEdit(task)}
                           className="text-blue-600 text-[10px]"
                         >
                           ✏
                         </button>
 
                         <button
-                          onClick={() => handleDelete(task)}
+                          onClick={() => onDelete(task)}
                           className="text-red-600 text-[10px]"
                         >
                           🗑

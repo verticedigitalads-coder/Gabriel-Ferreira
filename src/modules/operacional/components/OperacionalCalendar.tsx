@@ -26,10 +26,9 @@ const statusColor: Record<string, string> = {
 
 type FilterMode = 'all' | 'critical' | 'urgent' | 'delayed';
 
-function DraggableTask({ task }: any) {
-  const updateTask = useStore(state => state.updateOperacionalTask);
-  const deleteTask = useStore(state => state.deleteOperacionalTask);
-  const leads = useStore(state => state.leads);
+function DraggableTask({ task, onDelete, onEdit }: any) {
+  const updateTask = useStore((state: any) => state.updateOperacionalTask);
+  const leads = useStore((state) => state.leads);
 
   const lead = task.leadId
     ? leads.find((l: any) => l.id === task.leadId)
@@ -52,17 +51,12 @@ function DraggableTask({ task }: any) {
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const novoTitulo = prompt('Editar título:', task.titulo);
-    if (novoTitulo && novoTitulo.trim() !== '') {
-      updateTask(task.id, { titulo: novoTitulo });
-    }
+    onEdit(task); // 🔥 chama o modal do Operacional
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Excluir tarefa?')) {
-      deleteTask(task.id);
-    }
+    onDelete(task);
   };
 
   return (
@@ -91,15 +85,15 @@ function DraggableTask({ task }: any) {
         >
           <p className="font-semibold">{task.titulo}</p>
 
-<p className="text-[10px] opacity-70 capitalize">
-  Status: {task.status?.replace("_", " ")}
-</p>
+          <p className="text-[10px] opacity-70 capitalize">
+            Status: {task.status?.replace('_', ' ')}
+          </p>
 
-{lead && (
-  <p className="text-[10px] opacity-70">
-    {lead.nome} • {lead.status}
-  </p>
-)}
+          {lead && (
+            <p className="text-[10px] opacity-70">
+              {lead.nome} • {lead.status}
+            </p>
+          )}
           {isCritical && (
             <span className="text-[9px] bg-red-700 text-white px-1 rounded">
               CRÍTICA
@@ -108,17 +102,11 @@ function DraggableTask({ task }: any) {
         </div>
 
         <div className="flex gap-2">
-          <button
-            onClick={handleEdit}
-            className="text-blue-600 text-xs"
-          >
+          <button onClick={handleEdit} className="text-blue-600 text-xs">
             ✏
           </button>
 
-          <button
-            onClick={handleDelete}
-            className="text-red-600 text-xs"
-          >
+          <button onClick={handleDelete} className="text-red-600 text-xs">
             🗑
           </button>
         </div>
@@ -127,21 +115,17 @@ function DraggableTask({ task }: any) {
   );
 }
 
-function DroppableDay({ day, tasks }: any) {
+function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
   const { setNodeRef } = useDroppable({
     id: day.dateString,
   });
 
-  const leads = useStore(state => state.leads);
+  const leads = useStore((state) => state.leads);
 
   const sortedTasks = [...tasks].sort((a, b) => {
-    const leadA = a.leadId
-      ? leads.find((l: any) => l.id === a.leadId)
-      : null;
+    const leadA = a.leadId ? leads.find((l: any) => l.id === a.leadId) : null;
 
-    const leadB = b.leadId
-      ? leads.find((l: any) => l.id === b.leadId)
-      : null;
+    const leadB = b.leadId ? leads.find((l: any) => l.id === b.leadId) : null;
 
     const scoreA = calculateOperationalUrgency({
       ...a,
@@ -162,36 +146,41 @@ function DroppableDay({ day, tasks }: any) {
       className="rounded-xl p-4 border min-h-[160px] bg-white border-gray-200"
     >
       <div className="mb-3">
-        <p className="text-sm font-semibold capitalize">
-          {day.label}
-        </p>
+        <p className="text-sm font-semibold capitalize">{day.label}</p>
         <p className="text-xs text-gray-400">
-          {format(day.date, "EEEE, dd/MM/yyyy", { locale: ptBR })
-}
+          {format(day.date, 'EEEE, dd/MM/yyyy', { locale: ptBR })}
         </p>
       </div>
 
       <div className="space-y-3">
         {sortedTasks.map((task: any) => (
-          <DraggableTask key={task.id} task={task} />
+          <DraggableTask
+            key={task.id}
+            task={task}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function OperacionalCalendar() {
-  const tasks = useStore(state => state.operacionalTasks);
-  const leads = useStore(state => state.leads);
+type Props = {
+  onDelete: (task: any) => void;
+  onEdit: (task: any) => void;
+};
+
+function OperacionalCalendar({ onDelete, onEdit }: Props) {
+  const tasks = useStore((state) => state.operacionalTasks);
+  const leads = useStore((state) => state.leads);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
 
   const hoje = format(new Date(), 'yyyy-MM-dd');
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
-      const lead = task.leadId
-        ? leads.find(l => l.id === task.leadId)
-        : null;
+    return tasks.filter((task) => {
+      const lead = task.leadId ? leads.find((l) => l.id === task.leadId) : null;
 
       const score = calculateOperationalUrgency({
         ...task,
@@ -200,8 +189,7 @@ function OperacionalCalendar() {
 
       if (filterMode === 'critical') return score >= 60;
       if (filterMode === 'urgent') return score >= 30;
-      if (filterMode === 'delayed')
-        return task.data < hoje && !task.concluido;
+      if (filterMode === 'delayed') return task.data < hoje && !task.concluido;
 
       return true;
     });
@@ -221,58 +209,67 @@ function OperacionalCalendar() {
   }, []);
 
   const getTasksForDay = (dateString: string) =>
-  filteredTasks.filter(t =>
-    t.data?.substring(0, 10) === dateString
-  );
+    filteredTasks.filter((t) => t.data?.substring(0, 10) === dateString);
 
   const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  const { active, over } = event;
+    if (!over) return;
 
-  if (!over) return;
+    const updateTask = (useStore.getState() as any).updateOperacionalTask;
 
-  const updateTask = useStore.getState().updateOperacionalTask
+    const taskId = active.id as string;
+    const newDate = over.id as string;
 
-  const taskId = active.id as string
-  const newDate = over.id as string
+    const task = useStore
+      .getState()
+      .operacionalTasks.find((t: any) => t.id === taskId);
 
-  const task = useStore.getState().operacionalTasks.find(
-    (t: any) => t.id === taskId
-  )
+    if (!task) return;
 
-  if (!task) return
-
-  if (task.data !== newDate) {
-    updateTask(taskId, { data: newDate })
-  }
-
-}
+    if (task.data !== newDate) {
+      updateTask(taskId, { data: newDate });
+    }
+  };
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-
         <div className="flex gap-2 mb-6 text-sm flex-wrap">
-          <button onClick={() => setFilterMode('all')} className="px-3 py-1 bg-gray-200 rounded">
+          <button
+            onClick={() => setFilterMode('all')}
+            className="px-3 py-1 bg-gray-200 rounded"
+          >
             Todas
           </button>
-          <button onClick={() => setFilterMode('critical')} className="px-3 py-1 bg-red-200 rounded">
+          <button
+            onClick={() => setFilterMode('critical')}
+            className="px-3 py-1 bg-red-200 rounded"
+          >
             Críticas
           </button>
-          <button onClick={() => setFilterMode('urgent')} className="px-3 py-1 bg-yellow-200 rounded">
+          <button
+            onClick={() => setFilterMode('urgent')}
+            className="px-3 py-1 bg-yellow-200 rounded"
+          >
             Urgentes
           </button>
-          <button onClick={() => setFilterMode('delayed')} className="px-3 py-1 bg-gray-300 rounded">
+          <button
+            onClick={() => setFilterMode('delayed')}
+            className="px-3 py-1 bg-gray-300 rounded"
+          >
             Atrasadas
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-7 gap-5">
-          {weekDays.map(day => (
+          {weekDays.map((day) => (
             <DroppableDay
               key={day.dateString}
               day={day}
               tasks={getTasksForDay(day.dateString)}
+              onDelete={onDelete}
+              onEdit={onEdit}
             />
           ))}
         </div>

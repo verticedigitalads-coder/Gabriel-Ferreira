@@ -166,14 +166,17 @@ export const useStore = create<StoreState>()(
       // ================= REALTIME =================
 
       startRealtime: () => {
-        if (realtimeStarted) return;
+        if (realtimeStarted) {
+          console.log('⛔ Realtime já iniciado');
+          return;
+        }
 
         const workspaceId = get().workspaceId;
         if (!workspaceId) return;
 
         realtimeStarted = true;
 
-        console.log('🔌 Realtime conectado');
+        console.log('🚀 Iniciando realtime...');
 
         // ================= LEADS =================
         supabase
@@ -219,6 +222,7 @@ export const useStore = create<StoreState>()(
             },
           )
           .subscribe();
+
         // ================= ORÇAMENTOS =================
         supabase
           .channel('realtime-orcamentos')
@@ -349,9 +353,27 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
+              console.log('🔥 TRANSACTION REALTIME:', payload);
+
+              // 🔥 FUNÇÃO DE FORMATAÇÃO (snake → camel)
+              const format = (t: any) => ({
+                id: t.id,
+                workspaceId: t.workspace_id,
+                leadId: t.lead_id,
+                tipo: t.tipo,
+                descricao: t.descricao,
+                valor: t.valor,
+                data: t.data,
+                categoria: t.categoria,
+                observacoes: t.observacoes,
+                createdAt: t.created_at,
+                updatedAt: t.updated_at,
+              });
+
               set((state: any) => {
                 const transactions = state.transactions || [];
 
+                // ================= INSERT =================
                 if (payload.eventType === 'INSERT') {
                   const exists = transactions.find(
                     (t: any) => t.id === payload.new.id,
@@ -359,18 +381,20 @@ export const useStore = create<StoreState>()(
                   if (exists) return state;
 
                   return {
-                    transactions: [payload.new, ...transactions],
+                    transactions: [format(payload.new), ...transactions],
                   };
                 }
 
+                // ================= UPDATE =================
                 if (payload.eventType === 'UPDATE') {
                   return {
                     transactions: transactions.map((t: any) =>
-                      t.id === payload.new.id ? payload.new : t,
+                      t.id === payload.new.id ? format(payload.new) : t,
                     ),
                   };
                 }
 
+                // ================= DELETE =================
                 if (payload.eventType === 'DELETE') {
                   return {
                     transactions: transactions.filter(
@@ -383,7 +407,9 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe();
+          .subscribe((status) => {
+            console.log('📡 TRANSACTION STATUS:', status);
+          });
       },
 
       // ================= WORKSPACE =================
