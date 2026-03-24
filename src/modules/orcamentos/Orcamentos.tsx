@@ -4,10 +4,12 @@ import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Input, TextArea, Select } from '@/components/ui/Input';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { v4 as uuid } from 'uuid';
+import { calcularOrcamento } from '@/domain/orcamento/calcularOrcamento';
 import {
   Plus,
   FileText,
@@ -38,6 +40,8 @@ export function Orcamentos() {
   const orcamentos = useStore((state) => state.orcamentos);
   const deleteOrcamento = useStore((state) => state.deleteOrcamento);
   const addToast = useStore((state) => state.addToast);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [orcToDelete, setOrcToDelete] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [editingOrcamento, setEditingOrcamento] = useState<Orcamento | null>(
@@ -73,9 +77,18 @@ export function Orcamentos() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este orçamento?')) return;
-    await deleteOrcamento(id);
+  const handleDelete = (id: string) => {
+    setOrcToDelete(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!orcToDelete) return;
+
+    await deleteOrcamento(orcToDelete);
+
+    setConfirmOpen(false);
+    setOrcToDelete(null);
   };
 
   const generatePDF = async (orc: Orcamento) => {
@@ -152,6 +165,13 @@ export function Orcamentos() {
             Novo Orçamento
           </Button>
         </div>
+
+        <ConfirmDialog
+          isOpen={confirmOpen}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmOpen(false)}
+          description="Tem certeza que deseja excluir este orçamento?"
+        />
       </div>
 
       {/* List */}
@@ -282,11 +302,11 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   );
   const [observacoes, setObservacoes] = useState(orcamento?.observacoes || '');
 
-  const subtotal = itens.reduce((sum, item) => sum + item.valorTotal, 0);
-
-  const total = subtotal * multiplicador - desconto;
-
-  const maoDeObra = subtotal * multiplicador - subtotal;
+  const { subtotal, total, maoDeObra } = calcularOrcamento({
+    itens,
+    multiplicador,
+    desconto,
+  });
 
   const activeLeads = leads.filter((l: Lead) => l.status !== 'perdido');
 
@@ -323,25 +343,10 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const itensSemMaoDeObra = itens.filter((i) => i.id !== 'mao-de-obra');
-
-    const itensComMaoDeObra = [
-      ...itensSemMaoDeObra,
-      {
-        id: 'mao-de-obra',
-        descricao: 'Serviço / Mão de obra especializada',
-        quantidade: 1,
-        valorUnitario: maoDeObra,
-        valorTotal: maoDeObra,
-      },
-    ];
-
     const data = {
       leadId,
-      itens: itensComMaoDeObra,
-      subtotal,
+      itens, // 🔥 SOMENTE itens reais
       desconto,
-      total,
       multiplicador,
       status,
       observacoes,

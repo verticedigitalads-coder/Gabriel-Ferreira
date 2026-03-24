@@ -9,7 +9,7 @@ import {
   DragEndEvent,
 } from '@dnd-kit/core';
 
-import { calculateOperationalUrgency } from '../utils/calculateOperationalUrgency';
+import { calculateOperationalUrgency } from '@/domain/operacional/calculateOperationalUrgency';
 
 const prioridadeColor: Record<string, string> = {
   baixa: 'bg-blue-50 border-blue-400 text-blue-700',

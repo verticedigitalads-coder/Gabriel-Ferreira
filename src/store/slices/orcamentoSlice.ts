@@ -20,15 +20,27 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       return;
     }
 
+    function limparItens(itens: any[]) {
+      return itens.filter((i) => i.id !== 'mao-de-obra');
+    }
+
     const novo = {
       id: uuid(),
       workspace_id: workspaceId,
       lead_id: data.leadId,
       numero: data.numero || `ORC-${Date.now()}`,
-      itens: data.itens || [],
-      subtotal: data.subtotal || 0,
+      itens:
+        data.itens && data.itens.length > 0
+          ? limparItens(data.itens)
+          : [
+              {
+                id: crypto.randomUUID(),
+                descricao: 'Serviço',
+                quantidade: 1,
+                valorUnitario: 0,
+              },
+            ],
       desconto: data.desconto || 0,
-      total: data.total || 0,
       multiplicador: data.multiplicador ?? 1,
       status: data.status || 'rascunho',
       observacoes: data.observacoes || '',
@@ -83,11 +95,15 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       updated_at: now,
     };
 
+    function limparItens(itens: any[]) {
+      return itens.filter((i) => i.id !== 'mao-de-obra');
+    }
+
     if (data.leadId !== undefined) payload.lead_id = data.leadId;
-    if (data.itens !== undefined) payload.itens = data.itens;
-    if (data.subtotal !== undefined) payload.subtotal = data.subtotal;
+    if (data.itens !== undefined) {
+      payload.itens = limparItens(data.itens);
+    }
     if (data.desconto !== undefined) payload.desconto = data.desconto;
-    if (data.total !== undefined) payload.total = data.total;
     if (data.multiplicador !== undefined)
       payload.multiplicador = data.multiplicador;
     if (data.status !== undefined) payload.status = data.status;
