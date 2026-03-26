@@ -1,36 +1,68 @@
+import { criarOrcamentoFromLead } from '@/services/automation/orcamentoAutomation';
 import { useCallback } from 'react';
 import { useStore } from '@/store/useStore';
 
 export function useLeadActions() {
-  const {
-    registerContact,
-    markAsOrcado,
-    markAsFechado,
-    updateLeadStatus,
-    deleteLead,
-    addToast,
-  } = useStore();
+  const { updateLead, deleteLead, addToast, addOrcamento } = useStore();
 
-  const openWhatsApp = useCallback((telefone: string, nome: string) => {
-    const message = encodeURIComponent(`Olá ${nome}, tudo bem?`);
-    const cleanPhone = telefone.replace(/\D/g, '');
-    const phone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-    addToast({ type: 'info', message: 'Abrindo WhatsApp...' });
-  }, [addToast]);
+  const openWhatsApp = useCallback(
+    (telefone: string, nome: string) => {
+      const message = encodeURIComponent(`Olá ${nome}, tudo bem?`);
+      const cleanPhone = telefone.replace(/\D/g, '');
+      const phone = cleanPhone.startsWith('55')
+        ? cleanPhone
+        : `55${cleanPhone}`;
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+      addToast({ type: 'info', message: 'Abrindo WhatsApp...' });
+    },
+    [addToast],
+  );
 
-  const copyPhone = useCallback((telefone: string) => {
-    navigator.clipboard.writeText(telefone);
-    addToast({ type: 'success', message: 'Telefone copiado!' });
-  }, [addToast]);
+  const copyPhone = useCallback(
+    (telefone: string) => {
+      navigator.clipboard.writeText(telefone);
+      addToast({ type: 'success', message: 'Telefone copiado!' });
+    },
+    [addToast],
+  );
+
+  const handleMarkAsOrcado = useCallback(
+    async (lead: any, valor: number) => {
+      if (!lead) return;
+
+      // 1️⃣ Atualiza com valor
+      await updateLead(lead.id, {
+        status: 'orcado',
+        valorOrcado: lead.valorOrcado, // 👈 precisa vir atualizado do modal
+      });
+
+      // 2️⃣ Cria lead atualizado manualmente
+      const leadAtualizado = {
+        ...lead,
+        valorOrcado: lead.valorOrcado,
+      };
+
+      const orcamento = criarOrcamentoFromLead(leadAtualizado);
+
+      if (!orcamento) return;
+
+      await addOrcamento({
+        ...orcamento,
+        lead_id: lead.id, // 🔥 ESSENCIAL
+      });
+
+      addToast({
+        type: 'success',
+        message: 'Orçamento criado automaticamente',
+      });
+    },
+    [updateLead, addOrcamento, addToast],
+  );
 
   return {
-    registerContact,
-    markAsOrcado,
-    markAsFechado,
-    updateLeadStatus,
     deleteLead,
     openWhatsApp,
     copyPhone,
+    handleMarkAsOrcado, // 🔥 fluxo correto
   };
 }

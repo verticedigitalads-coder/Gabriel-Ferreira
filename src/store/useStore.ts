@@ -25,6 +25,7 @@ type StoreState = {
   leads: any[];
   addLead: (data: any) => Promise<any>;
   updateLead: (id: string, data: any) => Promise<void>;
+  deleteLead: (id: string) => Promise<void>;
 
   orcamentos: any[];
   addOrcamento: (data: any) => Promise<any>;

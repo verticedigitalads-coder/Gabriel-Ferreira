@@ -15,8 +15,8 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       return;
     }
 
-    if (!data.leadId) {
-      console.error('❌ leadId está null');
+    if (!data.leadId || typeof data.leadId !== 'string') {
+      console.error('❌ leadId inválido');
       return;
     }
 
@@ -29,22 +29,12 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       workspace_id: workspaceId,
       lead_id: data.leadId,
       numero: data.numero || `ORC-${Date.now()}`,
-      itens:
-        data.itens && data.itens.length > 0
-          ? limparItens(data.itens)
-          : [
-              {
-                id: crypto.randomUUID(),
-                descricao: 'Serviço',
-                quantidade: 1,
-                valorUnitario: 0,
-              },
-            ],
+      itens: data.itens && data.itens.length > 0 ? limparItens(data.itens) : [],
       desconto: data.desconto || 0,
       multiplicador: data.multiplicador ?? 1,
       status: data.status || 'rascunho',
       observacoes: data.observacoes || '',
-      validade_em_dias: data.validadeEmDias || 7,
+      validade_em_dias: data.validadeEmDias ?? 7,
       created_at: now,
       updated_at: now,
     };

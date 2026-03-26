@@ -10,14 +10,31 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  }),
-);
+/* ==========================================
+🌐 CORS (NGROK + LOCAL)
+========================================== */
+
+app.use(cors());
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use(express.json());
+
+/* ==========================================
+📁 SERVIR IMAGENS (LOGOS / ASSETS)
+========================================== */
+
+app.use('/dist', express.static(path.resolve('./dist')));
 
 /* ==========================================
 🔥 ROTA OPENAI
@@ -27,186 +44,143 @@ app.post('/api/chat', async (req, res) => {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.VITE_OPENAI_API_KEY}`,
       },
-
       body: JSON.stringify(req.body),
     });
 
     const data = await response.json();
-
     res.json(data);
   } catch (error) {
     console.error('Erro OpenAI:', error);
-
     res.status(500).json({ error: 'Erro ao chamar OpenAI' });
   }
 });
 
 /* ==========================================
-🧾 GERAR ORÇAMENTO PDF
+🧾 GERAR ORÇAMENTO PDF (TEMPLATE REAL)
 ========================================== */
 
 app.post('/api/gerar-orcamento', async (req, res) => {
   try {
     const dados = req.body;
 
-    app.use((req, res, next) => {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Headers', '*');
-      res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-      next();
-    });
+    console.log('📥 Dados recebidos:', dados);
 
     /* ==========================================
-    🔥 LER TEMPLATE
+    📄 CARREGAR TEMPLATE HTML
     ========================================== */
 
-    const templatePath = path.resolve('./templates/orcamento.html');
-
-    let html = fs.readFileSync(templatePath, 'utf8');
+    const templatePath = path.resolve('./orcamento.html');
+    let html = fs.readFileSync(templatePath, 'utf-8');
 
     /* ==========================================
-    🔥 CARREGAR IMAGENS
+    💰 FORMATADOR BRL
     ========================================== */
 
-    const logoBase64 = fs.readFileSync('./assets/logo.png', {
-      encoding: 'base64',
-    });
-    const leftBase64 = fs.readFileSync('./assets/logo-left.png', {
-      encoding: 'base64',
-    });
-    const rightBase64 = fs.readFileSync('./assets/logo-right.png', {
-      encoding: 'base64',
-    });
-
-    const logo = `data:image/png;base64,${logoBase64}`;
-    const soldador_left = `data:image/png;base64,${leftBase64}`;
-    const soldador_right = `data:image/png;base64,${rightBase64}`;
-
-    /* ==========================================
-    🔥 FORMATAÇÃO BRL
-    ========================================== */
-
-    const formatBRL = (valor) => {
-      return Number(valor || 0).toLocaleString('pt-BR', {
+    const formatar = (v) =>
+      Number(v || 0).toLocaleString('pt-BR', {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
       });
-    };
 
     /* ==========================================
-    🔥 GERAR ITENS
+    🧱 ITENS
     ========================================== */
 
-    let itensHTML = '';
-
-    if (dados.itens && Array.isArray(dados.itens)) {
-      dados.itens.forEach((item) => {
-        const isMaoDeObra = item.descricao
-          ?.toLowerCase()
-          .includes('mão de obra');
-
-        itensHTML += `
-      <tr class="${isMaoDeObra ? 'mao-de-obra' : ''}">
-        <td>${isMaoDeObra ? '🔧 ' : ''}${item.descricao || ''}</td>
-        <td class="right">${item.quantidade || 0}</td>
-        <td class="right">R$ ${formatBRL(item.valorUnitario)}</td>
-        <td class="right">R$ ${formatBRL(item.valorTotal)}</td>
-      </tr>
-    `;
-      });
-    }
+    const itensHTML = (dados.itens || [])
+      .map(
+        (item) => `
+        <tr>
+          <td>${item.descricao}</td>
+          <td class="right">${item.quantidade}</td>
+          <td class="right">R$ ${formatar(item.valorUnitario)}</td>
+          <td class="right">R$ ${formatar(item.valorTotal)}</td>
+        </tr>
+      `,
+      )
+      .join('');
 
     /* ==========================================
-    🔥 OBSERVAÇÃO PADRÃO
+    🖼️ IMAGENS (SUPORTE LOCAL + URL)
     ========================================== */
 
-    const observacaoPadrao = `
-Prazo estimado conforme alinhado com o cliente.
-Garantia conforme Código de Defesa do Consumidor.
-Não incluso serviços adicionais não descritos neste orçamento.
-`;
+    const logo =
+      dados.logo || 'http://localhost:3001/dist/android-chrome-512x512.png';
 
-    const observacoesFinal =
-      dados.observacoes && dados.observacoes.trim() !== ''
-        ? dados.observacoes
-        : observacaoPadrao;
+    const soldadorLeft =
+      dados.soldador_left ||
+      'http://localhost:3001/dist/android-chrome-192x192.png';
+
+    const soldadorRight =
+      dados.soldador_right ||
+      'http://localhost:3001/dist/android-chrome-192x192.png';
 
     /* ==========================================
-    🔥 SUBSTITUIR PLACEHOLDERS
+    🔁 SUBSTITUIÇÕES TEMPLATE
     ========================================== */
 
-    html = html.replaceAll('{{logo}}', logo);
+    html = html
+      .replace(/{{cliente_nome}}/g, dados.cliente_nome)
+      .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
+      .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
+      .replace(/{{orcamento_id}}/g, dados.id || '---')
+      .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
+      .replace(/{{itens}}/g, itensHTML)
+      .replace(/{{subtotal}}/g, formatar(dados.subtotal))
+      .replace(/{{desconto}}/g, formatar(dados.desconto))
+      .replace(/{{total}}/g, formatar(dados.total))
+      .replace(/{{observacoes}}/g, dados.observacoes || '')
+      .replace(/{{validade}}/g, dados.validade || 7)
 
-    html = html.replace('{{soldador_left}}', soldador_left);
-
-    html = html.replace('{{soldador_right}}', soldador_right);
-
-    html = html.replace(
-      '{{orcamento_id}}',
-      `ORC-${(dados.id || Date.now()).toString().slice(0, 8).toUpperCase()}`,
-    );
-
-    html = html.replace('{{data}}', new Date().toLocaleDateString('pt-BR'));
-
-    html = html.replace('{{cliente_nome}}', dados.cliente_nome || '');
-
-    html = html.replace('{{cliente_telefone}}', dados.cliente_telefone || '');
-
-    html = html.replace('{{cliente_endereco}}', dados.cliente_endereco || '');
-
-    html = html.replace('{{itens}}', itensHTML);
-
-    html = html.replace('{{subtotal}}', formatBRL(dados.subtotal));
-
-    html = html.replace('{{desconto}}', formatBRL(dados.desconto));
-
-    html = html.replace('{{total}}', formatBRL(dados.total));
-
-    html = html.replace('{{observacoes}}', observacoesFinal);
-
-    html = html.replace('{{validade}}', dados.validade || 15);
+      // 🔥 IMAGENS DINÂMICAS
+      .replace(/{{logo}}/g, logo)
+      .replace(/{{soldador_left}}/g, soldadorLeft)
+      .replace(/{{soldador_right}}/g, soldadorRight);
 
     /* ==========================================
-    🔥 GERAR PDF
+    🧠 GERAR PDF (PUPPETEER)
     ========================================== */
 
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
 
     const page = await browser.newPage();
 
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, {
+      waitUntil: 'networkidle0',
+    });
 
-    const fileName = `orcamento-${Date.now()}.pdf`;
-
-    const filePath = path.resolve(`./orcamentos/${fileName}`);
-
-    await page.pdf({
-      path: filePath,
-
+    const pdf = await page.pdf({
       format: 'A4',
-
       printBackground: true,
     });
 
     await browser.close();
 
     /* ==========================================
-    🔥 DOWNLOAD
+    📤 RESPONSE
     ========================================== */
 
-    res.download(filePath, fileName);
-  } catch (error) {
-    console.error('Erro ao gerar orçamento:', error);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
-    res.status(500).json({ error: 'Erro ao gerar PDF' });
+    return res.send(pdf);
+  } catch (error) {
+    console.error('❌ Erro ao gerar PDF:', error);
+
+    return res.status(500).json({
+      error: 'Erro ao gerar PDF',
+    });
   }
 });
 
+/* ==========================================
+🚀 START SERVER
+========================================== */
+
 app.listen(3001, '0.0.0.0', () => {
-  console.log('🔥 Backend rodando em http://192.168.18.11:3001');
+  console.log('🔥 Backend rodando em http://localhost:3001');
 });

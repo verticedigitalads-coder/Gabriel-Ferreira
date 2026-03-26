@@ -126,7 +126,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
   },
   // ================= MARCAR ORÇADO =================
 
-  markAsOrcado: async (id: string, valor: number) => {
+  handleMarkAsOrcado: async (id: string, valor: number) => {
     const now = new Date().toISOString();
 
     const { error } = await supabase
