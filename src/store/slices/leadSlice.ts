@@ -1,3 +1,4 @@
+import { criarOrcamentoFromLead } from '@/services/automation/orcamentoAutomation';
 import { createLead } from '@/services/database/lead.service';
 import { supabase } from '@/lib/supabase';
 import type { Lead, LeadStatus } from '@/types';
@@ -146,6 +147,21 @@ export const createLeadSlice = (_set: any, get: any) => ({
     }
 
     const { addOrcamento } = get();
+
+    const leadFake = {
+      id,
+      valorOrcado: valor,
+      nome: 'Cliente',
+      servico: 'Serviço',
+      workspaceId: get().workspaceId,
+    };
+
+    const orcamentoGerado = criarOrcamentoFromLead(leadFake);
+
+    if (!orcamentoGerado) {
+      console.warn('⚠️ Falha ao gerar orçamento automático');
+      return;
+    }
 
     await addOrcamento({
       leadId: id,

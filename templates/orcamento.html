@@ -1,430 +1,387 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="UTF-8">
-
-<style>
-
-body{
-font-family:"Segoe UI", Arial, sans-serif;
-padding:28px 32px;
-color:#222;
-background:#ffffff;
-position:relative;
-}
-
-.mao-de-obra {
-background: #fff7ed;
-font-weight: 600;
-}
-
-.mao-de-obra td {
-border-bottom: 2px solid #ff6a00;
-}
-
-/* WATERMARK */ 
-.watermark{ 
-position:absolute; 
-top:50%; 
-left:50%; 
-transform:translate(-50%,-50%); 
-opacity:0.06; 
-width:500px; 
-z-index:0; 
-}
- 
-.container{
-position:relative; 
-z-index:1; 
-}
-
-/* HEADER */
-
-.header{
-display:flex;
-align-items:flex-start;
-justify-content:space-between;
-margin-bottom:15px;
-}
-
-.logo-left img{ 
-width:260px;
-margin-top:-10px;
-}
-
-.logo-right img{ 
-width:260px;
-margin-top:-10px;
-}
-
-.company{
-text-align:center;
-flex:1;
-display:flex;
-flex-direction:column;
-align-items:center;
-}
-
-.company-logo img{
-width:120px;
-margin-bottom:6px;
-}
-
-.company-name{
-font-size:24px;
-font-weight:700;
-letter-spacing:2px;
-white-space:nowrap;
-}
-
-.company-sub{
-font-size:13px;
-color:#777;
-}
-
-/* BARRA LARANJA */
-
-.contact-bar{
-background:linear-gradient(90deg,#ff6a00,#ff7f2a);
-color:#fff;
-padding:12px;
-font-size:14px;
-width:100%;
-text-align:center;
-margin-top:15px;
-margin-bottom:25px;
-font-weight:500;
-}
-
-.header-divider{
-height:3px;
-background:#ff6a00;
-margin-bottom:25px;
-}
-
-/* CLIENT + ORÇAMENTO */
-
-.client-section{
-margin-bottom:30px;
-}
-
-.client-row{
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-}
-
-.client-box{
-background:#f8f8f8;
-border-left:6px solid #ff6a00;
-padding:14px 18px;
-border-radius:8px;
-width:65%;
-box-shadow:0 4px 10px rgba(0,0,0,0.05);
-}
-
-.client-title{
-font-size:13px;
-color:#666;
-margin-bottom:5px;
-}
-
-.client-name{
-font-size:18px;
-font-weight:600;
-margin-bottom:6px;
-}
-
-.client-info{
-font-size:14px;
-line-height:1.6;
-}
-
-.orc-info{
-width:30%;
-text-align:right;
-}
-
-.orc-title{
-font-size:20px;
-font-weight:700;
-margin-bottom:4px;
-}
-
-.orc-date{
-font-size:14px;
-color:#666;
-}
-
-/* TABELA */
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-margin-bottom:30px;
-}
-
-th{
-background:#f6f6f6;
-text-align:left;
-padding:12px;
-font-size:12px;
-text-transform:uppercase;
-border-bottom:2px solid #e5e5e5;
-letter-spacing:0.5px;
-color:#444;
-}
-
-td{
-padding:15px;
-font-size:14px;
-border-bottom:1px solid #eee;
-}
-
-.right{
-text-align:right;
-}
-
-tbody tr:nth-child(even){
-background:#fafafa;
-}
-
-/* TOTAL */
-
-.totals{
-width:340px;
-margin-left:auto;
-font-size:14px;
-}
-
-.totals-row{
-display:flex;
-justify-content:space-between;
-margin-bottom:8px;
-}
-
-.total-box{
-margin-top:12px;
-background:linear-gradient(135deg,#ff6a00,#ff7f2a);
-color:white;
-padding:16px;
-border-radius:10px;
-text-align:center;
-box-shadow:0 6px 14px rgba(0,0,0,0.15);
-}
-
-.total-label{
-font-size:14px;
-letter-spacing:1px;
-margin-bottom:6px;
-}
-
-.total-value{
-font-size:26px;
-font-weight:700;
-}
-
-/* OBSERVAÇÕES */
-
-.conditions{
-margin-top:20px;
-background:#fafafa;
-padding:20px;
-border-radius:8px;
-font-size:14px;
-line-height:1.8;
-border:1px solid #eee;
-}
-
-.conditions-title{
-font-weight:600;
-margin-bottom:10px;
-}
-
-/* FOOTER */
-
-.footer{
-margin-top:18px;
-border-top:1px solid #ddd;
-padding-top:20px;
-text-align:center;
-font-size:13px;
-color:#666;
-}
-
-/* PROTEÇÃO PARA NÃO QUEBRAR PÁGINA */
-
-table,
-.client-box,
-.totals,
-.conditions{
-page-break-inside: avoid;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="watermark">
-<img src="{{logo}}" width="100%">
-</div>
-
-<div class="container">
-
-<!-- HEADER -->
-
-<div class="header">
-
-<div class="logo-left">
-<img src="{{soldador_left}}">
-</div>
-
-<div class="company">
-
-<div class="company-logo">
-<img src="{{logo}}">
-</div>
-
-<div class="company-name">
-FL ART METAL
-</div>
-
-<div class="company-sub">
-Especialista em Estruturas Metálicas
-</div>
-
-</div>
-
-<div class="logo-right">
-<img src="{{soldador_right}}">
-</div>
-
-<div class="header-divider"></div>
-
-</div>
-
-<!-- BARRA CONTATO -->
-
-<div class="contact-bar">
-📞 (34) 9 9199-8953 &nbsp;&nbsp; | &nbsp;&nbsp; ✉ flartmetal.uberaba@gmail.com
-</div>
-
-<!-- CLIENTE + ORÇAMENTO -->
-
-<div class="client-section">
-
-<div class="client-row">
-
-<div class="client-box">
-
-<div class="client-title">
-Cliente
-</div>
-
-<div class="client-name">
-{{cliente_nome}}
-</div>
-
-<div class="client-info">
-📞 {{cliente_telefone}}<br>
-📍 {{cliente_endereco}}
-</div>
-
-</div>
-
-<div class="orc-info">
-
-<div class="orc-title">
-ORÇAMENTO Nº {{orcamento_id}}
-</div>
-
-<div class="orc-date">
-Emitido em {{data}}
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- TABELA -->
-
-<table>
-
-<thead>
-<tr>
-<th>Descrição</th>
-<th class="right">Qtd</th>
-<th class="right">Valor Unit</th>
-<th class="right">Total</th>
-</tr>
-</thead>
-
-<tbody>
-{{itens}}
-</tbody>
-
-</table>
-
-<!-- TOTAL -->
-
-<div class="totals">
-
-<div class="totals-row">
-<span>Subtotal</span>
-<span>R$ {{subtotal}}</span>
-</div>
-
-<div class="totals-row">
-<span>Desconto</span>
-<span>R$ {{desconto}}</span>
-</div>
-
-<div class="total-box">
-
-<div class="total-label">
-TOTAL DO INVESTIMENTO
-</div>
-
-<div class="total-value">
-R$ {{total}}
-</div>
-
-</div>
-
-</div>
-
-<!-- OBSERVAÇÕES -->
-
-<div class="conditions">
-
-<div class="conditions-title">
-Observações
-</div>
-
-{{observacoes}}
-
-<br><br>
-
-✔ Orçamento válido por: {{validade}} dias a partir desta data.<br>
-✔ Execução técnica: Mão de obra qualificada, conforme especificações do projeto.<br>
-✔ Garantia de qualidade: Compromisso com a durabilidade e normas técnicas vigentes.<br>
-
-</div>
-
-<!-- FOOTER -->
-
-<div class="footer">
-
-Agradecemos pela oportunidade.<br>
-Aguardamos seu retorno para darmos início ao cronograma de execução.
-
-</div>
-
-</div>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        padding: 28px 32px;
+        color: #222;
+        background: #ffffff;
+        position: relative;
+      }
+
+      .mao-de-obra {
+        background: #fff7ed;
+        font-weight: 600;
+      }
+
+      .mao-de-obra td {
+        border-bottom: 2px solid #ff6a00;
+      }
+
+      /* WATERMARK */
+      .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0.06;
+        width: 500px;
+        z-index: 0;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* HEADER */
+
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+
+      .logo-left img {
+        width: 260px;
+        margin-top: -10px;
+      }
+
+      .logo-right img {
+        width: 260px;
+        margin-top: -10px;
+      }
+
+      .company {
+        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .company-logo img {
+        width: 120px;
+        margin-bottom: 6px;
+      }
+
+      .company-name {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        white-space: nowrap;
+      }
+
+      .company-sub {
+        font-size: 13px;
+        color: #777;
+      }
+
+      /* BARRA LARANJA */
+
+      .contact-bar {
+        background: linear-gradient(90deg, #ff6a00, #ff7f2a);
+        color: #fff;
+        padding: 12px;
+        font-size: 14px;
+        width: 100%;
+        text-align: center;
+        margin-top: 15px;
+        margin-bottom: 25px;
+        font-weight: 500;
+      }
+
+      .header-divider {
+        height: 3px;
+        background: #ff6a00;
+        margin-bottom: 25px;
+      }
+
+      /* CLIENT + ORÇAMENTO */
+
+      .client-section {
+        margin-bottom: 30px;
+      }
+
+      .client-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .client-box {
+        background: #f8f8f8;
+        border-left: 6px solid #ff6a00;
+        padding: 14px 18px;
+        border-radius: 8px;
+        width: 65%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .client-title {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+
+      .client-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .client-info {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .orc-info {
+        width: 30%;
+        text-align: right;
+      }
+
+      .orc-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .orc-date {
+        font-size: 14px;
+        color: #666;
+      }
+
+      /* TABELA */
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        margin-bottom: 30px;
+      }
+
+      th {
+        background: #f6f6f6;
+        text-align: left;
+        padding: 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e5e5e5;
+        letter-spacing: 0.5px;
+        color: #444;
+      }
+
+      td {
+        padding: 15px;
+        font-size: 14px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #fafafa;
+      }
+
+      /* TOTAL */
+
+      .totals {
+        width: 340px;
+        margin-left: auto;
+        font-size: 14px;
+      }
+
+      .totals-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .total-box {
+        margin-top: 12px;
+        background: linear-gradient(135deg, #ff6a00, #ff7f2a);
+        color: white;
+        padding: 16px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+      }
+
+      .total-label {
+        font-size: 14px;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+      }
+
+      .total-value {
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      /* OBSERVAÇÕES */
+
+      .conditions {
+        margin-top: 20px;
+        background: #fafafa;
+        padding: 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.8;
+        border: 1px solid #eee;
+      }
+
+      .conditions-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      /* FOOTER */
+
+      .footer {
+        margin-top: 18px;
+        border-top: 1px solid #ddd;
+        padding-top: 20px;
+        text-align: center;
+        font-size: 13px;
+        color: #666;
+      }
+
+      /* PROTEÇÃO PARA NÃO QUEBRAR PÁGINA */
+
+      table,
+      .client-box,
+      .totals,
+      .conditions {
+        page-break-inside: avoid;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="watermark">
+      <img src="{{logo}}" width="100%" />
+    </div>
+
+    <div class="container">
+      <!-- HEADER -->
+
+      <div class="header">
+        <div class="logo-left">
+          <img src="{{soldador_left}}" />
+        </div>
+
+        <div class="company">
+          <div class="company-logo">
+            <img src="{{logo}}" />
+          </div>
+
+          <div class="company-name">FL ART METAL</div>
+
+          <div class="company-sub">Especialista em Estruturas Metálicas</div>
+        </div>
+
+        <div class="logo-right">
+          <img src="{{soldador_right}}" />
+        </div>
+
+        <div class="header-divider"></div>
+      </div>
+
+      <!-- BARRA CONTATO -->
+
+      <div class="contact-bar">
+        📞 (34) 9 9199-8953 &nbsp;&nbsp; | &nbsp;&nbsp; ✉
+        flartmetal.uberaba@gmail.com
+      </div>
+
+      <!-- CLIENTE + ORÇAMENTO -->
+
+      <div class="client-section">
+        <div class="client-row">
+          <div class="client-box">
+            <div class="client-title">Cliente</div>
+
+            <div class="client-name">{{cliente_nome}}</div>
+
+            <div class="client-info">
+              📞 {{cliente_telefone}}<br />
+              📍 {{cliente_endereco}}
+            </div>
+          </div>
+
+          <div class="orc-info">
+            <div class="orc-title">ORÇAMENTO Nº {{orcamento_id}}</div>
+
+            <div class="orc-date">Emitido em {{data}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABELA -->
+
+      <table>
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th class="right">Qtd</th>
+            <th class="right">Valor Unit</th>
+            <th class="right">Total</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{itens}}
+        </tbody>
+      </table>
+
+      <!-- TOTAL -->
+
+      <div class="totals">
+        <div class="totals-row">
+          <span>Subtotal</span>
+          <span>R$ {{subtotal}}</span>
+        </div>
+
+        <div class="totals-row">
+          <span>Desconto</span>
+          <span>R$ {{desconto}}</span>
+        </div>
+
+        <div class="total-box">
+          <div class="total-label">TOTAL DO INVESTIMENTO</div>
+
+          <div class="total-value">{{total}}</div>
+        </div>
+      </div>
+
+      <!-- OBSERVAÇÕES -->
+
+      <div class="conditions">
+        <div class="conditions-title">Observações</div>
+
+        {{observacoes}}
+
+        <br /><br />
+
+        ✔ Orçamento válido por: {{validade}} dias a partir desta data.<br />
+        ✔ Execução técnica: Mão de obra qualificada, conforme especificações do
+        projeto.<br />
+        ✔ Garantia de qualidade: Compromisso com a durabilidade e normas
+        técnicas vigentes.<br />
+      </div>
+
+      <!-- FOOTER -->
+
+      <div class="footer">
+        Agradecemos pela oportunidade.<br />
+        Aguardamos seu retorno para darmos início ao cronograma de execução.
+      </div>
+    </div>
+  </body>
 </html>

@@ -24,17 +24,29 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       return itens.filter((i) => i.id !== 'mao-de-obra');
     }
 
+    const subtotal = Number(data.subtotal) || 0;
+    const total = Number(data.total) || subtotal;
+
     const novo = {
       id: uuid(),
       workspace_id: workspaceId,
       lead_id: data.leadId,
+
       numero: data.numero || `ORC-${Date.now()}`,
+
       itens: data.itens && data.itens.length > 0 ? limparItens(data.itens) : [],
+
+      subtotal,
+      total,
+
       desconto: data.desconto || 0,
       multiplicador: data.multiplicador ?? 1,
+
       status: data.status || 'rascunho',
+
       observacoes: data.observacoes || '',
       validade_em_dias: data.validadeEmDias ?? 7,
+
       created_at: now,
       updated_at: now,
     };
@@ -93,7 +105,13 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     if (data.itens !== undefined) {
       payload.itens = limparItens(data.itens);
     }
+    if (data.subtotal !== undefined)
+      payload.subtotal = Number(data.subtotal) || 0;
+
+    if (data.total !== undefined) payload.total = Number(data.total) || 0;
+
     if (data.desconto !== undefined) payload.desconto = data.desconto;
+
     if (data.multiplicador !== undefined)
       payload.multiplicador = data.multiplicador;
     if (data.status !== undefined) payload.status = data.status;

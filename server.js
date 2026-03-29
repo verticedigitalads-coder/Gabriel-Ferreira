@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'url';
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -9,6 +10,11 @@ import path from 'path';
 dotenv.config();
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 🔥 caminho absoluto real
+const assetsPath = path.join(__dirname, 'assets');
 
 /* ==========================================
 🌐 CORS (NGROK + LOCAL)
@@ -34,7 +40,7 @@ app.use(express.json());
 📁 SERVIR IMAGENS (LOGOS / ASSETS)
 ========================================== */
 
-app.use('/dist', express.static(path.resolve('./dist')));
+app.use('/assets', express.static(assetsPath));
 
 /* ==========================================
 🔥 ROTA OPENAI
@@ -73,7 +79,22 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     📄 CARREGAR TEMPLATE HTML
     ========================================== */
 
-    const templatePath = path.resolve('./orcamento.html');
+    const templatePath = path.resolve(
+      process.cwd(),
+      'templates',
+      'orcamento.html',
+    );
+
+    console.log('📄 Caminho completo:', templatePath);
+
+    if (!fs.existsSync(templatePath)) {
+      console.error('❌ TEMPLATE NÃO ENCONTRADO');
+      return res.status(500).json({
+        error: 'Template HTML não encontrado',
+        path: templatePath,
+      });
+    }
+
     let html = fs.readFileSync(templatePath, 'utf-8');
 
     /* ==========================================
@@ -89,7 +110,16 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     🧱 ITENS
     ========================================== */
 
-    const itensHTML = (dados.itens || [])
+    if (!dados) {
+      throw new Error('Dados não recebidos no backend');
+    }
+
+    if (!Array.isArray(dados.itens)) {
+      console.warn('⚠️ itens inválidos, corrigindo...');
+      dados.itens = [];
+    }
+
+    const itensHTML = dados.itens
       .map(
         (item) => `
         <tr>
@@ -106,16 +136,24 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     🖼️ IMAGENS (SUPORTE LOCAL + URL)
     ========================================== */
 
-    const logo =
-      dados.logo || 'http://localhost:3001/dist/android-chrome-512x512.png';
+    const baseUrl = 'http://127.0.0.1:3001';
 
-    const soldadorLeft =
-      dados.soldador_left ||
-      'http://localhost:3001/dist/android-chrome-192x192.png';
+    const logo = `${baseUrl}/assets/logo.png`;
 
-    const soldadorRight =
-      dados.soldador_right ||
-      'http://localhost:3001/dist/android-chrome-192x192.png';
+    const soldadorLeft = `${baseUrl}/assets/logo-left.png`;
+
+    const soldadorRight = `${baseUrl}/assets/logo-right.png`;
+
+    // 🔥 recalcular automaticamente se vier null
+    const subtotalCalculado = Array.isArray(dados.itens)
+      ? dados.itens.reduce((acc, item) => acc + Number(item.valorTotal || 0), 0)
+      : 0;
+
+    const subtotal = Number(dados.subtotal) || subtotalCalculado;
+    const total = Number(dados.total) || subtotal;
+
+    console.log('📁 Assets path:', assetsPath);
+    console.log('📁 Existe?', fs.existsSync(assetsPath));
 
     /* ==========================================
     🔁 SUBSTITUIÇÕES TEMPLATE
@@ -128,9 +166,9 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       .replace(/{{orcamento_id}}/g, dados.id || '---')
       .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
       .replace(/{{itens}}/g, itensHTML)
-      .replace(/{{subtotal}}/g, formatar(dados.subtotal))
+      .replace(/{{subtotal}}/g, formatar(subtotal))
       .replace(/{{desconto}}/g, formatar(dados.desconto))
-      .replace(/{{total}}/g, formatar(dados.total))
+      .replace(/{{total}}/g, formatar(total))
       .replace(/{{observacoes}}/g, dados.observacoes || '')
       .replace(/{{validade}}/g, dados.validade || 7)
 
@@ -149,8 +187,30 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 
     const page = await browser.newPage();
 
+    // 🔥 DEFINE TAMANHO DA PÁGINA (IMPORTANTE)
+    await page.setViewport({
+      width: 1240,
+      height: 1754,
+    });
+
     await page.setContent(html, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'domcontentloaded',
+    });
+
+    // 🔥 FORÇA CARREGAMENTO DE IMAGENS
+    await page.evaluate(async () => {
+      const imgs = Array.from(document.images);
+
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete) return Promise.resolve();
+
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }),
+      );
     });
 
     const pdf = await page.pdf({

@@ -347,12 +347,16 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
     const data = {
       leadId,
-      itens, // 🔥 SOMENTE itens reais
+      itens,
       desconto,
       multiplicador,
       status,
       observacoes,
       validadeEmDias,
+
+      // 🔥 ESSENCIAL
+      subtotal,
+      total,
     };
 
     if (orcamento) {
