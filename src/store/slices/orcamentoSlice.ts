@@ -2,6 +2,20 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { Orcamento } from '@/types';
 
+function normalizarItens(itens: any[]) {
+  return itens.map((item: any) => {
+    const quantidade = Number(item.quantidade) || 1;
+    const valorUnitario = Number(item.valorUnitario) || 0;
+
+    return {
+      ...item,
+      quantidade,
+      valorUnitario,
+      valorTotal: quantidade * valorUnitario,
+    };
+  });
+}
+
 export const createOrcamentoSlice = (set: any, get: any) => ({
   orcamentos: [],
 
@@ -20,12 +34,15 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       return;
     }
 
-    function limparItens(itens: any[]) {
-      return itens.filter((i) => i.id !== 'mao-de-obra');
-    }
+    const itensNormalizados =
+      data.itens && data.itens.length > 0 ? normalizarItens(data.itens) : [];
 
-    const subtotal = Number(data.subtotal) || 0;
-    const total = Number(data.total) || subtotal;
+    const subtotal = itensNormalizados.reduce(
+      (acc: number, item: any) => acc + (item.valorTotal || 0),
+      0,
+    );
+
+    const total = (subtotal - (data.desconto || 0)) * (data.multiplicador ?? 1);
 
     const novo = {
       id: uuid(),
@@ -34,7 +51,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       numero: data.numero || `ORC-${Date.now()}`,
 
-      itens: data.itens && data.itens.length > 0 ? limparItens(data.itens) : [],
+      itens: itensNormalizados,
 
       subtotal,
       total,
@@ -97,14 +114,23 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       updated_at: now,
     };
 
-    function limparItens(itens: any[]) {
-      return itens.filter((i) => i.id !== 'mao-de-obra');
-    }
-
     if (data.leadId !== undefined) payload.lead_id = data.leadId;
     if (data.itens !== undefined) {
-      payload.itens = limparItens(data.itens);
+      const itensNormalizados = normalizarItens(data.itens);
+
+      payload.itens = itensNormalizados;
+
+      const subtotal = itensNormalizados.reduce(
+        (acc: number, item: any) => acc + (item.valorTotal || 0),
+        0,
+      );
+
+      payload.subtotal = subtotal;
+
+      payload.total =
+        (subtotal - (data.desconto || 0)) * (data.multiplicador ?? 1);
     }
+
     if (data.subtotal !== undefined)
       payload.subtotal = Number(data.subtotal) || 0;
 

@@ -20,9 +20,10 @@ const prioridadeColor: Record<string, string> = {
 type Props = {
   onDelete: (task: any) => void;
   onEdit: (task: any) => void;
+  onCreate?: (date: string) => void; // 🔥 NOVO
 };
 
-function OperacionalMonthCalendar({ onDelete, onEdit }: Props) {
+function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
   const tasks = useStore((state) => state.operacionalTasks);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -42,7 +43,10 @@ function OperacionalMonthCalendar({ onDelete, onEdit }: Props) {
   }
 
   const getTasksForDay = (dateString: string) =>
-    tasks.filter((t) => t.data === dateString);
+    tasks.filter((t) => {
+      if (!t.data) return false;
+      return t.data.slice(0, 10) === dateString;
+    });
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -93,31 +97,40 @@ function OperacionalMonthCalendar({ onDelete, onEdit }: Props) {
               </div>
 
               <div className="space-y-1 overflow-hidden">
+                {/* 🔥 BOTÃO NOVO */}
+                <button
+                  onClick={() => onCreate?.(dateString)}
+                  className="text-[10px] text-blue-600 mb-1"
+                >
+                  + adicionar
+                </button>
                 {dayTasks.map((task) => (
                   <div
                     key={task.id}
                     className={`
-                      border-l-4 px-1 rounded truncate
-                      ${prioridadeColor[task.prioridade]}
-                      ${task.concluido ? 'line-through opacity-50' : ''}
-                    `}
+      border-l-4 px-1 rounded text-[10px]
+      ${prioridadeColor[task.prioridade]}
+      ${task.concluido ? 'line-through opacity-50' : ''}
+    `}
                   >
-                    <div className="flex justify-between items-center">
-                      <span>{task.titulo}</span>
+                    <div className="flex justify-between items-center gap-1">
+                      <span className="truncate">{task.titulo}</span>
 
                       <div className="flex gap-1">
+                        {/* ✏ EDITAR */}
                         <button
                           onClick={() => onEdit(task)}
-                          className="text-blue-600 text-[10px]"
+                          className="text-blue-600 hover:scale-110"
                         >
-                          ✏
+                          <span className="text-[9px]">✏</span>
                         </button>
 
+                        {/* 🗑 EXCLUIR */}
                         <button
                           onClick={() => onDelete(task)}
-                          className="text-red-600 text-[10px]"
+                          className="text-red-600 hover:scale-110"
                         >
-                          🗑
+                          <span className="text-[9px]">🗑</span>
                         </button>
                       </div>
                     </div>

@@ -134,6 +134,10 @@ export interface Orcamento {
   workspaceId: string;
   leadId: string;
 
+  clienteNome?: string;
+  clienteTelefone?: string;
+  clienteEndereco?: string;
+
   numero: string;
 
   itens: OrcamentoItem[];

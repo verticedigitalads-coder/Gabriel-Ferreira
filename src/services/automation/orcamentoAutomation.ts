@@ -7,12 +7,18 @@ export function criarOrcamentoFromLead(lead: any): Partial<Orcamento> | null {
     return null;
   }
 
+  if (!lead.workspaceId) {
+    console.error('❌ Lead sem workspaceId');
+    return null;
+  }
+
+  const nome = lead.nome?.trim() || 'Novo Lead';
   const valor = Number(lead.valorOrcado) || 0;
 
   const itens = [
     {
       id: crypto.randomUUID(),
-      descricao: lead.servico || 'Serviço',
+      descricao: lead.servico?.trim() || 'Serviço principal',
       quantidade: 1,
       valorUnitario: valor,
       valorTotal: valor,
@@ -20,11 +26,19 @@ export function criarOrcamentoFromLead(lead: any): Partial<Orcamento> | null {
   ];
 
   const subtotal = valor;
-  const total = subtotal;
+
+  const desconto = 0;
+  const multiplicador = 1;
+
+  const total = (subtotal - desconto) * multiplicador;
 
   return {
     id: uuid(),
     leadId: String(lead.id),
+
+    clienteNome: nome,
+    clienteTelefone: lead.telefone || '',
+    clienteEndereco: lead.endereco || '',
 
     numero: `ORC-${Date.now()}`,
 
@@ -33,15 +47,15 @@ export function criarOrcamentoFromLead(lead: any): Partial<Orcamento> | null {
     subtotal,
     total,
 
-    desconto: 0,
-    multiplicador: 1,
+    desconto,
+    multiplicador,
 
     status: 'rascunho',
 
-    observacoes: `Gerado automaticamente para ${lead.nome}`,
+    observacoes: `Gerado automaticamente para ${nome}`,
     validadeEmDias: 7,
 
-    workspaceId: lead.workspaceId || '',
+    workspaceId: lead.workspaceId,
 
     historico: [],
 

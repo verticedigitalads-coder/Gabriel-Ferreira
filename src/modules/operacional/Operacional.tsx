@@ -10,6 +10,14 @@ import OperacionalMonthCalendar from './components/OperacionalMonthCalendar';
 export function Operacional() {
   const tasks = useStore((state) => state.operacionalTasks) || [];
   const addTask = useStore((state) => state.addOperacionalTask);
+  const handleCreateTask = (date: string) => {
+    addTask({
+      titulo: 'Nova tarefa',
+      data: date,
+      prioridade: 'media',
+      concluido: false,
+    });
+  };
   const updateTask = useStore((state: any) => state.updateOperacionalTask);
   const deleteTask = useStore((state: any) => state.deleteOperacionalTask);
 
@@ -176,6 +184,7 @@ export function Operacional() {
             setNewTitle(task.titulo);
             setShowEditModal(true);
           }}
+          onCreate={handleCreateTask} // 🔥 NOVO
         />
       )}
 

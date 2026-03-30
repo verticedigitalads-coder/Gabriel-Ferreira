@@ -80,15 +80,18 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
 
     if (!valor || isNaN(valor)) return;
 
-    // 1️⃣ Atualiza o lead corretamente
     await updateLead(lead.id, {
       status: 'orcado',
       valorOrcado: valor,
     });
 
-    // 2️⃣ Cria orçamento baseado no lead
-    const novoOrcamento = criarOrcamentoFromLead({
+    const leadCorrigido = {
       ...lead,
+      workspaceId: (lead as any).workspaceId || (lead as any).workspace_id,
+    };
+
+    const novoOrcamento = criarOrcamentoFromLead({
+      ...leadCorrigido,
       valorOrcado: valor,
     });
 

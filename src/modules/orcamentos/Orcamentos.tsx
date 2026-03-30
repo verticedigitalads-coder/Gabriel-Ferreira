@@ -51,8 +51,8 @@ export function Orcamentos() {
   const sortedOrcamentos = useMemo(() => {
     return [...orcamentos].sort(
       (a, b) =>
-        new Date(b.createdAt || 0).getTime() -
-        new Date(a.createdAt || 0).getTime(),
+        new Date(b.createdAt || b.created_at || 0).getTime() -
+        new Date(a.createdAt || a.created_at || 0).getTime(),
     );
   }, [orcamentos]);
 
@@ -69,8 +69,8 @@ export function Orcamentos() {
     return map;
   }, [leads]);
 
-  const getLeadName = (leadId: string) =>
-    leadsMap[leadId] || 'Lead não encontrado';
+  const getLeadName = (orc: Orcamento) =>
+    orc.clienteNome || leadsMap[orc.leadId] || 'Cliente';
 
   const handleEdit = (orc: Orcamento) => {
     setEditingOrcamento(orc);
@@ -95,10 +95,9 @@ export function Orcamentos() {
     try {
       const lead = leads.find((l) => l.id === orc.leadId);
 
-      if (!lead) {
-        addToast({ type: 'error', message: 'Lead não encontrado' });
-        return;
-      }
+      const clienteNome = orc.clienteNome || lead?.nome || 'Cliente';
+      const clienteTelefone = orc.clienteTelefone || lead?.telefone || '';
+      const clienteEndereco = orc.clienteEndereco || lead?.endereco || '';
 
       const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3001';
 
@@ -111,9 +110,9 @@ export function Orcamentos() {
         },
         body: JSON.stringify({
           id: orc.id,
-          cliente_nome: lead.nome,
-          cliente_telefone: lead.telefone,
-          cliente_endereco: lead.endereco || '',
+          cliente_nome: clienteNome,
+          cliente_telefone: clienteTelefone,
+          cliente_endereco: clienteEndereco,
           itens: orc.itens,
           subtotal: orc.subtotal,
           desconto: orc.desconto,
@@ -212,7 +211,7 @@ export function Orcamentos() {
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
-                        {getLeadName(orc.leadId)}
+                        {getLeadName(orc)}
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
@@ -345,8 +344,19 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const leadSelecionado = leads.find((l: Lead) => l.id === leadId);
+
+    const clienteNome = leadSelecionado?.nome || 'Cliente';
+    const clienteTelefone = leadSelecionado?.telefone || '';
+    const clienteEndereco = leadSelecionado?.endereco || '';
+
     const data = {
       leadId,
+
+      clienteNome,
+      clienteTelefone,
+      clienteEndereco,
+
       itens,
       desconto,
       multiplicador,
@@ -354,7 +364,6 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
       observacoes,
       validadeEmDias,
 
-      // 🔥 ESSENCIAL
       subtotal,
       total,
     };
@@ -540,7 +549,11 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" disabled={!leadId}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!leadId || itens.length === 0}
+        >
           {orcamento ? 'Salvar' : 'Criar Orçamento'}
         </Button>
       </div>

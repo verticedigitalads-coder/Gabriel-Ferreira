@@ -11,14 +11,35 @@ export const createLeadSlice = (_set: any, get: any) => ({
   addLead: async (data: Partial<Lead>) => {
     const { workspaceId } = get();
 
-    const inserted = await createLead(data, workspaceId);
+    const nomeNormalizado =
+      data.nome && data.nome.trim() !== '' ? data.nome : 'Novo Lead';
+
+    const inserted = await createLead(
+      {
+        ...data,
+        nome: nomeNormalizado,
+        workspaceId,
+      },
+      workspaceId,
+    );
 
     if (!inserted) return;
+
+    const leadNormalizado = {
+      ...inserted,
+      workspaceId,
+      nome: nomeNormalizado,
+      valorOrcado: inserted.valor_orcado ?? 0,
+    };
+
+    _set((state: any) => ({
+      leads: [leadNormalizado, ...state.leads], // ✅ correto
+    }));
 
     const { addOperacionalTask } = get();
 
     // 🔥 NORMALIZAÇÃO (evita null da IA)
-    const nome = inserted.nome || 'Cliente';
+    const nome = nomeNormalizado;
     const temperatura = inserted.temperatura || 'frio';
 
     const hoje = new Date().toISOString().split('T')[0];
@@ -130,7 +151,8 @@ export const createLeadSlice = (_set: any, get: any) => ({
   handleMarkAsOrcado: async (id: string, valor: number) => {
     const now = new Date().toISOString();
 
-    const { error } = await supabase
+    // 🔥 1. Atualiza o lead
+    const { data: updatedLead, error } = await supabase
       .from('leads')
       .update({
         status: 'orcado',
@@ -139,42 +161,34 @@ export const createLeadSlice = (_set: any, get: any) => ({
         data_orcamento: now,
         updated_at: now,
       })
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
-    if (error) {
+    if (error || !updatedLead) {
       console.error('Erro ao marcar como orçado:', error);
       return;
     }
 
     const { addOrcamento } = get();
 
-    const leadFake = {
-      id,
+    // 🔥 2. Usa o LEAD REAL (não fake)
+    const leadReal = {
+      ...updatedLead,
+      nome: updatedLead.nome?.trim() || 'Novo Lead',
       valorOrcado: valor,
-      nome: 'Cliente',
-      servico: 'Serviço',
-      workspaceId: get().workspaceId,
     };
 
-    const orcamentoGerado = criarOrcamentoFromLead(leadFake);
+    // 🔥 3. Gera orçamento automático correto
+    const orcamentoGerado = criarOrcamentoFromLead(leadReal);
 
     if (!orcamentoGerado) {
       console.warn('⚠️ Falha ao gerar orçamento automático');
       return;
     }
 
-    await addOrcamento({
-      leadId: id,
-      numero: `ORC-${Date.now()}`,
-      itens: [],
-      subtotal: valor,
-      desconto: 0,
-      total: valor,
-      status: 'rascunho',
-      observacoes: '',
-      validadeEmDias: 7,
-      createdAt: new Date().toISOString(),
-    });
+    // 🔥 4. SALVA o orçamento completo (não manual)
+    await addOrcamento(orcamentoGerado);
   },
 
   // ================= MARCAR FECHADO =================
