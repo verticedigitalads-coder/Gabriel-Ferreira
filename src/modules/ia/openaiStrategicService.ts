@@ -22,7 +22,7 @@ function formatarHistoricoRecente(lead: Lead): string {
 
   return lead.historico
     .slice(-5)
-    .map(h => {
+    .map((h) => {
       return `- ${h.tipo.toUpperCase()} | ${h.descricao} | ${h.data}`;
     })
     .join('\n');
@@ -30,9 +30,8 @@ function formatarHistoricoRecente(lead: Lead): string {
 
 export async function refineLeadStrategyWithAI(
   lead: Lead,
-  baseAnalysis: any
+  baseAnalysis: any,
 ): Promise<OpenAIStrategicResponse | null> {
-
   if (!API_KEY) {
     console.warn('OpenAI API key não configurada');
     return null;
@@ -42,7 +41,7 @@ export async function refineLeadStrategyWithAI(
   const historicoRecente = formatarHistoricoRecente(lead);
 
   const prompt = `
-Você é um especialista em vendas B2B para serviços locais (serralheria, drywall, reformas).
+Você é um especialista em vendas B2B para serviços locais (serralheria, marcenaria, drywall, reformas).
 Você NÃO pode inventar dados.
 Você deve apenas refinar estrategicamente a análise existente.
 
@@ -97,11 +96,14 @@ Se tudo estiver adequado, retorne {}.
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Seja objetivo, conservador e retorne apenas JSON válido.' },
-        { role: 'user', content: prompt }
+        {
+          role: 'system',
+          content: 'Seja objetivo, conservador e retorne apenas JSON válido.',
+        },
+        { role: 'user', content: prompt },
       ],
-      temperature: 0.2
-    })
+      temperature: 0.2,
+    }),
   });
 
   const data = await response.json();

@@ -7,7 +7,9 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 
-dotenv.config();
+dotenv.config({ path: './.env' });
+
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +17,16 @@ const __dirname = path.dirname(__filename);
 
 // 🔥 caminho absoluto real
 const assetsPath = path.join(__dirname, 'assets');
+const logoBase64 = fs.readFileSync(path.join(assetsPath, 'logo_header.png'), {
+  encoding: 'base64',
+});
 
+const logoBgBase64 = fs.readFileSync(path.join(assetsPath, 'logo_bg.png'), {
+  encoding: 'base64',
+});
+
+const logoPath = `data:image/png;base64,${logoBase64}`;
+const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
 /* ==========================================
 🌐 CORS (NGROK + LOCAL)
 ========================================== */
@@ -138,11 +149,8 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 
     const baseUrl = 'http://127.0.0.1:3001';
 
-    const logo = `${baseUrl}/assets/logo.png`;
-
-    const soldadorLeft = `${baseUrl}/assets/logo-left.png`;
-
-    const soldadorRight = `${baseUrl}/assets/logo-right.png`;
+    const logoHeader = `${baseUrl}/assets/logo-header.png`; // NOVO
+    const logoWatermark = `${baseUrl}/assets/logo-bg.png`; // NOVO
 
     // 🔥 recalcular automaticamente se vier null
     const subtotalCalculado = Array.isArray(dados.itens)
@@ -156,6 +164,40 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     console.log('📁 Existe?', fs.existsSync(assetsPath));
 
     /* ==========================================
+🔢 GERAR NÚMERO SEQUENCIAL (PADRÃO ERP)
+========================================== */
+
+    const anoAtual = new Date().getFullYear();
+
+    // 🔥 BUSCAR ÚLTIMO ORÇAMENTO DO ANO
+    const ultimoNumero = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
+      {
+        headers: {
+          apikey: process.env.SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+      },
+    );
+
+    let sequencial = 1;
+
+    if (ultimoNumero.length > 0) {
+      const ultimo = ultimoNumero[0].numero;
+
+      const partes = ultimo.split('-');
+      const numeroAtual = parseInt(partes[2]);
+
+      sequencial = numeroAtual + 1;
+    }
+
+    // 🔥 FORMATA 001, 002, 003...
+    const sequencialFormatado = String(sequencial).padStart(3, '0');
+
+    const numeroFormatado =
+      dados.numero || `ORC-${anoAtual}-${sequencialFormatado}`;
+
+    /* ==========================================
     🔁 SUBSTITUIÇÕES TEMPLATE
     ========================================== */
 
@@ -163,26 +205,27 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       .replace(/{{cliente_nome}}/g, dados.cliente_nome)
       .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
       .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
-      .replace(/{{orcamento_id}}/g, dados.id || '---')
+      .replace(/{{orcamento_id}}/g, numeroFormatado)
       .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
       .replace(/{{itens}}/g, itensHTML)
       .replace(/{{subtotal}}/g, formatar(subtotal))
       .replace(/{{desconto}}/g, formatar(dados.desconto))
       .replace(/{{total}}/g, formatar(total))
       .replace(/{{observacoes}}/g, dados.observacoes || '')
-      .replace(/{{validade}}/g, dados.validade || 7)
+      .replace(/{{validade}}/g, dados.validade || 7);
 
-      // 🔥 IMAGENS DINÂMICAS
-      .replace(/{{logo}}/g, logo)
-      .replace(/{{soldador_left}}/g, soldadorLeft)
-      .replace(/{{soldador_right}}/g, soldadorRight);
+    // 🔥 IMAGENS DINÂMICAS
+    html = html.replace('{{logo}}', logoPath);
+    html = html.replace('{{logo_bg}}', logoBgPath);
 
+    console.log('LOGO:', logoPath);
+    console.log('LOGO BG:', logoBgPath);
     /* ==========================================
     🧠 GERAR PDF (PUPPETEER)
     ========================================== */
 
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--allow-file-access-from-files'],
     });
 
     const page = await browser.newPage();
@@ -194,7 +237,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     });
 
     await page.setContent(html, {
-      waitUntil: 'domcontentloaded',
+      waitUntil: 'networkidle0',
     });
 
     // 🔥 FORÇA CARREGAMENTO DE IMAGENS

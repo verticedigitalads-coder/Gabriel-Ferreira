@@ -10,6 +10,7 @@
         color: #222;
         background: #ffffff;
         position: relative;
+        line-height: 1.5;
       }
 
       .mao-de-obra {
@@ -23,18 +24,20 @@
 
       /* WATERMARK */
       .watermark {
-        position: absolute;
+        position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        opacity: 0.06;
+        opacity: 0.08;
         width: 500px;
         z-index: 0;
+        pointer-events: none;
+        filter: grayscale(100%);
       }
 
       .container {
         position: relative;
-        z-index: 1;
+        z-index: 2;
       }
 
       /* HEADER */
@@ -84,15 +87,14 @@
       /* BARRA LARANJA */
 
       .contact-bar {
-        background: linear-gradient(90deg, #ff6a00, #ff7f2a);
-        color: #fff;
-        padding: 12px;
-        font-size: 14px;
-        width: 100%;
+        background: #ff6a00;
+        color: white;
+        padding: 10px;
+        font-size: 13px;
         text-align: center;
-        margin-top: 15px;
-        margin-bottom: 25px;
         font-weight: 500;
+        letter-spacing: 0.5px;
+        margin-bottom: 25px;
       }
 
       .header-divider {
@@ -114,11 +116,11 @@
       }
 
       .client-box {
-        background: #f8f8f8;
+        background: #f5f5f5;
         border-left: 6px solid #ff6a00;
         padding: 14px 18px;
-        border-radius: 8px;
-        width: 65%;
+        border-radius: 10px;
+        width: 60%;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
       }
 
@@ -260,37 +262,32 @@
       .conditions {
         page-break-inside: avoid;
       }
+
+      /* CONTROLE DE PÁGINA */
+
+      .page-break {
+        page-break-before: always;
+      }
+
+      .no-break {
+        page-break-inside: avoid;
+      }
     </style>
   </head>
 
   <body>
     <div class="watermark">
-      <img src="{{logo}}" width="100%" />
+      <img src="{{logo_bg}}" style="width: 100%" />
     </div>
 
     <div class="container">
       <!-- HEADER -->
-
-      <div class="header">
-        <div class="logo-left">
-          <img src="{{soldador_left}}" />
-        </div>
-
-        <div class="company">
-          <div class="company-logo">
-            <img src="{{logo}}" />
-          </div>
-
-          <div class="company-name">FL ART METAL</div>
-
-          <div class="company-sub">Especialista em Estruturas Metálicas</div>
-        </div>
-
-        <div class="logo-right">
-          <img src="{{soldador_right}}" />
-        </div>
-
-        <div class="header-divider"></div>
+      <div style="text-align: center; margin-bottom: 10px">
+        <img
+          src="{{logo}}"
+          class="logo"
+          style="width: 220px; margin-bottom: 6px"
+        />
       </div>
 
       <!-- BARRA CONTATO -->
@@ -307,7 +304,9 @@
           <div class="client-box">
             <div class="client-title">Cliente</div>
 
-            <div class="client-name">{{cliente_nome}}</div>
+            <div class="client-name" style="font-size: 20px">
+              {{cliente_nome}}
+            </div>
 
             <div class="client-info">
               📞 {{cliente_telefone}}<br />
@@ -356,9 +355,12 @@
         <div class="total-box">
           <div class="total-label">TOTAL DO INVESTIMENTO</div>
 
-          <div class="total-value">{{total}}</div>
+          <div class="total-value">R$ {{total}}</div>
         </div>
       </div>
+
+      <!-- QUEBRA DE PÁGINA -->
+      <div class="page-break"></div>
 
       <!-- OBSERVAÇÕES -->
 
@@ -369,11 +371,11 @@
 
         <br /><br />
 
-        ✔ Orçamento válido por: {{validade}} dias a partir desta data.<br />
-        ✔ Execução técnica: Mão de obra qualificada, conforme especificações do
-        projeto.<br />
-        ✔ Garantia de qualidade: Compromisso com a durabilidade e normas
-        técnicas vigentes.<br />
+        ✔ Prazo estimado conforme alinhado com o cliente.<br />
+        ✔ Garantia conforme Código de Defesa do Consumidor.<br />
+        ✔ Não inclui serviços adicionais não descritos neste orçamento.<br />
+        ✔ Validade desta proposta: {{validade}} dias.<br />
+        ✔ Atendimento especializado em estruturas metálicas.<br />
       </div>
 
       <!-- FOOTER -->
