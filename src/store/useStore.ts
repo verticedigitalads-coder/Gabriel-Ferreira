@@ -33,7 +33,7 @@ type StoreState = {
   deleteOrcamento: (id: string) => Promise<void>;
 
   transactions: any[];
-
+  fetchTransactions: () => Promise<void>;
   addTransaction: (data: any) => Promise<any>;
   updateTransaction: (id: string, data: any) => Promise<any>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -356,25 +356,27 @@ export const useStore = create<StoreState>()(
             (payload: any) => {
               console.log('🔥 TRANSACTION REALTIME:', payload);
 
-              // 🔥 FUNÇÃO DE FORMATAÇÃO (snake → camel)
-              const format = (t: any) => ({
-                id: t.id,
-                workspaceId: t.workspace_id,
-                leadId: t.lead_id,
-                tipo: t.tipo,
-                descricao: t.descricao,
-                valor: t.valor,
-                data: t.data,
-                categoria: t.categoria,
-                observacoes: t.observacoes,
-                createdAt: t.created_at,
-                updatedAt: t.updated_at,
-              });
-
               set((state: any) => {
                 const transactions = state.transactions || [];
 
-                // ================= INSERT =================
+                const format = (t: any) => ({
+                  id: t.id,
+                  workspaceId: t.workspace_id,
+                  leadId: t.lead_id,
+                  tipo: t.tipo,
+                  descricao: t.descricao,
+                  valor: t.valor,
+                  data: t.data,
+                  categoria: t.categoria,
+                  observacoes: t.observacoes,
+                  createdAt: t.created_at,
+                  updatedAt: t.updated_at,
+                });
+
+                // proteção
+                if (!payload?.new && payload.eventType !== 'DELETE')
+                  return state;
+
                 if (payload.eventType === 'INSERT') {
                   const exists = transactions.find(
                     (t: any) => t.id === payload.new.id,
@@ -382,11 +384,13 @@ export const useStore = create<StoreState>()(
                   if (exists) return state;
 
                   return {
-                    transactions: [format(payload.new), ...transactions],
+                    transactions: [format(payload.new), ...transactions].sort(
+                      (a: any, b: any) =>
+                        new Date(b.data).getTime() - new Date(a.data).getTime(),
+                    ),
                   };
                 }
 
-                // ================= UPDATE =================
                 if (payload.eventType === 'UPDATE') {
                   return {
                     transactions: transactions.map((t: any) =>
@@ -395,7 +399,6 @@ export const useStore = create<StoreState>()(
                   };
                 }
 
-                // ================= DELETE =================
                 if (payload.eventType === 'DELETE') {
                   return {
                     transactions: transactions.filter(

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
@@ -46,6 +47,11 @@ const categoriaOptions = [
 
 export function Financeiro() {
   const transactions = useStore((state) => state.transactions);
+  const fetchTransactions = useStore((state) => state.fetchTransactions);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
   const leads = useStore((state) => state.leads);
   const deleteTransaction = useStore((state) => state.deleteTransaction);
 

@@ -1,8 +1,21 @@
-node_modules
-dist
+# Dependências
+node_modules/
+
+# Build
+dist/
+
+# Variáveis de ambiente (NUNCA subir)
 .env
-.env.local
-.env.production
-.vscode
-orcamentos
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+
+# Arquivos gerados
 *.pdf
+orcamentos/
+
+# Logs (opcional)
+*.log
+node_modules

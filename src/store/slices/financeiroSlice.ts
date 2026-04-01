@@ -4,6 +4,31 @@ import { v4 as uuid } from 'uuid';
 export const createFinanceiroSlice = (set: any, get: any) => ({
   transactions: [],
 
+  // ================= FETCH =================
+  fetchTransactions: async () => {
+    const { workspaceId } = get();
+
+    if (!workspaceId) {
+      console.error('❌ workspaceId não encontrado');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .order('data', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar transações:', error);
+      return;
+    }
+
+    set({
+      transactions: data || [],
+    });
+  },
+
   // ================= ADD =================
   addTransaction: async (data: any) => {
     const { workspaceId } = get();
