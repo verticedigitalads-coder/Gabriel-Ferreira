@@ -47,16 +47,19 @@ export type NotaStatus = 'pendente' | 'emitida' | 'cancelada';
 // HISTÓRICO (ARQUITETURA ORIENTADA A EVENTOS)
 // =========================
 
-export type HistoricoTipo =
-  | 'status_change'
-  | 'orcamento_criado'
-  | 'orcamento_status_change'
-  | 'receita_vinculada'
-  | 'lead_fechado'
-  | 'observacao'
-  | 'contato'
-  | 'ia_analysis'
-  | 'alteracao_estrategica';
+export const HISTORICO_TIPO = {
+  STATUS_CHANGE: 'status_change',
+  ORCAMENTO_CRIADO: 'orcamento_criado',
+  ORCAMENTO_STATUS_CHANGE: 'orcamento_status_change',
+  RECEITA_VINCULADA: 'receita_vinculada',
+  LEAD_FECHADO: 'lead_fechado',
+  OBSERVACAO: 'observacao',
+  CONTATO: 'contato',
+  IA_ANALYSIS: 'ia_analysis',
+  ALTERACAO_ESTRATEGICA: 'alteracao_estrategica',
+} as const;
+
+export type HistoricoTipo = typeof HISTORICO_TIPO[keyof typeof HISTORICO_TIPO];
 
 export interface HistoricoEntry {
   id: string;

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+import { formatCotacaoMaterial } from "@/store/formatters"
 
 export const createCotacaoMaterialSlice = (set:any,get:any)=>({
 
@@ -29,7 +30,7 @@ export const createCotacaoMaterialSlice = (set:any,get:any)=>({
     }
 
     set({
-      cotacoesMateriais:[...cotacoesMateriais, inserted]
+      cotacoesMateriais:[...cotacoesMateriais, formatCotacaoMaterial(inserted)]
     })
 
   },

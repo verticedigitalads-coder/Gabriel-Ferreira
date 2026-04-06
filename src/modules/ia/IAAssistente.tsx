@@ -1,3 +1,4 @@
+import { HISTORICO_TIPO } from '@/types'
 import type { StrategicDiagnosis } from './strategicDiagnosisService'
 import { generateFullStrategicDiagnosisWithAI } from './strategicDiagnosisService'
 import { useState, useMemo, useEffect } from 'react'
@@ -80,7 +81,7 @@ export function IAAssistente() {
     // 🔥 NOVO FILTRO
     if (filters.analysisStatus !== 'all') {
       const jaAnalisado = lead.historico?.some(
-        h => h.tipo === 'ia_analysis'
+        h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
       );
 
       if (
@@ -144,7 +145,7 @@ export function IAAssistente() {
     ...(selectedLead.historico || []),
     {
       id: crypto.randomUUID(),
-      tipo: 'ia_analysis',
+      tipo: HISTORICO_TIPO.IA_ANALYSIS,
       descricao: `Análise estratégica aplicada (Probabilidade ${analysis.probabilidadeConversao}%)`,
       createdAt: new Date().toISOString(),
       meta: {
@@ -335,7 +336,7 @@ export function IAAssistente() {
 
     {(() => {
       const iaAnalises = selectedLead.historico?.filter(
-        h => h.tipo === 'ia_analysis'
+        h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
       ) || []
 
       const ultima = iaAnalises[iaAnalises.length - 1]

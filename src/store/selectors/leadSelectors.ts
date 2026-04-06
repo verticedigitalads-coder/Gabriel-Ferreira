@@ -1,4 +1,5 @@
 import { useStore } from '../useStore'
+import { HISTORICO_TIPO } from '@/types'
 import type { Lead } from '@/types'
 
 export const useFilteredLeads = () => {
@@ -31,7 +32,7 @@ export const useFilteredLeads = () => {
       if (filters.analysisStatus !== 'all') {
 
         const jaAnalisado = lead.historico?.some(
-          h => h.tipo === 'ia_analysis'
+          h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
         )
 
         if (

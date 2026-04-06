@@ -1,6 +1,7 @@
 import { criarOrcamentoFromLead } from '@/services/automation/orcamentoAutomation';
 import { createLead } from '@/services/database/lead.service';
 import { supabase } from '@/lib/supabase';
+import { formatLead } from '@/store/formatters';
 import type { Lead, LeadStatus } from '@/types';
 
 export const createLeadSlice = (_set: any, get: any) => ({
@@ -25,15 +26,8 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (!inserted) return;
 
-    const leadNormalizado = {
-      ...inserted,
-      workspaceId,
-      nome: nomeNormalizado,
-      valorOrcado: inserted.valor_orcado ?? 0,
-    };
-
     _set((state: any) => ({
-      leads: [leadNormalizado, ...state.leads], // ✅ correto
+      leads: [formatLead(inserted), ...state.leads],
     }));
 
     const { addOperacionalTask } = get();
@@ -152,15 +146,18 @@ export const createLeadSlice = (_set: any, get: any) => ({
     const now = new Date().toISOString();
 
     // 🔥 1. Atualiza o lead
+    const payload: any = {
+      status: 'orcado',
+      orcamento_enviado: true,
+      data_orcamento: now,
+      updated_at: now,
+    };
+
+    if (valor !== undefined) payload.valor_orcado = valor;
+
     const { data: updatedLead, error } = await supabase
       .from('leads')
-      .update({
-        status: 'orcado',
-        valor_orcado: valor,
-        orcamento_enviado: true,
-        data_orcamento: now,
-        updated_at: now,
-      })
+      .update(payload)
       .eq('id', id)
       .select()
       .single();
@@ -175,6 +172,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     // 🔥 2. Usa o LEAD REAL (não fake)
     const leadReal = {
       ...updatedLead,
+      workspaceId: updatedLead.workspace_id,
       nome: updatedLead.nome?.trim() || 'Novo Lead',
       valorOrcado: valor,
     };

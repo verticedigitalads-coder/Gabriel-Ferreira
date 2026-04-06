@@ -11,7 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { AIService } from '@/services/ai/ai.service';
-import { Lead } from '../../types';
+import { HISTORICO_TIPO, Lead } from '../../types';
 import { useStore } from '../../store/useStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -164,7 +164,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
         {
           id: crypto.randomUUID(),
           data: new Date().toISOString(),
-          tipo: 'ia',
+          tipo: HISTORICO_TIPO.IA_ANALYSIS,
           descricao: 'Dados atualizados via análise de nova conversa por IA.',
         },
       ],

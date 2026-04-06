@@ -4,6 +4,7 @@
 
 import { v4 as uuid } from 'uuid';
 import { format, subDays, addDays } from 'date-fns';
+import { HISTORICO_TIPO } from '@/types';
 import type { Lead, LeadStatus, LeadTemperature, Transaction } from '@/types';
 import { calculatePriority } from '@/lib/priority';
 
@@ -123,7 +124,7 @@ export function generateDemoLeads(workspaceId: string, count: number = 118): Lea
         historico: [{
           id: uuid(),
           data: createdAt + 'T10:00:00.000Z',
-          tipo: 'status',
+          tipo: HISTORICO_TIPO.STATUS_CHANGE,
           descricao: 'Lead criado',
         }],
         createdAt: createdAt + 'T10:00:00.000Z',

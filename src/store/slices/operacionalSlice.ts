@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
+import { formatOperacionalTask } from '@/store/formatters';
 import type { OperacionalTask } from '@/types';
 
 export const createOperacionalSlice = (set: any, get: any) => ({
@@ -42,7 +43,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       if (exists) return state;
 
       return {
-        operacionalTasks: [data, ...state.operacionalTasks],
+        operacionalTasks: [formatOperacionalTask(data), ...state.operacionalTasks],
       };
     });
 
@@ -101,10 +102,10 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
     set((state: any) => ({
       operacionalTasks: state.operacionalTasks.map((t: any) =>
-        t.id === taskId ? data : t,
+        t.id === taskId ? formatOperacionalTask(data) : t,
       ),
     }));
 
-    return data;
+    return formatOperacionalTask(data);
   },
 });

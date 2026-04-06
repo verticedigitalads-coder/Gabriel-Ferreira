@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+import { formatConsumoMaterial } from "@/store/formatters"
 
 export const createConsumoMaterialSlice = (set:any,get:any)=>({
 
@@ -31,7 +32,7 @@ export const createConsumoMaterialSlice = (set:any,get:any)=>({
     set((state:any)=>({
       consumoMateriais:[
         ...state.consumoMateriais,
-        inserted
+        formatConsumoMaterial(inserted)
       ]
     }))
 

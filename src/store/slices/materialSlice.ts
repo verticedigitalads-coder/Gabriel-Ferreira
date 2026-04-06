@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+import { formatMaterial } from "@/store/formatters"
 
 export const createMaterialSlice = (set:any,get:any)=>({
 
@@ -13,7 +14,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       .select("*")
       .eq("workspace_id",workspaceId)
 
-    set({ materiais: data || [] })
+    set({ materiais: (data || []).map(formatMaterial) })
 
   },
 
@@ -39,7 +40,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
     }
 
     set({
-      materiais:[...materiais, inserted]
+      materiais:[...materiais, formatMaterial(inserted)]
     })
 
   },

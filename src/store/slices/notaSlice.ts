@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { v4 as uuid } from 'uuid'
+import { formatNota } from '@/store/formatters'
 import type { Nota } from '@/types'
 
 export const createNotaSlice = (set: any, get: any) => ({
@@ -11,7 +12,7 @@ export const createNotaSlice = (set: any, get: any) => ({
     const { workspaceId, notas } = get()
     const now = new Date().toISOString()
 
-    const nota = {
+    const notaRaw = {
       id: uuid(),
       workspace_id: workspaceId,
       lead_id: data.leadId,
@@ -26,10 +27,10 @@ export const createNotaSlice = (set: any, get: any) => ({
 
     await supabase
       .from('notas')
-      .insert([nota])
+      .insert([notaRaw])
 
     set({
-      notas: [...notas, nota]
+      notas: [...notas, formatNota(notaRaw)]
     })
 
   }

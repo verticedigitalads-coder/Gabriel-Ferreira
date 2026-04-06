@@ -1,4 +1,4 @@
-import { Lead, LeadStatus, LeadTemperature } from '@/types';
+import { Lead, LeadStatus, LeadTemperature, HISTORICO_TIPO } from '@/types';
 import { calculatePriority } from '@/lib/priority';
 
 export interface AIAnalysisResult {
@@ -603,7 +603,7 @@ export class AIService {
       historico: [
         {
           id: crypto.randomUUID(),
-          tipo: 'ia_analysis',
+          tipo: HISTORICO_TIPO.IA_ANALYSIS,
           descricao: 'Lead criado via análise de conversa.',
           createdAt: new Date().toISOString(),
         },

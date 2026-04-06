@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid'
+import { HISTORICO_TIPO } from '@/types'
 import type { HistoricoEntry } from '@/types'
 
 export function criarHistoricoStatusChange(
@@ -7,7 +8,7 @@ export function criarHistoricoStatusChange(
 ): HistoricoEntry {
   return {
     id: nanoid(),
-    tipo: 'status_change',
+    tipo: HISTORICO_TIPO.STATUS_CHANGE,
     descricao: `Status alterado de ${antigoStatus} para ${novoStatus}`,
     createdAt: new Date().toISOString(),
     meta: {
@@ -20,7 +21,7 @@ export function criarHistoricoStatusChange(
 export function criarHistoricoLeadFechado(valor?: number): HistoricoEntry {
   return {
     id: nanoid(),
-    tipo: 'lead_fechado',
+    tipo: HISTORICO_TIPO.LEAD_FECHADO,
     descricao: valor
       ? `Lead fechado no valor de R$ ${valor.toLocaleString('pt-BR')}`
       : 'Lead fechado',
@@ -34,7 +35,7 @@ export function criarHistoricoLeadFechado(valor?: number): HistoricoEntry {
 export function criarHistoricoOrcamentoCriado(valor: number): HistoricoEntry {
   return {
     id: nanoid(),
-    tipo: 'orcamento_criado',
+    tipo: HISTORICO_TIPO.ORCAMENTO_CRIADO,
     descricao: `Orçamento criado no valor de R$ ${valor.toLocaleString('pt-BR')}`,
     createdAt: new Date().toISOString(),
     meta: {
@@ -50,7 +51,7 @@ export function criarHistoricoAlteracaoEstrategica(
 ): HistoricoEntry {
   return {
     id: nanoid(),
-    tipo: 'alteracao_estrategica',
+    tipo: HISTORICO_TIPO.ALTERACAO_ESTRATEGICA,
     descricao: `${campo} alterado de ${anterior ?? 'não definido'} para ${novo ?? 'não definido'}`,
     createdAt: new Date().toISOString(),
     meta: {

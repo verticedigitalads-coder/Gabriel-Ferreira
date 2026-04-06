@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { AILeadModal } from './AILeadModal';
+import { HISTORICO_TIPO } from '@/types';
 import type { Lead } from '@/types';
 
 export function LeadsList() {
@@ -207,7 +208,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
     : null;
 
   const jaAnalisado = lead.historico?.some(
-    (h) => h.tipo === 'ia_analysis'
+    (h) => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
   );
 
   const formatCurrency = (value: number) => {

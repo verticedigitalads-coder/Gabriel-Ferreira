@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
+import { formatTransaction } from '@/store/formatters';
 
 export const createFinanceiroSlice = (set: any, get: any) => ({
   transactions: [],
@@ -25,7 +26,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     }
 
     set({
-      transactions: data || [],
+      transactions: (data || []).map(formatTransaction),
     });
   },
 
@@ -67,11 +68,11 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       if (exists) return state;
 
       return {
-        transactions: [inserted, ...state.transactions],
+        transactions: [formatTransaction(inserted), ...state.transactions],
       };
     });
 
-    return inserted;
+    return formatTransaction(inserted);
   },
 
   // ================= UPDATE =================
@@ -104,18 +105,18 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
       if (!exists) {
         return {
-          transactions: [updated, ...state.transactions],
+          transactions: [formatTransaction(updated), ...state.transactions],
         };
       }
 
       return {
         transactions: state.transactions.map((t: any) =>
-          t.id === id ? updated : t,
+          t.id === id ? formatTransaction(updated) : t,
         ),
       };
     });
 
-    return updated;
+    return formatTransaction(updated);
   },
 
   // ================= DELETE =================

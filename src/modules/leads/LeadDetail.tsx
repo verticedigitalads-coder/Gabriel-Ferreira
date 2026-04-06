@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { useLeadActions } from '@/hooks/useLeadActions';
-import { criarOrcamentoFromLead } from '@/services/automation/orcamentoAutomation';
 import { Button } from '@/components/ui/Button';
 import {
   StatusBadge,
@@ -37,7 +36,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const deleteLead = useStore((state) => state.deleteLead);
   const addOperacionalTask = useStore((state) => state.addOperacionalTask);
   const updateLead = useStore((state) => state.updateLead);
-  const addOrcamento = useStore((state: any) => state.addOrcamento);
+  const handleMarkAsOrcado = useStore((state: any) => state.handleMarkAsOrcado);
 
   const { openWhatsApp, copyPhone } = useLeadActions();
 
@@ -74,31 +73,12 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     onClose();
   };
 
-  // ✅ FUNÇÃO CORRIGIDA (SEM BUG, SEM DUPLICAÇÃO, SEM NaN)
   const handleConfirmOrcamento = async () => {
     const valor = Number(valorOrcamento);
 
     if (!valor || isNaN(valor)) return;
 
-    await updateLead(lead.id, {
-      status: 'orcado',
-      valorOrcado: valor,
-    });
-
-    const leadCorrigido = {
-      ...lead,
-      workspaceId: (lead as any).workspaceId || (lead as any).workspace_id,
-    };
-
-    const novoOrcamento = criarOrcamentoFromLead({
-      ...leadCorrigido,
-      valorOrcado: valor,
-    });
-
-    // 3️⃣ Salva no store
-    if (novoOrcamento) {
-      addOrcamento(novoOrcamento);
-    }
+    await handleMarkAsOrcado(lead.id, valor);
 
     setShowOrcamentoModal(false);
   };

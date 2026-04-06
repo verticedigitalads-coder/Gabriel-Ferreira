@@ -15,6 +15,7 @@ import { createCotacaoMaterialSlice } from './slices/cotacaoMaterialSlice';
 import { createMaterialSlice } from './slices/materialSlice';
 import { createConsumoMaterialSlice } from './slices/consumoMaterialSlice';
 import { createFormSlice } from './slices/formSlice';
+import { formatLead, formatOperacionalTask, formatTransaction } from './formatters';
 let realtimeStarted = false;
 
 type StoreState = {
@@ -152,10 +153,10 @@ export const useStore = create<StoreState>()(
 
           set({
             workspaceId,
-            leads: leadsRes.data || [],
+            leads: (leadsRes.data || []).map(formatLead),
             orcamentos: formattedOrcamentos,
-            operacionalTasks: tasksRes.data || [],
-            transactions: transactionsRes.data || [],
+            operacionalTasks: (tasksRes.data || []).map(formatOperacionalTask),
+            transactions: (transactionsRes.data || []).map(formatTransaction),
             isLoading: false,
           });
         } catch (error) {
@@ -200,14 +201,14 @@ export const useStore = create<StoreState>()(
                   }
 
                   return {
-                    leads: [payload.new, ...leads],
+                    leads: [formatLead(payload.new), ...leads],
                   };
                 }
 
                 if (payload.eventType === 'UPDATE') {
                   return {
                     leads: leads.map((l: any) =>
-                      l.id === payload.new.id ? payload.new : l,
+                      l.id === payload.new.id ? formatLead(payload.new) : l,
                     ),
                   };
                 }
@@ -316,14 +317,14 @@ export const useStore = create<StoreState>()(
                   if (exists) return state;
 
                   return {
-                    operacionalTasks: [payload.new, ...tasks],
+                    operacionalTasks: [formatOperacionalTask(payload.new), ...tasks],
                   };
                 }
 
                 if (payload.eventType === 'UPDATE') {
                   return {
                     operacionalTasks: tasks.map((t: any) =>
-                      t.id === payload.new.id ? payload.new : t,
+                      t.id === payload.new.id ? formatOperacionalTask(payload.new) : t,
                     ),
                   };
                 }
