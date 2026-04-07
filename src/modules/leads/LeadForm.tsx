@@ -30,6 +30,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
   const formData = useStore(state => state.leadForm)
   const setLeadForm = useStore(state => state.setLeadForm)
   const resetLeadForm = useStore(state => state.resetLeadForm)
+  const addToast = useStore(state => state.addToast)
 
   useEffect(() => {
     if (lead) {
@@ -56,8 +57,10 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
 
     if (lead) {
       await updateLead(lead.id, formData);
+      addToast({ type: 'success', message: 'Lead atualizado com sucesso!' });
     } else {
       await addLead(formData);
+      addToast({ type: 'success', message: 'Lead adicionado com sucesso!' });
     }
 
     resetLeadForm()

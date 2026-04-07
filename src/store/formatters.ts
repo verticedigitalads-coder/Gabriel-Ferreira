@@ -6,6 +6,11 @@
 //   - useStore startRealtime() handlers
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Converte ISO 8601 do Supabase → yyyy-MM-dd para <input type="date">
+// Ex: "2026-03-16T00:00:00+00:00" → "2026-03-16"
+const toDateInput = (val: string | null | undefined): string | null =>
+  val ? val.split('T')[0] : null
+
 export const formatLead = (raw: any) => ({
   id: raw.id,
   workspaceId: raw.workspace_id,
@@ -23,8 +28,8 @@ export const formatLead = (raw: any) => ({
   probabilidadeManual: raw.probabilidade_manual,
   prioridadeScore: raw.prioridade_score ?? 0,
   prioridadeLevel: raw.prioridade_level ?? 'baixo',
-  ultimoContato: raw.ultimo_contato ?? null,
-  proximoContato: raw.proximo_contato ?? null,
+  ultimoContato: toDateInput(raw.ultimo_contato),
+  proximoContato: toDateInput(raw.proximo_contato),
   orcamentoEnviado: raw.orcamento_enviado ?? false,
   valorOrcado: raw.valor_orcado ?? null,
   dataOrcamento: raw.data_orcamento ?? null,

@@ -22,7 +22,7 @@ import { TemperatureBadge, PriorityBadge } from '@/components/ui/Badge';
 import { SlidePanel } from '@/components/ui/Modal';
 import { LeadDetail } from '@/modules/leads/LeadDetail';
 import type { Lead, LeadStatus, KanbanColumn } from '@/types';
-import { differenceInDays, parseISO, isToday, isBefore } from 'date-fns';
+import { parseISO, isToday, isBefore } from 'date-fns';
 import { GripVertical, DollarSign } from 'lucide-react';
 
 const COLUMNS: { id: LeadStatus; title: string; color: string }[] = [
@@ -217,15 +217,10 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const diasSemContato = lead.ultimoContato
-    ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
-    : null;
-
   const followUpAtrasado =
-    (diasSemContato !== null && diasSemContato > 5) ||
-    (lead.proximoContato &&
-      (isToday(parseISO(lead.proximoContato)) ||
-        isBefore(parseISO(lead.proximoContato), new Date())));
+    !!lead.proximoContato &&
+    (isToday(parseISO(lead.proximoContato)) ||
+      isBefore(parseISO(lead.proximoContato), new Date()));
 
   return (
     <div

@@ -97,6 +97,10 @@ export const createLeadSlice = (_set: any, get: any) => ({
       payload.valor_orcado = updates.valorOrcado;
     if (updates.orcamentoEnviado !== undefined)
       payload.orcamento_enviado = updates.orcamentoEnviado;
+    if (updates.ultimoContato !== undefined)
+      payload.ultimo_contato = updates.ultimoContato || null;
+    if (updates.proximoContato !== undefined)
+      payload.proximo_contato = updates.proximoContato || null;
 
     const { error } = await supabase
       .from('leads')
