@@ -115,6 +115,7 @@ export function Orcamentos() {
           cliente_endereco: clienteEndereco,
           itens: orc.itens,
           subtotal: orc.subtotal,
+          multiplicador: orc.multiplicador ?? 1,
           desconto: orc.desconto,
           total: orc.total,
           observacoes: orc.observacoes,

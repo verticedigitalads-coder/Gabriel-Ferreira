@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { Orcamento } from '@/types';
+import { calcularOrcamento } from '@/domain/orcamento/calcularOrcamento';
 
 function normalizarItens(itens: any[]) {
   return itens.map((item: any) => {
@@ -37,12 +38,11 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     const itensNormalizados =
       data.itens && data.itens.length > 0 ? normalizarItens(data.itens) : [];
 
-    const subtotal = itensNormalizados.reduce(
-      (acc: number, item: any) => acc + (item.valorTotal || 0),
-      0,
-    );
-
-    const total = (subtotal - (data.desconto || 0)) * (data.multiplicador ?? 1);
+    const { subtotal, total } = calcularOrcamento({
+      itens: itensNormalizados,
+      multiplicador: data.multiplicador ?? 1,
+      desconto: data.desconto || 0,
+    });
 
     const novo = {
       id: uuid(),
@@ -120,15 +120,14 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       payload.itens = itensNormalizados;
 
-      const subtotal = itensNormalizados.reduce(
-        (acc: number, item: any) => acc + (item.valorTotal || 0),
-        0,
-      );
+      const { subtotal, total } = calcularOrcamento({
+        itens: itensNormalizados,
+        multiplicador: data.multiplicador ?? 1,
+        desconto: data.desconto || 0,
+      });
 
       payload.subtotal = subtotal;
-
-      payload.total =
-        (subtotal - (data.desconto || 0)) * (data.multiplicador ?? 1);
+      payload.total = total;
     }
 
     if (data.subtotal !== undefined)

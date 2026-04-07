@@ -130,7 +130,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       dados.itens = [];
     }
 
-    const itensHTML = dados.itens
+    const itensLinhas = dados.itens
       .map(
         (item) => `
         <tr>
@@ -159,6 +159,30 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 
     const subtotal = Number(dados.subtotal) || subtotalCalculado;
     const total = Number(dados.total) || subtotal;
+
+    const multiplicador = Number(dados.multiplicador) || 1;
+    let maoDeObraItemHTML = '';
+    if (multiplicador > 0 && multiplicador < 1) {
+      const valor = subtotal * multiplicador;
+      maoDeObraItemHTML = `
+        <tr class="mao-de-obra">
+          <td>Mão de obra</td>
+          <td class="right">1</td>
+          <td class="right">R$ ${formatar(valor)}</td>
+          <td class="right">R$ ${formatar(valor)}</td>
+        </tr>`;
+    } else if (multiplicador > 1) {
+      const valor = subtotal * (multiplicador - 1);
+      maoDeObraItemHTML = `
+        <tr class="mao-de-obra">
+          <td>Mão de obra especializada</td>
+          <td class="right">1</td>
+          <td class="right">R$ ${formatar(valor)}</td>
+          <td class="right">R$ ${formatar(valor)}</td>
+        </tr>`;
+    }
+
+    const itensHTML = itensLinhas + maoDeObraItemHTML;
 
     console.log('📁 Assets path:', assetsPath);
     console.log('📁 Existe?', fs.existsSync(assetsPath));

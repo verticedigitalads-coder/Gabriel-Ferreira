@@ -257,9 +257,7 @@
       /* PROTEÇÃO PARA NÃO QUEBRAR PÁGINA */
 
       table,
-      .client-box,
-      .totals,
-      .conditions {
+      .client-box {
         page-break-inside: avoid;
       }
 
@@ -269,8 +267,53 @@
         page-break-before: always;
       }
 
-      .no-break {
+      /* BLOCO INFERIOR: totais + observações + footer juntos */
+
+      .bottom-block {
         page-break-inside: avoid;
+      }
+
+      @media print {
+        body {
+          padding: 14px 18px;
+          font-size: 10px;
+          line-height: 1.3;
+        }
+        td {
+          padding: 8px 10px;
+          font-size: 11px;
+        }
+        th {
+          padding: 8px 10px;
+          font-size: 10px;
+        }
+        .contact-bar {
+          padding: 6px;
+          font-size: 11px;
+          margin-bottom: 14px;
+        }
+        .client-section {
+          margin-bottom: 16px;
+        }
+        table {
+          margin-bottom: 16px;
+        }
+        .totals {
+          font-size: 12px;
+        }
+        .conditions {
+          padding: 12px;
+          margin-top: 10px;
+          font-size: 11px;
+        }
+        .footer {
+          margin-top: 10px;
+          padding-top: 10px;
+          font-size: 11px;
+        }
+        .total-value {
+          font-size: 20px;
+        }
       }
     </style>
   </head>
@@ -339,51 +382,54 @@
         </tbody>
       </table>
 
-      <!-- TOTAL -->
+      <!-- BLOCO INFERIOR: totais + observações + footer (não quebra página) -->
 
-      <div class="totals">
-        <div class="totals-row">
-          <span>Subtotal</span>
-          <span>R$ {{subtotal}}</span>
+      <div class="bottom-block">
+
+        <!-- TOTAL -->
+
+        <div class="totals">
+          <div class="totals-row">
+            <span>Subtotal</span>
+            <span>R$ {{subtotal}}</span>
+          </div>
+
+          <div class="totals-row">
+            <span>Desconto</span>
+            <span>R$ {{desconto}}</span>
+          </div>
+
+          <div class="total-box">
+            <div class="total-label">TOTAL DO INVESTIMENTO</div>
+
+            <div class="total-value">R$ {{total}}</div>
+          </div>
         </div>
 
-        <div class="totals-row">
-          <span>Desconto</span>
-          <span>R$ {{desconto}}</span>
+        <!-- OBSERVAÇÕES -->
+
+        <div class="conditions">
+          <div class="conditions-title">Observações</div>
+
+          {{observacoes}}
+
+          <br /><br />
+
+          ✔ Prazo estimado conforme alinhado com o cliente.<br />
+          ✔ Garantia conforme Código de Defesa do Consumidor.<br />
+          ✔ Não inclui serviços adicionais não descritos neste orçamento.<br />
+          ✔ Validade desta proposta: {{validade}} dias.<br />
+          ✔ Atendimento especializado em estruturas metálicas.<br />
         </div>
 
-        <div class="total-box">
-          <div class="total-label">TOTAL DO INVESTIMENTO</div>
+        <!-- FOOTER -->
 
-          <div class="total-value">R$ {{total}}</div>
+        <div class="footer">
+          Agradecemos pela oportunidade.<br />
+          Aguardamos seu retorno para darmos início ao cronograma de execução.
         </div>
-      </div>
 
-      <!-- QUEBRA DE PÁGINA -->
-      <div class="page-break"></div>
-
-      <!-- OBSERVAÇÕES -->
-
-      <div class="conditions">
-        <div class="conditions-title">Observações</div>
-
-        {{observacoes}}
-
-        <br /><br />
-
-        ✔ Prazo estimado conforme alinhado com o cliente.<br />
-        ✔ Garantia conforme Código de Defesa do Consumidor.<br />
-        ✔ Não inclui serviços adicionais não descritos neste orçamento.<br />
-        ✔ Validade desta proposta: {{validade}} dias.<br />
-        ✔ Atendimento especializado em estruturas metálicas.<br />
-      </div>
-
-      <!-- FOOTER -->
-
-      <div class="footer">
-        Agradecemos pela oportunidade.<br />
-        Aguardamos seu retorno para darmos início ao cronograma de execução.
-      </div>
+      </div><!-- /bottom-block -->
     </div>
   </body>
 </html>
