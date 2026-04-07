@@ -35,7 +35,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       .single()
 
     if(error){
-      console.error(error)
+      console.error('[MaterialSlice] Erro:', error)
       return
     }
 

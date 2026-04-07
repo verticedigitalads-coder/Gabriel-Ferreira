@@ -32,7 +32,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('ERRO AO CRIAR TAREFA:', error);
+      console.error('[OperacionalSlice] Erro ao criar tarefa:', error);
       return;
     }
 
@@ -58,7 +58,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       .eq('id', taskId);
 
     if (error) {
-      console.error('Erro ao deletar tarefa:', error);
+      console.error('[OperacionalSlice] Erro ao deletar tarefa:', error);
       return;
     }
 
@@ -96,7 +96,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar tarefa:', error);
+      console.error('[OperacionalSlice] Erro ao atualizar tarefa:', error);
       return;
     }
 

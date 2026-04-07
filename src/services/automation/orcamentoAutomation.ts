@@ -8,7 +8,7 @@ export function criarOrcamentoFromLead(lead: any): Partial<Orcamento> | null {
   }
 
   if (!lead.workspaceId) {
-    console.error('❌ Lead sem workspaceId');
+    console.error('[OrcamentoAutomation] Lead sem workspaceId');
     return null;
   }
 

@@ -110,7 +110,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar lead:', error);
+      console.error('[LeadSlice] Erro ao atualizar lead:', error);
       return;
     }
   },
@@ -129,7 +129,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       .eq('id', leadId);
 
     if (error) {
-      console.error('Erro ao atualizar status:', error);
+      console.error('[LeadSlice] Erro ao atualizar status:', error);
       return;
     }
   },
@@ -140,7 +140,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     const { error } = await supabase.from('leads').delete().eq('id', id);
 
     if (error) {
-      console.error('Erro ao deletar lead:', error);
+      console.error('[LeadSlice] Erro ao deletar lead:', error);
       return;
     }
   },
@@ -167,7 +167,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       .single();
 
     if (error || !updatedLead) {
-      console.error('Erro ao marcar como orçado:', error);
+      console.error('[LeadSlice] Erro ao marcar como orçado:', error);
       return;
     }
 
@@ -209,7 +209,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao marcar como fechado:', error);
+      console.error('[LeadSlice] Erro ao marcar como fechado:', error);
       return;
     }
 

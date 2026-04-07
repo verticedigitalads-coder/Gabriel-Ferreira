@@ -71,7 +71,7 @@ app.post('/api/chat', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    console.error('Erro OpenAI:', error);
+    console.error('[Server] Erro OpenAI:', error);
     res.status(500).json({ error: 'Erro ao chamar OpenAI' });
   }
 });
@@ -99,7 +99,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     console.log('📄 Caminho completo:', templatePath);
 
     if (!fs.existsSync(templatePath)) {
-      console.error('❌ TEMPLATE NÃO ENCONTRADO');
+      console.error('[Server] Template não encontrado');
       return res.status(500).json({
         error: 'Template HTML não encontrado',
         path: templatePath,
@@ -296,7 +296,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 
     return res.send(pdf);
   } catch (error) {
-    console.error('❌ Erro ao gerar PDF:', error);
+    console.error('[Server] Erro ao gerar PDF:', error);
 
     return res.status(500).json({
       error: 'Erro ao gerar PDF',

@@ -26,12 +26,12 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     const now = new Date().toISOString();
 
     if (!workspaceId) {
-      console.error('❌ workspaceId está null');
+      console.error('[OrcamentoSlice] workspaceId está null');
       return;
     }
 
     if (!data.leadId || typeof data.leadId !== 'string') {
-      console.error('❌ leadId inválido');
+      console.error('[OrcamentoSlice] leadId inválido');
       return;
     }
 
@@ -75,7 +75,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao criar orçamento:', error);
+      console.error('[OrcamentoSlice] Erro ao criar orçamento:', error);
       return;
     }
 
@@ -97,7 +97,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     const { error } = await supabase.from('orcamentos').delete().eq('id', id);
 
     if (error) {
-      console.error('Erro ao deletar orçamento:', error);
+      console.error('[OrcamentoSlice] Erro ao deletar orçamento:', error);
       return;
     }
 
@@ -152,7 +152,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar orçamento:', error);
+      console.error('[OrcamentoSlice] Erro ao atualizar orçamento:', error);
       return;
     }
 

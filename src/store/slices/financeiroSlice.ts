@@ -10,7 +10,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     const { workspaceId } = get();
 
     if (!workspaceId) {
-      console.error('❌ workspaceId não encontrado');
+      console.error('[FinanceiroSlice] workspaceId não encontrado');
       return;
     }
 
@@ -21,7 +21,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       .order('data', { ascending: false });
 
     if (error) {
-      console.error('Erro ao buscar transações:', error);
+      console.error('[FinanceiroSlice] Erro ao buscar transações:', error);
       return;
     }
 
@@ -36,7 +36,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     const now = new Date().toISOString();
 
     if (!workspaceId) {
-      console.error('❌ workspaceId não encontrado');
+      console.error('[FinanceiroSlice] workspaceId não encontrado');
       return;
     }
 
@@ -58,7 +58,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao criar transação:', error);
+      console.error('[FinanceiroSlice] Erro ao criar transação:', error);
       return;
     }
 
@@ -96,7 +96,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar transação:', error);
+      console.error('[FinanceiroSlice] Erro ao atualizar transação:', error);
       return;
     }
 
@@ -124,7 +124,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     const { error } = await supabase.from('transactions').delete().eq('id', id);
 
     if (error) {
-      console.error('Erro ao deletar transação:', error);
+      console.error('[FinanceiroSlice] Erro ao deletar transação:', error);
       return;
     }
 

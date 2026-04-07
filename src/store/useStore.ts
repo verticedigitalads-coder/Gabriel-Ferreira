@@ -160,7 +160,7 @@ export const useStore = create<StoreState>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('INIT ERROR:', error);
+          console.error('[UseStore] Erro de inicialização:', error);
           set({ isLoading: false });
         }
       },

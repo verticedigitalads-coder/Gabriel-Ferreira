@@ -32,7 +32,7 @@ export const createFornecedorSlice = (set: any, get: any) => ({
       }])
 
     if (error) {
-      console.error("Erro ao criar fornecedor:", error)
+      console.error('[FornecedorSlice] Erro ao criar fornecedor:', error)
       return
     }
 

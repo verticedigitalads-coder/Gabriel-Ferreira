@@ -25,7 +25,7 @@ export const createCotacaoMaterialSlice = (set:any,get:any)=>({
       .single()
 
     if(error){
-      console.error("Erro ao criar cotação:",error)
+      console.error('[CotacaoMaterialSlice] Erro ao criar cotação:', error)
       return
     }
 

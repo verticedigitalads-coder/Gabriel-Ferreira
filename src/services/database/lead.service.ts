@@ -27,7 +27,7 @@ export async function createLead(data: Partial<Lead>, workspaceId: string) {
     .single()
 
   if (error) {
-    console.error("Erro ao criar lead:", error)
+    console.error('[LeadService] Erro ao criar lead:', error)
     return null
   }
 
