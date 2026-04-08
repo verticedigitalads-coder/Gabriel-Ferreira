@@ -232,8 +232,8 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
     >
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-slate-900 truncate">
+          <div className="flex items-center gap-2 mb-1 overflow-hidden">
+            <h3 className="font-semibold text-slate-900 truncate flex-1 min-w-0">
               {lead.nome}
             </h3>
 

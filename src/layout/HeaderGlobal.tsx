@@ -28,14 +28,14 @@ export function HeaderGlobal() {
   const today = format(new Date(), "dd 'de' MMMM yyyy", { locale: ptBR });
 
   return (
-    <header className="h-16 bg-[var(--bg-sidebar)] border-b border-[var(--border)] flex items-center justify-between px-6">
+    <header className="flex-1 min-w-0 h-16 bg-[var(--bg-sidebar)] flex items-center justify-between px-2 md:px-6">
 
       {/* ESQUERDA */}
-      <div>
-        <h1 className="text-lg font-semibold text-[var(--text-primary)] tracking-tight">
+      <div className="min-w-0">
+        <h1 className="text-base md:text-lg font-semibold text-[var(--text-primary)] tracking-tight truncate">
           {moduleNames[activeModule] ?? 'CRM'}
         </h1>
-        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+        <p className="text-xs text-[var(--text-tertiary)] mt-0.5 hidden sm:block">
           {today}
         </p>
       </div>
@@ -54,13 +54,13 @@ export function HeaderGlobal() {
         </div>
 
         {/* Empresa (Multiempresa futuro) */}
-        <div className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)]">
+        <div className="hidden md:flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)]">
           <Building2 className="w-4 h-4" />
           FL Art Metal
         </div>
 
         {/* Notificações */}
-        <button className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">
+        <button className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors hidden md:block">
           <Bell className="w-5 h-5" />
           {stats.tarefasAtrasadas > 0 && (
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--danger)] rounded-full" />

@@ -2,7 +2,8 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { CheckCircle2, Trash2 } from 'lucide-react';
 
 import OperacionalCalendar from './components/OperacionalCalendar';
@@ -300,7 +301,9 @@ export function Operacional() {
 
         {tarefasSemana.map((task) => (
           <div key={task.id} className="bg-[var(--bg-surface-2)] p-3 rounded mb-2 border border-[var(--border)]">
-            <div className="text-sm text-[var(--text-tertiary)]">{task.data}</div>
+            <div className="text-sm text-[var(--text-tertiary)]">
+              {format(parseISO(task.data), 'dd/MM/yyyy', { locale: ptBR })}
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
               <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[task.status || 'pendente']?.cls || ''}`}>

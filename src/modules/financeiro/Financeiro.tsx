@@ -150,19 +150,19 @@ export function Financeiro() {
   return (
     <div className="h-full flex flex-col">
       <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Financeiro</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Financeiro</h1>
             <p className="text-sm text-[var(--text-tertiary)]">
               Controle de receitas e despesas
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <input
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface)] text-[var(--text-primary)]"
+              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface)] text-[var(--text-primary)] min-h-[44px]"
             />
             <Button onClick={() => setShowModal(true)} className="gap-2">
               <Plus className="w-4 h-4" />
