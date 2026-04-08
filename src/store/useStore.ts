@@ -64,6 +64,11 @@ type StoreState = {
   updateContaReceber: (id: string, data: any) => Promise<any>;
   deleteContaReceber: (id: string) => Promise<void>;
   marcarComoRecebido: (id: string) => Promise<any>;
+
+  fornecedores: any[];
+  addFornecedor: (data: any) => Promise<any>;
+  updateFornecedor: (id: string, data: any) => Promise<any>;
+  deleteFornecedor: (id: string) => Promise<void>;
 };
 
 export const useStore = create<StoreState>()(

@@ -77,7 +77,7 @@ Operacional Ativo Agendamento de tarefas, calendário semana/mês, prioridades
 IA Assistente Ativo Análise estratégica, sugestão de abordagem, score de risco
 Dashboard Ativo 18+ métricas calculadas, score comercial e operacional
 Central Ativo Top 7 leads por urgência + receita travada + execution score
-Suprimentos Ativo Fornecedores, estoque, comparador de cotações
+Suprimentos Ativo Fornecedores MVP (CNPJ auto-fill ReceitaWS, modal CRUD completo, WhatsApp direto, badges categoria/status), estoque, comparador de cotações
 Notas Ativo CRUD básico de notas fiscais
 Settings Ativo Configurações gerais 4. Padrões Identificados
 Estado (Zustand)

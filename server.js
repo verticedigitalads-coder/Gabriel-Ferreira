@@ -77,6 +77,42 @@ app.post('/api/chat', async (req, res) => {
 });
 
 /* ==========================================
+🏢 PROXY CNPJ (ReceitaWS)
+========================================== */
+
+app.get('/api/cnpj/:cnpj', async (req, res) => {
+  const { cnpj } = req.params;
+  const cnpjLimpo = cnpj.replace(/\D/g, '');
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(
+      `https://www.receitaws.com.br/v1/cnpj/${cnpjLimpo}`,
+      { signal: controller.signal }
+    );
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return res.status(404).json({ erro: 'CNPJ não encontrado' });
+    }
+
+    const data = await response.json();
+
+    if (data.status === 'ERROR') {
+      return res.status(404).json({ erro: 'CNPJ não encontrado' });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    console.error('[CNPJ] Erro ao buscar:', error);
+    return res.status(500).json({ erro: 'Erro ao consultar CNPJ' });
+  }
+});
+
+/* ==========================================
 🧾 GERAR ORÇAMENTO PDF (TEMPLATE REAL)
 ========================================== */
 

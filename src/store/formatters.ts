@@ -130,3 +130,24 @@ export const formatConsumoMaterial = (raw: any) => ({
   materialId: raw.material_id,
   quantidade: raw.quantidade,
 })
+
+export const formatFornecedor = (raw: any) => ({
+  id: raw.id,
+  workspaceId: raw.workspace_id,
+  nome: raw.nome,
+  nomeFantasia: raw.nome_fantasia ?? null,
+  cnpj: raw.cnpj ?? null,
+  categoria: raw.categoria ?? null,
+  status: raw.status ?? 'ativo',
+  telefone: raw.telefone ?? null,
+  email: raw.email ?? null,
+  endereco: raw.endereco ?? null,
+  logradouro: raw.logradouro ?? null,
+  numeroEndereco: raw.numero_endereco ?? null,
+  cidade: raw.cidade ?? null,
+  estado: raw.estado ?? null,
+  prazoEntrega: raw.prazo_entrega ?? null,
+  condicaoPagamento: raw.condicao_pagamento ?? null,
+  observacoes: raw.observacoes ?? null,
+  createdAt: raw.created_at ?? null,
+})

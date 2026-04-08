@@ -353,13 +353,31 @@ export interface OperacionalTask {
 // FORNECEDORES
 // =========================
 
+export type FornecedorCategoria = 'materiais' | 'servicos' | 'equipamentos' | 'transporte' | 'outros';
+export type FornecedorStatus = 'ativo' | 'inativo' | 'preferencial';
+
 export interface Fornecedor {
   id: string;
   workspaceId: string;
 
-  nome: string;
+  nome: string;           // Razão Social (campo existente no DB)
+  nomeFantasia?: string;
+  cnpj?: string;
+
+  categoria?: FornecedorCategoria;
+  status?: FornecedorStatus;
+
   telefone?: string;
-  endereco?: string;
+  email?: string;
+
+  endereco?: string;      // legado — manter para backward compat
+  logradouro?: string;
+  numeroEndereco?: string;
+  cidade?: string;
+  estado?: string;
+
+  prazoEntrega?: number;
+  condicaoPagamento?: string;
   observacoes?: string;
 
   createdAt?: string;
