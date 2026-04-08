@@ -1,5 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import {
   DndContext,
@@ -23,7 +23,7 @@ import { SlidePanel } from '@/components/ui/Modal';
 import { LeadDetail } from '@/modules/leads/LeadDetail';
 import type { Lead, LeadStatus, KanbanColumn } from '@/types';
 import { parseISO, isToday, isBefore } from 'date-fns';
-import { GripVertical, DollarSign } from 'lucide-react';
+import { GripVertical, DollarSign, MessageCircle, StickyNote } from 'lucide-react';
 
 const COLUMNS: { id: LeadStatus; title: string; color: string }[] = [
   { id: 'novo', title: 'Novo', color: 'border-t-blue-500' },
@@ -211,6 +211,23 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
     isDragging,
   } = useSortable({ id: lead.id });
 
+  const updateLead = useStore((state: any) => state.updateLead);
+
+  const [showObs, setShowObs] = useState(false);
+  const [obsText, setObsText] = useState(lead.observacoes || '');
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showObs) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setShowObs(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showObs]);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -269,6 +286,64 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
               ⚠ Follow-up atrasado
             </p>
           )}
+
+          {/* Rodapé do card: WhatsApp + Observação */}
+          <div className="flex items-center gap-3 mt-2">
+            {/* Item 1 — WhatsApp */}
+            {lead.telefone && (
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  window.open(`https://wa.me/55${lead.telefone.replace(/\D/g, '')}`, '_blank');
+                }}
+                className="flex items-center gap-1 text-xs text-green-500 hover:text-green-400 transition-colors"
+                title="Abrir WhatsApp"
+              >
+                <MessageCircle className="w-3 h-3" />
+                WhatsApp
+              </button>
+            )}
+
+            {/* Item 2 — Observação rápida */}
+            <div className="relative" ref={popoverRef}>
+              <button
+                onClick={e => { e.stopPropagation(); setShowObs(v => !v); }}
+                className="flex items-center gap-1 text-xs text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+                title="Observação rápida"
+              >
+                <StickyNote className="w-3 h-3" />
+                {lead.observacoes && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] inline-block" />
+                )}
+              </button>
+
+              {showObs && (
+                <div
+                  className="absolute left-0 top-6 z-50 w-56 bg-[var(--bg-surface)] border border-[var(--border)] rounded shadow-lg p-2 space-y-2"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <textarea
+                    value={obsText}
+                    onChange={e => setObsText(e.target.value)}
+                    rows={3}
+                    className="w-full text-xs border border-[var(--border)] rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] p-1 resize-none"
+                    placeholder="Observação..."
+                    autoFocus
+                  />
+                  <button
+                    onClick={async e => {
+                      e.stopPropagation();
+                      await updateLead(lead.id, { observacoes: obsText });
+                      setShowObs(false);
+                    }}
+                    className="w-full text-xs bg-[var(--accent)] text-white rounded py-1 hover:bg-[var(--accent-hover)]"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

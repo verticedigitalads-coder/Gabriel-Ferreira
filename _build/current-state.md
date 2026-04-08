@@ -78,6 +78,15 @@ IA Assistente Ativo Análise estratégica, sugestão de abordagem, score de risc
 Dashboard Ativo 18+ métricas calculadas, score comercial e operacional
 Central Ativo Top 7 leads por urgência + receita travada + execution score
 Suprimentos Ativo Fornecedores MVP (CNPJ auto-fill ReceitaWS, modal CRUD completo, WhatsApp direto, badges categoria/status), Estoque MVP completo (cadastro, movimentações entrada/saída, alertas estoque baixo/crítico, dark theme), comparador de cotações (fix ts(2339) resolvido), Vínculo Orçamento→Estoque via BaixaEstoqueModal ao aprovar (Fase 5.2)
+
+## Fase 5.3 — Melhorias Operacionais (08/04/2026)
+
+| Item | Arquivo | O que foi feito |
+|---|---|---|
+| WhatsApp no Kanban | Kanban.tsx | Botão WhatsApp verde no rodapé do SortableLeadCard, visível só se lead.telefone existir, e.stopPropagation() |
+| Observação rápida no Kanban | Kanban.tsx | Ícone StickyNote no rodapé do card com popover inline (textarea + botão Salvar), ponto indicador se observação existir, fecha ao clicar fora |
+| Registrar Contato real | LeadDetail.tsx | Modal com textarea "O que foi tratado?" + input "Próximo contato", chama updateLead com ultimoContato, proximoContato e nova entrada HISTORICO_TIPO.CONTATO no histórico, toast de sucesso |
+| Status de produção | Operacional.tsx | Pills pendente/em_produção/pronto/instalado nas tarefas pendentes de "Hoje", badge de status na lista "Próximos Dias", cores cinza/azul/verde/roxo |
 Notas Ativo CRUD básico de notas fiscais
 Settings Ativo Configurações gerais 4. Padrões Identificados
 

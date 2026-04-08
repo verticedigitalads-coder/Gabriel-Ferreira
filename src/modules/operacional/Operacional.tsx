@@ -45,6 +45,13 @@ export function Operacional() {
   const tarefasHojeConcluidas = tarefasHoje.filter((t) => t.concluido);
   const tarefasSemana = tasks.filter((t) => t.data >= hoje);
 
+  const statusConfig: Record<string, { label: string; cls: string }> = {
+    pendente:    { label: 'Pendente',    cls: 'bg-[var(--bg-surface-3)] text-[var(--text-secondary)]' },
+    em_producao: { label: 'Em produção', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
+    pronto:      { label: 'Pronto',      cls: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' },
+    instalado:   { label: 'Instalado',   cls: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
+  };
+
   const confirmEdit = async () => {
     if (!taskToEdit) return;
 
@@ -206,16 +213,32 @@ export function Operacional() {
         {tarefasHojePendentes.map((task) => (
           <div
             key={task.id}
-            className="bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-center mb-2 border border-[var(--border)]"
+            className="bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-start mb-2 border border-[var(--border)]"
           >
-            <div>
+            <div className="flex-1">
               <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
               <div className={`text-sm ${prioridadeColor(task.prioridade)}`}>
                 {task.prioridade.toUpperCase()}
               </div>
+              {/* Pills de status de produção */}
+              <div className="flex gap-1 flex-wrap mt-2">
+                {(['pendente', 'em_producao', 'pronto', 'instalado'] as const).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => updateTask(task.id, { status: s })}
+                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors
+                      ${(task.status || 'pendente') === s
+                        ? statusConfig[s].cls + ' border-transparent font-semibold'
+                        : 'border-[var(--border)] text-[var(--text-tertiary)] hover:border-[var(--accent)]'
+                      }`}
+                  >
+                    {statusConfig[s].label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-3 items-center ml-3">
               <button
                 onClick={() => updateTask(task.id, { concluido: true })}
                 className="text-[var(--text-tertiary)] hover:text-[var(--success)] transition-colors"
@@ -278,7 +301,12 @@ export function Operacional() {
         {tarefasSemana.map((task) => (
           <div key={task.id} className="bg-[var(--bg-surface-2)] p-3 rounded mb-2 border border-[var(--border)]">
             <div className="text-sm text-[var(--text-tertiary)]">{task.data}</div>
-            <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[task.status || 'pendente']?.cls || ''}`}>
+                {statusConfig[task.status || 'pendente']?.label}
+              </span>
+            </div>
           </div>
         ))}
       </div>

@@ -26,6 +26,7 @@ import {
   History,
 } from 'lucide-react';
 import type { Lead } from '@/types';
+import { HISTORICO_TIPO } from '@/types';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -58,6 +59,10 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const [valorOrcamento, setValorOrcamento] = useState(
     lead.valorOrcado != null ? String(lead.valorOrcado) : '',
   );
+
+  const [showContatoModal, setShowContatoModal] = useState(false);
+  const [textoContato, setTextoContato] = useState('');
+  const [dataProximoContato, setDataProximoContato] = useState('');
 
   const diasSemContato = lead.ultimoContato
     ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
@@ -108,6 +113,29 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     setShowVisitModal(false);
   };
 
+  const handleRegistrarContato = async () => {
+    if (!textoContato.trim()) return;
+
+    await updateLead(lead.id, {
+      ultimoContato: new Date().toISOString(),
+      proximoContato: dataProximoContato || lead.proximoContato,
+      historico: [
+        ...(Array.isArray(lead.historico) ? lead.historico : []),
+        {
+          id: crypto.randomUUID(),
+          tipo: HISTORICO_TIPO.CONTATO,
+          descricao: textoContato.trim(),
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    });
+
+    addToast({ type: 'success', message: 'Contato registrado!' });
+    setShowContatoModal(false);
+    setTextoContato('');
+    setDataProximoContato('');
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -134,7 +162,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         <div className="grid grid-cols-2 gap-2">
           <Button
             variant="primary"
-            onClick={() => console.log('Contato registrado')}
+            onClick={() => setShowContatoModal(true)}
             className="gap-2"
           >
             <Phone className="w-4 h-4" />
@@ -424,6 +452,45 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             </Button>
 
             <Button variant="primary" onClick={handleScheduleVisit}>
+              Confirmar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showContatoModal}
+        onClose={() => setShowContatoModal(false)}
+        title="Registrar Contato"
+      >
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              O que foi tratado? *
+            </label>
+            <textarea
+              value={textoContato}
+              onChange={e => setTextoContato(e.target.value)}
+              rows={3}
+              className="w-full border border-[var(--border)] rounded p-2 bg-[var(--bg-surface-2)] text-[var(--text-primary)] text-sm resize-none"
+              placeholder="Descreva o contato realizado..."
+            />
+          </div>
+          <Input
+            label="Próximo contato (opcional)"
+            type="date"
+            value={dataProximoContato}
+            onChange={e => setDataProximoContato(e.target.value)}
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setShowContatoModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleRegistrarContato}
+              disabled={!textoContato.trim()}
+            >
               Confirmar
             </Button>
           </div>
