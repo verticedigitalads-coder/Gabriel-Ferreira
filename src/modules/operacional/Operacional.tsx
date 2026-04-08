@@ -3,6 +3,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
+import { CheckCircle2, Trash2 } from 'lucide-react';
 
 import OperacionalCalendar from './components/OperacionalCalendar';
 import OperacionalMonthCalendar from './components/OperacionalMonthCalendar';
@@ -40,6 +41,8 @@ export function Operacional() {
   const hoje = format(new Date(), 'yyyy-MM-dd');
 
   const tarefasHoje = tasks.filter((t) => t.data === hoje);
+  const tarefasHojePendentes = tarefasHoje.filter((t) => !t.concluido);
+  const tarefasHojeConcluidas = tarefasHoje.filter((t) => t.concluido);
   const tarefasSemana = tasks.filter((t) => t.data >= hoje);
 
   const confirmEdit = async () => {
@@ -200,12 +203,10 @@ export function Operacional() {
           <p className="text-[var(--text-tertiary)] text-sm">Nenhuma tarefa para hoje</p>
         )}
 
-        {tarefasHoje.map((task) => (
+        {tarefasHojePendentes.map((task) => (
           <div
             key={task.id}
-            className={`bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-center mb-2 border border-[var(--border)] ${
-              task.concluido ? 'opacity-50 line-through' : ''
-            }`}
+            className="bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-center mb-2 border border-[var(--border)]"
           >
             <div>
               <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
@@ -214,16 +215,13 @@ export function Operacional() {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
               <button
-                onClick={() =>
-                  updateTask(task.id, {
-                    concluido: !task.concluido,
-                  })
-                }
-                className="text-[var(--success)] font-bold"
+                onClick={() => updateTask(task.id, { concluido: true })}
+                className="text-[var(--text-tertiary)] hover:text-[var(--success)] transition-colors"
+                title="Marcar como concluída"
               >
-                ✓
+                <CheckCircle2 size={16} />
               </button>
 
               <button
@@ -231,13 +229,42 @@ export function Operacional() {
                   setTaskToDelete(task);
                   setShowDeleteModal(true);
                 }}
-                className="text-[var(--danger)] font-bold"
+                className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+                title="Excluir"
               >
-                ✕
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
         ))}
+
+        {tarefasHojeConcluidas.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium text-[var(--text-tertiary)] mb-2">Concluídas hoje</h3>
+            {tarefasHojeConcluidas.map((task) => (
+              <div
+                key={task.id}
+                className="bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-center mb-2 border border-[var(--border)] opacity-60"
+              >
+                <div>
+                  <div className="font-medium text-[var(--text-tertiary)] line-through italic">
+                    {task.titulo}
+                  </div>
+                  <div className={`text-sm ${prioridadeColor(task.prioridade)}`}>
+                    {task.prioridade.toUpperCase()}
+                  </div>
+                </div>
+                <button
+                  onClick={() => updateTask(task.id, { concluido: false })}
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-sm"
+                  title="Desfazer conclusão"
+                >
+                  ↩
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ================= PRÓXIMOS DIAS ================= */}

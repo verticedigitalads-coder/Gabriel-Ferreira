@@ -48,6 +48,11 @@ const Operacional = lazy(() =>
     default: m.Operacional,
   })),
 );
+const ContasReceber = lazy(() =>
+  import('@/modules/contasReceber/ContasReceber').then((m) => ({
+    default: m.ContasReceber,
+  })),
+);
 
 function LoadingFallback() {
   return (
@@ -75,6 +80,7 @@ function ModuleRouter() {
       {activeModule === 'settings' && <Settings />}
       {activeModule === 'operacional' && <Operacional />}
       {activeModule === 'central' && <Central />}
+      {activeModule === 'contas-receber' && <ContasReceber />}
 
       {activeModule === 'fornecedores' && <Fornecedores />}
       {activeModule === 'comparador' && <ComparadorPrecos />}

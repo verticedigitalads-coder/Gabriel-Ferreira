@@ -11,6 +11,7 @@ import {
   subMonths,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const prioridadeColor: Record<string, string> = {
   baixa: 'bg-blue-100 border-blue-400 text-blue-800',
@@ -20,7 +21,7 @@ const prioridadeColor: Record<string, string> = {
 type Props = {
   onDelete: (task: any) => void;
   onEdit: (task: any) => void;
-  onCreate?: (date: string) => void; // 🔥 NOVO
+  onCreate?: (date: string) => void;
 };
 
 function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
@@ -49,28 +50,28 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
     });
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border p-6">
+    <div className="bg-[var(--bg-surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="text-sm bg-gray-100 px-3 py-1 rounded"
+          className="text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1 rounded transition-colors"
         >
           ←
         </button>
 
-        <h2 className="text-lg font-bold capitalize">
+        <h2 className="text-lg font-bold capitalize text-[var(--text-primary)]">
           {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
         </h2>
 
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="text-sm bg-gray-100 px-3 py-1 rounded"
+          className="text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1 rounded transition-colors"
         >
           →
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-xs font-semibold text-center mb-2">
+      <div className="grid grid-cols-7 gap-2 text-xs font-semibold text-center mb-2 text-[var(--text-secondary)]">
         {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((d) => (
           <div key={d}>{d}</div>
         ))}
@@ -88,19 +89,18 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
               key={index}
               className={`
                 min-h-[110px] border rounded p-1 text-xs
-                ${isToday ? 'bg-blue-50 border-blue-400' : ''}
+                ${isToday ? 'bg-[var(--accent-subtle)] border-[var(--accent)]' : 'border-[var(--border)]'}
                 ${!isCurrentMonth ? 'opacity-40' : ''}
               `}
             >
-              <div className="font-semibold mb-1 text-right">
+              <div className="font-semibold mb-1 text-right text-[var(--text-primary)]">
                 {format(date, 'd')}
               </div>
 
               <div className="space-y-1 overflow-hidden">
-                {/* 🔥 BOTÃO NOVO */}
                 <button
                   onClick={() => onCreate?.(dateString)}
-                  className="text-[10px] text-blue-600 mb-1"
+                  className="text-[10px] text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors mb-1"
                 >
                   + adicionar
                 </button>
@@ -117,20 +117,20 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
                       <span className="truncate">{task.titulo}</span>
 
                       <div className="flex gap-1">
-                        {/* ✏ EDITAR */}
                         <button
                           onClick={() => onEdit(task)}
-                          className="text-blue-600 hover:scale-110"
+                          className="text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+                          title="Editar"
                         >
-                          <span className="text-[9px]">✏</span>
+                          <Pencil size={9} />
                         </button>
 
-                        {/* 🗑 EXCLUIR */}
                         <button
                           onClick={() => onDelete(task)}
-                          className="text-red-600 hover:scale-110"
+                          className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+                          title="Excluir"
                         >
-                          <span className="text-[9px]">🗑</span>
+                          <Trash2 size={9} />
                         </button>
                       </div>
                     </div>

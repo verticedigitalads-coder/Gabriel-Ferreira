@@ -1,6 +1,6 @@
 import { useStore } from '@/store/useStore';
 import { cn } from '@/utils/cn';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +13,7 @@ import {
   Upload,
   Settings as SettingsIcon,
   CalendarDays,
+  Receipt,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -37,6 +38,7 @@ const sections: { title: string; items: MenuItem[] }[] = [
       { id: 'leads', label: 'Leads', icon: Users },
       { id: 'orcamentos', label: 'Orçamentos', icon: FileText },
       { id: 'financeiro', label: 'Financeiro', icon: DollarSign },
+      { id: 'contas-receber', label: 'Contas a Receber', icon: Receipt },
       { id: 'notas', label: 'Notas', icon: FileCheck },
     ],
   },
@@ -167,10 +169,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   )}
 >
 <button
-  className="md:hidden absolute top-4 right-4 text-[var(--text-tertiary)]"
+  className="md:hidden absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
   onClick={() => setMobileOpen(false)}
 >
-  ✕
+  <X className="w-5 h-5" />
 </button>
 
   {/* Logo */}

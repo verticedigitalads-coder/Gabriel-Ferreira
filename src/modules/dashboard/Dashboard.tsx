@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore'
 import { useDashboardStats } from '@/store/selectors/dashboardSelectors'
 import { StatCard, Card } from '@/components/ui/Card';
 import { PriorityBadge } from '@/components/ui/Badge';
-import { format, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';
+import { format, parseISO, isToday, isTomorrow, differenceInDays, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   AlertTriangle,
@@ -20,6 +20,7 @@ export function Dashboard() {
   const leads = useStore(state => state.leads);
   const tasks = useStore(state => state.operacionalTasks);
   const materiais = useStore(state => state.materiais);
+  const contasReceber = useStore(state => state.contasReceber);
 
   const setActiveModule = useStore(state => state.setActiveModule);
   const selectLead = useStore(state => state.selectLead);
@@ -35,6 +36,18 @@ export function Dashboard() {
   // ==============================
   // 📦 ESTOQUE CRÍTICO
   // ==============================
+
+  const receitaPrevistaMes = useMemo(() => {
+    const now = new Date();
+    const mStart = startOfMonth(now);
+    const mEnd = endOfMonth(now);
+    return contasReceber
+      .filter(c => {
+        if (c.status !== 'pendente') return false;
+        return isWithinInterval(parseISO(c.dataVencimento), { start: mStart, end: mEnd });
+      })
+      .reduce((sum, c) => sum + c.valor, 0);
+  }, [contasReceber]);
 
   const estoqueBaixo = materiais.filter(
     m => m.estoque <= m.estoque_minimo
@@ -176,7 +189,7 @@ export function Dashboard() {
           Previsão de Receita
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
           <StatCard
             label="Receita Potencial"
@@ -191,6 +204,12 @@ export function Dashboard() {
           <StatCard
             label="Receita Conservadora"
             value={formatCurrency(stats.receitaConservadora)}
+          />
+
+          <StatCard
+            label="Receita Prevista (Contas)"
+            value={formatCurrency(receitaPrevistaMes)}
+            color="green"
           />
 
         </div>

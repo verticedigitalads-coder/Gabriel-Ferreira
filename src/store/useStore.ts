@@ -15,7 +15,8 @@ import { createCotacaoMaterialSlice } from './slices/cotacaoMaterialSlice';
 import { createMaterialSlice } from './slices/materialSlice';
 import { createConsumoMaterialSlice } from './slices/consumoMaterialSlice';
 import { createFormSlice } from './slices/formSlice';
-import { formatLead, formatOperacionalTask, formatTransaction } from './formatters';
+import { createContasReceberSlice } from './slices/contasReceberSlice';
+import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber } from './formatters';
 let realtimeStarted = false;
 
 type StoreState = {
@@ -56,6 +57,13 @@ type StoreState = {
   logout: () => Promise<void>;
 
   isLoading: boolean;
+
+  contasReceber: any[];
+  fetchContasReceber: () => Promise<void>;
+  addContaReceber: (data: any) => Promise<any>;
+  updateContaReceber: (id: string, data: any) => Promise<any>;
+  deleteContaReceber: (id: string) => Promise<void>;
+  marcarComoRecebido: (id: string) => Promise<any>;
 };
 
 export const useStore = create<StoreState>()(
@@ -92,6 +100,7 @@ export const useStore = create<StoreState>()(
       ...(createConsumoMaterialSlice as any)(set, get),
 
       ...(createFormSlice as any)(set, get),
+      ...(createContasReceberSlice as any)(set, get),
 
       // ================= INITIALIZE =================
 
@@ -104,7 +113,7 @@ export const useStore = create<StoreState>()(
             return;
           }
 
-          const [leadsRes, orcamentosRes, tasksRes, transactionsRes] =
+          const [leadsRes, orcamentosRes, tasksRes, transactionsRes, contasReceberRes] =
             await Promise.all([
               supabase
                 .from('leads')
@@ -129,6 +138,12 @@ export const useStore = create<StoreState>()(
                 .select('*')
                 .eq('workspace_id', workspaceId)
                 .order('created_at', { ascending: false }),
+
+              supabase
+                .from('contas_receber')
+                .select('*')
+                .eq('workspace_id', workspaceId)
+                .order('data_vencimento', { ascending: true }),
             ]);
 
           const formattedOrcamentos = (orcamentosRes.data || []).map(
@@ -157,6 +172,7 @@ export const useStore = create<StoreState>()(
             orcamentos: formattedOrcamentos,
             operacionalTasks: (tasksRes.data || []).map(formatOperacionalTask),
             transactions: (transactionsRes.data || []).map(formatTransaction),
+            contasReceber: (contasReceberRes.data || []).map(formatContaReceber),
             isLoading: false,
           });
         } catch (error) {
@@ -415,6 +431,44 @@ export const useStore = create<StoreState>()(
           .subscribe((status) => {
             console.log('📡 TRANSACTION STATUS:', status);
           });
+
+        // ================= CONTAS A RECEBER =================
+        supabase
+          .channel('realtime-contas-receber')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'contas_receber',
+              filter: `workspace_id=eq.${workspaceId}`,
+            },
+            (payload: any) => {
+              set((state: any) => {
+                const contas = state.contasReceber || [];
+
+                if (payload.eventType === 'INSERT') {
+                  if (contas.find((c: any) => c.id === payload.new.id)) return state;
+                  return { contasReceber: [formatContaReceber(payload.new), ...contas] };
+                }
+
+                if (payload.eventType === 'UPDATE') {
+                  return {
+                    contasReceber: contas.map((c: any) =>
+                      c.id === payload.new.id ? formatContaReceber(payload.new) : c,
+                    ),
+                  };
+                }
+
+                if (payload.eventType === 'DELETE') {
+                  return { contasReceber: contas.filter((c: any) => c.id !== payload.old.id) };
+                }
+
+                return state;
+              });
+            },
+          )
+          .subscribe();
       },
 
       // ================= WORKSPACE =================
@@ -450,6 +504,7 @@ export const useStore = create<StoreState>()(
           transactions: [],
           notas: [],
           operacionalTasks: [],
+          contasReceber: [],
           selectedLeadId: null,
           activeModule: 'dashboard',
         });

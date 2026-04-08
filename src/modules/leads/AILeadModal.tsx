@@ -184,44 +184,47 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
     setDuplicateLead(null);
   };
 
+  const inputClass = "w-full p-2 text-sm border border-[var(--border)] rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]";
+  const labelClass = "text-[10px] font-bold text-[var(--text-tertiary)] uppercase";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <Card className="w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border-slate-200">
-        <div className="flex items-center justify-between p-4 border-b bg-slate-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <Card className="w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border-[var(--border)]">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--bg-surface)]">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-indigo-600 rounded-md">
+            <div className="p-2 bg-[var(--accent)] rounded-md">
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800 uppercase tracking-tight">
+              <h2 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-tight">
                 Criar Lead com IA
               </h2>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-[var(--text-tertiary)] font-medium">
                 Extraia dados de conversas do WhatsApp automaticamente
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--bg-surface)]">
           {!analysis ? (
             <div className="space-y-4">
-              <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider">
+              <label className="block text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider">
                 Cole a conversa aqui:
               </label>
               <textarea
                 value={conversation}
                 onChange={(e) => setConversation(e.target.value)}
                 placeholder="Ex: [10:30] Cliente: Olá, gostaria de um orçamento para drywall na minha sala. Meu nome é João e meu tel é 11999887766..."
-                className="w-full h-64 p-4 text-sm border-2 border-slate-200 rounded-md focus:border-indigo-500 focus:ring-0 resize-none font-mono bg-slate-50"
+                className="w-full h-64 p-4 text-sm border border-[var(--border)] rounded-md focus:ring-1 focus:ring-[var(--accent)] focus:outline-none resize-none font-mono bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
               />
-              <div className="flex items-center gap-2 text-slate-500 text-sm italic">
+              <div className="flex items-center gap-2 text-[var(--text-tertiary)] text-sm italic">
                 <Clipboard className="w-4 h-4" />
                 <span>
                   Dica: Copie toda a conversa do WhatsApp e cole aqui.
@@ -231,13 +234,13 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
               {duplicateLead && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-md flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                <div className="p-4 bg-[var(--warning-subtle)] border border-[var(--warning)] rounded-md flex gap-3">
+                  <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
                   <div>
-                    <h4 className="text-sm font-bold text-amber-800">
+                    <h4 className="text-sm font-bold text-[var(--warning)]">
                       Lead Existente Detectado
                     </h4>
-                    <p className="text-sm text-amber-700">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       Identificamos que <strong>{duplicateLead.nome}</strong> já
                       está cadastrado.
                     </p>
@@ -247,74 +250,62 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Nome
-                  </label>
+                  <label className={labelClass}>Nome</label>
                   <input
                     value={analysis.nome || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, nome: e.target.value })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Telefone
-                  </label>
+                  <label className={labelClass}>Telefone</label>
                   <input
                     value={analysis.telefone || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, telefone: e.target.value })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Email
-                  </label>
+                  <label className={labelClass}>Email</label>
                   <input
                     value={analysis.email || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, email: e.target.value })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Endereço da Obra
-                  </label>
+                  <label className={labelClass}>Endereço da Obra</label>
                   <input
                     value={analysis.endereco || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, endereco: e.target.value })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Serviço
-                  </label>
+                  <label className={labelClass}>Serviço</label>
                   <input
                     value={analysis.servico || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, servico: e.target.value })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Status
-                  </label>
+                  <label className={labelClass}>Status</label>
                   <select
                     value={analysis.status || ''}
                     onChange={(e) =>
@@ -323,7 +314,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                         status: e.target.value as any,
                       })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   >
                     <option value="novo">Novo</option>
                     <option value="atendimento">Atendimento</option>
@@ -333,9 +324,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Temperatura
-                  </label>
+                  <label className={labelClass}>Temperatura</label>
                   <select
                     value={analysis.temperatura || ''}
                     onChange={(e) =>
@@ -344,7 +333,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                         temperatura: e.target.value as any,
                       })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   >
                     <option value="frio">Frio</option>
                     <option value="morno">Morno</option>
@@ -353,9 +342,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Valor Orçado
-                  </label>
+                  <label className={labelClass}>Valor Orçado</label>
                   <input
                     type="number"
                     value={analysis.valorOrcado || ''}
@@ -367,26 +354,22 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                           : null,
                       })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Último Contato
-                  </label>
+                  <label className={labelClass}>Último Contato</label>
                   <input
                     type="date"
                     value={analysis.ultimoContato?.split('T')[0] || ''}
                     readOnly
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">
-                    Próximo Contato
-                  </label>
+                  <label className={labelClass}>Próximo Contato</label>
                   <input
                     type="date"
                     value={analysis.dataSugeridaFollowUp || ''}
@@ -396,13 +379,13 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                         dataSugeridaFollowUp: e.target.value,
                       })
                     }
-                    className="w-full p-2 text-sm border border-slate-200 rounded"
+                    className={inputClass}
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <label className={`${labelClass} tracking-wider`}>
                   Resumo Gerado
                 </label>
 
@@ -411,27 +394,27 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                   onChange={(e) =>
                     setAnalysis({ ...analysis, resumo: e.target.value })
                   }
-                  className="w-full p-3 text-sm border border-slate-200 rounded bg-white h-24 resize-none font-medium leading-relaxed"
+                  className="w-full p-3 text-sm border border-[var(--border)] rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] h-24 resize-none font-medium leading-relaxed focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-1 p-3 bg-slate-50 rounded border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                <div className="flex-1 p-3 bg-[var(--bg-surface-2)] rounded border border-[var(--border)]">
+                  <span className={`${labelClass} block mb-1`}>
                     Temperatura
                   </span>
 
-                  <span className="text-sm font-bold uppercase text-slate-700">
+                  <span className="text-sm font-bold uppercase text-[var(--text-primary)]">
                     {analysis.temperatura}
                   </span>
                 </div>
 
-                <div className="flex-1 p-3 bg-slate-50 rounded border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                <div className="flex-1 p-3 bg-[var(--bg-surface-2)] rounded border border-[var(--border)]">
+                  <span className={`${labelClass} block mb-1`}>
                     Próxima Ação
                   </span>
 
-                  <span className="text-sm font-medium text-slate-700 italic">
+                  <span className="text-sm font-medium text-[var(--text-secondary)] italic">
                     "{analysis.proximaAcao}"
                   </span>
                 </div>
@@ -440,7 +423,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
           )}
         </div>
 
-        <div className="p-4 border-t bg-slate-50 flex justify-end gap-3">
+        <div className="p-4 border-t border-[var(--border)] bg-[var(--bg-surface)] flex justify-end gap-3">
           {!analysis ? (
             <>
               <Button variant="ghost" onClick={onClose} disabled={isAnalyzing}>

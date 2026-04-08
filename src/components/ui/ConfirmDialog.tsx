@@ -26,11 +26,11 @@ export function ConfirmDialog({
     <Modal isOpen={isOpen} onClose={onCancel} title={title}>
       <div className="p-6 space-y-6">
         <div className="flex items-start gap-3">
-          <div className="text-red-500 text-xl">⚠️</div>
-          <p className="text-gray-700">{description}</p>
+          <div className="text-[var(--danger)] text-xl">⚠️</div>
+          <p className="text-[var(--text-secondary)]">{description}</p>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t">
+        <div className="flex justify-end gap-2 pt-4 border-t border-[var(--border)]">
           <Button variant="secondary" onClick={onCancel}>
             {cancelText}
           </Button>

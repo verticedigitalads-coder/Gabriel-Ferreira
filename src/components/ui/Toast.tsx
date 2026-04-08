@@ -10,10 +10,10 @@ const iconMap = {
 };
 
 const styleMap = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
+  success: 'bg-[var(--success-subtle)] border-[var(--success)] text-[var(--success)]',
+  error: 'bg-[var(--danger-subtle)] border-[var(--danger)] text-[var(--danger)]',
+  warning: 'bg-[var(--warning-subtle)] border-[var(--warning)] text-[var(--warning)]',
+  info: 'bg-[var(--accent-subtle)] border-[var(--accent)] text-[var(--accent)]',
 };
 
 export function ToastContainer() {
@@ -38,7 +38,7 @@ export function ToastContainer() {
             <span className="flex-1 text-sm font-medium">{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}
-              className="p-1 hover:bg-black/5 rounded transition-colors"
+              className="p-1 hover:bg-[var(--bg-surface-2)] rounded transition-colors"
             >
               <X className="w-4 h-4" />
             </button>

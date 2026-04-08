@@ -2,7 +2,7 @@ import { useStore } from '@/store/useStore';
 import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Bell, Building2 } from 'lucide-react';
+import { Bell, Building2, AlertCircle, Calendar } from 'lucide-react';
 
 export function HeaderGlobal() {
   const activeModule = useStore(state => state.activeModule);
@@ -18,6 +18,11 @@ export function HeaderGlobal() {
     ia: 'IA Assistente',
     settings: 'Configurações',
     operacional: 'Painel Operacional',
+    central: 'Modo Execução',
+    'contas-receber': 'Contas a Receber',
+    fornecedores: 'Fornecedores',
+    comparador: 'Comparador de Preços',
+    estoque: 'Estoque',
   };
 
   const today = format(new Date(), "dd 'de' MMMM yyyy", { locale: ptBR });
@@ -41,10 +46,10 @@ export function HeaderGlobal() {
         {/* Indicadores rápidos */}
         <div className="hidden md:flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] bg-[var(--danger-subtle)] text-[var(--danger)]">
-            🔴 {stats.tarefasAtrasadas} atrasadas
+            <AlertCircle className="w-3 h-3" /> {stats.tarefasAtrasadas} atrasadas
           </span>
           <span className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] bg-[var(--accent-subtle)] text-[var(--accent)]">
-            📅 {stats.tarefasHoje} hoje
+            <Calendar className="w-3 h-3" /> {stats.tarefasHoje} hoje
           </span>
         </div>
 

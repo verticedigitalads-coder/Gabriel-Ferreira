@@ -5,6 +5,7 @@ import { HeaderGlobal } from './HeaderGlobal';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
+import { Menu } from 'lucide-react';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -47,10 +48,10 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="flex items-center justify-between px-6 py-3 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
 
   <button
-    className="md:hidden mr-4 text-[var(--text-secondary)]"
+    className="md:hidden mr-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
     onClick={() => setSidebarOpen(true)}
   >
-    ☰
+    <Menu className="w-5 h-5" />
   </button>
 
   <HeaderGlobal />

@@ -8,6 +8,7 @@ import {
   useDroppable,
   DragEndEvent,
 } from '@dnd-kit/core';
+import { Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react';
 
 import { calculateOperationalUrgency } from '@/domain/operacional/calculateOperationalUrgency';
 
@@ -68,7 +69,7 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
         transition-all duration-200
         hover:shadow-md
         ${statusColor[task.status] || prioridadeColor[task.prioridade]}
-        ${task.concluido ? 'opacity-50 line-through' : ''}
+        ${task.concluido ? 'opacity-60' : ''}
         ${isCritical ? 'ring-2 ring-red-600' : ''}
       `}
     >
@@ -77,13 +78,8 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
           {...listeners}
           {...attributes}
           className="flex-1 cursor-grab active:cursor-grabbing"
-          onClick={() =>
-            updateTask(task.id, {
-              concluido: !task.concluido,
-            })
-          }
         >
-          <p className="font-semibold">{task.titulo}</p>
+          <p className={`font-semibold ${task.concluido ? 'line-through italic' : ''}`}>{task.titulo}</p>
 
           <p className="text-[10px] opacity-70 capitalize">
             Status: {task.status?.replace('_', ' ')}
@@ -101,13 +97,32 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
           )}
         </div>
 
-        <div className="flex gap-2">
-          <button onClick={handleEdit} className="text-blue-600 text-xs">
-            ✏
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              updateTask(task.id, { concluido: !task.concluido });
+            }}
+            className={`transition-colors ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
+            title={task.concluido ? 'Marcar como pendente' : 'Marcar como concluída'}
+          >
+            {task.concluido ? <CheckCircle2 size={14} /> : <Circle size={14} />}
           </button>
 
-          <button onClick={handleDelete} className="text-red-600 text-xs">
-            🗑
+          <button
+            onClick={handleEdit}
+            className="text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+            title="Editar"
+          >
+            <Pencil size={14} />
+          </button>
+
+          <button
+            onClick={handleDelete}
+            className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+            title="Excluir"
+          >
+            <Trash2 size={14} />
           </button>
         </div>
       </div>

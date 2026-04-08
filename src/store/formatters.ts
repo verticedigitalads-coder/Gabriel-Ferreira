@@ -84,6 +84,21 @@ export const formatNota = (raw: any) => ({
   updatedAt: raw.updated_at,
 })
 
+export const formatContaReceber = (raw: any) => ({
+  id: raw.id,
+  workspaceId: raw.workspace_id,
+  leadId: raw.lead_id ?? null,
+  descricao: raw.descricao,
+  valor: raw.valor,
+  dataVencimento: toDateInput(raw.data_vencimento),
+  dataRecebimento: toDateInput(raw.data_recebimento),
+  status: raw.status,
+  formaRecebimento: raw.forma_recebimento ?? null,
+  observacao: raw.observacao ?? null,
+  createdAt: raw.created_at,
+  updatedAt: raw.updated_at,
+})
+
 export const formatMaterial = (raw: any) => ({
   id: raw.id,
   workspaceId: raw.workspace_id,

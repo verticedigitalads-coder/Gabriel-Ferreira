@@ -30,7 +30,7 @@ export default function Fornecedores() {
 
     <div className="p-6 max-w-5xl">
 
-      <h1 className="text-xl font-bold mb-6">
+      <h1 className="text-xl font-bold mb-6 text-[var(--text-primary)]">
         Fornecedores
       </h1>
 
@@ -42,26 +42,26 @@ export default function Fornecedores() {
           placeholder="Nome"
           value={nome}
           onChange={e=>setNome(e.target.value)}
-          className="border px-3 py-2 rounded w-48"
+          className="border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] px-3 py-2 rounded w-48"
         />
 
         <input
           placeholder="Telefone"
           value={telefone}
           onChange={e=>setTelefone(e.target.value)}
-          className="border px-3 py-2 rounded w-40"
+          className="border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] px-3 py-2 rounded w-40"
         />
 
         <input
           placeholder="Endereço"
           value={endereco}
           onChange={e=>setEndereco(e.target.value)}
-          className="border px-3 py-2 rounded flex-1"
+          className="border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] px-3 py-2 rounded flex-1"
         />
 
         <button
           onClick={handleAdd}
-          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+          className="bg-[var(--accent)] text-white px-4 rounded hover:bg-[var(--accent-hover)] transition-colors"
         >
           Adicionar
         </button>
@@ -74,7 +74,7 @@ export default function Fornecedores() {
       <div className="space-y-3">
 
         {fornecedores.length === 0 && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[var(--text-tertiary)]">
             Nenhum fornecedor cadastrado
           </p>
         )}
@@ -83,23 +83,23 @@ export default function Fornecedores() {
 
           <div
             key={f.id}
-            className="border rounded-lg p-4 flex justify-between items-center bg-white shadow-sm"
+            className="border border-[var(--border)] rounded-lg p-4 flex justify-between items-center bg-[var(--bg-surface)] shadow-sm"
           >
 
             <div>
 
-              <p className="font-semibold">
+              <p className="font-semibold text-[var(--text-primary)]">
                 {f.nome}
               </p>
 
               {f.telefone && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--text-secondary)]">
                   {f.telefone}
                 </p>
               )}
 
               {f.endereco && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--text-secondary)]">
                   {f.endereco}
                 </p>
               )}
@@ -114,7 +114,7 @@ export default function Fornecedores() {
               {f.telefone && (
                 <a
                   href={`tel:${f.telefone}`}
-                  className="text-blue-600 text-sm font-medium hover:underline"
+                  className="text-[var(--accent)] text-sm font-medium hover:underline"
                 >
                   Ligar
                 </a>
@@ -122,7 +122,7 @@ export default function Fornecedores() {
 
               <button
                 onClick={()=>deleteFornecedor(f.id)}
-                className="text-red-600 text-sm hover:underline"
+                className="text-[var(--text-tertiary)] text-sm hover:text-[#ef4444] transition-colors"
               >
                 Remover
               </button>

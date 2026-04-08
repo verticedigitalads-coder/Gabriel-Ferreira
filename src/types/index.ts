@@ -43,6 +43,34 @@ export type TransactionType =
 
 export type NotaStatus = 'pendente' | 'emitida' | 'cancelada';
 
+export type ContaReceberStatus = 'pendente' | 'recebido' | 'atrasado' | 'cancelado';
+export type FormaRecebimento = 'pix' | 'boleto' | 'transferencia' | 'dinheiro' | 'cartao';
+
+export interface ContaReceber {
+  id: string;
+  workspaceId: string;
+  leadId: string | null;
+  descricao: string;
+  valor: number;
+  dataVencimento: string;
+  dataRecebimento: string | null;
+  status: ContaReceberStatus;
+  formaRecebimento: FormaRecebimento | null;
+  observacao: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContaReceberFormData {
+  leadId?: string | null;
+  descricao: string;
+  valor: number;
+  dataVencimento: string;
+  status?: ContaReceberStatus;
+  formaRecebimento?: FormaRecebimento | null;
+  observacao?: string | null;
+}
+
 // =========================
 // HISTÓRICO (ARQUITETURA ORIENTADA A EVENTOS)
 // =========================

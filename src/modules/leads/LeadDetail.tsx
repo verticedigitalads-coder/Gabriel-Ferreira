@@ -42,7 +42,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
 
   // 🔒 Proteção crítica contra undefined (Realtime safe)
   if (!lead) {
-    return <div className="p-6 text-gray-500">Carregando lead...</div>;
+    return <div className="p-6 text-[var(--text-tertiary)]">Carregando lead...</div>;
   }
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -97,16 +97,14 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     setShowVisitModal(false);
   };
 
-  // 🔥 Resto do seu JSX continua normalmente abaixo
-
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b bg-gray-50">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">{lead.nome}</h2>
-            <p className="text-sm text-gray-500 mt-1">{lead.servico}</p>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">{lead.nome}</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">{lead.servico}</p>
           </div>
           <PriorityBadge
             level={lead.prioridadeLevel}
@@ -173,33 +171,33 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
 
         {/* Info Cards */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
+            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
               <Phone className="w-4 h-4" />
               <span className="text-xs font-medium">Telefone</span>
             </div>
             <p
-              className="text-sm font-medium text-gray-900 cursor-pointer hover:text-blue-600"
+              className="text-sm font-medium text-[var(--text-primary)] cursor-pointer hover:text-[var(--accent)] transition-colors"
               onClick={() => copyPhone(lead.telefone)}
             >
               {lead.telefone}
             </p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
+            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
               <Mail className="w-4 h-4" />
               <span className="text-xs font-medium">Email</span>
             </div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-[var(--text-primary)]">
               {lead.email || '-'}
             </p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
+            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
               <Clock className="w-4 h-4" />
               <span className="text-xs font-medium">Último Contato</span>
             </div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-[var(--text-primary)]">
               {lead.ultimoContato
                 ? format(parseISO(lead.ultimoContato), "dd 'de' MMM", {
                     locale: ptBR,
@@ -207,17 +205,17 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
                 : 'Nunca'}
             </p>
             {diasSemContato !== null && diasSemContato > 3 && (
-              <p className="text-xs text-red-600 mt-1">
+              <p className="text-xs text-[var(--danger)] mt-1">
                 ⚠️ {diasSemContato} dias atrás
               </p>
             )}
           </div>
-          <div className="p-4 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
+            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
               <Calendar className="w-4 h-4" />
               <span className="text-xs font-medium">Próximo Contato</span>
             </div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-[var(--text-primary)]">
               {lead.proximoContato
                 ? format(parseISO(lead.proximoContato), "dd 'de' MMM", {
                     locale: ptBR,
@@ -225,16 +223,16 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
                 : 'Não agendado'}
             </p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-md col-span-2">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md col-span-2">
+            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
               <DollarSign className="w-4 h-4" />
               <span className="text-xs font-medium">Valor Orçado</span>
             </div>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-[var(--text-primary)]">
               {formatCurrency(lead.valorOrcado)}
             </p>
             {lead.orcamentoEnviado && (
-              <span className="text-xs text-green-600">
+              <span className="text-xs text-[var(--success)]">
                 ✓ Orçamento enviado
               </span>
             )}
@@ -244,8 +242,8 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         {/* Resumo */}
         {lead.resumo && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Resumo</h3>
-            <p className="text-sm text-gray-600 p-3 bg-gray-50 rounded-md">
+            <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">Resumo</h3>
+            <p className="text-sm text-[var(--text-secondary)] p-3 bg-[var(--bg-surface-2)] rounded-md">
               {lead.resumo}
             </p>
           </div>
@@ -254,10 +252,10 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         {/* Observações */}
         {lead.observacoes && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+            <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">
               Observações
             </h3>
-            <p className="text-sm text-gray-600 p-3 bg-gray-50 rounded-md">
+            <p className="text-sm text-[var(--text-secondary)] p-3 bg-[var(--bg-surface-2)] rounded-md">
               {lead.observacoes}
             </p>
           </div>
@@ -265,7 +263,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
 
         {/* Histórico */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2 flex items-center gap-2">
             <History className="w-4 h-4" />
             Histórico
           </h3>
@@ -276,12 +274,12 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               .map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-start gap-3 p-3 bg-gray-50 rounded-md"
+                  className="flex items-start gap-3 p-3 bg-[var(--bg-surface-2)] rounded-md"
                 >
-                  <div className="w-2 h-2 mt-1.5 rounded-full bg-blue-500" />
+                  <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--accent)]" />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-900">{entry.descricao}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm text-[var(--text-primary)]">{entry.descricao}</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
                       {entry.createdAt
                         ? format(
                             parseISO(entry.createdAt),
@@ -298,7 +296,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
       </div>
 
       {/* Footer Actions */}
-      <div className="p-4 border-t bg-gray-50 flex items-center justify-between">
+      <div className="p-4 border-t border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between">
         <Button
           variant="danger"
           size="sm"
@@ -374,7 +372,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         title="Confirmar Exclusão"
       >
         <div className="p-6">
-          <p className="text-gray-600 mb-6">
+          <p className="text-[var(--text-secondary)] mb-6">
             Tem certeza que deseja excluir o lead <strong>{lead.nome}</strong>?
             Esta ação não pode ser desfeita.
           </p>
