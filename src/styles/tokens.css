@@ -1,0 +1,97 @@
+/* ============================================
+   CRM DESIGN TOKENS — Inspirado no Linear
+   Dark sidebar + conteúdo levemente cinza
+   ============================================ */
+
+:root {
+  /* --- CORES BASE --- */
+  --bg-app: #111113; /* fundo global */
+  --bg-sidebar: #0a0a0b; /* sidebar escura */
+  --bg-surface: #18181b; /* cards, modais, painéis */
+  --bg-surface-2: #1e1e22; /* superfície elevada (hover, inputs) */
+  --bg-surface-3: #26262c; /* superfície mais elevada (dropdowns) */
+
+  /* --- TEXTO --- */
+  --text-primary: #f4f4f5; /* títulos, texto principal */
+  --text-secondary: #a1a1aa; /* labels, subtítulos */
+  --text-tertiary: #71717a; /* placeholders, metadata */
+  --text-disabled: #3f3f46; /* desabilitado */
+
+  /* --- COR PRIMÁRIA (azul dessaturado — estilo Linear) --- */
+  --accent: #5e6ad2; /* ações primárias */
+  --accent-hover: #6b77e5; /* hover */
+  --accent-subtle: rgba(94, 106, 210, 0.12); /* fundo de badge/tag */
+  --accent-foreground: #ffffff;
+
+  /* --- STATUS --- */
+  --success: #4ade80;
+  --success-subtle: rgba(74, 222, 128, 0.1);
+  --warning: #f59e0b;
+  --warning-subtle: rgba(245, 158, 11, 0.1);
+  --danger: #f87171;
+  --danger-subtle: rgba(248, 113, 113, 0.1);
+  --info: #60a5fa;
+  --info-subtle: rgba(96, 165, 250, 0.1);
+
+  /* --- BORDAS --- */
+  --border: rgba(255, 255, 255, 0.07); /* borda padrão */
+  --border-strong: rgba(255, 255, 255, 0.12); /* borda em foco/hover */
+  --border-accent: rgba(94, 106, 210, 0.4); /* borda accent */
+
+  /* --- TIPOGRAFIA --- */
+  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Berkeley Mono', 'Fira Code', monospace;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+
+  --font-normal: 400;
+  --font-medium: 510; /* Inter Variable — peso exato do Linear */
+  --font-semibold: 590;
+  --font-bold: 700;
+
+  --leading-tight: 1.3;
+  --leading-normal: 1.5;
+
+  /* --- ESPAÇAMENTO --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* --- BORDAS ARREDONDADAS --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* --- SOMBRAS (elevation via opacity) --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md:
+    0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-lg:
+    0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-modal:
+    0 16px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  /* --- TRANSIÇÕES --- */
+  --transition-fast: 100ms ease;
+  --transition-base: 150ms ease;
+  --transition-slow: 250ms ease;
+
+  /* --- SIDEBAR --- */
+  --sidebar-width: 220px;
+  --sidebar-item-height: 30px;
+  --sidebar-icon-size: 16px;
+}

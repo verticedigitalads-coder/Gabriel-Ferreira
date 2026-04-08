@@ -21,14 +21,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           
           // Variants - cores funcionais
           {
-            // Primário - Azul ação
-            'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm': variant === 'primary',
-            // Secundário - Cinza neutro
-            'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-400 border-gray-300': variant === 'secondary',
+            // Primário - Accent Linear
+            'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] focus:ring-[var(--accent)] shadow-sm': variant === 'primary',
+            // Secundário - Surface escuro
+            'bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:bg-[var(--bg-surface-3)] focus:ring-[var(--border-strong)] border-[var(--border)]': variant === 'secondary',
             // Danger - Vermelho crítico
             'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm': variant === 'danger',
             // Ghost - Minimal
-            'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-400': variant === 'ghost',
+            'bg-transparent text-[var(--text-tertiary)] hover:bg-[var(--bg-surface-2)] focus:ring-[var(--border-strong)]': variant === 'ghost',
             // Success - Verde confirmação
             'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm': variant === 'success',
           },

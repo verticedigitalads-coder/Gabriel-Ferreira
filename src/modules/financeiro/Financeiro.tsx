@@ -149,11 +149,11 @@ export function Financeiro() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b bg-white">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Financeiro</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Financeiro</h1>
+            <p className="text-sm text-[var(--text-tertiary)]">
               Controle de receitas e despesas
             </p>
           </div>
@@ -162,7 +162,7 @@ export function Financeiro() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface)] text-[var(--text-primary)]"
             />
             <Button onClick={() => setShowModal(true)} className="gap-2">
               <Plus className="w-4 h-4" />
@@ -207,8 +207,8 @@ export function Financeiro() {
                 {getTypeIcon(t.tipo)}
 
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{t.descricao}</p>
-                  <div className="flex gap-2 text-sm text-gray-500">
+                  <p className="font-medium text-[var(--text-primary)]">{t.descricao}</p>
+                  <div className="flex gap-2 text-sm text-[var(--text-secondary)]">
                     <span>{t.categoria}</span>
                     {t.leadId && <span>• {getLeadName(t.leadId)}</span>}
                   </div>

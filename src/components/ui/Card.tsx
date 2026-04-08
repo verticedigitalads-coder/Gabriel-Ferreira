@@ -12,10 +12,10 @@ export function Card({ children, className, onClick, hoverable }: CardProps) {
   return (
     <div
       className={cn(
-        // Corporate card style - clean and professional
-        'bg-white border border-gray-200 rounded-md shadow-sm',
+        // Corporate card style - dark surface
+        'bg-[var(--bg-surface)] border border-[var(--border)] rounded-md shadow-sm',
         'transition-all duration-150',
-        hoverable && 'cursor-pointer hover:border-gray-300 hover:shadow-md',
+        hoverable && 'cursor-pointer hover:border-[var(--border-strong)] hover:shadow-md',
         onClick && 'cursor-pointer',
         className
       )}
@@ -48,27 +48,27 @@ export function StatCard({ label, value, icon, trend, color = 'default', onClick
   return (
     <div
       className={cn(
-        // Corporate stat card - dense and professional
-        'bg-white border border-gray-200 rounded-md p-4',
+        // Corporate stat card - dark surface
+        'bg-[var(--bg-surface)] border border-[var(--border)] rounded-md p-4',
         'transition-all duration-150',
         colorStyles[color],
-        onClick && 'cursor-pointer hover:shadow-md hover:border-gray-300',
-        active && 'ring-2 ring-blue-600 border-blue-600'
+        onClick && 'cursor-pointer hover:shadow-md hover:border-[var(--border-strong)]',
+        active && 'ring-2 ring-[var(--accent)] border-[var(--border-accent)]'
       )}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-[var(--text-primary)]">{value}</p>
           {trend && (
-            <p className={cn('mt-1 text-xs font-semibold', trend.isPositive ? 'text-green-600' : 'text-red-600')}>
+            <p className={cn('mt-1 text-xs font-semibold', trend.isPositive ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
             </p>
           )}
         </div>
         {icon && (
-          <div className="p-2 bg-gray-50 rounded-md">{icon}</div>
+          <div className="p-2 bg-[var(--bg-surface-2)] rounded-md">{icon}</div>
         )}
       </div>
     </div>

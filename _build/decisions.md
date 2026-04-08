@@ -56,3 +56,12 @@
 **Alternativas descartadas:** Biblioteca de conversão automática (esconde erros, dificulta debug)
 **Impacto:** Todo campo novo no Supabase precisa ser adicionado ao format() do slice relevante — fácil de esquecer
 **Revisão em:** Quando migrar para ORM ou camada de adapter centralizada
+
+### [2026-04-07] — Design system baseado no Linear
+
+**Decisão:** Dark sidebar (#0a0a0b) + conteúdo levemente cinza (#111113)
+**Tokens:** src/styles/tokens.css
+**Referência:** .claude/linear-design-reference.md
+**Tipografia:** Inter Variable (pesos 400/510/590)
+**Cor primária:** #5e6ad2 (azul dessaturado — estilo Linear)
+**Revisão em:** Quando tiver 3+ clientes — avaliar tema claro opcional

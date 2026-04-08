@@ -23,14 +23,14 @@ export function HeaderGlobal() {
   const today = format(new Date(), "dd 'de' MMMM yyyy", { locale: ptBR });
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
-      
+    <header className="h-16 bg-[var(--bg-sidebar)] border-b border-[var(--border)] flex items-center justify-between px-6">
+
       {/* ESQUERDA */}
       <div>
-        <h1 className="text-lg font-semibold text-gray-900">
+        <h1 className="text-lg font-semibold text-[var(--text-primary)] tracking-tight">
           {moduleNames[activeModule] ?? 'CRM'}
         </h1>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
           {today}
         </p>
       </div>
@@ -39,31 +39,31 @@ export function HeaderGlobal() {
       <div className="flex items-center gap-6">
 
         {/* Indicadores rápidos */}
-        <div className="hidden md:flex items-center gap-4 text-sm">
-          <span className="text-gray-600">
+        <div className="hidden md:flex items-center gap-3 text-xs">
+          <span className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] bg-[var(--danger-subtle)] text-[var(--danger)]">
             🔴 {stats.tarefasAtrasadas} atrasadas
           </span>
-          <span className="text-gray-600">
+          <span className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] bg-[var(--accent-subtle)] text-[var(--accent)]">
             📅 {stats.tarefasHoje} hoje
           </span>
         </div>
 
         {/* Empresa (Multiempresa futuro) */}
-        <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-md text-sm text-gray-700">
+        <div className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)]">
           <Building2 className="w-4 h-4" />
           FL Art Metal
         </div>
 
         {/* Notificações */}
-        <button className="relative">
-          <Bell className="w-5 h-5 text-gray-600" />
+        <button className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">
+          <Bell className="w-5 h-5" />
           {stats.tarefasAtrasadas > 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--danger)] rounded-full" />
           )}
         </button>
 
         {/* Avatar */}
-        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+        <div className="w-8 h-8 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-sm font-semibold">
           G
         </div>
 

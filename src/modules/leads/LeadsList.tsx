@@ -58,11 +58,11 @@ export function LeadsList() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b bg-white">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Leads</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Leads</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
               {filteredLeads.length} de {leads.length} leads
             </p>
           </div>

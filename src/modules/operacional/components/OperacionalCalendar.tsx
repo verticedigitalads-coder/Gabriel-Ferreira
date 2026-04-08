@@ -143,11 +143,11 @@ function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
   return (
     <div
       ref={setNodeRef}
-      className="rounded-xl p-4 border min-h-[160px] bg-white border-gray-200"
+      className="rounded-xl p-4 border min-h-[160px] bg-[var(--bg-surface)] border-[var(--border)]"
     >
       <div className="mb-3">
         <p className="text-sm font-semibold capitalize">{day.label}</p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-[var(--text-tertiary)]">
           {format(day.date, 'EEEE, dd/MM/yyyy', { locale: ptBR })}
         </p>
       </div>
@@ -234,29 +234,29 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border)] p-6">
         <div className="flex gap-2 mb-6 text-sm flex-wrap">
           <button
             onClick={() => setFilterMode('all')}
-            className="px-3 py-1 bg-gray-200 rounded"
+            className="px-3 py-1 bg-[var(--bg-surface-2)] text-[var(--text-secondary)] rounded"
           >
             Todas
           </button>
           <button
             onClick={() => setFilterMode('critical')}
-            className="px-3 py-1 bg-red-200 rounded"
+            className="px-3 py-1 bg-[var(--danger-subtle)] text-[var(--danger)] rounded"
           >
             Críticas
           </button>
           <button
             onClick={() => setFilterMode('urgent')}
-            className="px-3 py-1 bg-yellow-200 rounded"
+            className="px-3 py-1 bg-[var(--warning-subtle)] text-[var(--warning)] rounded"
           >
             Urgentes
           </button>
           <button
             onClick={() => setFilterMode('delayed')}
-            className="px-3 py-1 bg-gray-300 rounded"
+            className="px-3 py-1 bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
           >
             Atrasadas
           </button>

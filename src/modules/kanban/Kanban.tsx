@@ -100,9 +100,9 @@ export function Kanban() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b bg-white">
-        <h1 className="text-2xl font-bold text-gray-900">Kanban</h1>
-        <p className="text-sm text-gray-500">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Kanban</h1>
+        <p className="text-sm text-[var(--text-tertiary)]">
           Arraste os leads entre as colunas para atualizar o status
         </p>
       </div>
@@ -128,9 +128,9 @@ export function Kanban() {
 
           <DragOverlay>
             {activeLead && (
-              <div className="bg-white border rounded-md shadow-lg p-3 w-64 opacity-90">
-                <p className="font-semibold text-gray-900">{activeLead.nome}</p>
-                <p className="text-sm text-gray-500">{activeLead.servico}</p>
+              <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-md shadow-lg p-3 w-64 opacity-90">
+                <p className="font-semibold text-[var(--text-primary)]">{activeLead.nome}</p>
+                <p className="text-sm text-[var(--text-tertiary)]">{activeLead.servico}</p>
               </div>
             )}
           </DragOverlay>
@@ -156,16 +156,16 @@ function KanbanColumnComponent({ column, colorClass, onLeadClick, formatCurrency
   return (
     <div
       ref={setNodeRef}
-      className={`w-72 flex-shrink-0 bg-gray-50 rounded-md border-t-4 ${colorClass} flex flex-col`}
+      className={`w-72 flex-shrink-0 bg-[var(--bg-surface-2)] rounded-md border-t-4 ${colorClass} flex flex-col`}
     >
-      <div className="p-3 border-b bg-white rounded-t-md">
+      <div className="p-3 border-b border-[var(--border)] bg-[var(--bg-surface-3)] rounded-t-md">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">{column.title}</h3>
-          <span className="text-sm text-gray-500">{column.leads.length}</span>
+          <h3 className="font-semibold text-[var(--text-primary)]">{column.title}</h3>
+          <span className="text-sm text-[var(--text-secondary)]">{column.leads.length}</span>
         </div>
 
         {column.valorTotal > 0 && (
-          <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 mt-1 text-xs text-[var(--text-tertiary)]">
             <DollarSign className="w-3 h-3" />
             {formatCurrency(column.valorTotal)}
           </div>
@@ -179,10 +179,10 @@ function KanbanColumnComponent({ column, colorClass, onLeadClick, formatCurrency
       >
         <div
           className={`flex-1 overflow-y-auto p-2 space-y-2 min-h-[600px] pb-32 transition
-          ${isOver ? 'bg-gray-100' : ''}`}
+          ${isOver ? 'bg-[var(--bg-surface-3)]' : ''}`}
         >
           {column.leads.length === 0 ? (
-            <div className="text-center py-8 text-sm text-gray-400">
+            <div className="text-center py-8 text-sm text-[var(--text-tertiary)]">
               Arraste leads para cá
             </div>
           ) : (
@@ -227,7 +227,9 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
       ref={setNodeRef}
       style={style}
       className={`border rounded-md p-3 cursor-pointer transition-shadow
-        ${followUpAtrasado ? 'bg-red-50 border-red-300' : 'bg-white'}
+        ${followUpAtrasado
+          ? 'bg-[var(--danger-subtle)] border-[var(--danger)]'
+          : 'bg-[var(--bg-surface)] border-[var(--border)]'}
         hover:shadow-md`}
       onClick={onClick}
     >
@@ -235,7 +237,7 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
         <button
           {...attributes}
           {...listeners}
-          className="mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
+          className="mt-1 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] cursor-grab active:cursor-grabbing"
           onClick={e => e.stopPropagation()}
         >
           <GripVertical className="w-4 h-4" />
@@ -243,27 +245,27 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <p className="font-semibold text-gray-900 text-sm truncate">
+            <p className="font-semibold text-[var(--text-primary)] text-sm truncate">
               {lead.nome}
             </p>
             <PriorityBadge level={lead.prioridadeLevel} />
           </div>
 
-          <p className="text-xs text-gray-500 truncate mb-2">
+          <p className="text-xs text-[var(--text-tertiary)] truncate mb-2">
             {lead.servico}
           </p>
 
           <div className="flex items-center gap-2 flex-wrap">
             <TemperatureBadge temperatura={lead.temperatura} />
             {lead.valorOrcado > 0 && (
-              <span className="text-xs font-medium text-gray-600">
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
                 {formatCurrency(lead.valorOrcado)}
               </span>
             )}
           </div>
 
           {followUpAtrasado && (
-            <p className="text-xs text-red-600 mt-2 font-semibold">
+            <p className="text-xs text-[var(--danger)] mt-2 font-semibold">
               ⚠ Follow-up atrasado
             </p>
           )}

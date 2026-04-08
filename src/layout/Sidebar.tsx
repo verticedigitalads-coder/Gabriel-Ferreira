@@ -162,30 +162,30 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   return (
     <aside
   className={cn(
-    "fixed md:relative top-0 left-0 z-40 w-64 bg-[#0F172A] text-white flex flex-col h-screen border-r border-[#1E293B] transition-transform",
+    "fixed md:relative top-0 left-0 z-40 w-64 bg-[var(--bg-sidebar)] text-white flex flex-col h-screen border-r border-[var(--border)] transition-transform",
     mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
   )}
 >
 <button
-  className="md:hidden absolute top-4 right-4 text-gray-400"
+  className="md:hidden absolute top-4 right-4 text-[var(--text-tertiary)]"
   onClick={() => setMobileOpen(false)}
 >
   ✕
 </button>
-  
+
   {/* Logo */}
-<div className="px-5 py-5 border-b border-white/5 bg-gradient-to-b from-slate-900 to-slate-950">
+<div className="px-5 py-5 border-b border-[var(--border)] bg-[var(--bg-sidebar)]">
   <div className="flex items-center gap-4">
-    
-    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-semibold text-sm shadow-lg">
+
+    <div className="w-10 h-10 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white font-semibold text-sm shadow-lg">
       CRM
     </div>
 
     <div className="leading-tight">
-      <h1 className="text-base font-semibold text-white tracking-tight">
+      <h1 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
         CRM Pro
       </h1>
-      <p className="text-xs text-slate-400 font-medium">
+      <p className="text-xs text-[var(--text-tertiary)] font-medium">
         Gestão Comercial Inteligente
       </p>
     </div>
@@ -197,11 +197,11 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   <nav className="flex-1 overflow-y-auto py-6 space-y-8">
     {sections.map(section => (
       <div key={section.title}>
-        <p className="px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
+        <p className="px-6 text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.08em] mb-3">
           {section.title}
         </p>
 
-        <ul className="space-y-1 px-3">
+        <ul className="space-y-0.5 px-3">
           {section.items.map(item => {
             const Icon = item.icon;
             const isActive = activeModule === item.id;
@@ -211,13 +211,13 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                 <button
                   onClick={() => setActiveModule(item.id)}
                   className={cn(
-                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
+                    'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] rounded-[var(--radius-md)] text-sm font-medium transition-all duration-150',
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'text-gray-400 hover:bg-[#1E293B] hover:text-white'
+                      ? 'bg-[var(--bg-surface-2)] text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
                   )}
                 >
-                  <Icon className="w-5 h-5 opacity-80" />
+                  <Icon className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] opacity-80 shrink-0" />
                   <span className="tracking-tight">{item.label}</span>
                 </button>
               </li>
@@ -229,34 +229,34 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   </nav>
 
   {/* DADOS */}
-  <div className="px-5 py-5 border-t border-[#1E293B] bg-[#0B1220]">
-    <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
+  <div className="px-5 py-5 border-t border-[var(--border)] bg-[var(--bg-sidebar)]">
+    <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.08em] mb-3">
       Dados
     </p>
 
-    <div className="space-y-2">
+    <div className="space-y-0.5">
       <button
         onClick={handleExport}
-        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 hover:bg-[#1E293B] hover:text-white rounded-xl transition-colors"
+        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
       >
-        <Download className="w-4 h-4" />
+        <Download className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] shrink-0" />
         Exportar Backup
       </button>
 
       <button
         onClick={handleImport}
-        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 hover:bg-[#1E293B] hover:text-white rounded-xl transition-colors"
+        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
       >
-        <Upload className="w-4 h-4" />
+        <Upload className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] shrink-0" />
         Importar
       </button>
     </div>
   </div>
 
   {/* STATUS */}
-  <div className="px-6 py-4 border-t border-[#1E293B] bg-[#0F172A]">
-    <div className="flex items-center gap-2 text-xs text-gray-500">
-      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+  <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--bg-sidebar)]">
+    <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)]">
+      <div className="w-2 h-2 bg-[var(--success)] rounded-full animate-pulse" />
       Sistema Online
     </div>
   </div>

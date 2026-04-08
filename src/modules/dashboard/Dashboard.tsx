@@ -70,17 +70,17 @@ export function Dashboard() {
   const getCRMHealth = () => {
 
     if (stats.tarefasCriticas > 5 || stats.scoreOperacional > 150) {
-      return { status: 'CRÍTICO', color: 'text-red-600' };
+      return { status: 'CRÍTICO', color: 'text-[var(--danger)]' };
     }
 
     if (
       stats.tarefasCriticas > 2 ||
       stats.receitaProvavel < stats.metaMensal * 0.5
     ) {
-      return { status: 'ATENÇÃO', color: 'text-yellow-600' };
+      return { status: 'ATENÇÃO', color: 'text-[var(--warning)]' };
     }
 
-    return { status: 'SAUDÁVEL', color: 'text-emerald-600' };
+    return { status: 'SAUDÁVEL', color: 'text-[var(--success)]' };
 
   };
 
@@ -137,25 +137,25 @@ export function Dashboard() {
       {/* Header */}
 
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
           Dashboard Executivo
         </h1>
 
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-[var(--text-tertiary)] mt-1">
           Atualizado em {format(new Date(), "dd 'de' MMMM, HH:mm", { locale: ptBR })}
         </p>
       </div>
 
       {/* Saúde do CRM */}
 
-      <Card className="bg-white shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-6">
 
         <div className="flex items-center gap-3">
 
-          <ShieldCheck className="w-6 h-6 text-blue-600" />
+          <ShieldCheck className="w-6 h-6 text-[var(--accent)]" />
 
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               Saúde do CRM
             </h2>
 
@@ -170,9 +170,9 @@ export function Dashboard() {
 
       {/* Receita */}
 
-      <Card className="bg-white shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-6">
 
-        <h2 className="text-lg font-semibold text-slate-900 mb-6">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
           Previsão de Receita
         </h2>
 
@@ -199,14 +199,14 @@ export function Dashboard() {
 
       {/* Estoque crítico */}
 
-      <Card className="bg-white shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-6">
 
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Estoque Crítico
         </h2>
 
         {estoqueBaixo.length === 0 && (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[var(--text-tertiary)]">
             Nenhum material com estoque baixo
           </p>
         )}
@@ -220,11 +220,11 @@ export function Dashboard() {
               className="flex justify-between items-center text-sm"
             >
 
-              <span className="text-slate-700">
+              <span className="text-[var(--text-secondary)]">
                 {m.nome}
               </span>
 
-              <span className="text-red-600 font-semibold">
+              <span className="text-[var(--danger)] font-semibold">
                 {m.estoque}
               </span>
 
@@ -238,9 +238,9 @@ export function Dashboard() {
 
       {/* Indicadores */}
 
-      <Card className="bg-white shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-6">
 
-        <h2 className="text-lg font-semibold text-slate-900 mb-6">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
           Indicadores Estratégicos
         </h2>
 
@@ -249,19 +249,19 @@ export function Dashboard() {
           <StatCard
             label="Score Operacional"
             value={stats.scoreOperacional}
-            icon={<Activity className="w-5 h-5 text-blue-600" />}
+            icon={<Activity className="w-5 h-5 text-[var(--accent)]" />}
           />
 
           <StatCard
             label="Score Comercial"
             value={stats.scoreComercial}
-            icon={<Briefcase className="w-5 h-5 text-blue-600" />}
+            icon={<Briefcase className="w-5 h-5 text-[var(--accent)]" />}
           />
 
           <StatCard
             label="Tarefas Críticas"
             value={stats.tarefasCriticas}
-            icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
+            icon={<AlertTriangle className="w-5 h-5 text-[var(--danger)]" />}
           />
 
         </div>
@@ -270,18 +270,18 @@ export function Dashboard() {
 
       {/* Visitas Hoje */}
 
-      <Card className="bg-white shadow-sm rounded-2xl">
+      <Card className="shadow-sm rounded-2xl">
 
-        <div className="p-5 border-b border-slate-100">
-          <h2 className="text-base font-semibold text-slate-900">
+        <div className="p-5 border-b border-[var(--border)]">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">
             Visitas Hoje
           </h2>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[var(--border)]">
 
           {visitasHoje.length === 0 && (
-            <p className="p-4 text-sm text-slate-500">
+            <p className="p-4 text-sm text-[var(--text-tertiary)]">
               Nenhuma visita hoje
             </p>
           )}
@@ -298,16 +298,16 @@ export function Dashboard() {
               >
 
                 <div>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-[var(--text-primary)]">
                     {lead?.nome || "Cliente"}
                   </p>
 
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--text-tertiary)]">
                     {lead?.servico}
                   </p>
                 </div>
 
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[var(--text-tertiary)]">
                   {format(parseISO(task.data), "HH:mm")}
                 </span>
 
@@ -325,18 +325,18 @@ export function Dashboard() {
 
       {focusTodayLeads.length > 0 && (
 
-        <Card className="bg-white shadow-sm rounded-2xl">
+        <Card className="shadow-sm rounded-2xl">
 
-          <div className="p-5 border-b border-slate-100 flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-600" />
+          <div className="p-5 border-b border-[var(--border)] flex items-center gap-2">
+            <Target className="w-5 h-5 text-[var(--accent)]" />
 
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">
               Foco Hoje
             </h2>
 
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[var(--border)]">
 
             {focusTodayLeads.map(lead => (
 
@@ -346,16 +346,16 @@ export function Dashboard() {
                   selectLead(lead.id);
                   setActiveModule('leads');
                 }}
-                className="flex items-center justify-between p-4 hover:bg-slate-50 cursor-pointer transition-colors"
+                className="flex items-center justify-between p-4 hover:bg-[var(--bg-surface-2)] cursor-pointer transition-colors"
               >
 
                 <div>
 
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-[var(--text-primary)]">
                     {lead.nome}
                   </p>
 
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--text-tertiary)]">
                     {lead.servico}
                   </p>
 
@@ -367,7 +367,7 @@ export function Dashboard() {
 
                   {lead.valorOrcado > 0 && (
 
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
                       {formatCurrency(lead.valorOrcado)}
                     </p>
 
@@ -387,17 +387,17 @@ export function Dashboard() {
 
       {/* Maiores oportunidades */}
 
-      <Card className="bg-white shadow-sm rounded-2xl">
+      <Card className="shadow-sm rounded-2xl">
 
-        <div className="p-5 border-b border-slate-100">
+        <div className="p-5 border-b border-[var(--border)]">
 
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">
             Maiores Oportunidades
           </h2>
 
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[var(--border)]">
 
           {topOportunidades.map(lead => (
 
@@ -408,17 +408,17 @@ export function Dashboard() {
 
               <div>
 
-                <p className="font-medium">
+                <p className="font-medium text-[var(--text-primary)]">
                   {lead.nome}
                 </p>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[var(--text-tertiary)]">
                   {lead.servico}
                 </p>
 
               </div>
 
-              <p className="font-semibold">
+              <p className="font-semibold text-[var(--text-primary)]">
                 {formatCurrency(lead.valorOrcado || 0)}
               </p>
 

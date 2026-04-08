@@ -57,10 +57,10 @@ export function Central() {
 
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
           Modo Execução
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
           O que você precisa fazer agora
         </p>
       </div>
@@ -68,32 +68,32 @@ export function Central() {
       {/* SCORE E RECEITA */}
       <div className="grid md:grid-cols-2 gap-6">
 
-        <Card className="bg-white shadow-sm rounded-2xl p-6">
+        <Card className="shadow-sm rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-3">
             <Target className="w-5 h-5 text-blue-600" />
-            <h2 className="font-semibold text-slate-900">
+            <h2 className="font-semibold text-[var(--text-primary)]">
               Execução Hoje
             </h2>
           </div>
           <p className="text-3xl font-bold text-blue-600">
             {executionScoreTotal}%
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
             Baseado na quantidade de ações pendentes
           </p>
         </Card>
 
-        <Card className="bg-white shadow-sm rounded-2xl p-6">
+        <Card className="shadow-sm rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-3">
             <DollarSign className="w-5 h-5 text-emerald-600" />
-            <h2 className="font-semibold text-slate-900">
+            <h2 className="font-semibold text-[var(--text-primary)]">
               Receita Travada
             </h2>
           </div>
           <p className="text-3xl font-bold text-emerald-600">
             R$ {receitaTravada.toLocaleString('pt-BR')}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
             Orçamentos aguardando decisão
           </p>
         </Card>
@@ -101,17 +101,17 @@ export function Central() {
       </div>
 
       {/* LISTA DE AÇÃO */}
-      <Card className="bg-white shadow-sm rounded-2xl">
-        <div className="p-5 border-b border-slate-100 flex items-center gap-2">
+      <Card className="shadow-sm rounded-2xl">
+        <div className="p-5 border-b border-[var(--border)] flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-orange-600" />
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">
             Prioridades de Hoje
           </h2>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[var(--border)]">
           {topLeads.length === 0 ? (
-            <div className="p-6 text-sm text-slate-500">
+            <div className="p-6 text-sm text-[var(--text-secondary)]">
               Nenhuma ação crítica no momento.
             </div>
           ) : (
@@ -122,13 +122,13 @@ export function Central() {
                   selectLead(lead.id);
                   setActiveModule('leads');
                 }}
-                className="flex justify-between items-center p-4 hover:bg-slate-50 cursor-pointer transition"
+                className="flex justify-between items-center p-4 hover:bg-[var(--bg-surface-2)] cursor-pointer transition"
               >
                 <div>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-[var(--text-primary)]">
                     {index + 1}. {lead.nome}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     {lead.servico}
                   </p>
                 </div>
@@ -136,7 +136,7 @@ export function Central() {
                 <div className="text-right">
                   <PriorityBadge level={lead.prioridadeLevel} />
                   {lead.valorOrcado > 0 && (
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
                       R$ {lead.valorOrcado.toLocaleString('pt-BR')}
                     </p>
                   )}

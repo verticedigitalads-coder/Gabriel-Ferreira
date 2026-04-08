@@ -40,21 +40,21 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       />
       <div
         className={cn(
-          // Corporate modal - clean borders
-          'relative bg-white rounded-lg shadow-xl w-full mx-4',
-          'border border-gray-200',
+          // Dark surface modal
+          'relative bg-[var(--bg-surface)] rounded-lg shadow-xl w-full mx-4',
+          'border border-[var(--border)]',
           'max-h-[90vh] flex flex-col',
           sizeStyles[size]
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-surface-2)]">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-1.5 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-[var(--text-tertiary)]" />
             </button>
           </div>
         )}
@@ -93,26 +93,26 @@ export function SlidePanel({ isOpen, onClose, title, children }: SlidePanelProps
       )}
       <div
         className={cn(
-          // Corporate slide panel - solid and professional
-          'fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50',
-          'border-l border-gray-200',
+          // Dark surface slide panel
+          'fixed top-0 right-0 h-full w-full max-w-xl bg-[var(--bg-surface)] shadow-2xl z-50',
+          'border-l border-[var(--border)]',
           'transform transition-transform duration-200 ease-out',
           'flex flex-col',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-surface-2)]">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-2 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-[var(--text-tertiary)]" />
             </button>
           </div>
         )}
-        <div className="flex-1 overflow-y-auto bg-white">{children}</div>
+        <div className="flex-1 overflow-y-auto bg-[var(--bg-surface)]">{children}</div>
       </div>
     </>
   );

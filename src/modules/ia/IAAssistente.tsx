@@ -190,12 +190,12 @@ export function IAAssistente() {
     <div className="h-full flex flex-col">
 
       {/* HEADER */}
-      <div className="p-6 border-b bg-white flex justify-between items-center">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)] flex justify-between items-center">
         <div className="flex items-center gap-3">
           <Sparkles className="w-6 h-6 text-purple-600" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">IA Assistente</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">IA Assistente</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
               Análise estratégica inteligente de leads
             </p>
           </div>
@@ -212,28 +212,28 @@ export function IAAssistente() {
         {/* CARDS PRIORIDADE */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-red-500">
-            <p className="text-xs text-gray-500 uppercase">Críticos</p>
+            <p className="text-xs text-[var(--text-tertiary)] uppercase">Críticos</p>
             <p className="text-2xl font-bold text-red-600">
               {batchAnalysis.criticos.length}
             </p>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-orange-500">
-            <p className="text-xs text-gray-500 uppercase">Alta Prioridade</p>
+            <p className="text-xs text-[var(--text-tertiary)] uppercase">Alta Prioridade</p>
             <p className="text-2xl font-bold text-orange-600">
               {batchAnalysis.altaPrioridade.length}
             </p>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-yellow-500">
-            <p className="text-xs text-gray-500 uppercase">Média Prioridade</p>
+            <p className="text-xs text-[var(--text-tertiary)] uppercase">Média Prioridade</p>
             <p className="text-2xl font-bold text-yellow-600">
               {batchAnalysis.mediaPrioridade.length}
             </p>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-green-500">
-            <p className="text-xs text-gray-500 uppercase">Baixa Prioridade</p>
+            <p className="text-xs text-[var(--text-tertiary)] uppercase">Baixa Prioridade</p>
             <p className="text-2xl font-bold text-green-600">
               {batchAnalysis.baixaPrioridade.length}
             </p>
@@ -241,14 +241,14 @@ export function IAAssistente() {
         </div>
 
         {/* CARD EXPLICATIVO */}
-        <Card className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+        <Card className="p-4 border-[var(--border)]">
           <div className="flex items-start gap-3">
             <Brain className="w-5 h-5 text-purple-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-purple-900">
+              <p className="text-sm font-medium text-[var(--text-primary)]">
                 Como funciona a Análise Estratégica da IA
               </p>
-              <ul className="text-xs text-purple-700 mt-2 space-y-1">
+              <ul className="text-xs text-[var(--text-secondary)] mt-2 space-y-1">
                 <li>• Avalia risco de perda baseado em tempo sem contato</li>
                 <li>• Calcula probabilidade real de conversão (%)</li>
                 <li>• Mede maturidade do lead (1 a 5)</li>
@@ -264,7 +264,7 @@ export function IAAssistente() {
 
         {/* ANALISAR LEAD */}
         <Card className="p-6">
-  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+  <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
     Analisar Lead Individual
   </h2>
 
@@ -272,13 +272,13 @@ export function IAAssistente() {
 <div className="flex flex-wrap items-center gap-3 mb-6">
 
   <div className="flex-1 min-w-[200px] max-w-md relative">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
     <input
       type="text"
       placeholder="Buscar por nome, telefone ou serviço..."
       value={searchInput}
       onChange={e => setSearchInput(e.target.value)}
-      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm"
+      className="w-full pl-10 pr-4 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
     />
   </div>
 
@@ -332,7 +332,7 @@ export function IAAssistente() {
 
   {/* 🔎 PRÉ-VISUALIZAÇÃO FIXA NO TOPO */}
 {selectedLead && (
-  <div className="p-4 bg-gray-50 rounded-md border mb-4 space-y-4">
+  <div className="p-4 bg-[var(--bg-surface-2)] rounded-md border border-[var(--border)] mb-4 space-y-4">
 
     {(() => {
       const iaAnalises = selectedLead.historico?.filter(
@@ -367,7 +367,7 @@ export function IAAssistente() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-[var(--text-primary)]">
                   {selectedLead.nome}
                 </h3>
 
@@ -378,7 +378,7 @@ export function IAAssistente() {
                 )}
               </div>
 
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-[var(--text-secondary)]">
                 {selectedLead.servico}
               </p>
             </div>
@@ -392,12 +392,12 @@ export function IAAssistente() {
           {/* STATUS */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-gray-500">Status:</span>
+              <span className="text-[var(--text-secondary)]">Status:</span>
               <p><StatusBadge status={selectedLead.status} /></p>
             </div>
 
             <div>
-              <span className="text-gray-500">Temperatura:</span>
+              <span className="text-[var(--text-secondary)]">Temperatura:</span>
               <p><TemperatureBadge temperatura={selectedLead.temperatura} /></p>
             </div>
           </div>
@@ -471,14 +471,14 @@ export function IAAssistente() {
   {/* 📋 LISTA SCROLLÁVEL EMBAIXO */}
   <div className="border-t pt-4">
 
-    <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">
+    <p className="text-xs text-[var(--text-tertiary)] mb-2 uppercase tracking-wide">
       Selecionar Lead
     </p>
 
     <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
 
       {filteredLeads.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-6">
+        <p className="text-sm text-[var(--text-secondary)] text-center py-6">
           Nenhum lead encontrado
         </p>
       ) : (
@@ -489,8 +489,8 @@ export function IAAssistente() {
             className={`p-3 rounded-md cursor-pointer border transition
               ${
                 lead.id === selectedLeadId
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:bg-gray-50'
+                  ? 'border-[var(--accent)] bg-[var(--accent-subtle)]'
+                  : 'border-[var(--border)] hover:bg-[var(--bg-surface-2)]'
               }`}
           >
             <div className="flex items-center justify-between">
@@ -498,7 +498,7 @@ export function IAAssistente() {
                 <p className="text-sm font-medium truncate">
                   {lead.nome}
                 </p>
-                <p className="text-xs text-gray-400 truncate">
+                <p className="text-xs text-[var(--text-tertiary)] truncate">
                   {lead.servico}
                 </p>
               </div>
@@ -527,45 +527,45 @@ export function IAAssistente() {
     <div className="p-6 space-y-6">
 
       {/* 🔷 DIAGNÓSTICO ESTRATÉGICO */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm bg-blue-50 p-4 rounded-lg border">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm bg-[var(--bg-surface-2)] p-4 rounded-lg border border-[var(--border)]">
 
         <div>
-          <p className="text-gray-500">Probabilidade</p>
+          <p className="text-[var(--text-secondary)]">Probabilidade</p>
           <p className="font-bold text-lg">
             {analysis.probabilidadeConversao}%
           </p>
         </div>
 
         <div>
-          <p className="text-gray-500">Maturidade</p>
+          <p className="text-[var(--text-secondary)]">Maturidade</p>
           <p className="font-bold">
             {analysis.maturidade}/5
           </p>
         </div>
 
         <div>
-          <p className="text-gray-500">Tipo</p>
+          <p className="text-[var(--text-secondary)]">Tipo</p>
           <p className="font-medium">
             {analysis.tipoLead || 'Oportunidade ativa'}
           </p>
         </div>
 
         <div>
-          <p className="text-gray-500">Risco de Perda</p>
+          <p className="text-[var(--text-secondary)]">Risco de Perda</p>
           <p className="font-medium capitalize">
             {analysis.riscoDePerda}
           </p>
         </div>
 
         <div>
-          <p className="text-gray-500">Risco Concorrência</p>
+          <p className="text-[var(--text-secondary)]">Risco Concorrência</p>
           <p className="font-medium capitalize">
             {analysis.riscoConcorrencia}
           </p>
         </div>
 
         <div>
-          <p className="text-gray-500">Potencial Futuro</p>
+          <p className="text-[var(--text-secondary)]">Potencial Futuro</p>
           <p className="font-medium">
             {analysis.potencialFuturo}
           </p>
@@ -574,21 +574,21 @@ export function IAAssistente() {
       </div>
 
       {/* 🔷 RESUMO EXECUTIVO */}
-      <div className="bg-indigo-50 p-4 rounded-lg border">
-        <p className="font-semibold text-indigo-800 mb-2">
+      <div className="bg-[var(--bg-surface-2)] p-4 rounded-lg border border-[var(--border)]">
+        <p className="font-semibold text-[var(--text-primary)] mb-2">
           📊 Interpretação Estratégica
         </p>
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-[var(--text-secondary)]">
           {analysis.resumoExecutivo}
         </p>
       </div>
 
       {/* 🔷 ESTRATÉGIA */}
-      <div className="bg-purple-50 p-4 rounded-lg border">
-        <p className="font-semibold text-purple-800 mb-2">
+      <div className="bg-[var(--bg-surface-2)] p-4 rounded-lg border border-[var(--border)]">
+        <p className="font-semibold text-[var(--text-primary)] mb-2">
           🎯 Estratégia Recomendada
         </p>
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-[var(--text-secondary)]">
           {analysis.estrategiaDeAbordagem}
         </p>
       </div>
@@ -603,7 +603,7 @@ export function IAAssistente() {
           <textarea
             readOnly
             value={analysis.mensagemSugeridaWhatsApp}
-            className="w-full text-sm p-3 border rounded bg-white"
+            className="w-full text-sm p-3 border border-[var(--border)] rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
             rows={4}
           />
 
@@ -624,8 +624,8 @@ export function IAAssistente() {
       )}
 
       {/* 🔷 PRÓXIMA AÇÃO */}
-      <div className="bg-yellow-50 p-4 rounded-lg border">
-        <p className="font-semibold text-yellow-800 mb-2">
+      <div className="bg-[var(--warning-subtle)] p-4 rounded-lg border border-[var(--border)]">
+        <p className="font-semibold text-[var(--warning)] mb-2">
           📅 Próxima Ação Recomendada
         </p>
 
@@ -652,7 +652,7 @@ export function IAAssistente() {
           🚀 Executar Plano Estratégico
         </Button>
 
-        <p className="text-xs text-gray-500 text-center mt-2">
+        <p className="text-xs text-[var(--text-tertiary)] text-center mt-2">
           Atualizará status, temperatura e poderá criar ação operacional.
         </p>
       </div>

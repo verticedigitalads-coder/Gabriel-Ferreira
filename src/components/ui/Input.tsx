@@ -11,26 +11,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
             {label}
           </label>
         )}
         <input
           ref={ref}
           className={cn(
-            // Corporate input style
-            'w-full px-3 py-2 border border-gray-300 rounded-md text-sm',
-            'bg-white',
-            'focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600',
-            'placeholder:text-gray-400',
-            'disabled:bg-gray-50 disabled:cursor-not-allowed',
+            // Dark surface input style
+            'w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm',
+            'bg-[var(--bg-surface-2)] text-[var(--text-primary)]',
+            'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--border-strong)]',
+            'placeholder:text-[var(--text-tertiary)]',
+            'disabled:bg-[var(--bg-surface)] disabled:text-[var(--text-disabled)] disabled:cursor-not-allowed',
             'transition-all duration-150',
-            error && 'border-red-600 focus:ring-red-600 focus:border-red-600',
+            error && 'border-[var(--danger)] focus:ring-[var(--danger)] focus:border-[var(--danger)]',
             className
           )}
           {...props}
         />
-        {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
+        {error && <p className="mt-1.5 text-xs font-medium text-[var(--danger)]">{error}</p>}
       </div>
     );
   }
@@ -48,25 +48,25 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
           className={cn(
-            // Corporate textarea style
-            'w-full px-3 py-2 border border-gray-300 rounded-md text-sm',
-            'bg-white',
-            'focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600',
-            'placeholder:text-gray-400 resize-none',
+            // Dark surface textarea style
+            'w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm',
+            'bg-[var(--bg-surface-2)] text-[var(--text-primary)]',
+            'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--border-strong)]',
+            'placeholder:text-[var(--text-tertiary)] resize-none',
             'transition-all duration-150',
-            error && 'border-red-600 focus:ring-red-600 focus:border-red-600',
+            error && 'border-[var(--danger)] focus:ring-[var(--danger)] focus:border-[var(--danger)]',
             className
           )}
           {...props}
         />
-        {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
+        {error && <p className="mt-1.5 text-xs font-medium text-[var(--danger)]">{error}</p>}
       </div>
     );
   }
@@ -84,16 +84,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
             {label}
           </label>
         )}
         <select
           ref={ref}
           className={cn(
-            'w-full px-3 py-2 border border-gray-300 rounded-md text-sm',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-            'bg-white cursor-pointer',
+            'w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm',
+            'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--border-strong)]',
+            'bg-[var(--bg-surface-2)] text-[var(--text-primary)] cursor-pointer',
             className
           )}
           {...props}

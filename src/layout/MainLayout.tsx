@@ -37,17 +37,17 @@ export function MainLayout({ children }: MainLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden">
-      
+    <div className="flex h-screen bg-[var(--bg-app)] overflow-hidden">
+
       <Sidebar mobileOpen={sidebarOpen} setMobileOpen={setSidebarOpen} />
 
       <div className="flex flex-col flex-1 overflow-hidden">
-        
+
         {/* Header Global */}
-        <div className="flex items-center justify-between px-6 py-3 bg-white border-b">
+        <div className="flex items-center justify-between px-6 py-3 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
 
   <button
-    className="md:hidden mr-4 text-gray-700"
+    className="md:hidden mr-4 text-[var(--text-secondary)]"
     onClick={() => setSidebarOpen(true)}
   >
     ☰
@@ -56,12 +56,12 @@ export function MainLayout({ children }: MainLayoutProps) {
   <HeaderGlobal />
 
           <div className="flex items-center gap-4">
-            
+
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[var(--text-primary)]">
                 {userName || 'Usuário'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-[var(--text-tertiary)]">
                 {userEmail}
               </p>
             </div>

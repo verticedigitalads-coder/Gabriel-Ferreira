@@ -82,38 +82,38 @@ export function Operacional() {
   };
 
   const prioridadeColor = (nivel: string) => {
-    if (nivel === 'alta') return 'text-red-600';
-    if (nivel === 'media') return 'text-yellow-600';
-    return 'text-green-600';
+    if (nivel === 'alta') return 'text-[var(--danger)]';
+    if (nivel === 'media') return 'text-[var(--warning)]';
+    return 'text-[var(--success)]';
   };
 
   return (
     <div className="p-6 space-y-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold">Painel Operacional</h1>
+      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Painel Operacional</h1>
 
       {/* ================= NOVA TAREFA ================= */}
-      <div className="bg-white p-4 rounded shadow space-y-3">
-        <h2 className="font-semibold">Nova Tarefa</h2>
+      <div className="bg-[var(--bg-surface)] p-4 rounded shadow space-y-3 border border-[var(--border)]">
+        <h2 className="font-semibold text-[var(--text-primary)]">Nova Tarefa</h2>
 
         <input
           type="text"
           placeholder="Título da tarefa"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          className="border p-2 w-full rounded"
+          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
         />
 
         <input
           type="date"
           value={data}
           onChange={(e) => setData(e.target.value)}
-          className="border p-2 w-full rounded"
+          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
         />
 
         <select
           value={prioridade}
           onChange={(e) => setPrioridade(e.target.value as any)}
-          className="border p-2 w-full rounded"
+          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
         >
           <option value="baixa">Prioridade Baixa</option>
           <option value="media">Prioridade Média</option>
@@ -122,7 +122,7 @@ export function Operacional() {
 
         <button
           onClick={handleAdd}
-          className="bg-blue-600 text-white p-2 w-full rounded hover:bg-blue-700"
+          className="bg-[var(--accent)] text-white p-2 w-full rounded hover:bg-[var(--accent-hover)]"
         >
           Adicionar Tarefa
         </button>
@@ -144,7 +144,9 @@ export function Operacional() {
         <button
           onClick={() => setViewMode('week')}
           className={`px-3 py-1 rounded ${
-            viewMode === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            viewMode === 'week'
+              ? 'bg-[var(--accent)] text-white'
+              : 'bg-[var(--bg-surface-3)] text-[var(--text-secondary)]'
           }`}
         >
           Semana
@@ -153,7 +155,9 @@ export function Operacional() {
         <button
           onClick={() => setViewMode('month')}
           className={`px-3 py-1 rounded ${
-            viewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            viewMode === 'month'
+              ? 'bg-[var(--accent)] text-white'
+              : 'bg-[var(--bg-surface-3)] text-[var(--text-secondary)]'
           }`}
         >
           Mês
@@ -190,21 +194,21 @@ export function Operacional() {
 
       {/* ================= HOJE ================= */}
       <div>
-        <h2 className="text-lg font-semibold mb-2">Hoje</h2>
+        <h2 className="text-lg font-semibold mb-2 text-[var(--text-primary)]">Hoje</h2>
 
         {tarefasHoje.length === 0 && (
-          <p className="text-gray-400 text-sm">Nenhuma tarefa para hoje</p>
+          <p className="text-[var(--text-tertiary)] text-sm">Nenhuma tarefa para hoje</p>
         )}
 
         {tarefasHoje.map((task) => (
           <div
             key={task.id}
-            className={`bg-white p-3 rounded shadow flex justify-between items-center mb-2 ${
+            className={`bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-center mb-2 border border-[var(--border)] ${
               task.concluido ? 'opacity-50 line-through' : ''
             }`}
           >
             <div>
-              <div className="font-medium">{task.titulo}</div>
+              <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
               <div className={`text-sm ${prioridadeColor(task.prioridade)}`}>
                 {task.prioridade.toUpperCase()}
               </div>
@@ -217,7 +221,7 @@ export function Operacional() {
                     concluido: !task.concluido,
                   })
                 }
-                className="text-green-600 font-bold"
+                className="text-[var(--success)] font-bold"
               >
                 ✓
               </button>
@@ -227,7 +231,7 @@ export function Operacional() {
                   setTaskToDelete(task);
                   setShowDeleteModal(true);
                 }}
-                className="text-red-600 font-bold"
+                className="text-[var(--danger)] font-bold"
               >
                 ✕
               </button>
@@ -238,16 +242,16 @@ export function Operacional() {
 
       {/* ================= PRÓXIMOS DIAS ================= */}
       <div>
-        <h2 className="text-lg font-semibold mb-2">Próximos Dias</h2>
+        <h2 className="text-lg font-semibold mb-2 text-[var(--text-primary)]">Próximos Dias</h2>
 
         {tarefasSemana.length === 0 && (
-          <p className="text-gray-400 text-sm">Nenhuma tarefa agendada</p>
+          <p className="text-[var(--text-tertiary)] text-sm">Nenhuma tarefa agendada</p>
         )}
 
         {tarefasSemana.map((task) => (
-          <div key={task.id} className="bg-gray-50 p-3 rounded mb-2">
-            <div className="text-sm text-gray-500">{task.data}</div>
-            <div className="font-medium">{task.titulo}</div>
+          <div key={task.id} className="bg-[var(--bg-surface-2)] p-3 rounded mb-2 border border-[var(--border)]">
+            <div className="text-sm text-[var(--text-tertiary)]">{task.data}</div>
+            <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
           </div>
         ))}
       </div>
@@ -260,20 +264,20 @@ export function Operacional() {
           <input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="w-full border p-2 rounded"
+            className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
           />
 
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setShowEditModal(false)}
-              className="px-3 py-1 bg-gray-200 rounded"
+              className="px-3 py-1 bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
             >
               Cancelar
             </button>
 
             <button
               onClick={confirmEdit}
-              className="px-3 py-1 bg-blue-600 text-white rounded"
+              className="px-3 py-1 bg-[var(--accent)] text-white rounded hover:bg-[var(--accent-hover)]"
             >
               Salvar
             </button>

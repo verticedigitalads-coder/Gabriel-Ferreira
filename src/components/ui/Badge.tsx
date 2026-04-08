@@ -9,11 +9,11 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
   const styles = {
-    default: 'bg-gray-100 text-gray-700',
-    success: 'bg-green-100 text-green-700',
-    warning: 'bg-yellow-100 text-yellow-700',
-    danger: 'bg-red-100 text-red-700',
-    info: 'bg-blue-100 text-blue-700',
+    default: 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)]',
+    success: 'bg-[var(--success-subtle)] text-[var(--success)]',
+    warning: 'bg-[var(--warning-subtle)] text-[var(--warning)]',
+    danger: 'bg-[var(--danger-subtle)] text-[var(--danger)]',
+    info: 'bg-[var(--accent-subtle)] text-[var(--accent)]',
   };
 
   return (
@@ -32,11 +32,11 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
 
 export function StatusBadge({ status }: { status: LeadStatus }) {
   const config: Record<LeadStatus, { label: string; className: string }> = {
-    novo: { label: 'Novo', className: 'bg-blue-100 text-blue-700' },
+    novo: { label: 'Novo', className: 'bg-[var(--accent-subtle)] text-[var(--accent)]' },
     atendimento: { label: 'Em Atendimento', className: 'bg-purple-100 text-purple-700' },
-    orcado: { label: 'Orçado', className: 'bg-yellow-100 text-yellow-700' },
-    fechado: { label: 'Fechado', className: 'bg-green-100 text-green-700' },
-    perdido: { label: 'Perdido', className: 'bg-gray-100 text-gray-700' },
+    orcado: { label: 'Orçado', className: 'bg-[var(--warning-subtle)] text-[var(--warning)]' },
+    fechado: { label: 'Fechado', className: 'bg-[var(--success-subtle)] text-[var(--success)]' },
+    perdido: { label: 'Perdido', className: 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)]' },
   };
 
   const { label, className } = config[status];
@@ -48,26 +48,27 @@ export function StatusBadge({ status }: { status: LeadStatus }) {
 }
 
 export function TemperatureBadge({ temperatura }: { temperatura: LeadTemperature }) {
-  const config: Record<LeadTemperature, { label: string; className: string }> = {
-    quente: { label: '🔥 Quente', className: 'bg-red-100 text-red-700' },
-    morno: { label: '☀️ Morno', className: 'bg-yellow-100 text-yellow-700' },
-    frio: { label: '❄️ Frio', className: 'bg-blue-100 text-blue-700' },
+  const colors: Record<LeadTemperature, string> = {
+    quente: '#ef4444',
+    morno: '#f59e0b',
+    frio: '#60a5fa',
   };
 
-  const { label, className } = config[temperatura];
   return (
-    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-semibold', className)}>
-      {label}
-    </span>
+    <span
+      title={temperatura.charAt(0).toUpperCase() + temperatura.slice(1)}
+      style={{ backgroundColor: colors[temperatura] }}
+      className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+    />
   );
 }
 
 export function PriorityBadge({ level, score }: { level?: PriorityLevel; score?: number }) {
   const config: Record<PriorityLevel, { label: string; className: string }> = {
-    critico: { label: 'CRÍTICO', className: 'bg-red-600 text-white' },
-    alto: { label: 'ALTO', className: 'bg-orange-600 text-white' },
-    medio: { label: 'MÉDIO', className: 'bg-yellow-600 text-white' },
-    baixo: { label: 'BAIXO', className: 'bg-green-600 text-white' },
+    critico: { label: 'CRÍTICO', className: 'text-[var(--danger)]' },
+    alto: { label: 'ALTO', className: 'text-[var(--warning)]' },
+    medio: { label: 'MÉDIO', className: 'text-[var(--text-secondary)]' },
+    baixo: { label: 'BAIXO', className: 'text-[var(--text-tertiary)]' },
   };
 
   const safeLevel: PriorityLevel = config[level as PriorityLevel]
@@ -79,7 +80,7 @@ export function PriorityBadge({ level, score }: { level?: PriorityLevel; score?:
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wide',
+        'inline-flex items-center text-[11px] font-medium uppercase tracking-wide',
         className
       )}
     >

@@ -83,11 +83,11 @@ export function Notas() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b bg-white">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notas Fiscais</h1>
-            <p className="text-sm text-gray-500">Controle de notas fiscais</p>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Notas Fiscais</h1>
+            <p className="text-sm text-[var(--text-tertiary)]">Controle de notas fiscais</p>
           </div>
           <Button onClick={() => { setEditingNota(null); setShowModal(true); }} className="gap-2">
             <Plus className="w-4 h-4" />
@@ -98,16 +98,16 @@ export function Notas() {
         {/* Stats */}
         <div className="flex gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">Pendentes:</span>
+            <span className="text-[var(--text-tertiary)]">Pendentes:</span>
             <span className="font-semibold text-yellow-600">{stats.pendentes}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">Emitidas:</span>
+            <span className="text-[var(--text-tertiary)]">Emitidas:</span>
             <span className="font-semibold text-green-600">{stats.emitidas}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">Valor Total Emitido:</span>
-            <span className="font-semibold text-gray-900">{formatCurrency(stats.valorTotal)}</span>
+            <span className="text-[var(--text-tertiary)]">Valor Total Emitido:</span>
+            <span className="font-semibold text-[var(--text-primary)]">{formatCurrency(stats.valorTotal)}</span>
           </div>
         </div>
       </div>

@@ -148,11 +148,11 @@ export function Orcamentos() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b bg-white">
+      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Orçamentos</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Orçamentos</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
               {orcamentos.length} orçamentos
             </p>
           </div>
@@ -180,8 +180,8 @@ export function Orcamentos() {
       <div className="flex-1 overflow-y-auto p-6">
         {sortedOrcamentos.length === 0 ? (
           <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Nenhum orçamento criado</p>
+            <FileText className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-4" />
+            <p className="text-[var(--text-secondary)]">Nenhum orçamento criado</p>
             <Button
               variant="primary"
               className="mt-4"
@@ -197,7 +197,7 @@ export function Orcamentos() {
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-sm font-semibold text-gray-900">
+                      <span className="font-mono text-sm font-semibold text-[var(--text-primary)]">
                         {orc.numero}
                       </span>
                       <span
@@ -209,7 +209,7 @@ export function Orcamentos() {
                         }
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
                         {getLeadName(orc)}
@@ -225,10 +225,10 @@ export function Orcamentos() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-lg font-bold text-[var(--text-primary)]">
                       {formatCurrency(orc.total)}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[var(--text-secondary)]">
                       {orc.itens.length} itens
                     </p>
                   </div>
@@ -433,9 +433,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
           {itens.map((item, index) => (
             <div
               key={item.id}
-              className="flex items-center gap-2 p-3 bg-gray-50 rounded-md"
+              className="flex items-center gap-2 p-3 bg-[var(--bg-surface-2)] rounded-md"
             >
-              <span className="text-sm text-gray-500 w-6">{index + 1}.</span>
+              <span className="text-sm text-[var(--text-secondary)] w-6">{index + 1}.</span>
               <Input
                 placeholder="Descrição"
                 value={item.descricao}
@@ -507,7 +507,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         </div>
 
         {/* Dica */}
-        <p className="text-xs text-gray-500 text-right">
+        <p className="text-xs text-[var(--text-tertiary)] text-right">
           Ex: 2.5 = 250% do valor
         </p>
 
