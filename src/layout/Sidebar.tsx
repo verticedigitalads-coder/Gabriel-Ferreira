@@ -169,7 +169,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   )}
 >
 <button
-  className="md:hidden absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+  className="md:hidden absolute top-2 right-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
   onClick={() => setMobileOpen(false)}
 >
   <X className="w-5 h-5" />
@@ -213,7 +213,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                 <button
                   onClick={() => setActiveModule(item.id)}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] rounded-[var(--radius-md)] text-sm font-medium transition-all duration-150',
+                    'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm font-medium transition-all duration-150',
                     isActive
                       ? 'bg-[var(--bg-surface-2)] text-[var(--text-primary)]'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
@@ -239,7 +239,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     <div className="space-y-0.5">
       <button
         onClick={handleExport}
-        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
+        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
       >
         <Download className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] shrink-0" />
         Exportar Backup
@@ -247,7 +247,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
 
       <button
         onClick={handleImport}
-        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
+        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
       >
         <Upload className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] shrink-0" />
         Importar

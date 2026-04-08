@@ -100,14 +100,14 @@ export function Kanban() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Kanban</h1>
+      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+        <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Kanban</h1>
         <p className="text-sm text-[var(--text-tertiary)]">
           Arraste os leads entre as colunas para atualizar o status
         </p>
       </div>
 
-      <div className="flex-1 overflow-x-auto p-6">
+      <div className="flex-1 overflow-x-auto p-2 md:p-6">
         <DndContext
           sensors={sensors}
           collisionDetection={rectIntersection}
@@ -296,7 +296,7 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
                   e.stopPropagation();
                   window.open(`https://wa.me/55${lead.telefone.replace(/\D/g, '')}`, '_blank');
                 }}
-                className="flex items-center gap-1 text-xs text-green-500 hover:text-green-400 transition-colors"
+                className="flex items-center gap-1 text-xs text-green-500 hover:text-green-400 transition-colors min-h-[44px] px-2 py-2"
                 title="Abrir WhatsApp"
               >
                 <MessageCircle className="w-3 h-3" />
@@ -308,7 +308,7 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
             <div className="relative" ref={popoverRef}>
               <button
                 onClick={e => { e.stopPropagation(); setShowObs(v => !v); }}
-                className="flex items-center gap-1 text-xs text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+                className="flex items-center gap-1 text-xs text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors min-h-[44px] px-2 py-2"
                 title="Observação rápida"
               >
                 <StickyNote className="w-3 h-3" />
@@ -319,7 +319,7 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
 
               {showObs && (
                 <div
-                  className="absolute left-0 top-6 z-50 w-56 bg-[var(--bg-surface)] border border-[var(--border)] rounded shadow-lg p-2 space-y-2"
+                  className="absolute right-0 top-8 z-50 w-56 max-w-[calc(100vw-2rem)] bg-[var(--bg-surface)] border border-[var(--border)] rounded shadow-lg p-2 space-y-2"
                   onClick={e => e.stopPropagation()}
                 >
                   <textarea
@@ -336,7 +336,7 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
                       await updateLead(lead.id, { observacoes: obsText });
                       setShowObs(false);
                     }}
-                    className="w-full text-xs bg-[var(--accent)] text-white rounded py-1 hover:bg-[var(--accent-hover)]"
+                    className="w-full text-xs bg-[var(--accent)] text-white rounded py-2 hover:bg-[var(--accent-hover)]"
                   >
                     Salvar
                   </button>

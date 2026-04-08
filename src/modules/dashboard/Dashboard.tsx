@@ -145,7 +145,7 @@ export function Dashboard() {
 
   return (
 
-    <div className="p-8 space-y-8">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
 
       {/* Header */}
 
@@ -161,7 +161,7 @@ export function Dashboard() {
 
       {/* Saúde do CRM */}
 
-      <Card className="shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
 
         <div className="flex items-center gap-3">
 
@@ -183,13 +183,13 @@ export function Dashboard() {
 
       {/* Receita */}
 
-      <Card className="shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
 
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
           Previsão de Receita
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-6">
 
           <StatCard
             label="Receita Potencial"
@@ -218,7 +218,7 @@ export function Dashboard() {
 
       {/* Estoque crítico */}
 
-      <Card className="shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
 
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Estoque Crítico
@@ -257,13 +257,13 @@ export function Dashboard() {
 
       {/* Indicadores */}
 
-      <Card className="shadow-sm rounded-2xl p-6">
+      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
 
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
           Indicadores Estratégicos
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
 
           <StatCard
             label="Score Operacional"

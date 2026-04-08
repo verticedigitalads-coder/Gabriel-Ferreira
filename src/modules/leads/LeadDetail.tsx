@@ -139,7 +139,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold text-[var(--text-primary)]">{lead.nome}</h2>
@@ -157,9 +157,9 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Ações Rápidas */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button
             variant="primary"
             onClick={() => setShowContatoModal(true)}
@@ -217,7 +217,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               <span className="text-xs font-medium">Telefone</span>
             </div>
             <p
-              className="text-sm font-medium text-[var(--text-primary)] cursor-pointer hover:text-[var(--accent)] transition-colors"
+              className="text-sm font-medium text-[var(--text-primary)] cursor-pointer hover:text-[var(--accent)] transition-colors truncate"
               onClick={() => copyPhone(lead.telefone)}
             >
               {lead.telefone}
@@ -228,7 +228,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               <Mail className="w-4 h-4" />
               <span className="text-xs font-medium">Email</span>
             </div>
-            <p className="text-sm font-medium text-[var(--text-primary)]">
+            <p className="text-sm font-medium text-[var(--text-primary)] truncate">
               {lead.email || '-'}
             </p>
           </div>
@@ -371,7 +371,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         onClose={() => setShowOrcamentoModal(false)}
         title="Marcar como Orçado"
       >
-        <div className="p-6 space-y-4">
+        <div className="p-4 md:p-6 space-y-4">
           <Input
             label="Valor do Orçamento (R$)"
             type="number"
@@ -411,7 +411,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         onClose={() => setShowDeleteConfirm(false)}
         title="Confirmar Exclusão"
       >
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           <p className="text-[var(--text-secondary)] mb-6">
             Tem certeza que deseja excluir o lead <strong>{lead.nome}</strong>?
             Esta ação não pode ser desfeita.
@@ -435,7 +435,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         onClose={() => setShowVisitModal(false)}
         title="Agendar Visita"
       >
-        <div className="p-6 space-y-4">
+        <div className="p-4 md:p-6 space-y-4">
           <Input
             label="Data da visita"
             type="date"
@@ -463,7 +463,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         onClose={() => setShowContatoModal(false)}
         title="Registrar Contato"
       >
-        <div className="p-6 space-y-4">
+        <div className="p-4 md:p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               O que foi tratado? *

@@ -35,8 +35,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           
           // Sizes - compacto
           {
-            'text-xs px-2.5 py-1.5 rounded': size === 'sm',
-            'text-sm px-4 py-2 rounded-md': size === 'md',
+            'text-xs px-2.5 py-1.5 rounded min-h-[44px]': size === 'sm',
+            'text-sm px-4 py-2 rounded-md min-h-[44px]': size === 'md',
             'text-base px-6 py-2.5 rounded-md': size === 'lg',
           },
           

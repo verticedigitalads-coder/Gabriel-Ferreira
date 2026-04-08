@@ -58,15 +58,15 @@ export function LeadsList() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
           <div>
-            <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Leads</h1>
+            <h1 className="text-xl md:text-2xl font-semibold text-[var(--text-primary)]">Leads</h1>
             <p className="text-sm text-[var(--text-secondary)]">
               {filteredLeads.length} de {leads.length} leads
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               variant="secondary"
               onClick={() => setShowAIModal(true)}
@@ -84,7 +84,7 @@ export function LeadsList() {
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex-1 min-w-[200px] max-w-md">
+          <div className="min-w-0 w-full sm:min-w-[200px] sm:flex-1 sm:max-w-md">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
               <input
@@ -143,7 +143,7 @@ export function LeadsList() {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {filteredLeads.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-slate-500">Nenhum lead encontrado</p>
@@ -230,7 +230,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
       hoverable
       onClick={onClick}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-slate-900 truncate">
@@ -262,13 +262,13 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="text-right shrink-0 max-w-[110px]">
           {lead.valorOrcado > 0 && (
             <p className="text-sm font-semibold text-[var(--text-primary)]">
               {formatCurrency(lead.valorOrcado)}
             </p>
           )}
-          <p className="text-xs text-[var(--text-secondary)] mt-1">
+          <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">
             {lead.telefone}
           </p>
         </div>

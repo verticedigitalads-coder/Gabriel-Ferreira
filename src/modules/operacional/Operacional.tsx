@@ -98,8 +98,8 @@ export function Operacional() {
   };
 
   return (
-    <div className="p-6 space-y-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Painel Operacional</h1>
+    <div className="p-4 md:p-6 space-y-6 md:space-y-8 max-w-6xl mx-auto">
+      <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Painel Operacional</h1>
 
       {/* ================= NOVA TAREFA ================= */}
       <div className="bg-[var(--bg-surface)] p-4 rounded shadow space-y-3 border border-[var(--border)]">
@@ -110,20 +110,20 @@ export function Operacional() {
           placeholder="Título da tarefa"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-h-[44px]"
         />
 
         <input
           type="date"
           value={data}
           onChange={(e) => setData(e.target.value)}
-          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
+          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
         />
 
         <select
           value={prioridade}
           onChange={(e) => setPrioridade(e.target.value as any)}
-          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
+          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
         >
           <option value="baixa">Prioridade Baixa</option>
           <option value="media">Prioridade Média</option>
@@ -132,7 +132,7 @@ export function Operacional() {
 
         <button
           onClick={handleAdd}
-          className="bg-[var(--accent)] text-white p-2 w-full rounded hover:bg-[var(--accent-hover)]"
+          className="bg-[var(--accent)] text-white py-3 md:py-2 w-full rounded hover:bg-[var(--accent-hover)] min-h-[44px]"
         >
           Adicionar Tarefa
         </button>
@@ -153,7 +153,7 @@ export function Operacional() {
       <div className="flex gap-2">
         <button
           onClick={() => setViewMode('week')}
-          className={`px-3 py-1 rounded ${
+          className={`px-4 py-2.5 min-h-[44px] rounded ${
             viewMode === 'week'
               ? 'bg-[var(--accent)] text-white'
               : 'bg-[var(--bg-surface-3)] text-[var(--text-secondary)]'
@@ -164,7 +164,7 @@ export function Operacional() {
 
         <button
           onClick={() => setViewMode('month')}
-          className={`px-3 py-1 rounded ${
+          className={`px-4 py-2.5 min-h-[44px] rounded ${
             viewMode === 'month'
               ? 'bg-[var(--accent)] text-white'
               : 'bg-[var(--bg-surface-3)] text-[var(--text-secondary)]'
@@ -226,7 +226,7 @@ export function Operacional() {
                   <button
                     key={s}
                     onClick={() => updateTask(task.id, { status: s })}
-                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors
+                    className={`text-xs px-2 py-1.5 md:py-0.5 rounded-full border transition-colors
                       ${(task.status || 'pendente') === s
                         ? statusConfig[s].cls + ' border-transparent font-semibold'
                         : 'border-[var(--border)] text-[var(--text-tertiary)] hover:border-[var(--accent)]'
@@ -241,7 +241,7 @@ export function Operacional() {
             <div className="flex gap-3 items-center ml-3">
               <button
                 onClick={() => updateTask(task.id, { concluido: true })}
-                className="text-[var(--text-tertiary)] hover:text-[var(--success)] transition-colors"
+                className="text-[var(--text-tertiary)] hover:text-[var(--success)] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 title="Marcar como concluída"
               >
                 <CheckCircle2 size={16} />
@@ -252,7 +252,7 @@ export function Operacional() {
                   setTaskToDelete(task);
                   setShowDeleteModal(true);
                 }}
-                className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+                className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 title="Excluir"
               >
                 <Trash2 size={16} />
@@ -279,7 +279,7 @@ export function Operacional() {
                 </div>
                 <button
                   onClick={() => updateTask(task.id, { concluido: false })}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-sm"
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-sm p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
                   title="Desfazer conclusão"
                 >
                   ↩
@@ -319,20 +319,20 @@ export function Operacional() {
           <input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)]"
+            className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
           />
 
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setShowEditModal(false)}
-              className="px-3 py-1 bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
+              className="px-4 py-2 min-h-[44px] bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
             >
               Cancelar
             </button>
 
             <button
               onClick={confirmEdit}
-              className="px-3 py-1 bg-[var(--accent)] text-white rounded hover:bg-[var(--accent-hover)]"
+              className="px-4 py-2 min-h-[44px] bg-[var(--accent)] text-white rounded hover:bg-[var(--accent-hover)]"
             >
               Salvar
             </button>

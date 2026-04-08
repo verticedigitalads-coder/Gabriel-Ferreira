@@ -48,11 +48,11 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-surface-2)]">
+          <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b border-[var(--border)] bg-[var(--bg-surface-2)]">
             <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors"
+              className="p-2 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5 text-[var(--text-tertiary)]" />
             </button>

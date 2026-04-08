@@ -90,6 +90,22 @@ Suprimentos Ativo Fornecedores MVP (CNPJ auto-fill ReceitaWS, modal CRUD complet
 Notas Ativo CRUD básico de notas fiscais
 Settings Ativo Configurações gerais 4. Padrões Identificados
 
+## Fase 5.4 — Responsividade Mobile (08/04/2026)
+
+| Arquivo | O que foi corrigido |
+|---|---|
+| `Button.tsx` | `min-h-[44px]` nos sizes `sm` e `md` — touch target mínimo global |
+| `Modal.tsx` | Header `px-4 py-3 md:px-6 md:py-4`, botão fechar `p-2 min-w/h-[44px]` |
+| `MainLayout.tsx` | Header `px-3 md:px-6`, hamburguer `p-2 min-w/h-[44px]`, info do usuário `hidden md:block`, main `p-4 md:p-6` |
+| `Sidebar.tsx` | Botão fechar `p-2 min-w/h-[44px]`, itens do menu `min-h-[44px] md:min-h-0` |
+| `Kanban.tsx` | Header `p-4 md:p-6`, scroll area `p-2 md:p-6`, popover `right-0 max-w-[calc(100vw-2rem)]`, botões de ação `min-h-[44px] px-2 py-2` |
+| `Operacional.tsx` | Container `p-4 md:p-6`, inputs/select `min-h-[44px]`, toggle `py-2.5 min-h-[44px]`, pills `py-1.5`, ícone buttons `p-2 min-h/w-[44px]`, modal buttons `py-2` |
+| `LeadDetail.tsx` | Header/content `p-4 md:p-6`, grid ações `grid-cols-1 sm:grid-cols-2`, truncate em telefone e email, modal bodies `p-4 md:p-6` |
+| `LeadsList.tsx` | Header `p-4 md:p-6 flex-wrap`, h1 `text-xl md:text-2xl`, search `min-w-0 w-full`, lista `p-4 md:p-6`, telefone `truncate`, coluna direita `shrink-0 max-w-[110px]` |
+| `Dashboard.tsx` | Container `p-4 md:p-8`, cards `p-4 md:p-6`, gaps `gap-3 md:gap-6` |
+
+**Regra aplicada:** mobile-first — valores menores sem prefixo, maiores com `md:`. Desktop inalterado.
+
 ## Auditoria de Automações — 08/04/2026
 
 | Automação | Status |

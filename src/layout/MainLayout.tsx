@@ -45,10 +45,10 @@ export function MainLayout({ children }: MainLayoutProps) {
       <div className="flex flex-col flex-1 overflow-hidden">
 
         {/* Header Global */}
-        <div className="flex items-center justify-between px-6 py-3 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-3 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
 
   <button
-    className="md:hidden mr-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+    className="md:hidden mr-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
     onClick={() => setSidebarOpen(true)}
   >
     <Menu className="w-5 h-5" />
@@ -56,9 +56,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   <HeaderGlobal />
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
 
-            <div className="text-right">
+            <div className="text-right hidden md:block">
               <p className="text-sm font-medium text-[var(--text-primary)]">
                 {userName || 'Usuário'}
               </p>
@@ -78,7 +78,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
 
