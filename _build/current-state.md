@@ -80,6 +80,19 @@ Central Ativo Top 7 leads por urgência + receita travada + execution score
 Suprimentos Ativo Fornecedores MVP (CNPJ auto-fill ReceitaWS, modal CRUD completo, WhatsApp direto, badges categoria/status), estoque, comparador de cotações
 Notas Ativo CRUD básico de notas fiscais
 Settings Ativo Configurações gerais 4. Padrões Identificados
+
+## Auditoria de Automações — 08/04/2026
+
+| Automação | Status |
+|---|---|
+| Kanban drag & drop | ✅ OK |
+| Operacional — conclusão de tarefas | ✅ OK |
+| Fechar Negócio | ✅ Corrigido (estava chamando console.log) |
+| Contas a Receber — marcarComoRecebido | ✅ OK |
+| Alertas topbar (atrasadas/hoje) | ✅ OK |
+| Realtime — leads, orcamentos, operacional, transactions, contas_receber | ✅ OK |
+| Realtime — fornecedores | ✅ Adicionado (faltava após Fase 4) |
+| IA Assistente | ✅ OK |
 Estado (Zustand)
 Store raiz em useStore.ts compõe 11 slices via create()((...a) => ({ ...slice1(...a), ...slice2(...a) }))
 Cada slice segue o padrão: estado[] + addX / updateX / deleteX assíncronos

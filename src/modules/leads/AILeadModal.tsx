@@ -128,6 +128,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
 
       await addOperacionalTask({
         titulo: `Visita orçamento - ${analysis.nome || 'Cliente'}`,
+        descricao: analysis.endereco ? `Endereço: ${analysis.endereco}` : 'Endereço não identificado',
         data: dataVisita,
         tipo: 'visita',
         prioridade: 'media',
@@ -137,7 +138,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
 
     addToast({
       type: 'success',
-      message: 'Lead criado com sucesso via IA!',
+      message: visitaSugerida ? 'Lead criado! Tarefa de visita agendada no Operacional.' : 'Lead criado! Nenhuma visita detectada na conversa.',
     });
 
     onClose();

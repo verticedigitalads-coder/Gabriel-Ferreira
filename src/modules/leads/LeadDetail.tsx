@@ -37,6 +37,8 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const addOperacionalTask = useStore((state) => state.addOperacionalTask);
   const updateLead = useStore((state) => state.updateLead);
   const handleMarkAsOrcado = useStore((state: any) => state.handleMarkAsOrcado);
+  const markAsFechado = useStore((state: any) => state.markAsFechado);
+  const addToast = useStore((state: any) => state.addToast);
 
   const { openWhatsApp, copyPhone } = useLeadActions();
 
@@ -45,6 +47,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     return <div className="p-6 text-[var(--text-tertiary)]">Carregando lead...</div>;
   }
 
+  const [isClosing, setIsClosing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -70,6 +73,14 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
 
   const handleDelete = async () => {
     await deleteLead(lead.id);
+    onClose();
+  };
+
+  const handleFechamento = async () => {
+    setIsClosing(true);
+    await markAsFechado(lead.id);
+    addToast({ type: 'success', message: 'Negócio fechado! Tarefa de execução criada.' });
+    setIsClosing(false);
     onClose();
   };
 
@@ -159,11 +170,12 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
 
               <Button
                 variant="success"
-                onClick={() => console.log('Fechar negócio')}
+                onClick={handleFechamento}
+                disabled={isClosing}
                 className="gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
-                Fechar Negócio
+                {isClosing ? 'Fechando...' : 'Fechar Negócio'}
               </Button>
             </>
           )}

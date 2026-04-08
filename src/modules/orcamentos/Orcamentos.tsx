@@ -479,16 +479,16 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
       </div>
 
       {/* Totais */}
-      <div className="bg-gray-50 rounded-md p-4 space-y-3">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-md p-4 space-y-3">
         {/* Subtotal */}
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Subtotal:</span>
+          <span className="text-[var(--text-secondary)]">Subtotal:</span>
           <span className="font-medium">{formatCurrency(subtotal)}</span>
         </div>
 
         {/* 🔥 MÃO DE OBRA (AQUI) */}
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Mão de obra:</span>
+          <span className="text-[var(--text-secondary)]">Mão de obra:</span>
           <span className="font-medium text-blue-600">
             {formatCurrency(maoDeObra)}
           </span>
@@ -496,13 +496,13 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
         {/* Multiplicador */}
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Multiplicador:</span>
+          <span className="text-sm text-[var(--text-secondary)]">Multiplicador:</span>
           <Input
             type="number"
             step="0.1"
             value={multiplicador}
             onChange={(e) => setMultiplicador(Number(e.target.value))}
-            className="w-32 text-right py-2"
+            className="w-32 text-right py-2 bg-[var(--bg-app)] text-[var(--text-primary)] border-[var(--border)]"
           />
         </div>
 
@@ -513,17 +513,17 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
         {/* Desconto */}
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Desconto:</span>
+          <span className="text-sm text-[var(--text-secondary)]">Desconto:</span>
           <Input
             type="number"
             value={desconto}
             onChange={(e) => setDesconto(Number(e.target.value))}
-            className="w-32 text-right py-2"
+            className="w-32 text-right py-2 bg-[var(--bg-app)] text-[var(--text-primary)] border-[var(--border)]"
           />
         </div>
 
         {/* Total */}
-        <div className="flex justify-between text-lg font-bold border-t pt-2">
+        <div className="flex justify-between text-lg font-bold border-t border-[var(--border)] pt-2">
           <span>Total:</span>
           <span className="text-green-600">{formatCurrency(total)}</span>
         </div>

@@ -264,11 +264,11 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
 
         <div className="text-right">
           {lead.valorOrcado > 0 && (
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">
               {formatCurrency(lead.valorOrcado)}
             </p>
           )}
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
             {lead.telefone}
           </p>
         </div>

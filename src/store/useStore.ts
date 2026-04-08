@@ -16,7 +16,7 @@ import { createMaterialSlice } from './slices/materialSlice';
 import { createConsumoMaterialSlice } from './slices/consumoMaterialSlice';
 import { createFormSlice } from './slices/formSlice';
 import { createContasReceberSlice } from './slices/contasReceberSlice';
-import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber } from './formatters';
+import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor } from './formatters';
 let realtimeStarted = false;
 
 type StoreState = {
@@ -27,7 +27,10 @@ type StoreState = {
   leads: any[];
   addLead: (data: any) => Promise<any>;
   updateLead: (id: string, data: any) => Promise<void>;
+  updateLeadStatus: (leadId: string, status: any) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
+  handleMarkAsOrcado: (id: string, valor: number) => Promise<void>;
+  markAsFechado: (id: string) => Promise<void>;
 
   orcamentos: any[];
   addOrcamento: (data: any) => Promise<any>;
@@ -467,6 +470,44 @@ export const useStore = create<StoreState>()(
 
                 if (payload.eventType === 'DELETE') {
                   return { contasReceber: contas.filter((c: any) => c.id !== payload.old.id) };
+                }
+
+                return state;
+              });
+            },
+          )
+          .subscribe();
+
+        // ================= FORNECEDORES =================
+        supabase
+          .channel('realtime-fornecedores')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'fornecedores',
+              filter: `workspace_id=eq.${workspaceId}`,
+            },
+            (payload: any) => {
+              set((state: any) => {
+                const fornecedores = state.fornecedores || [];
+
+                if (payload.eventType === 'INSERT') {
+                  if (fornecedores.find((f: any) => f.id === payload.new.id)) return state;
+                  return { fornecedores: [formatFornecedor(payload.new), ...fornecedores] };
+                }
+
+                if (payload.eventType === 'UPDATE') {
+                  return {
+                    fornecedores: fornecedores.map((f: any) =>
+                      f.id === payload.new.id ? formatFornecedor(payload.new) : f,
+                    ),
+                  };
+                }
+
+                if (payload.eventType === 'DELETE') {
+                  return { fornecedores: fornecedores.filter((f: any) => f.id !== payload.old.id) };
                 }
 
                 return state;

@@ -531,7 +531,8 @@ export class AIService {
     if (lower.includes('amanhã')) {
       const d = new Date();
       d.setDate(d.getDate() + 1);
-      return d.toISOString().split('T')[0];
+      const offset = d.getTimezoneOffset() * 60000;
+      return new Date(d.getTime() - offset).toISOString().split('T')[0];
     }
 
     const match = text.match(/\d{1,2}\/\d{1,2}/);
