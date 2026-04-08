@@ -9,17 +9,17 @@ export default function ComparadorPrecos(){
 
   const addCotacao = useStore(state=>state.addCotacaoMaterial)
 
-  const [materialId,setMaterialId] = useState("")
+  const [materialNome,setMaterialNome] = useState("")
   const [fornecedorId,setFornecedorId] = useState("")
   const [valor,setValor] = useState("")
   const [formaPagamento,setFormaPagamento] = useState("")
 
   const handleAdd = async()=>{
 
-    if(!materialId || !fornecedorId || !valor) return
+    if(!materialNome || !fornecedorId || !valor) return
 
     await addCotacao({
-      materialId,
+      material: materialNome,
       fornecedorId,
       valor:Number(valor),
       formaPagamento
@@ -30,11 +30,11 @@ export default function ComparadorPrecos(){
   }
 
   const cotacoesMaterial = cotacoes.filter(
-    c=>c.material_id === materialId
+    (c:any) => c.material === materialNome
   )
 
   const menorPreco = cotacoesMaterial.length
-    ? Math.min(...cotacoesMaterial.map(c=>c.valor))
+    ? Math.min(...cotacoesMaterial.map((c:any)=>c.valor))
     : null
 
   return(
@@ -50,8 +50,8 @@ export default function ComparadorPrecos(){
       <div className="flex gap-3 mb-6 flex-wrap">
 
         <select
-          value={materialId}
-          onChange={e=>setMaterialId(e.target.value)}
+          value={materialNome}
+          onChange={e=>setMaterialNome(e.target.value)}
           className="border px-3 py-2 rounded"
         >
 
@@ -60,7 +60,7 @@ export default function ComparadorPrecos(){
           </option>
 
           {materiais.map((m:any)=>(
-            <option key={m.id} value={m.id}>
+            <option key={m.id} value={m.nome}>
               {m.nome}
             </option>
           ))}
@@ -119,7 +119,7 @@ export default function ComparadorPrecos(){
         {cotacoesMaterial.map((c:any)=>{
 
           const fornecedor = fornecedores.find(
-            f=>f.id === c.fornecedor_id
+            (f:any) => f.id === c.fornecedorId
           )
 
           const isBest = c.valor === menorPreco
@@ -128,23 +128,34 @@ export default function ComparadorPrecos(){
 
             <div
               key={c.id}
-              className={`border rounded p-3 flex justify-between items-center
-              ${isBest ? "bg-green-50 border-green-400" : ""}`}
+              style={{
+                border: `1px solid ${isBest ? 'var(--success)' : 'var(--border)'}`,
+                borderRadius: 'var(--radius-lg)',
+                padding: '12px 16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: isBest ? 'var(--success-subtle)' : 'var(--bg-surface)',
+              }}
             >
 
               <div>
 
-                <p className="font-semibold">
+                <p style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                   {fornecedor?.nome}
                 </p>
 
-                <p className="text-sm text-gray-500">
-                  {c.forma_pagamento}
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
+                  {c.formaPagamento}
                 </p>
 
               </div>
 
-              <p className={`font-bold text-lg ${isBest ? "text-green-700" : ""}`}>
+              <p style={{
+                fontWeight: 700,
+                fontSize: 'var(--text-lg)',
+                color: isBest ? 'var(--success)' : 'var(--text-primary)',
+              }}>
                 R$ {c.valor}
               </p>
 

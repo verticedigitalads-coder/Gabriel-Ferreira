@@ -72,6 +72,16 @@ type StoreState = {
   addFornecedor: (data: any) => Promise<any>;
   updateFornecedor: (id: string, data: any) => Promise<any>;
   deleteFornecedor: (id: string) => Promise<void>;
+
+  materiais: any[];
+  loadMateriais: () => Promise<void>;
+  addMaterial: (data: any) => Promise<void>;
+  updateMaterial: (id: string, data: any) => Promise<void>;
+  deleteMaterial: (id: string) => Promise<void>;
+  movimentarEstoque: (id: string, tipo: 'entrada' | 'saida', quantidade: number, motivo: string) => Promise<void>;
+
+  cotacoesMateriais: any[];
+  addCotacaoMaterial: (data: any) => Promise<void>;
 };
 
 export const useStore = create<StoreState>()(
