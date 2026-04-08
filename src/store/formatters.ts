@@ -114,11 +114,15 @@ export const formatMaterial = (raw: any) => ({
 export const formatCotacaoMaterial = (raw: any) => ({
   id: raw.id,
   workspaceId: raw.workspace_id,
+  materialId: raw.material_id ?? null,
   fornecedorId: raw.fornecedor_id,
-  material: raw.material,
+  material: raw.material ?? null,
+  materialNome: raw.materiais?.nome ?? raw.material ?? null,
+  fornecedorNome: raw.fornecedores?.nome ?? null,
   quantidade: raw.quantidade,
   valor: raw.valor,
   formaPagamento: raw.forma_pagamento ?? null,
+  data: raw.data ?? null,
   observacoes: raw.observacoes ?? null,
   createdAt: raw.created_at ?? null,
 })

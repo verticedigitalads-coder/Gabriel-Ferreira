@@ -7,6 +7,16 @@ export const createFornecedorSlice = (set: any, get: any) => ({
 
   fornecedores: [],
 
+  loadFornecedores: async () => {
+    const { workspaceId } = get()
+    if (!workspaceId) return
+    const { data } = await supabase
+      .from('fornecedores')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+    set({ fornecedores: (data || []).map(formatFornecedor) })
+  },
+
   addFornecedor: async (data: Partial<Fornecedor>) => {
 
     const { workspaceId, fornecedores } = get()

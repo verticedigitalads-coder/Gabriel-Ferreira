@@ -77,7 +77,7 @@ Operacional Ativo Agendamento de tarefas, calendário semana/mês, prioridades
 IA Assistente Ativo Análise estratégica, sugestão de abordagem, score de risco
 Dashboard Ativo 18+ métricas calculadas, score comercial e operacional
 Central Ativo Top 7 leads por urgência + receita travada + execution score
-Suprimentos Ativo Fornecedores MVP (CNPJ auto-fill ReceitaWS, modal CRUD completo, WhatsApp direto, badges categoria/status), Estoque MVP completo (cadastro, movimentações entrada/saída, alertas estoque baixo/crítico, dark theme), comparador de cotações (fix ts(2339) resolvido), Vínculo Orçamento→Estoque via BaixaEstoqueModal ao aprovar (Fase 5.2)
+Suprimentos Ativo Fornecedores MVP (CNPJ auto-fill ReceitaWS, modal CRUD completo, WhatsApp direto, badges categoria/status), Estoque MVP completo (cadastro, movimentações entrada/saída, alertas estoque baixo/crítico, dark theme), Comparador de Preços completo (Fase 7: tabela de cotações, modal nova cotação, LineChart por fornecedor, tabela resumo Menor/Maior preço, delete, recharts), Vínculo Orçamento→Estoque via BaixaEstoqueModal ao aprovar (Fase 5.2)
 
 ## Fase 5.3 — Melhorias Operacionais (08/04/2026)
 
@@ -176,6 +176,19 @@ Sem unsubscribe garantido em cleanup. Em ambientes com hot-reload intenso ou re-
 
 Conversão snake_case → camelCase
 Feita manualmente e de forma inconsistente entre slices. Adicionar novo campo no Supabase requer atualizar a conversão em cada slice relevante — fácil de esquecer.]
+
+## Fase 7 — Comparador de Preços (08/04/2026)
+
+| Arquivo | O que foi feito |
+|---|---|
+| `supabase/migrations/20260408200000_alter_cotacoes_materiais.sql` | NOVO — adiciona `material_id UUID REFERENCES materiais(id)` e `data DATE DEFAULT CURRENT_DATE` — ✅ executada no Supabase Dashboard (08/04/2026) |
+| `src/types/index.ts` | Interface `CotacaoMaterial` atualizada: `materialId`, `materialNome`, `fornecedorNome`, `data` |
+| `src/store/formatters.ts` | `formatCotacaoMaterial` mapeia novos campos com fallback para campo legado `material` |
+| `src/store/slices/cotacaoMaterialSlice.ts` | Reescrito: `fetchCotacoesMateriais()` (SELECT com joins), `addCotacaoMaterial()` com `material_id`+`data`, `deleteCotacaoMaterial()` |
+| `src/store/useStore.ts` | StoreState: adicionados `fetchCotacoesMateriais`, `deleteCotacaoMaterial`, `loadFornecedores` |
+| `src/store/slices/fornecedorSlice.ts` | Adicionado `loadFornecedores()` (fetch por workspace) |
+| `src/modules/suprimentos/ComparadorPrecos.tsx` | Reescrito completo: abas Lista/Histórico, modal Nova Cotação, LineChart recharts (uma linha por fornecedor), tabela resumo Menor/Maior preço, delete, CSS vars, mobile-first |
+| `package.json` | `recharts` instalado |
 
 ### Fase 10 — PWA Finalizado (08/04/2026)
 - purpose "any maskable" no ícone 512x512 (vite.config.ts)

@@ -410,16 +410,15 @@ export interface Material {
 export interface CotacaoMaterial {
   id: string;
   workspaceId: string;
-
+  materialId: string | null;
   fornecedorId: string;
-
-  material: string;
+  material: string | null;       // legado (text)
+  materialNome: string | null;   // join ou fallback para material
+  fornecedorNome: string | null; // join
   quantidade: number;
-
   valor: number;
-  formaPagamento?: string;
-
-  observacoes?: string;
-
+  formaPagamento?: string | null;
+  data: string | null;
+  observacoes?: string | null;
   createdAt?: string;
 }

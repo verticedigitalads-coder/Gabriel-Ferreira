@@ -1,38 +1,67 @@
 import { supabase } from "@/lib/supabase"
 import { formatCotacaoMaterial } from "@/store/formatters"
 
-export const createCotacaoMaterialSlice = (set:any,get:any)=>({
+export const createCotacaoMaterialSlice = (set: any, get: any) => ({
 
-  cotacoesMateriais:[],
+  cotacoesMateriais: [],
 
-  addCotacaoMaterial: async(data:any)=>{
+  fetchCotacoesMateriais: async () => {
+    const { workspaceId } = get()
+    if (!workspaceId) return
 
-    const { workspaceId, cotacoesMateriais } = get()
+    const { data, error } = await supabase
+      .from('cotacoes_materiais')
+      .select('*, materiais(nome), fornecedores(nome)')
+      .eq('workspace_id', workspaceId)
+      .order('data', { ascending: false })
 
-    const { data:inserted, error } = await supabase
-      .from("cotacoes_materiais")
-      .insert([
-        {
-          workspace_id: workspaceId,
-          fornecedor_id: data.fornecedorId,
-          material: data.material,
-          quantidade: data.quantidade,
-          valor: data.valor,
-          forma_pagamento: data.formaPagamento
-        }
-      ])
-      .select()
-      .single()
+    if (error) {
+      console.error('[CotacaoMaterialSlice] Erro ao buscar cotações:', error)
+      return
+    }
 
-    if(error){
+    set({ cotacoesMateriais: (data || []).map(formatCotacaoMaterial) })
+  },
+
+  addCotacaoMaterial: async (data: any) => {
+    const { workspaceId } = get()
+    if (!workspaceId) return
+
+    const { error } = await supabase
+      .from('cotacoes_materiais')
+      .insert([{
+        workspace_id: workspaceId,
+        material_id: data.materialId ?? null,
+        fornecedor_id: data.fornecedorId,
+        material: data.material ?? null,
+        quantidade: data.quantidade ?? 1,
+        valor: data.valor,
+        forma_pagamento: data.formaPagamento ?? null,
+        data: data.data,
+      }])
+
+    if (error) {
       console.error('[CotacaoMaterialSlice] Erro ao criar cotação:', error)
       return
     }
 
-    set({
-      cotacoesMateriais:[...cotacoesMateriais, formatCotacaoMaterial(inserted)]
-    })
+    await get().fetchCotacoesMateriais()
+  },
 
+  deleteCotacaoMaterial: async (id: string) => {
+    const { error } = await supabase
+      .from('cotacoes_materiais')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('[CotacaoMaterialSlice] Erro ao deletar cotação:', error)
+      return
+    }
+
+    set((state: any) => ({
+      cotacoesMateriais: state.cotacoesMateriais.filter((c: any) => c.id !== id),
+    }))
   },
 
 })

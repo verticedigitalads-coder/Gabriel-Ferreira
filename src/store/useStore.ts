@@ -81,7 +81,10 @@ type StoreState = {
   movimentarEstoque: (id: string, tipo: 'entrada' | 'saida', quantidade: number, motivo: string) => Promise<void>;
 
   cotacoesMateriais: any[];
+  fetchCotacoesMateriais: () => Promise<void>;
   addCotacaoMaterial: (data: any) => Promise<void>;
+  deleteCotacaoMaterial: (id: string) => Promise<void>;
+  loadFornecedores: () => Promise<void>;
 };
 
 export const useStore = create<StoreState>()(
