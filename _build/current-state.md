@@ -176,3 +176,9 @@ Sem unsubscribe garantido em cleanup. Em ambientes com hot-reload intenso ou re-
 
 Conversão snake_case → camelCase
 Feita manualmente e de forma inconsistente entre slices. Adicionar novo campo no Supabase requer atualizar a conversão em cada slice relevante — fácil de esquecer.]
+
+### Fase 10 — PWA Finalizado (08/04/2026)
+- purpose "any maskable" no ícone 512x512 (vite.config.ts)
+- workbox config: precache de assets + runtime caching (Google Fonts + Supabase API)
+- meta tags Apple Mobile Web App adicionadas no index.html
+- site.webmanifest estático removido (conflito com vite-plugin-pwa)
