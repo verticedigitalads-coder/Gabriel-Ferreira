@@ -18,6 +18,8 @@ import {
   Edit,
   User,
   Calendar,
+  PackageMinus,
+  CheckCircle2,
 } from 'lucide-react';
 import type { Orcamento, OrcamentoItem, OrcamentoStatus } from '@/types';
 
@@ -278,6 +280,225 @@ export function Orcamentos() {
   );
 }
 
+// ─────────────────────────────────────────────
+// BaixaEstoqueModal — seleção de materiais para baixa ao aprovar orçamento
+// ─────────────────────────────────────────────
+
+interface BaixaItem {
+  itemId: string;
+  descricao: string;
+  quantidadeOrc: number;
+  checked: boolean;
+  materialId: string;
+  quantidadeBaixar: number;
+}
+
+interface BaixaEstoqueModalProps {
+  orcamentoNumero: string;
+  itens: OrcamentoItem[];
+  materiais: any[];
+  onCancel: () => void;
+  onConfirm: (baixas: BaixaItem[]) => Promise<void>;
+}
+
+function BaixaEstoqueModal({ orcamentoNumero, itens, materiais, onCancel, onConfirm }: BaixaEstoqueModalProps) {
+  const [rows, setRows] = useState<BaixaItem[]>(() =>
+    itens.map(item => ({
+      itemId: item.id,
+      descricao: item.descricao,
+      quantidadeOrc: item.quantidade,
+      checked: true,
+      materialId: '',
+      quantidadeBaixar: item.quantidade,
+    }))
+  );
+  const [loading, setLoading] = useState(false);
+
+  const updateRow = (itemId: string, changes: Partial<BaixaItem>) => {
+    setRows(prev => prev.map(r => r.itemId === itemId ? { ...r, ...changes } : r));
+  };
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    await onConfirm(rows.filter(r => r.checked && r.materialId && r.quantidadeBaixar > 0));
+    setLoading(false);
+  };
+
+  const cellStyle: React.CSSProperties = {
+    padding: '8px 10px',
+    borderBottom: '1px solid var(--border)',
+    fontSize: 'var(--text-sm)',
+    color: 'var(--text-primary)',
+    verticalAlign: 'middle',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    background: 'var(--bg-surface-2)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-sm)',
+    color: 'var(--text-primary)',
+    padding: '4px 8px',
+    fontSize: 'var(--text-sm)',
+    width: '100%',
+    outline: 'none',
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.6)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 1100,
+      }}
+    >
+      <div style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-xl)',
+        boxShadow: 'var(--shadow-modal)',
+        width: 660,
+        maxWidth: '95vw',
+        maxHeight: '85vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* Header */}
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <PackageMinus size={20} color="var(--warning)" />
+            <h2 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text-primary)' }}>
+              Baixa no Estoque — {orcamentoNumero}
+            </h2>
+          </div>
+          <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+            Selecione quais itens deseja baixar do estoque ao aprovar este orçamento.
+          </p>
+        </div>
+
+        {/* Tabela */}
+        <div style={{ overflow: 'auto', flex: 1, padding: '0 24px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                {['', 'Item do Orçamento', 'Qtd', 'Material no Estoque', 'Qtd a Baixar'].map(h => (
+                  <th key={h} style={{
+                    padding: '8px 10px',
+                    textAlign: 'left',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 600,
+                    color: 'var(--text-tertiary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => (
+                <tr key={row.itemId}>
+                  <td style={{ ...cellStyle, width: 32 }}>
+                    <input
+                      type="checkbox"
+                      checked={row.checked}
+                      onChange={e => updateRow(row.itemId, { checked: e.target.checked })}
+                      style={{ cursor: 'pointer', accentColor: 'var(--accent)', width: 16, height: 16 }}
+                    />
+                  </td>
+                  <td style={{ ...cellStyle, maxWidth: 180 }}>
+                    <span style={{ color: row.checked ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
+                      {row.descricao || '(sem descrição)'}
+                    </span>
+                  </td>
+                  <td style={{ ...cellStyle, width: 50, textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    {row.quantidadeOrc}
+                  </td>
+                  <td style={{ ...cellStyle, width: 200 }}>
+                    <select
+                      value={row.materialId}
+                      disabled={!row.checked}
+                      onChange={e => updateRow(row.itemId, { materialId: e.target.value })}
+                      style={{ ...inputStyle, opacity: row.checked ? 1 : 0.4 }}
+                    >
+                      <option value="">Não vincular</option>
+                      {materiais.map((m: any) => (
+                        <option key={m.id} value={m.id}>
+                          {m.nome} (estoque: {m.estoque})
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td style={{ ...cellStyle, width: 110 }}>
+                    <input
+                      type="number"
+                      min="0"
+                      value={row.quantidadeBaixar}
+                      disabled={!row.checked}
+                      onChange={e => updateRow(row.itemId, { quantidadeBaixar: Number(e.target.value) })}
+                      style={{ ...inputStyle, opacity: row.checked ? 1 : 0.4 }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '16px 24px',
+          borderTop: '1px solid var(--border)',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 10,
+        }}>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--text-secondary)',
+              padding: '8px 16px',
+              fontSize: 'var(--text-sm)',
+              cursor: 'pointer',
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={loading}
+            style={{
+              background: 'var(--accent)',
+              color: 'var(--accent-foreground)',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              padding: '8px 16px',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              opacity: loading ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <CheckCircle2 size={15} />
+            {loading ? 'Confirmando...' : 'Confirmar Baixa'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+
 interface OrcamentoFormProps {
   orcamento: Orcamento | null;
   onClose: () => void;
@@ -288,6 +509,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const addOrcamento = useStore((state) => state.addOrcamento);
   const updateOrcamento = useStore((state) => state.updateOrcamento);
   const updateLead = useStore((state) => state.updateLead);
+  const materiais = useStore((state) => state.materiais);
+  const movimentarEstoque = useStore((state) => state.movimentarEstoque);
+  const addToast = useStore((state: any) => state.addToast);
 
   const [leadId, setLeadId] = useState(orcamento?.leadId || '');
   const [status, setStatus] = useState<OrcamentoStatus>(
@@ -303,6 +527,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     orcamento?.validadeEmDias || 15,
   );
   const [observacoes, setObservacoes] = useState(orcamento?.observacoes || '');
+
+  const [showBaixaModal, setShowBaixaModal] = useState(false);
+  const [pendingData, setPendingData] = useState<any>(null);
 
   const { subtotal, total, maoDeObra } = calcularOrcamento({
     itens,
@@ -342,6 +569,26 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     setItens(itens.filter((item) => item.id !== id));
   };
 
+  const saveOrcamento = async (data: any) => {
+    if (orcamento) {
+      await updateOrcamento(orcamento.id, data);
+    } else {
+      await addOrcamento(data);
+    }
+
+    if (data.leadId && data.total > 0) {
+      const lead = leads.find((l: Lead) => l.id === data.leadId);
+      if (lead) {
+        await updateLead(data.leadId, {
+          valorOrcado: data.total,
+          orcamentoEnviado: data.status === 'enviado' || data.status === 'aprovado',
+        });
+      }
+    }
+
+    onClose();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -353,41 +600,30 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
     const data = {
       leadId,
-
       clienteNome,
       clienteTelefone,
       clienteEndereco,
-
       itens,
       desconto,
       multiplicador,
       status,
       observacoes,
       validadeEmDias,
-
       subtotal,
       total,
     };
 
-    if (orcamento) {
-      await updateOrcamento(orcamento.id, data);
-    } else {
-      await addOrcamento(data);
+    // Interceptar somente quando TRANSICIONANDO para 'aprovado'
+    const transicionandoParaAprovado =
+      status === 'aprovado' && orcamento?.status !== 'aprovado';
+
+    if (transicionandoParaAprovado) {
+      setPendingData(data);
+      setShowBaixaModal(true);
+      return;
     }
 
-    // Update lead value
-    if (leadId && total > 0) {
-      const lead = leads.find((l: Lead) => l.id === leadId);
-
-      if (lead) {
-        await updateLead(leadId, {
-          valorOrcado: total,
-          orcamentoEnviado: status === 'enviado' || status === 'aprovado',
-        });
-      }
-    }
-
-    onClose();
+    await saveOrcamento(data);
   };
 
   const formatCurrency = (value: number) => {
@@ -398,6 +634,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="p-6 space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <Select
@@ -559,5 +796,28 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         </Button>
       </div>
     </form>
+
+    {showBaixaModal && pendingData && (
+      <BaixaEstoqueModal
+        orcamentoNumero={orcamento?.numero || ''}
+        itens={itens}
+        materiais={materiais}
+        onCancel={() => {
+          setShowBaixaModal(false);
+          setPendingData(null);
+        }}
+        onConfirm={async (baixas) => {
+          for (const b of baixas) {
+            await movimentarEstoque(b.materialId, 'saida', b.quantidadeBaixar, `Aprovação ${orcamento?.numero || 'orçamento'}`);
+          }
+          await saveOrcamento(pendingData);
+          addToast({
+            type: 'success',
+            message: `Orçamento aprovado! ${baixas.length} item(s) baixado(s) do estoque.`,
+          });
+        }}
+      />
+    )}
+    </>
   );
 }
