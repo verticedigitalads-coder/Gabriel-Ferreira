@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/utils/formatters';
 import { useEffect } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState, useMemo } from 'react';
@@ -68,12 +69,6 @@ export function Financeiro() {
     format(new Date(), 'yyyy-MM'),
   );
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
 
   const monthStart = startOfMonth(parseISO(`${selectedMonth}-01`));
   const monthEnd = endOfMonth(monthStart);

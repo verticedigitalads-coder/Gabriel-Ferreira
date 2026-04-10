@@ -190,6 +190,24 @@ Feita manualmente e de forma inconsistente entre slices. Adicionar novo campo no
 | `src/modules/suprimentos/ComparadorPrecos.tsx` | Reescrito completo: abas Lista/Histórico, modal Nova Cotação, LineChart recharts (uma linha por fornecedor), tabela resumo Menor/Maior preço, delete, CSS vars, mobile-first |
 | `package.json` | `recharts` instalado |
 
+## 11 Fixes UX/UI (09/04/2026)
+
+| Fix | Arquivo(s) | O que foi feito |
+|---|---|---|
+| 1 — Moeda | `src/utils/formatters.ts` (NOVO) + 8 módulos | Criado `formatCurrency` central com `minimumFractionDigits: 2`. Removidas 8 definições locais (3 estavam com `minimumFractionDigits: 0`). Todos os módulos importam de `@/utils/formatters`. |
+| 2 — Telefone | `LeadDetail.tsx`, `LeadsList.tsx` | Criado `formatPhone` em `formatters.ts`. Exibição aplica máscara `(XX) XXXXX-XXXX` / `(XX) XXXX-XXXX`. Dado salvo não é alterado. |
+| 3 — WeekView tarefa | `OperacionalCalendar.tsx` | Título da tarefa com `line-clamp-2 break-words` + `title` tooltip. |
+| 4 — WeekView cabeçalho | `OperacionalCalendar.tsx` | Abreviações "Seg/Ter/Qua..." em mobile (`lg:hidden`), nome completo em desktop (`hidden lg:block`). Mapa `DAY_ABBREV` para pt-BR. |
+| 5 — WeekView overflow | `OperacionalCalendar.tsx` | `overflow-hidden` no container da coluna; `w-full max-w-full` no card da tarefa. |
+| 6 — MonthView tooltip | `OperacionalMonthCalendar.tsx` | `title={task.titulo}` no container da pill. |
+| 7 — Header truncate | `HeaderGlobal.tsx` | Removido `truncate` do `<h1>`. Adicionado `text-sm` para mobile. |
+| 8 — Email vazio | `LeadDetail.tsx` | Email vazio exibe "Não informado" em itálico com `text-[var(--text-tertiary)]`. |
+| 9 — Plural itens | `Orcamentos.tsx` | `1 item` / `N itens` com ternário. |
+| 10 — Fornecedores empty | `Fornecedores.tsx` | Ícone `Truck` (lucide-react) acima do texto do empty state. |
+| 11 — Sem valor | `LeadsList.tsx`, `Kanban.tsx`, `Dashboard.tsx` | `valorOrcado` falsy exibe "Sem valor" em `text-[var(--text-tertiary)]`. |
+
+**Novo arquivo:** `src/utils/formatters.ts` — utilitários `formatCurrency` e `formatPhone` centralizados.
+
 ### Fase 10 — PWA Finalizado (08/04/2026)
 - purpose "any maskable" no ícone 512x512 (vite.config.ts)
 - workbox config: precache de assets + runtime caching (Google Fonts + Supabase API)

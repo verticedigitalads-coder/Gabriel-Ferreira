@@ -32,7 +32,7 @@ export function HeaderGlobal() {
 
       {/* ESQUERDA */}
       <div className="min-w-0">
-        <h1 className="text-base md:text-lg font-semibold text-[var(--text-primary)] tracking-tight truncate">
+        <h1 className="text-sm md:text-lg font-semibold text-[var(--text-primary)] tracking-tight">
           {moduleNames[activeModule] ?? 'CRM'}
         </h1>
         <p className="text-xs text-[var(--text-tertiary)] mt-0.5 hidden sm:block">

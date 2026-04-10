@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(supabase --version)"
+      "Bash(supabase --version)",
+      "Bash(grep -rn \"R\\\\$\" \"c:\\\\Users\\\\gabri\\\\OneDrive\\\\Área de Trabalho\\\\CRM-V2\\\\crm-offline-desenvolvimento-inicial-ia-leads\\\\src\" --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(find \"c:\\\\Users\\\\gabri\\\\OneDrive\\\\Área de Trabalho\\\\CRM-V2\\\\crm-offline-desenvolvimento-inicial-ia-leads\\\\src\" -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"formatPhone\\\\|format.*phone\" {} \\\\;)"
     ]
   }
 }

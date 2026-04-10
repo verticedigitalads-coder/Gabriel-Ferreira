@@ -1,3 +1,4 @@
+import { formatCurrency, formatPhone } from '@/utils/formatters';
 import { useState, useMemo, useEffect } from 'react';
 import { useStore } from '@/store/useStore'
 import { useFilteredLeads } from '@/store/selectors/leadSelectors'
@@ -211,13 +212,6 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
     (h) => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
   );
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
 
   const alertaContato =
     diasSemContato !== null && diasSemContato >= 5;
@@ -263,13 +257,12 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
         </div>
 
         <div className="text-right shrink-0 max-w-[110px]">
-          {lead.valorOrcado > 0 && (
-            <p className="text-sm font-semibold text-[var(--text-primary)]">
-              {formatCurrency(lead.valorOrcado)}
-            </p>
-          )}
+          {lead.valorOrcado > 0
+            ? <p className="text-sm font-semibold text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado)}</p>
+            : <p className="text-sm text-[var(--text-tertiary)]">Sem valor</p>
+          }
           <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">
-            {lead.telefone}
+            {formatPhone(lead.telefone)}
           </p>
         </div>
 

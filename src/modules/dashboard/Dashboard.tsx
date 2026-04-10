@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatCurrency } from '@/utils/formatters';
 import { useStore } from '@/store/useStore'
 import { useDashboardStats } from '@/store/selectors/dashboardSelectors'
 import { StatCard, Card } from '@/components/ui/Card';
@@ -25,13 +26,6 @@ export function Dashboard() {
   const setActiveModule = useStore(state => state.setActiveModule);
   const selectLead = useStore(state => state.selectLead);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
 
   // ==============================
   // 📦 ESTOQUE CRÍTICO
@@ -384,13 +378,9 @@ export function Dashboard() {
 
                   <PriorityBadge level={lead.prioridadeLevel} />
 
-                  {lead.valorOrcado > 0 && (
-
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                      {formatCurrency(lead.valorOrcado)}
-                    </p>
-
-                  )}
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                    {lead.valorOrcado > 0 ? formatCurrency(lead.valorOrcado) : 'Sem valor'}
+                  </p>
 
                 </div>
 
@@ -438,7 +428,7 @@ export function Dashboard() {
               </div>
 
               <p className="font-semibold text-[var(--text-primary)]">
-                {formatCurrency(lead.valorOrcado || 0)}
+                {lead.valorOrcado > 0 ? formatCurrency(lead.valorOrcado) : <span className="text-sm font-normal text-[var(--text-tertiary)]">Sem valor</span>}
               </p>
 
             </div>

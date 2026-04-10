@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/utils/formatters';
 import { useEffect, useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
@@ -83,8 +84,6 @@ export function ContasReceber() {
     fetchContasReceber();
   }, []);
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

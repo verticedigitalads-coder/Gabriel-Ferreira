@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/utils/formatters';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
@@ -49,12 +50,6 @@ export function Notas() {
     );
   }, [notas]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
 
   const getLeadName = (leadId?: string) => {
     if (!leadId) return null;

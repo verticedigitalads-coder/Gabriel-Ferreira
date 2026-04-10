@@ -1,3 +1,4 @@
+import { formatPhone } from '@/utils/formatters';
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { useLeadActions } from '@/hooks/useLeadActions';
@@ -220,7 +221,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               className="text-sm font-medium text-[var(--text-primary)] cursor-pointer hover:text-[var(--accent)] transition-colors truncate"
               onClick={() => copyPhone(lead.telefone)}
             >
-              {lead.telefone}
+              {formatPhone(lead.telefone)}
             </p>
           </div>
           <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
@@ -228,9 +229,10 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               <Mail className="w-4 h-4" />
               <span className="text-xs font-medium">Email</span>
             </div>
-            <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-              {lead.email || '-'}
-            </p>
+            {lead.email
+              ? <p className="text-sm font-medium text-[var(--text-primary)] truncate">{lead.email}</p>
+              : <p className="text-sm italic text-[var(--text-tertiary)]">Não informado</p>
+            }
           </div>
           <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
             <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">

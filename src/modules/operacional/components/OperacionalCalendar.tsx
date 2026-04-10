@@ -65,7 +65,7 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
       ref={setNodeRef}
       style={style}
       className={`
-        border-l-4 p-3 rounded-lg text-xs
+        w-full max-w-full border-l-4 p-3 rounded-lg text-xs
         transition-all duration-200
         hover:shadow-md
         ${statusColor[task.status] || prioridadeColor[task.prioridade]}
@@ -79,7 +79,7 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
           {...attributes}
           className="flex-1 cursor-grab active:cursor-grabbing"
         >
-          <p className={`font-semibold ${task.concluido ? 'line-through italic' : ''}`}>{task.titulo}</p>
+          <p className={`font-semibold line-clamp-2 break-words ${task.concluido ? 'line-through italic' : ''}`} title={task.titulo}>{task.titulo}</p>
 
           <p className="text-[10px] opacity-70 capitalize">
             Status: {task.status?.replace('_', ' ')}
@@ -130,6 +130,11 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
   );
 }
 
+const DAY_ABBREV: Record<string, string> = {
+  'segunda-feira': 'Seg', 'terça-feira': 'Ter', 'quarta-feira': 'Qua',
+  'quinta-feira': 'Qui', 'sexta-feira': 'Sex', 'sábado': 'Sáb', 'domingo': 'Dom',
+};
+
 function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
   const { setNodeRef } = useDroppable({
     id: day.dateString,
@@ -158,12 +163,15 @@ function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
   return (
     <div
       ref={setNodeRef}
-      className="rounded-xl p-4 border min-h-[160px] bg-[var(--bg-surface)] border-[var(--border)]"
+      className="rounded-xl p-4 border min-h-[160px] overflow-hidden bg-[var(--bg-surface)] border-[var(--border)]"
     >
       <div className="mb-3">
-        <p className="text-sm font-semibold capitalize">{day.label}</p>
+        <p className="text-sm font-semibold capitalize">
+          <span className="lg:hidden">{DAY_ABBREV[day.label] ?? day.label}</span>
+          <span className="hidden lg:block">{day.label}</span>
+        </p>
         <p className="text-xs text-[var(--text-tertiary)]">
-          {format(day.date, 'EEEE, dd/MM/yyyy', { locale: ptBR })}
+          {format(day.date, 'dd/MM', { locale: ptBR })}
         </p>
       </div>
 

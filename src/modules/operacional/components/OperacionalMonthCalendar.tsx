@@ -107,6 +107,7 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
                 {dayTasks.map((task) => (
                   <div
                     key={task.id}
+                    title={task.titulo}
                     className={`
       border-l-4 px-1 rounded text-[10px]
       ${prioridadeColor[task.prioridade]}

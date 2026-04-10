@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/utils/formatters';
 import { useDroppable } from '@dnd-kit/core';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
@@ -70,12 +71,6 @@ export function Kanban() {
 
   const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-    }).format(value);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -274,11 +269,10 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
 
           <div className="flex items-center gap-2 flex-wrap">
             <TemperatureBadge temperatura={lead.temperatura} />
-            {lead.valorOrcado > 0 && (
-              <span className="text-xs font-medium text-[var(--text-secondary)]">
-                {formatCurrency(lead.valorOrcado)}
-              </span>
-            )}
+            {lead.valorOrcado > 0
+              ? <span className="text-xs font-medium text-[var(--text-secondary)]">{formatCurrency(lead.valorOrcado)}</span>
+              : <span className="text-xs text-[var(--text-tertiary)]">Sem valor</span>
+            }
           </div>
 
           {followUpAtrasado && (

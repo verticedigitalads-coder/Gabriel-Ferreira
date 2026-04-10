@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Pencil, Trash2, Plus, Loader2, MessageCircle } from 'lucide-react'
+import { Pencil, Trash2, Plus, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -431,6 +431,7 @@ export default function Fornecedores() {
 
           {fornecedores.length === 0 && (
             <div className="text-center py-16">
+              <Truck className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-40" />
               <p className="text-[var(--text-tertiary)] text-sm">
                 Nenhum fornecedor cadastrado.
               </p>

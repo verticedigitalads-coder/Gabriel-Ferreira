@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/utils/formatters';
 import type { Lead } from '@/types';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
@@ -58,12 +59,6 @@ export function Orcamentos() {
     );
   }, [orcamentos]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
 
   const leadsMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -231,7 +226,7 @@ export function Orcamentos() {
                       {formatCurrency(orc.total)}
                     </p>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {orc.itens.length} itens
+                      {orc.itens.length} {orc.itens.length === 1 ? 'item' : 'itens'}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -626,12 +621,6 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     await saveOrcamento(data);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
 
   return (
     <>
