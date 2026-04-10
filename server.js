@@ -2,7 +2,6 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import cors from 'cors';
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
@@ -31,17 +30,12 @@ const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
 🌐 CORS (PRODUÇÃO — RENDER + VERCEL)
 ========================================== */
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-app.options(/(.*)/, (_req, res) => {
+app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.sendStatus(200);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
 });
 
 app.use(express.json());
@@ -328,7 +322,6 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     ========================================== */
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Access-Control-Allow-Origin', '*');
 
     return res.send(pdf);
   } catch (error) {
