@@ -74,7 +74,7 @@ interface ReceitaWSResult {
 
 async function fetchCnpjData(cnpj14: string): Promise<ReceitaWSResult | null> {
   try {
-    const res = await fetch(`http://localhost:3001/api/cnpj/${cnpj14}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cnpj/${cnpj14}`)
     if (!res.ok) return null
     const data = await res.json()
     if (data.erro) return null
