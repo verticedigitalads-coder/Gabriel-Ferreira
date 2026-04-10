@@ -183,11 +183,6 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     🖼️ IMAGENS (SUPORTE LOCAL + URL)
     ========================================== */
 
-    const baseUrl = 'http://127.0.0.1:3001';
-
-    const logoHeader = `${baseUrl}/assets/logo-header.png`; // NOVO
-    const logoWatermark = `${baseUrl}/assets/logo-bg.png`; // NOVO
-
     // 🔥 recalcular automaticamente se vier null
     const subtotalCalculado = Array.isArray(dados.itens)
       ? dados.itens.reduce((acc, item) => acc + Number(item.valorTotal || 0), 0)
@@ -285,7 +280,13 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     ========================================== */
 
     const browser = await puppeteer.launch({
-      args: ['--allow-file-access-from-files'],
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
     });
 
     const page = await browser.newPage();
@@ -344,6 +345,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 🚀 START SERVER
 ========================================== */
 
-app.listen(3001, '0.0.0.0', () => {
-  console.log('🔥 Backend rodando em http://localhost:3001');
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🔥 Backend rodando na porta ${PORT}`);
 });
