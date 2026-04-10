@@ -38,6 +38,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/', (_req, res) => res.sendStatus(200));
+
 app.use(express.json());
 
 /* ==========================================
