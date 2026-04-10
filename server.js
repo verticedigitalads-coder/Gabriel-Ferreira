@@ -28,22 +28,16 @@ const logoBgBase64 = fs.readFileSync(path.join(assetsPath, 'logo_bg.png'), {
 const logoPath = `data:image/png;base64,${logoBase64}`;
 const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
 /* ==========================================
-🌐 CORS (NGROK + LOCAL)
+🌐 CORS (PRODUÇÃO — RENDER + VERCEL)
 ========================================== */
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+}));
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
+app.options('*', cors());
 
 app.use(express.json());
 
