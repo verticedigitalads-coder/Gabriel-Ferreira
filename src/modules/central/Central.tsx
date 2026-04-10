@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatCurrency } from '@/utils/formatters';
 import { useStore } from '@/store/useStore';
 import { Card } from '@/components/ui/Card';
 import { PriorityBadge } from '@/components/ui/Badge';
@@ -91,7 +92,7 @@ export function Central() {
             </h2>
           </div>
           <p className="text-3xl font-bold text-emerald-600">
-            R$ {receitaTravada.toLocaleString('pt-BR')}
+            {formatCurrency(receitaTravada)}
           </p>
           <p className="text-xs text-[var(--text-secondary)] mt-1">
             Orçamentos aguardando decisão
@@ -135,11 +136,10 @@ export function Central() {
 
                 <div className="text-right">
                   <PriorityBadge level={lead.prioridadeLevel} />
-                  {lead.valorOrcado > 0 && (
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">
-                      R$ {lead.valorOrcado.toLocaleString('pt-BR')}
-                    </p>
-                  )}
+                  {lead.valorOrcado > 0
+                    ? <p className="text-xs text-[var(--text-secondary)] mt-1">{formatCurrency(lead.valorOrcado)}</p>
+                    : <p className="text-xs text-[var(--text-tertiary)] mt-1 text-sm">Sem valor</p>
+                  }
                 </div>
               </div>
             ))
