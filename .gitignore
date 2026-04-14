@@ -14,7 +14,7 @@ dist/
 
 # Arquivos gerados
 *.pdf
-orcamentos/
+/orcamentos/
 
 # Logs (opcional)
 *.log

@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/utils/formatters';
+import { apiFetch } from '@/lib/apiFetch';
 import type { Lead } from '@/types';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
@@ -112,15 +113,8 @@ export function Orcamentos() {
       const clienteTelefone = orc.clienteTelefone || lead?.telefone || '';
       const clienteEndereco = orc.clienteEndereco || lead?.endereco || '';
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3001';
-
-      console.log('API_URL:', API_URL);
-      const response = await fetch(`${API_URL}/api/gerar-orcamento`, {
+      const response = await apiFetch('/api/gerar-orcamento', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true',
-        },
         body: JSON.stringify({
           id: orc.id,
           cliente_nome: clienteNome,

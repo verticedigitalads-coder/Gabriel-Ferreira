@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Building2, Plus, RefreshCw, Info } from 'lucide-react';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface Workspace {
   id: string;
@@ -14,8 +15,6 @@ interface FormState {
   email: string;
   senha: string;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const SEGMENT_LABELS: Record<string, string> = {
   metalurgica: 'Metalúrgica',
@@ -58,7 +57,7 @@ export function AdminEmpresas() {
   const fetchWorkspaces = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/workspaces`);
+      const res = await apiFetch('/api/admin/workspaces');
       if (!res.ok) throw new Error('Erro ao carregar empresas');
       const data = await res.json();
       setWorkspaces(data);
@@ -92,9 +91,8 @@ export function AdminEmpresas() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/criar-empresa`, {
+      const res = await apiFetch('/api/admin/criar-empresa', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: form.nome.trim(),
           segment: form.segment,
