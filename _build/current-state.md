@@ -213,3 +213,73 @@ Feita manualmente e de forma inconsistente entre slices. Adicionar novo campo no
 - workbox config: precache de assets + runtime caching (Google Fonts + Supabase API)
 - meta tags Apple Mobile Web App adicionadas no index.html
 - site.webmanifest estático removido (conflito com vite-plugin-pwa)
+
+## Fase 11 — Etapa 1: Auditoria RLS e Preparação Multi-empresa (13/04/2026)
+
+**Status:** Migration gerada — aguardando execução no Supabase Dashboard
+
+**Auditoria (via scan do codebase):**
+
+| Tabela | workspace_id | RLS confirmado | Situação |
+|---|---|---|---|
+| `contas_receber` | ✅ | ✅ | OK — migration anterior |
+| `leads` | ✅ | ❓ | Pendente execução |
+| `orcamentos` | ✅ | ❓ | Pendente execução |
+| `transactions` | ✅ | ❓ | Pendente execução |
+| `notas` | ✅ | ❓ | Pendente execução |
+| `operacional_tasks` | ✅ | ❓ | Pendente execução |
+| `fornecedores` | ✅ | ❓ | Pendente execução |
+| `materiais` | ✅ | ❓ | Pendente execução |
+| `cotacoes_materiais` | ✅ | ❓ | Pendente execução |
+| `consumo_materiais` | ✅ | ❓ | Pendente execução |
+| `workspaces` | — (raiz) | ❓ | Pendente execução |
+| `workspace_members` | — (sistema) | ❓ | Pendente execução |
+
+**Resumo:** 1 tabela OK, 11 pendentes de RLS/policy
+
+**Migration gerada:** `supabase/migrations/20260413000000_fase11_rls_multiempresa.sql`
+
+## INFRA — CORS Render Cold Start Fix (13/04/2026)
+
+**Problema:** Render free tier dorme entre pings. No cold start, preflight OPTIONS retorna 404 sem headers CORS antes do Node.js acordar. PDF e CNPJ falhavam em produção.
+
+**Solução implementada (2 frentes):**
+
+| Arquivo | O que faz |
+|---|---|
+| `src/lib/backendWarmup.ts` | NOVO — `ensureBackendWarm()` faz GET `/` no backend com timeout 60s. Flag `isWarm` evita chamadas redundantes. Reset automático ao retornar à aba (`visibilitychange`). |
+| `src/App.tsx` | Import + `useEffect(() => { ensureBackendWarm(); }, [])` adicionado ANTES do useEffect de init do store. |
+| `.github/workflows/keep-alive.yml` | NOVO — GitHub Actions cron `*/5 * * * *` faz `curl` no Render a cada 5 min para evitar o sleep. |
+
+**Status:** Aguardando push para ativar o GitHub Actions + teste de geração de PDF em produção.
+
+## Fase 11.2 — Orçamentos adaptáveis por segmento (13/04/2026)
+
+**Status:** Implementado — aguardando teste com workspace `segment='marcenaria'`
+
+| Arquivo | O que foi feito |
+|---|---|
+| `src/types/index.ts` | `UnidadeOrcamento` type novo; `OrcamentoItem` com `unitType?`, `ambiente?`, `largura?`, `altura?`; `Orcamento` com `ambiente?`; `Workspace` com `segment?` |
+| `src/domain/orcamento/calcularOrcamento.ts` | Exporta `calcularItemTotal()` separado; suporte a m² (largura × altura × qtd × valorUnit); backward-compatible sem unitType |
+| `src/hooks/useWorkspaceSegment.ts` | NOVO — hook que busca `segment` do workspace no Supabase; default `'metalurgica'` |
+| `src/modules/orcamentos/Orcamentos.tsx` | `unitOptionsBySegment` por segmento; select de unidade por item; campos largura/altura condicionais (m²); campo ambiente (marcenaria); `updateItem` usa `calcularItemTotal` |
+
+**Pendências:**
+- Adaptar geração de PDF para agrupar itens por `ambiente` (marcenaria)
+- Testar com workspace `segment='marcenaria'` no Supabase Dashboard
+
+---
+
+## Infra — Migrations realinhadas via baseline completa (2026-04-14)
+
+- **Baseline gerada:** `20260414010709_baseline_full_schema.sql` (878 linhas, dump completo do remoto)
+- **Migrations antigas movidas para:** `supabase/migrations_backup/` (5 arquivos, não deletar)
+- **Migration de diff do db pull:** `20260414010802_remote_schema.sql` — apenas `drop extension if exists "pg_net"` (artefato do shadow database do CLI, inofensivo)
+- **Status:** schema local sincronizado com remoto — `supabase migration list` mostra ambas com local = remoto
+- **Fonte da baseline:** `supabase/schema_full.sql` (sem edições — sem CREATE EXTENSION, sem roles internas)
+- Idempotente (usa `DO $$ IF NOT EXISTS` para cada policy)
+- Adiciona `workspaces.segment TEXT DEFAULT 'metalurgica'`
+- Policy padrão `workspace_isolation` para 9 tabelas de negócio
+- Policy `workspace_owner_access` para `workspaces`
+- Policy `self_access` para `workspace_members`
+- `contas_receber` mantém policy original (não recria)

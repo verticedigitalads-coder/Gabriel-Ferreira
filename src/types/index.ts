@@ -152,12 +152,18 @@ export interface Lead {
 // ORÇAMENTO
 // =========================
 
+export type UnidadeOrcamento = 'unidade' | 'peca' | 'm2' | 'ml' | 'kg' | 'metro';
+
 export interface OrcamentoItem {
   id: string;
   descricao: string;
   quantidade: number;
   valorUnitario: number;
   valorTotal: number;
+  unitType?: UnidadeOrcamento;
+  ambiente?: string;
+  largura?: number;
+  altura?: number;
 }
 
 export interface Orcamento {
@@ -182,6 +188,7 @@ export interface Orcamento {
   status: OrcamentoStatus;
   observacoes: string;
   validadeEmDias: number;
+  ambiente?: string;
 
   historico: HistoricoEntry[];
 
@@ -237,6 +244,7 @@ export interface Nota {
 export interface Workspace {
   id: string;
   nome: string;
+  segment?: 'metalurgica' | 'marcenaria';
   logoUrl?: string;
   createdAt: string;
 }

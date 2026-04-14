@@ -4,6 +4,7 @@ import ComparadorPrecos from '@/modules/suprimentos/ComparadorPrecos';
 import Estoque from '@/modules/suprimentos/Estoque';
 import { supabase } from '@/lib/supabase';
 import { ensureWorkspaceForUser } from '@/lib/supabaseWorkspace';
+import { ensureBackendWarm } from '@/lib/backendWarmup';
 import { Central } from '@/modules/central/Central';
 import { useEffect, Suspense, lazy, useState } from 'react';
 import { useStore } from '@/store/useStore';
@@ -114,6 +115,11 @@ export function App() {
     return () => {
       listener.subscription.unsubscribe();
     };
+  }, []);
+
+  // 🔥 Acorda o backend no Render antes de qualquer request
+  useEffect(() => {
+    ensureBackendWarm();
   }, []);
 
   // 🚀 Inicializa store apenas se estiver autenticado

@@ -10,7 +10,8 @@ import { Input, TextArea, Select } from '@/components/ui/Input';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { v4 as uuid } from 'uuid';
-import { calcularOrcamento } from '@/domain/orcamento/calcularOrcamento';
+import { calcularOrcamento, calcularItemTotal } from '@/domain/orcamento/calcularOrcamento';
+import { useWorkspaceSegment } from '@/hooks/useWorkspaceSegment';
 import {
   Plus,
   FileText,
@@ -22,7 +23,22 @@ import {
   PackageMinus,
   CheckCircle2,
 } from 'lucide-react';
-import type { Orcamento, OrcamentoItem, OrcamentoStatus } from '@/types';
+import type { Orcamento, OrcamentoItem, OrcamentoStatus, UnidadeOrcamento } from '@/types';
+
+const unitOptionsBySegment: Record<string, { value: string; label: string }[]> = {
+  metalurgica: [
+    { value: 'unidade', label: 'Unidade' },
+    { value: 'peca', label: 'Peça' },
+    { value: 'kg', label: 'Kg' },
+    { value: 'metro', label: 'Metro' },
+  ],
+  marcenaria: [
+    { value: 'm2', label: 'm²' },
+    { value: 'ml', label: 'Metro linear' },
+    { value: 'unidade', label: 'Unidade' },
+    { value: 'peca', label: 'Peça' },
+  ],
+};
 
 const statusOptions = [
   { value: 'rascunho', label: 'Rascunho' },
@@ -526,6 +542,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const [showBaixaModal, setShowBaixaModal] = useState(false);
   const [pendingData, setPendingData] = useState<any>(null);
 
+  const segment = useWorkspaceSegment();
+  const isMarcenaria = segment === 'marcenaria';
+
   const { subtotal, total, maoDeObra } = calcularOrcamento({
     itens,
     multiplicador,
@@ -543,6 +562,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         quantidade: 1,
         valorUnitario: 0,
         valorTotal: 0,
+        unitType: isMarcenaria ? 'm2' : 'unidade',
+        ...(isMarcenaria ? { ambiente: '', largura: 0, altura: 0 } : {}),
       },
     ]);
   };
@@ -552,8 +573,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
       itens.map((item) => {
         if (item.id !== id) return item;
         const updated = { ...item, [field]: value };
-        if (field === 'quantidade' || field === 'valorUnitario') {
-          updated.valorTotal = updated.quantidade * updated.valorUnitario;
+        if (['quantidade', 'valorUnitario', 'largura', 'altura', 'unitType'].includes(field)) {
+          updated.valorTotal = calcularItemTotal(updated);
         }
         return updated;
       }),
@@ -659,46 +680,100 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
           {itens.map((item, index) => (
             <div
               key={item.id}
-              className="flex items-center gap-2 p-3 bg-[var(--bg-surface-2)] rounded-md"
+              className="p-3 bg-[var(--bg-surface-2)] rounded-md space-y-2"
             >
-              <span className="text-sm text-[var(--text-secondary)] w-6">{index + 1}.</span>
-              <Input
-                placeholder="Descrição"
-                value={item.descricao}
-                onChange={(e) =>
-                  updateItem(item.id, 'descricao', e.target.value)
-                }
-                className="flex-1"
-              />
-              <Input
-                type="number"
-                placeholder="Qtd"
-                value={item.quantidade}
-                onChange={(e) =>
-                  updateItem(item.id, 'quantidade', Number(e.target.value))
-                }
-                className="w-20"
-              />
-              <Input
-                type="number"
-                placeholder="Valor"
-                value={item.valorUnitario}
-                onChange={(e) =>
-                  updateItem(item.id, 'valorUnitario', Number(e.target.value))
-                }
-                className="w-28"
-              />
-              <span className="text-sm font-medium w-24 text-right">
-                {formatCurrency(item.valorTotal)}
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => removeItem(item.id)}
-              >
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--text-secondary)] w-6">{index + 1}.</span>
+                <Input
+                  placeholder="Descrição"
+                  value={item.descricao}
+                  onChange={(e) =>
+                    updateItem(item.id, 'descricao', e.target.value)
+                  }
+                  className="flex-1"
+                />
+                {isMarcenaria && (
+                  <Input
+                    placeholder="Ambiente"
+                    value={item.ambiente || ''}
+                    onChange={(e) =>
+                      updateItem(item.id, 'ambiente', e.target.value)
+                    }
+                    className="w-32"
+                  />
+                )}
+                <select
+                  value={item.unitType || 'unidade'}
+                  onChange={(e) =>
+                    updateItem(item.id, 'unitType', e.target.value as UnidadeOrcamento)
+                  }
+                  className="h-10 px-2 rounded-md border border-[var(--border)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] w-28"
+                >
+                  {(unitOptionsBySegment[segment] || unitOptionsBySegment.metalurgica).map(
+                    (opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    )
+                  )}
+                </select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeItem(item.id)}
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 pl-8">
+                {item.unitType === 'm2' && (
+                  <>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Largura (m)"
+                      value={item.largura || ''}
+                      onChange={(e) =>
+                        updateItem(item.id, 'largura', Number(e.target.value))
+                      }
+                      className="w-28"
+                    />
+                    <span className="text-[var(--text-tertiary)]">×</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Altura (m)"
+                      value={item.altura || ''}
+                      onChange={(e) =>
+                        updateItem(item.id, 'altura', Number(e.target.value))
+                      }
+                      className="w-28"
+                    />
+                  </>
+                )}
+                <Input
+                  type="number"
+                  placeholder="Qtd"
+                  value={item.quantidade}
+                  onChange={(e) =>
+                    updateItem(item.id, 'quantidade', Number(e.target.value))
+                  }
+                  className="w-20"
+                />
+                <Input
+                  type="number"
+                  placeholder="Valor unit."
+                  value={item.valorUnitario}
+                  onChange={(e) =>
+                    updateItem(item.id, 'valorUnitario', Number(e.target.value))
+                  }
+                  className="w-28"
+                />
+                <span className="text-sm font-medium w-24 text-right">
+                  {formatCurrency(item.valorTotal)}
+                </span>
+              </div>
             </div>
           ))}
         </div>
