@@ -16,6 +16,8 @@ import { createMaterialSlice } from './slices/materialSlice';
 import { createConsumoMaterialSlice } from './slices/consumoMaterialSlice';
 import { createFormSlice } from './slices/formSlice';
 import { createContasReceberSlice } from './slices/contasReceberSlice';
+import { createReciboSlice } from './slices/reciboSlice';
+import { createSettingsSlice, type WorkspaceSettings } from './slices/settingsSlice';
 import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor } from './formatters';
 let realtimeStarted = false;
 
@@ -85,6 +87,18 @@ type StoreState = {
   addCotacaoMaterial: (data: any) => Promise<void>;
   deleteCotacaoMaterial: (id: string) => Promise<void>;
   loadFornecedores: () => Promise<void>;
+
+  recibos: any[];
+  fetchRecibos: (workspaceId: string) => Promise<void>;
+  addRecibo: (data: any) => Promise<any>;
+  updateRecibo: (id: string, data: any) => Promise<void>;
+  deleteRecibo: (id: string) => Promise<void>;
+  emitirRecibo: (id: string) => Promise<void>;
+
+  settings: WorkspaceSettings;
+  fetchSettings: (workspaceId: string) => Promise<void>;
+  updateSetting: (key: string, value: string) => Promise<void>;
+  updateSettings: (partial: Partial<WorkspaceSettings>) => Promise<void>;
 };
 
 export const useStore = create<StoreState>()(
@@ -122,6 +136,8 @@ export const useStore = create<StoreState>()(
 
       ...(createFormSlice as any)(set, get),
       ...(createContasReceberSlice as any)(set, get),
+      ...(createReciboSlice as any)(set, get),
+      ...(createSettingsSlice as any)(set, get),
 
       // ================= INITIALIZE =================
 
@@ -196,6 +212,9 @@ export const useStore = create<StoreState>()(
             contasReceber: (contasReceberRes.data || []).map(formatContaReceber),
             isLoading: false,
           });
+
+          await get().fetchRecibos(workspaceId);
+          await get().fetchSettings(workspaceId);
         } catch (error) {
           console.error('[UseStore] Erro de inicialização:', error);
           set({ isLoading: false });

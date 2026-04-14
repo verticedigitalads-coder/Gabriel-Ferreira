@@ -1,0 +1,406 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        padding: 28px 32px;
+        color: #222;
+        background: #ffffff;
+        position: relative;
+        line-height: 1.5;
+      }
+
+      /* WATERMARK */
+      .watermark {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0.08;
+        width: 500px;
+        z-index: 0;
+        pointer-events: none;
+        filter: grayscale(100%);
+      }
+
+      .container {
+        position: relative;
+        z-index: 2;
+      }
+
+      /* HEADER */
+
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+
+      .company {
+        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* BARRA LARANJA */
+
+      .contact-bar {
+        background: #ff6a00;
+        color: white;
+        padding: 10px;
+        font-size: 13px;
+        text-align: center;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        margin-bottom: 25px;
+      }
+
+      /* TÍTULO DO DOCUMENTO */
+
+      .doc-title {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .doc-title h1 {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #222;
+        margin: 0 0 4px 0;
+        text-transform: uppercase;
+      }
+
+      .doc-title .rec-numero {
+        font-size: 16px;
+        color: #ff6a00;
+        font-weight: 600;
+      }
+
+      .doc-title .rec-data {
+        font-size: 13px;
+        color: #666;
+        margin-top: 2px;
+      }
+
+      /* CLIENT */
+
+      .client-section {
+        margin-bottom: 24px;
+      }
+
+      .client-box {
+        background: #f5f5f5;
+        border-left: 6px solid #ff6a00;
+        padding: 14px 18px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .client-title {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+
+      .client-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .client-info {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* TEXTO DECLARAÇÃO */
+
+      .declaracao {
+        background: #fff7ed;
+        border: 1px solid #ff6a00;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #333;
+        margin-bottom: 24px;
+      }
+
+      /* TABELA */
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        margin-bottom: 24px;
+      }
+
+      th {
+        background: #f6f6f6;
+        text-align: left;
+        padding: 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e5e5e5;
+        letter-spacing: 0.5px;
+        color: #444;
+      }
+
+      td {
+        padding: 15px;
+        font-size: 14px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #fafafa;
+      }
+
+      /* TOTAL */
+
+      .totals {
+        width: 340px;
+        margin-left: auto;
+        font-size: 14px;
+        margin-bottom: 24px;
+      }
+
+      .total-box {
+        background: linear-gradient(135deg, #ff6a00, #ff7f2a);
+        color: white;
+        padding: 16px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+      }
+
+      .total-label {
+        font-size: 14px;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+      }
+
+      .total-value {
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      /* OBSERVAÇÕES */
+
+      .conditions {
+        margin-top: 16px;
+        background: #fafafa;
+        padding: 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.8;
+        border: 1px solid #eee;
+        margin-bottom: 24px;
+      }
+
+      .conditions-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      /* ASSINATURA */
+
+      .assinatura {
+        margin-top: 32px;
+        display: flex;
+        justify-content: space-between;
+        gap: 40px;
+      }
+
+      .assinatura-bloco {
+        flex: 1;
+        text-align: center;
+      }
+
+      .assinatura-linha {
+        border-top: 1.5px solid #444;
+        margin-bottom: 8px;
+      }
+
+      .assinatura-label {
+        font-size: 13px;
+        color: #555;
+      }
+
+      /* FOOTER */
+
+      .footer {
+        margin-top: 28px;
+        border-top: 1px solid #ddd;
+        padding-top: 16px;
+        text-align: center;
+        font-size: 13px;
+        color: #666;
+      }
+
+      /* PROTEÇÃO PARA NÃO QUEBRAR PÁGINA */
+
+      table,
+      .client-box {
+        page-break-inside: avoid;
+      }
+
+      .bottom-block {
+        page-break-inside: avoid;
+      }
+
+      @media print {
+        body {
+          padding: 14px 18px;
+          font-size: 10px;
+          line-height: 1.3;
+        }
+        td {
+          padding: 8px 10px;
+          font-size: 11px;
+        }
+        th {
+          padding: 8px 10px;
+          font-size: 10px;
+        }
+        .contact-bar {
+          padding: 6px;
+          font-size: 11px;
+          margin-bottom: 14px;
+        }
+        .client-section {
+          margin-bottom: 16px;
+        }
+        table {
+          margin-bottom: 16px;
+        }
+        .totals {
+          font-size: 12px;
+        }
+        .conditions {
+          padding: 12px;
+          margin-top: 10px;
+          font-size: 11px;
+        }
+        .footer {
+          margin-top: 10px;
+          padding-top: 10px;
+          font-size: 11px;
+        }
+        .total-value {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="watermark">
+      <img src="{{logo_bg}}" style="width: 100%" />
+    </div>
+
+    <div class="container">
+      <!-- HEADER: LOGO -->
+      <div style="text-align: center; margin-bottom: 10px">
+        <img
+          src="{{logo}}"
+          class="logo"
+          style="width: 220px; margin-bottom: 6px"
+        />
+      </div>
+
+      <!-- BARRA CONTATO -->
+      <div class="contact-bar">
+        📞 (34) 9 9199-8953 &nbsp;&nbsp; | &nbsp;&nbsp; ✉
+        flartmetal.uberaba@gmail.com
+      </div>
+
+      <!-- TÍTULO DO DOCUMENTO -->
+      <div class="doc-title">
+        <h1>Recibo de Prestação de Serviços</h1>
+        <div class="rec-numero">{{numero_recibo}}</div>
+        <div class="rec-data">Emitido em {{data_emissao}}</div>
+      </div>
+
+      <!-- CLIENTE -->
+      <div class="client-section">
+        <div class="client-box">
+          <div class="client-title">Cliente</div>
+          <div class="client-name">{{cliente_nome}}</div>
+          <div class="client-info">
+            📞 {{cliente_telefone}}<br />
+            📍 {{cliente_endereco}}
+          </div>
+        </div>
+      </div>
+
+      <!-- DECLARAÇÃO -->
+      <div class="declaracao">
+        Recebemos de <strong>{{cliente_nome}}</strong> a importância de
+        <strong>R$ {{valor_total}}</strong>
+        (<em>{{valor_por_extenso}}</em>) referente aos serviços abaixo
+        descritos:
+      </div>
+
+      <!-- TABELA DE ITENS -->
+      <table>
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th class="right">Qtd</th>
+            <th class="right">Valor Unit</th>
+            <th class="right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{itens}}
+        </tbody>
+      </table>
+
+      <!-- BLOCO INFERIOR -->
+      <div class="bottom-block">
+
+        <!-- TOTAL -->
+        <div class="totals">
+          <div class="total-box">
+            <div class="total-label">VALOR TOTAL RECEBIDO</div>
+            <div class="total-value">R$ {{valor_total}}</div>
+          </div>
+        </div>
+
+        <!-- OBSERVAÇÕES -->
+        {{observacoes_bloco}}
+
+        <!-- ASSINATURA -->
+        <div class="assinatura">
+          <div class="assinatura-bloco">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-label">Assinatura do Cliente</div>
+          </div>
+          <div class="assinatura-bloco">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-label">Vértice Digital / Empresa Prestadora</div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+          {{data_extenso}}<br />
+          Agradecemos pela confiança em nossos serviços.
+        </div>
+
+      </div><!-- /bottom-block -->
+    </div>
+  </body>
+</html>

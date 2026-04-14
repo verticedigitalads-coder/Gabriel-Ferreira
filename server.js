@@ -336,6 +336,241 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 });
 
 /* ==========================================
+🧾 VALOR POR EXTENSO (pt-BR, até 999.999,99)
+========================================== */
+
+function valorPorExtenso(valor) {
+  const unidades = [
+    '', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove',
+    'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis',
+    'dezessete', 'dezoito', 'dezenove',
+  ];
+  const dezenas = [
+    '', '', 'vinte', 'trinta', 'quarenta', 'cinquenta',
+    'sessenta', 'setenta', 'oitenta', 'noventa',
+  ];
+  const centenas = [
+    '', 'cem', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos',
+    'seiscentos', 'setecentos', 'oitocentos', 'novecentos',
+  ];
+
+  function grupo(n) {
+    if (n === 0) return '';
+    if (n < 20) return unidades[n];
+    if (n < 100) {
+      const d = Math.floor(n / 10);
+      const u = n % 10;
+      return dezenas[d] + (u > 0 ? ' e ' + unidades[u] : '');
+    }
+    const c = Math.floor(n / 100);
+    const resto = n % 100;
+    if (n === 100) return 'cem';
+    return centenas[c] + (resto > 0 ? ' e ' + grupo(resto) : '');
+  }
+
+  const n = Math.round(Number(valor || 0) * 100);
+  const reais = Math.floor(n / 100);
+  const centavos = n % 100;
+
+  if (reais === 0 && centavos === 0) return 'zero reais';
+
+  let resultado = '';
+
+  if (reais >= 1000) {
+    const mil = Math.floor(reais / 1000);
+    const resto = reais % 1000;
+    resultado += mil === 1 ? 'mil' : grupo(mil) + ' mil';
+    if (resto > 0) resultado += ' e ' + grupo(resto);
+  } else if (reais > 0) {
+    resultado += grupo(reais);
+  }
+
+  if (reais > 0) resultado += reais === 1 ? ' real' : ' reais';
+
+  if (centavos > 0) {
+    if (reais > 0) resultado += ' e ';
+    resultado += grupo(centavos) + (centavos === 1 ? ' centavo' : ' centavos');
+  }
+
+  return resultado;
+}
+
+function dataExtenso(dataStr) {
+  const meses = [
+    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+  ];
+
+  let d;
+  if (dataStr) {
+    if (dataStr.includes('/')) {
+      const partes = dataStr.split('/');
+      d = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
+    } else {
+      d = new Date(dataStr);
+    }
+  } else {
+    d = new Date();
+  }
+
+  return `Uberaba, ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+}
+
+/* ==========================================
+🧾 GERAR RECIBO PDF (TEMPLATE REAL)
+========================================== */
+
+app.post('/api/gerar-recibo', async (req, res) => {
+  try {
+    const dados = req.body;
+
+    console.log('📥 [Recibo] Dados recebidos:', dados);
+
+    /* ==========================================
+    📄 CARREGAR TEMPLATE HTML
+    ========================================== */
+
+    const templatePath = path.resolve(
+      process.cwd(),
+      'templates',
+      'recibo.html',
+    );
+
+    console.log('📄 [Recibo] Caminho do template:', templatePath);
+
+    if (!fs.existsSync(templatePath)) {
+      console.error('[Recibo] Template não encontrado');
+      return res.status(500).json({
+        error: 'Template HTML do recibo não encontrado',
+        path: templatePath,
+      });
+    }
+
+    let html = fs.readFileSync(templatePath, 'utf-8');
+
+    /* ==========================================
+    💰 FORMATADOR BRL
+    ========================================== */
+
+    const formatar = (v) =>
+      Number(v || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+      });
+
+    /* ==========================================
+    🧱 ITENS
+    ========================================== */
+
+    if (!Array.isArray(dados.itens)) {
+      console.warn('[Recibo] ⚠️ itens inválidos, corrigindo...');
+      dados.itens = [];
+    }
+
+    const itensLinhas = dados.itens
+      .map(
+        (item) => `
+        <tr>
+          <td>${item.descricao || ''}</td>
+          <td class="right">${item.quantidade || 1}</td>
+          <td class="right">R$ ${formatar(item.valorUnitario)}</td>
+          <td class="right">R$ ${formatar(item.valorTotal)}</td>
+        </tr>
+      `,
+      )
+      .join('');
+
+    /* ==========================================
+    📝 OBSERVAÇÕES (bloco opcional)
+    ========================================== */
+
+    const obsHtml = dados.observacoes
+      ? `<div class="conditions">
+           <div class="conditions-title">Observações</div>
+           ${dados.observacoes}
+         </div>`
+      : '';
+
+    /* ==========================================
+    🔁 SUBSTITUIÇÕES TEMPLATE
+    ========================================== */
+
+    const dataEmissaoFormatada =
+      dados.data_emissao || new Date().toLocaleDateString('pt-BR');
+
+    html = html
+      .replace(/{{numero_recibo}}/g, dados.numero_recibo || 'RECIBO')
+      .replace(/{{data_emissao}}/g, dataEmissaoFormatada)
+      .replace(/{{cliente_nome}}/g, dados.cliente_nome || 'Cliente')
+      .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
+      .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
+      .replace(/{{valor_total}}/g, formatar(dados.valor_total))
+      .replace(/{{valor_por_extenso}}/g, valorPorExtenso(dados.valor_total))
+      .replace(/{{itens}}/g, itensLinhas)
+      .replace(/{{observacoes_bloco}}/g, obsHtml)
+      .replace(/{{data_extenso}}/g, dataExtenso(dados.data_emissao));
+
+    // 🔥 IMAGENS DINÂMICAS
+    html = html.replace('{{logo}}', logoPath);
+    html = html.replace('{{logo_bg}}', logoBgPath);
+
+    /* ==========================================
+    🧠 GERAR PDF (PUPPETEER)
+    ========================================== */
+
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    });
+
+    const page = await browser.newPage();
+
+    await page.setViewport({
+      width: 1240,
+      height: 1754,
+    });
+
+    await page.setContent(html, {
+      waitUntil: 'networkidle0',
+    });
+
+    await page.evaluate(async () => {
+      const imgs = Array.from(document.images);
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }),
+      );
+    });
+
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+    });
+
+    await browser.close();
+
+    /* ==========================================
+    📤 RESPONSE
+    ========================================== */
+
+    res.setHeader('Content-Type', 'application/pdf');
+    return res.send(pdf);
+  } catch (error) {
+    console.error('[Recibo] Erro ao gerar PDF:', error);
+    return res.status(500).json({ error: 'Erro ao gerar PDF do recibo' });
+  }
+});
+
+/* ==========================================
 🚀 START SERVER
 ========================================== */
 

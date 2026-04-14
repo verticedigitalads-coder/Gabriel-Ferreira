@@ -586,10 +586,13 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   };
 
   const saveOrcamento = async (data: any) => {
+    let savedOrcId = orcamento?.id;
+
     if (orcamento) {
       await updateOrcamento(orcamento.id, data);
     } else {
-      await addOrcamento(data);
+      const inserted = await addOrcamento(data);
+      savedOrcId = inserted?.id;
     }
 
     if (data.leadId && data.total > 0) {
@@ -598,6 +601,27 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         await updateLead(data.leadId, {
           valorOrcado: data.total,
           orcamentoEnviado: data.status === 'enviado' || data.status === 'aprovado',
+        });
+      }
+    }
+
+    // Criar pré-recibo automaticamente ao aprovar
+    if (data.status === 'aprovado' && savedOrcId) {
+      const addRecibo = useStore.getState().addRecibo;
+      const recibosExistentes = useStore.getState().recibos;
+      const jaExiste = recibosExistentes.some((r: any) => r.orcamentoId === savedOrcId);
+
+      if (!jaExiste) {
+        await addRecibo({
+          orcamentoId: savedOrcId,
+          leadId: data.leadId,
+          clienteNome: data.clienteNome || 'Cliente',
+          clienteTelefone: data.clienteTelefone || '',
+          clienteEndereco: data.clienteEndereco || '',
+          descricao: `Serviços ref. orçamento ${orcamento?.numero || ''}`,
+          itens: data.itens,
+          valorTotal: data.total,
+          status: 'pendente',
         });
       }
     }

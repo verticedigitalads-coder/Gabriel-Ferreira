@@ -1,0 +1,127 @@
+import { supabase } from '@/lib/supabase';
+
+export interface WorkspaceSettings {
+  empresaNome: string;
+  empresaTelefone: string;
+  empresaEmail: string;
+  empresaEndereco: string;
+  empresaCnpj: string;
+  empresaLogoUrl: string;
+  validadePadraoOrcamento: number;
+  multiplicadorPadrao: number;
+  observacaoPadraoOrcamento: string;
+  observacaoPadraoRecibo: string;
+}
+
+const DEFAULT_SETTINGS: WorkspaceSettings = {
+  empresaNome: '',
+  empresaTelefone: '',
+  empresaEmail: '',
+  empresaEndereco: '',
+  empresaCnpj: '',
+  empresaLogoUrl: '',
+  validadePadraoOrcamento: 15,
+  multiplicadorPadrao: 1,
+  observacaoPadraoOrcamento: '',
+  observacaoPadraoRecibo: '',
+};
+
+// Mapeamento camelCase → snake_case (key do banco)
+const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
+  empresaNome: 'empresa_nome',
+  empresaTelefone: 'empresa_telefone',
+  empresaEmail: 'empresa_email',
+  empresaEndereco: 'empresa_endereco',
+  empresaCnpj: 'empresa_cnpj',
+  empresaLogoUrl: 'empresa_logo_url',
+  validadePadraoOrcamento: 'validade_padrao_orcamento',
+  multiplicadorPadrao: 'multiplicador_padrao',
+  observacaoPadraoOrcamento: 'observacao_padrao_orcamento',
+  observacaoPadraoRecibo: 'observacao_padrao_recibo',
+};
+
+// Mapeamento inverso snake_case → camelCase
+const SNAKE_TO_CAMEL: Record<string, keyof WorkspaceSettings> = Object.fromEntries(
+  Object.entries(CAMEL_TO_SNAKE).map(([camel, snake]) => [snake, camel as keyof WorkspaceSettings]),
+);
+
+export const createSettingsSlice = (set: any, get: any) => ({
+  settings: { ...DEFAULT_SETTINGS } as WorkspaceSettings,
+
+  // ================= FETCH =================
+  fetchSettings: async (workspaceId: string) => {
+    if (!workspaceId) return;
+
+    const { data, error } = await supabase
+      .from('workspace_settings')
+      .select('key, value')
+      .eq('workspace_id', workspaceId);
+
+    if (error) {
+      console.error('[SettingsSlice] Erro ao buscar settings:', error);
+      return;
+    }
+
+    const merged: WorkspaceSettings = { ...DEFAULT_SETTINGS };
+
+    for (const row of data || []) {
+      const camelKey = SNAKE_TO_CAMEL[row.key];
+      if (!camelKey) continue;
+
+      const val = row.value;
+      if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao') {
+        (merged as any)[camelKey] = Number(val) || DEFAULT_SETTINGS[camelKey];
+      } else {
+        (merged as any)[camelKey] = val ?? '';
+      }
+    }
+
+    set({ settings: merged });
+  },
+
+  // ================= UPDATE SINGLE =================
+  updateSetting: async (key: string, value: string) => {
+    const { workspaceId } = get();
+    if (!workspaceId) {
+      console.error('[SettingsSlice] workspaceId está null');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('workspace_settings')
+      .upsert(
+        { workspace_id: workspaceId, key, value, updated_at: new Date().toISOString() },
+        { onConflict: 'workspace_id,key' },
+      );
+
+    if (error) {
+      console.error('[SettingsSlice] Erro ao salvar setting:', error);
+      return;
+    }
+
+    // Atualiza estado local
+    const camelKey = SNAKE_TO_CAMEL[key];
+    if (camelKey) {
+      set((state: any) => {
+        const updated = { ...state.settings };
+        if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao') {
+          (updated as any)[camelKey] = Number(value) || DEFAULT_SETTINGS[camelKey];
+        } else {
+          (updated as any)[camelKey] = value;
+        }
+        return { settings: updated };
+      });
+    }
+  },
+
+  // ================= UPDATE BATCH =================
+  updateSettings: async (partial: Partial<WorkspaceSettings>) => {
+    const { updateSetting } = get();
+
+    for (const [camelKey, value] of Object.entries(partial)) {
+      const snakeKey = CAMEL_TO_SNAKE[camelKey as keyof WorkspaceSettings];
+      if (!snakeKey) continue;
+      await updateSetting(snakeKey, String(value ?? ''));
+    }
+  },
+});

@@ -9,8 +9,6 @@ import {
   DollarSign,
   FileCheck,
   Sparkles,
-  Download,
-  Upload,
   Settings as SettingsIcon,
   CalendarDays,
   Receipt,
@@ -37,6 +35,7 @@ const sections: { title: string; items: MenuItem[] }[] = [
     items: [
       { id: 'leads', label: 'Leads', icon: Users },
       { id: 'orcamentos', label: 'Orçamentos', icon: FileText },
+      { id: 'recibos', label: 'Recibos', icon: Receipt },
       { id: 'financeiro', label: 'Financeiro', icon: DollarSign },
       { id: 'contas-receber', label: 'Contas a Receber', icon: Receipt },
       { id: 'notas', label: 'Notas', icon: FileCheck },
@@ -73,93 +72,7 @@ interface SidebarProps {
 export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   
   const activeModule = useStore(state => state.activeModule);
-  const setActiveModule = useStore(state => state.setActiveModule);
-  const exportData = useStore(state => state.exportData);
-  const importData = useStore(state => state.importData);
-  const addToast = useStore(state => state.addToast);
-
-  const handleExport = async () => {
-    try {
-      const data = await exportData();
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `crm-backup-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-
-      URL.revokeObjectURL(url);
-
-      addToast({ type: 'success', message: 'Backup exportado com sucesso!' });
-    } catch {
-      addToast({ type: 'error', message: 'Erro ao exportar backup' });
-    }
-  };
-
-  const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,.csv';
-
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = async (event) => {
-        const content = event.target?.result as string;
-
-        try {
-          if (file.name.endsWith('.json')) {
-            await importData(content);
-            addToast({ type: 'success', message: 'Backup importado com sucesso!' });
-          }
-
-          else if (file.name.endsWith('.csv')) {
-            const linhas = content.split('\n').filter(l => l.trim() !== '');
-            const cabecalho = linhas[0].split(',');
-
-            const now = new Date().toISOString();
-            const { addLead } = useStore.getState();
-
-            for (let index = 1; index < linhas.length; index++) {
-              const valores = linhas[index].split(',');
-              const obj: any = {};
-
-              cabecalho.forEach((coluna, i) => {
-                obj[coluna.trim()] = valores[i]?.trim();
-              });
-
-              await addLead({
-                nome: obj.nome || '',
-                telefone: obj.telefone || '',
-                email: obj.email || '',
-                servico: obj.servico || '',
-                status: obj.status || 'novo',
-                temperatura: obj.temperatura || 'frio',
-                ultimoContato: obj.ultimoContato || null,
-                proximoContato: obj.proximoContato || null,
-                orcamentoEnviado: obj.status === 'orcado' || obj.status === 'fechado',
-                valorOrcado: Number(obj.valorOrcado) || 0,
-                resumo: '',
-                observacoes: obj.observacoes || '',
-              });
-            }
-
-            addToast({ type: 'success', message: 'Leads CSV importados com sucesso!' });
-          }
-        } catch {
-          addToast({ type: 'error', message: 'Erro ao importar arquivo' });
-        }
-      };
-
-      reader.readAsText(file);
-    };
-
-    input.click();
-  };
+  const setActiveModule = useStore((state: any) => state.setActiveModule);
 
   return (
     <aside
@@ -229,31 +142,6 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
       </div>
     ))}
   </nav>
-
-  {/* DADOS */}
-  <div className="px-5 py-5 border-t border-[var(--border)] bg-[var(--bg-sidebar)]">
-    <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.08em] mb-3">
-      Dados
-    </p>
-
-    <div className="space-y-0.5">
-      <button
-        onClick={handleExport}
-        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
-      >
-        <Download className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] shrink-0" />
-        Exportar Backup
-      </button>
-
-      <button
-        onClick={handleImport}
-        className="w-full flex items-center gap-2 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)] rounded-[var(--radius-md)] transition-colors"
-      >
-        <Upload className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] shrink-0" />
-        Importar
-      </button>
-    </div>
-  </div>
 
   {/* STATUS */}
   <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--bg-sidebar)]">

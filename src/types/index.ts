@@ -430,3 +430,28 @@ export interface CotacaoMaterial {
   observacoes?: string | null;
   createdAt?: string;
 }
+
+// =========================
+// RECIBOS
+// =========================
+
+export type ReciboStatus = 'pendente' | 'emitido' | 'cancelado';
+
+export interface Recibo {
+  id: string;
+  workspaceId: string;
+  orcamentoId: string;
+  leadId: string | null;
+  numeroRecibo: string | null;
+  clienteNome: string;
+  clienteTelefone: string | null;
+  clienteEndereco: string | null;
+  descricao: string;
+  itens: OrcamentoItem[];
+  valorTotal: number;
+  dataEmissao: string | null;
+  status: ReciboStatus;
+  observacoes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

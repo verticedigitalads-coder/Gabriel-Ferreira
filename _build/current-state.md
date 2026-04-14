@@ -283,3 +283,88 @@ Feita manualmente e de forma inconsistente entre slices. Adicionar novo campo no
 - Policy `workspace_owner_access` para `workspaces`
 - Policy `self_access` para `workspace_members`
 - `contas_receber` mantém policy original (não recria)
+
+---
+
+## Fase 12 — Módulo Recibos: Base Implementada (13/04/2026)
+
+**Status:** Implementado — aguardando execução da migration no Supabase Dashboard
+
+| Arquivo | O que foi feito |
+|---|---|
+| `supabase/migrations/20260413010000_create_recibos.sql` | NOVO — tabela `recibos` com RLS `workspace_isolation`, índices em workspace/orcamento/status |
+| `src/types/index.ts` | Adicionados `ReciboStatus` e interface `Recibo` com mapeamento camelCase completo |
+| `src/store/slices/reciboSlice.ts` | NOVO — `fetchRecibos`, `addRecibo`, `updateRecibo`, `deleteRecibo`, `emitirRecibo` (gera REC-{ANO}-{SEQ}) |
+| `src/store/useStore.ts` | Import + StoreState + spread de `createReciboSlice` + `fetchRecibos` no `initialize()` |
+| `src/modules/recibos/Recibos.tsx` | NOVO — lista com badges de status, botões Emitir/PDF/Editar/Cancelar, modal criar/editar |
+| `src/layout/Sidebar.tsx` | Item `{ id: 'recibos', label: 'Recibos', icon: Receipt }` adicionado após 'orcamentos' |
+| `src/App.tsx` | Lazy import de `Recibos` + condicional `activeModule === 'recibos'` no `ModuleRouter` |
+| `src/modules/orcamentos/Orcamentos.tsx` | `saveOrcamento` captura ID do orçamento inserido; cria pré-recibo automaticamente ao aprovar |
+
+**Automação:** Ao aprovar um orçamento (novo ou editado), `saveOrcamento` verifica se já existe recibo vinculado (`orcamentoId`) e, se não, cria pré-recibo com status `pendente`.
+
+**Número sequencial:** formato `REC-{ANO}-{SEQ_3_DIGITOS}` (ex: `REC-2026-001`), gerado pela função `emitirRecibo`.
+
+**Fase 12 completa — todos os arquivos implementados.**
+
+---
+
+## Fase 12.2 — Recibos: Rota Backend PDF + Template HTML (13/04/2026)
+
+| Arquivo | O que foi feito |
+|---|---|
+| `templates/recibo.html` | NOVO — template A4 com mesma estrutura do `orcamento.html`: logo, barra laranja, dados do cliente, declaração de recebimento, tabela de itens, total, observações, linha de assinatura, rodapé com data por extenso e logo watermark |
+| `server.js` | NOVO — função `valorPorExtenso(valor)` (pt-BR, até 999.999,99); função `dataExtenso(dataStr)` (ex: "Uberaba, 13 de abril de 2026"); rota `POST /api/gerar-recibo` com Puppeteer idêntico à rota de orçamento |
+| `src/modules/recibos/Recibos.tsx` | `generateReciboPDF(recibo)` adicionada; botão PDF (status === 'emitido') chama a função real em vez do stub |
+
+**Pendências:**
+- Executar migration `20260413010000_create_recibos.sql` no Supabase Dashboard
+- Deploy backend no Render com nova rota `/api/gerar-recibo`
+
+---
+
+## Fase 13 — Reestruturação do Módulo Configurações (14/04/2026)
+
+| Arquivo | O que foi feito |
+|---|---|
+| `supabase/migrations/20260414020000_create_workspace_settings.sql` | NOVO — tabela `workspace_settings` (key/value por workspace) com RLS `workspace_isolation` — aguardando execução |
+| `src/store/slices/settingsSlice.ts` | NOVO — `WorkspaceSettings` interface; `fetchSettings`, `updateSetting`, `updateSettings`; mapeamento camelCase↔snake_case |
+| `src/store/useStore.ts` | Import + spread de `createSettingsSlice`; StoreState atualizado; `fetchSettings` chamado no `initialize()` |
+| `src/modules/settings/Settings.tsx` | REESCRITO — 4 tabs: Empresa, Documentos, Backup e Dados, Ambiente Demo; CSS vars; mobile-first; operações de limpeza via Supabase |
+| `src/layout/Sidebar.tsx` | Seção "Dados" removida; `handleExport`, `handleImport`, `exportData`, `importData` removidos |
+| `src/hooks/useDefaultSettings.ts` | NOVO — hook que expõe valores de `settings` do store com fallbacks; pronto para integração futura nos formulários |
+
+**Mudanças funcionais:**
+- Export/Import movidos da Sidebar para tab "Backup e Dados" em Configurações
+- Export agora usa Supabase diretamente (7 tabelas: leads, orcamentos, transactions, notas, recibos, operacional_tasks, fornecedores)
+- Operações de limpeza migradas de IndexedDB → Supabase com ordem correta de FKs
+- Reset completo requer digitação de "CONFIRMAR" (campo de texto, não apenas `window.confirm`)
+
+**Pendências:**
+- Executar migration `20260414020000_create_workspace_settings.sql` no Supabase Dashboard
+- Integrar `useDefaultSettings` nos formulários de orçamento e recibo
+- Usar dados da empresa (`empresaNome`, `empresaLogoUrl` etc.) nos templates PDF
+
+---
+
+## Validação Geral — 14/04/2026
+
+**Build:** ✅ Limpo — 0 erros TypeScript, 0 erros de build. 6.03s. Avisos não-críticos: bundle 884KB (pré-existente), `@import` CSS ordering (pré-existente).
+
+**Resultado:** APTO PARA COMMIT
+
+| Etapa | Status | Observação |
+|---|---|---|
+| Build | ✅ | Limpo, sem erros |
+| Imports | ✅ | Todos os arquivos novos/alterados com imports corretos |
+| Store | ✅ | Todos os slices registrados; fetchSettings no initialize() |
+| CSS vars | ⚠️ | Settings.tsx novo usa só CSS vars; ~10 arquivos pré-existentes com cores hardcoded |
+| Rotas App | ✅ | 15/15 módulos cobertos |
+| Sidebar | ✅ | Seção Dados removida; imports e funções de export/import removidos |
+| Arquivos novos | ✅ | 8/8 presentes |
+| server.js | ✅ | GET /, POST /api/gerar-orcamento, POST /api/gerar-recibo, CORS ngrok header |
+
+**Problemas não-críticos (fix futuro):**
+- `setActiveModule` não tipado no StoreState (usa cast `any`) — pré-existente
+- notas, fornecedores, materiais, cotacoes não carregados no `initialize()` — design pré-existente (lazy via módulo)
+- Cores Tailwind hardcoded em: App.tsx, AuthPage, IAAssistente, Financeiro, Notas, LeadsList, LeadForm, Kanban, OperacionalCalendar, ContasReceber — pré-existentes, nenhuma introduzida na Fase 13
