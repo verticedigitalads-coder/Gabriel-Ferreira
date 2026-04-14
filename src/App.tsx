@@ -57,6 +57,11 @@ const ContasReceber = lazy(() =>
 const Recibos = lazy(() =>
   import('@/modules/recibos/Recibos').then((m) => ({ default: m.Recibos })),
 );
+const AdminEmpresas = lazy(() =>
+  import('@/modules/admin/AdminEmpresas').then((m) => ({
+    default: m.AdminEmpresas,
+  })),
+);
 
 function LoadingFallback() {
   return (
@@ -90,6 +95,7 @@ function ModuleRouter() {
       {activeModule === 'fornecedores' && <Fornecedores />}
       {activeModule === 'comparador' && <ComparadorPrecos />}
       {activeModule === 'estoque' && <Estoque />}
+      {activeModule === 'admin' && <AdminEmpresas />}
     </Suspense>
   );
 }

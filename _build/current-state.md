@@ -368,3 +368,30 @@ Feita manualmente e de forma inconsistente entre slices. Adicionar novo campo no
 - `setActiveModule` não tipado no StoreState (usa cast `any`) — pré-existente
 - notas, fornecedores, materiais, cotacoes não carregados no `initialize()` — design pré-existente (lazy via módulo)
 - Cores Tailwind hardcoded em: App.tsx, AuthPage, IAAssistente, Financeiro, Notas, LeadsList, LeadForm, Kanban, OperacionalCalendar, ContasReceber — pré-existentes, nenhuma introduzida na Fase 13
+
+---
+
+## Fase 14 — Onboarding de Nova Empresa via Tela Admin (14/04/2026)
+
+| Arquivo | O que foi feito |
+|---|---|
+| `src/hooks/useIsAdmin.ts` | NOVO — verifica `role='owner'` em `workspace_members` para o usuário logado; retorna `boolean` |
+| `src/modules/admin/AdminEmpresas.tsx` | NOVO — tela admin: lista todos os workspaces (via backend), formulário para criar nova empresa (nome, segmento, email, senha temporária), toast de sucesso com credenciais |
+| `server.js` | `GET /api/admin/workspaces` (lista workspaces via service_role, bypass RLS); `POST /api/admin/criar-empresa` (cria workspace + usuário auth + vínculo workspace_member como owner, tudo com service_role key) |
+| `src/layout/Sidebar.tsx` | Seção "Admin" condicional — só aparece se `useIsAdmin()` retornar `true` (role='owner') |
+| `src/App.tsx` | Lazy import de `AdminEmpresas` + rota `activeModule === 'admin'` no ModuleRouter |
+
+**Fluxo de criação de empresa:**
+1. Admin preenche formulário (nome, segmento, email, senha)
+2. Frontend `POST /api/admin/criar-empresa` → backend com `SUPABASE_SERVICE_ROLE_KEY`
+3. Backend cria workspace → cria usuário auth → vincula como owner
+4. Retorna `{ workspace_id, user_id, email }` → toast com dados de acesso
+5. Lista de workspaces recarrega automaticamente
+
+**Isolamento garantido:** RLS pré-existente isola dados por `workspace_id` — nenhuma policy foi alterada.
+
+**Build:** ✅ Limpo — 0 erros TypeScript, 0 erros de build. 5.35s. Chunk `AdminEmpresas` gerado com code-splitting.
+
+**Pendências:**
+- Adicionar `SUPABASE_SERVICE_ROLE_KEY` no `.env` local e no Render (Settings → Environment)
+- Buscar a key em: Supabase Dashboard → Settings → API → `service_role` (NÃO colocar no frontend)

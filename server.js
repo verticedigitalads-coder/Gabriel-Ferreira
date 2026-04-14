@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: './.env' });
 
@@ -567,6 +568,118 @@ app.post('/api/gerar-recibo', async (req, res) => {
   } catch (error) {
     console.error('[Recibo] Erro ao gerar PDF:', error);
     return res.status(500).json({ error: 'Erro ao gerar PDF do recibo' });
+  }
+});
+
+/* ==========================================
+🏢 ADMIN — Supabase service_role client
+========================================== */
+
+function getSupabaseAdmin() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY não configurada');
+  }
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
+/* ==========================================
+🏢 GET /api/admin/workspaces — Lista todas as empresas
+========================================== */
+
+app.get('/api/admin/workspaces', async (_req, res) => {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('workspaces')
+      .select('id, nome, segment, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return res.json(data ?? []);
+  } catch (error) {
+    console.error('[Admin] Erro ao listar workspaces:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+/* ==========================================
+🏢 POST /api/admin/criar-empresa — Cria workspace + usuário + vínculo
+========================================== */
+
+app.post('/api/admin/criar-empresa', async (req, res) => {
+  const { nome, segment, email, senha } = req.body ?? {};
+
+  if (!nome || !nome.trim()) {
+    return res.status(400).json({ error: 'Nome da empresa é obrigatório' });
+  }
+  if (!email || !email.trim()) {
+    return res.status(400).json({ error: 'Email do usuário é obrigatório' });
+  }
+  if (!senha || senha.length < 6) {
+    return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres' });
+  }
+
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // 1. Criar workspace
+    const { data: workspace, error: wsError } = await supabaseAdmin
+      .from('workspaces')
+      .insert({ nome: nome.trim(), segment: segment || 'metalurgica' })
+      .select()
+      .single();
+
+    if (wsError) {
+      console.error('[Admin] Erro ao criar workspace:', wsError.message);
+      return res.status(500).json({ error: 'Erro ao criar workspace: ' + wsError.message });
+    }
+
+    // 2. Criar usuário via admin API
+    const { data: userResult, error: userError } = await supabaseAdmin.auth.admin.createUser({
+      email: email.trim(),
+      password: senha,
+      email_confirm: true,
+    });
+
+    if (userError) {
+      console.error('[Admin] Erro ao criar usuário:', userError.message);
+      // Limpar workspace criado
+      await supabaseAdmin.from('workspaces').delete().eq('id', workspace.id);
+      const alreadyExists =
+        userError.message.includes('already registered') ||
+        userError.status === 422;
+      return res.status(alreadyExists ? 409 : 500).json({
+        error: alreadyExists ? 'Email já cadastrado no sistema' : 'Erro ao criar usuário: ' + userError.message,
+      });
+    }
+
+    const userId = userResult.user.id;
+
+    // 3. Vincular usuário ao workspace como owner
+    const { error: memberError } = await supabaseAdmin
+      .from('workspace_members')
+      .insert({ workspace_id: workspace.id, user_id: userId, role: 'owner' });
+
+    if (memberError) {
+      console.error('[Admin] Erro ao vincular membro:', memberError.message);
+      return res.status(500).json({ error: 'Erro ao vincular usuário ao workspace: ' + memberError.message });
+    }
+
+    console.log(`[Admin] Empresa criada: ${nome} | user: ${email} | ws: ${workspace.id}`);
+
+    return res.json({
+      workspace_id: workspace.id,
+      user_id: userId,
+      email: email.trim(),
+    });
+  } catch (error) {
+    console.error('[Admin] Erro inesperado:', error.message);
+    return res.status(500).json({ error: error.message });
   }
 });
 

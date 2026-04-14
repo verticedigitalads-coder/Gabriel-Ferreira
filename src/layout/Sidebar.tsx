@@ -1,6 +1,7 @@
 import { useStore } from '@/store/useStore';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { cn } from '@/utils/cn';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, X, Building2 } from 'lucide-react';
 import {
   LayoutDashboard,
   Users,
@@ -70,9 +71,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
-  
   const activeModule = useStore(state => state.activeModule);
   const setActiveModule = useStore((state: any) => state.setActiveModule);
+  const isAdmin = useIsAdmin();
 
   return (
     <aside
@@ -141,6 +142,30 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         </ul>
       </div>
     ))}
+
+    {isAdmin && (
+      <div>
+        <p className="px-6 text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.08em] mb-3">
+          Admin
+        </p>
+        <ul className="space-y-0.5 px-3">
+          <li>
+            <button
+              onClick={() => setActiveModule('admin')}
+              className={cn(
+                'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm font-medium transition-all duration-150',
+                activeModule === 'admin'
+                  ? 'bg-[var(--bg-surface-2)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
+              )}
+            >
+              <Building2 className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] opacity-80 shrink-0" />
+              <span className="tracking-tight">Empresas</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    )}
   </nav>
 
   {/* STATUS */}
