@@ -73,6 +73,9 @@
 - ✅ Fase 14 — Onboarding de empresas (tela admin, rota backend, hook useIsAdmin)
 - ✅ Fase 15 — Financeiro com status de pagamento (a_vencer/vencido/pago, marcarComoPago, exportar CSV, bug fix categoria/leadId/observacoes)
 - ✅ Fase 16 — Comissão da planejadora (percentualComissao em settings, salvo por orçamento, visível internamente, embutida no total do PDF)
+- ✅ Fase 17 — PDF agrupado (seleção múltipla, agrupamento por cliente, rota /api/gerar-orcamento-agrupado, formatOrcamento corrigido)
+- ✅ Fase 18 — Template PDF profissional v2 (orcamento-v2.html, campos textoApresentacao/condicoesContrato/metodosPagamento em settings, backward compat v1)
+- ✅ Fix Operacional — Navegação semanal (← →) + modal edição completa (título, data, prioridade, status, descrição) + touch targets 44px
 
 ### Auditoria
 - ✅ Fase 11 etapa 1 — Auditoria RLS (migration gerada, não executada integralmente)
@@ -83,6 +86,8 @@
 - v2.14.0 — Onboarding multi-empresa + painel admin
 - v2.15.0 — Financeiro com status de pagamento (Fase 15)
 - v2.16.0 — Comissão da planejadora nos orçamentos (Fase 16)
+- v2.17.0 — PDF agrupado por cliente + formatOrcamento (Fase 17)
+- v2.18.0 — Template PDF profissional v2 (marcenaria + genérico, dados da empresa, apresentação, condições, métodos pagamento)
 
 ## Implementações Prioritárias (definidas com cliente GPP)
 
@@ -92,8 +97,8 @@
 |---|---------|-----------|--------|
 | 1 | Financeiro com status (contas a pagar: vencido/a vencer/pago) | ALTA | ✅ Concluído (Fase 15) |
 | 2 | Comissão da planejadora (multiplicador + % sobre subtotal) | ALTA | ✅ Concluído (Fase 16) |
-| 3 | Múltiplos orçamentos agrupados por cliente | ALTA | Pendente |
-| 4 | Template PDF profissional (texto intro + condições + cores) | ALTA | Pendente |
+| 3 | Múltiplos orçamentos agrupados por cliente | ALTA | ✅ Concluído (Fase 17) |
+| 4 | Template PDF profissional (texto intro + condições + cores) | ALTA | ✅ Concluído (Fase 18) |
 | 5 | Cores personalizáveis por empresa (configurações) | MÉDIA | Pendente |
 | 6 | Notificações push (PWA) | MÉDIA | Pendente |
 | 7 | QR Code como link | BAIXA | Pendente |

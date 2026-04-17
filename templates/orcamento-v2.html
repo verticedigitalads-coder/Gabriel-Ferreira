@@ -1,0 +1,298 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+      color: #222;
+      background: #fff;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.06;
+      width: 500px;
+      z-index: 0;
+      pointer-events: none;
+      filter: grayscale(100%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      padding: 0;
+    }
+
+    .top-bar {
+      background: {{cor_primaria}};
+      height: 60px;
+      width: 100%;
+    }
+
+    .empresa-header {
+      text-align: center;
+      padding: 24px 32px 16px;
+    }
+
+    .empresa-header img {
+      width: 180px;
+      margin-bottom: 8px;
+    }
+
+    .empresa-nome {
+      font-size: 20px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .empresa-dados {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e5e5e5;
+      margin: 16px 32px;
+    }
+
+    .titulo-orcamento {
+      text-align: center;
+      padding: 20px 32px;
+    }
+
+    .titulo-orcamento h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .titulo-orcamento .numero {
+      font-size: 14px;
+      color: #888;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .titulo-orcamento .cliente-sub {
+      font-size: 14px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    .secao {
+      padding: 20px 32px;
+      page-break-inside: avoid;
+    }
+
+    .secao-titulo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .secao-titulo .icon {
+      font-size: 20px;
+    }
+
+    .texto-apresentacao {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.8;
+      text-align: justify;
+    }
+
+    .atividade-item {
+      margin-bottom: 6px;
+    }
+
+    .atividade-item strong {
+      color: #222;
+    }
+
+    .atividade-item span {
+      color: #555;
+      font-size: 14px;
+    }
+
+    .preco-grupo {
+      margin-bottom: 16px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .preco-grupo-header {
+      background: #f8f8f8;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 15px;
+      color: #222;
+      border-bottom: 1px solid #eee;
+    }
+
+    .preco-grupo-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+    }
+
+    .preco-info {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .preco-valor {
+      font-size: 16px;
+      font-weight: 700;
+      color: #222;
+      background: #f0f0f0;
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+      border-top: 1px dashed #ddd;
+    }
+
+    .total-row.final {
+      font-size: 18px;
+      font-weight: 700;
+      border-top: 2px solid #222;
+      padding-top: 12px;
+      margin-top: 8px;
+    }
+
+    .metodos-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .metodo-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      font-size: 13px;
+      color: #555;
+      background: #fafafa;
+    }
+
+    .condicoes-lista {
+      font-size: 13px;
+      color: #444;
+      line-height: 2;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .condicoes-lista li {
+      margin-bottom: 4px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px 32px;
+      font-size: 13px;
+      color: #888;
+      border-top: 1px solid #e5e5e5;
+      margin-top: 20px;
+    }
+
+    .mao-de-obra .preco-grupo-header {
+      background: #fff7ed;
+    }
+
+    .mao-de-obra .preco-valor {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    @media print {
+      body { font-size: 11px; }
+      .secao { padding: 12px 24px; }
+      .empresa-header { padding: 16px 24px 10px; }
+      .top-bar { height: 40px; }
+    }
+
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <div class="watermark">
+    <img src="{{logo_bg}}" style="width: 100%" />
+  </div>
+
+  <div class="container">
+    <div class="top-bar"></div>
+
+    <div class="empresa-header">
+      {{logo_html}}
+      <div class="empresa-nome">{{empresa_nome}}</div>
+      <div class="empresa-dados">
+        {{empresa_cnpj}}<br/>
+        {{empresa_endereco}}<br/>
+        {{empresa_telefone}}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="titulo-orcamento">
+      <h1>Orçamento {{cliente_nome}}</h1>
+      <div class="numero">[{{orcamento_id}}]</div>
+      <div class="cliente-sub">{{cliente_nome}}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    {{secao_apresentacao}}
+
+    <div class="divider"></div>
+
+    {{secao_atividades}}
+
+    <div class="divider"></div>
+
+    <div class="secao">
+      <div class="secao-titulo"><span class="icon">💰</span> Preços</div>
+      {{precos_blocos}}
+
+      <div style="margin-top: 16px; padding-top: 8px;">
+        {{totais_html}}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    {{secao_metodos_pagamento}}
+
+    <div class="divider"></div>
+
+    {{secao_condicoes}}
+
+    <div class="footer">
+      Criado em {{data}}<br/>
+    </div>
+  </div>
+</body>
+</html>

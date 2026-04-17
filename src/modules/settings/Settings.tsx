@@ -43,6 +43,9 @@ export function Settings() {
   const [percentualComissao, setPercentualComissao] = useState(0);
   const [obsPadraoOrcamento, setObsPadraoOrcamento] = useState('');
   const [obsPadraoRecibo, setObsPadraoRecibo] = useState('');
+  const [textoApresentacao, setTextoApresentacao] = useState('');
+  const [condicoesContrato, setCondicoesContrato] = useState('');
+  const [metodosPagamento, setMetodosPagamento] = useState('');
 
   // Popula formulários quando settings carrega
   useEffect(() => {
@@ -58,6 +61,9 @@ export function Settings() {
     setPercentualComissao(settings.percentualComissao ?? 0);
     setObsPadraoOrcamento(settings.observacaoPadraoOrcamento || '');
     setObsPadraoRecibo(settings.observacaoPadraoRecibo || '');
+    setTextoApresentacao(settings.textoApresentacao || '');
+    setCondicoesContrato(settings.condicoesContrato || '');
+    setMetodosPagamento(settings.metodosPagamento || '');
   }, [settings]);
 
   // ─── Salvar Empresa ───────────────────────────────────────
@@ -90,6 +96,9 @@ export function Settings() {
         percentualComissao,
         observacaoPadraoOrcamento: obsPadraoOrcamento,
         observacaoPadraoRecibo: obsPadraoRecibo,
+        textoApresentacao,
+        condicoesContrato,
+        metodosPagamento,
       });
       addToast({ type: 'success', message: 'Configurações de documentos salvas!' });
     } catch {
@@ -446,6 +455,75 @@ export function Settings() {
                 onChange={e => setObsPadraoRecibo(e.target.value)}
                 placeholder="Ex: Recibo emitido após confirmação do pagamento."
               />
+            </div>
+
+            <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Template do PDF</h3>
+            </div>
+
+            <div className="md:col-span-2">
+              <TextArea
+                label="Texto de apresentação (Relatório inicial)"
+                rows={4}
+                value={textoApresentacao}
+                onChange={e => setTextoApresentacao(e.target.value)}
+                placeholder="Para a nossa empresa, é um prazer apresentar esta proposta..."
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Aparece no início do PDF como introdução ao cliente.
+              </p>
+            </div>
+
+            <div className="md:col-span-2">
+              <TextArea
+                label="Condições de contrato"
+                rows={6}
+                value={condicoesContrato}
+                onChange={e => setCondicoesContrato(e.target.value)}
+                placeholder={'1. Neste orçamento já estão considerados os valores de mão de obra...\n2. A validade deste orçamento é de 7 dias...'}
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Uma condição por linha. Use {'{{validade}}'} para inserir os dias de validade automaticamente. Aparece no rodapé do PDF.
+              </p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
+                Métodos de pagamento exibidos no PDF
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'pix', label: 'PIX' },
+                  { key: 'credito', label: 'Crédito' },
+                  { key: 'debito', label: 'Débito' },
+                  { key: 'dinheiro', label: 'Dinheiro' },
+                  { key: 'transferencia', label: 'Transferência' },
+                  { key: 'boleto', label: 'Boleto' },
+                ].map(m => {
+                  const ativo = metodosPagamento.split(',').includes(m.key);
+                  return (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => {
+                        const lista = metodosPagamento.split(',').filter(Boolean);
+                        if (ativo) {
+                          setMetodosPagamento(lista.filter(x => x !== m.key).join(','));
+                        } else {
+                          setMetodosPagamento([...lista, m.key].join(','));
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-sm border min-h-[44px] transition-colors ${
+                        ativo
+                          ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                          : 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)] border-[var(--border)]'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

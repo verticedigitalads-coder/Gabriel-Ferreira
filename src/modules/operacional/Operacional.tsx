@@ -27,7 +27,11 @@ export function Operacional() {
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<any>(null);
-  const [newTitle, setNewTitle] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editData, setEditData] = useState('');
+  const [editPrioridade, setEditPrioridade] = useState<'baixa' | 'media' | 'alta'>('media');
+  const [editStatus, setEditStatus] = useState('pendente');
+  const [editDescricao, setEditDescricao] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
 
   // 🔥 TOGGLE SEMANA / MÊS
@@ -57,12 +61,15 @@ export function Operacional() {
     if (!taskToEdit) return;
 
     await updateTask(taskToEdit.id, {
-      titulo: newTitle,
+      titulo: editTitle,
+      data: editData,
+      prioridade: editPrioridade,
+      status: editStatus,
+      descricao: editDescricao,
     });
 
     setShowEditModal(false);
     setTaskToEdit(null);
-    setNewTitle('');
   };
 
   const confirmDelete = async () => {
@@ -184,7 +191,11 @@ export function Operacional() {
           }}
           onEdit={(task: any) => {
             setTaskToEdit(task);
-            setNewTitle(task.titulo);
+            setEditTitle(task.titulo || '');
+            setEditData(task.data || '');
+            setEditPrioridade(task.prioridade || 'media');
+            setEditStatus(task.status || 'pendente');
+            setEditDescricao(task.descricao || '');
             setShowEditModal(true);
           }}
         />
@@ -196,7 +207,11 @@ export function Operacional() {
           }}
           onEdit={(task: any) => {
             setTaskToEdit(task);
-            setNewTitle(task.titulo);
+            setEditTitle(task.titulo || '');
+            setEditData(task.data || '');
+            setEditPrioridade(task.prioridade || 'media');
+            setEditStatus(task.status || 'pendente');
+            setEditDescricao(task.descricao || '');
             setShowEditModal(true);
           }}
           onCreate={handleCreateTask} // 🔥 NOVO
@@ -319,13 +334,67 @@ export function Operacional() {
         title="Editar tarefa"
       >
         <div className="p-4 space-y-4">
-          <input
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
-          />
+          <div>
+            <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Título</label>
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+              placeholder="Título da tarefa"
+            />
+          </div>
 
-          <div className="flex justify-end gap-2">
+          <div>
+            <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Data</label>
+            <input
+              type="date"
+              value={editData}
+              onChange={(e) => setEditData(e.target.value)}
+              className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Prioridade</label>
+              <select
+                value={editPrioridade}
+                onChange={(e) => setEditPrioridade(e.target.value as any)}
+                className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+              >
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Status</label>
+              <select
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value)}
+                className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+              >
+                <option value="pendente">Pendente</option>
+                <option value="em_producao">Em produção</option>
+                <option value="pronto">Pronto</option>
+                <option value="instalado">Instalado</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Descrição (opcional)</label>
+            <textarea
+              value={editDescricao}
+              onChange={(e) => setEditDescricao(e.target.value)}
+              rows={3}
+              className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px] resize-none"
+              placeholder="Detalhes da tarefa..."
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-[var(--border)]">
             <button
               onClick={() => setShowEditModal(false)}
               className="px-4 py-2 min-h-[44px] bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
@@ -337,7 +406,7 @@ export function Operacional() {
               onClick={confirmEdit}
               className="px-4 py-2 min-h-[44px] bg-[var(--accent)] text-white rounded hover:bg-[var(--accent-hover)]"
             >
-              Salvar
+              Salvar Alterações
             </button>
           </div>
         </div>

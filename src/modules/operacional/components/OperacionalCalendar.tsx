@@ -97,32 +97,32 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
           )}
         </div>
 
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-1 items-center shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               updateTask(task.id, { concluido: !task.concluido });
             }}
-            className={`transition-colors ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
+            className={`min-h-[44px] min-w-[36px] flex items-center justify-center transition-colors ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
             title={task.concluido ? 'Marcar como pendente' : 'Marcar como concluída'}
           >
-            {task.concluido ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+            {task.concluido ? <CheckCircle2 size={16} /> : <Circle size={16} />}
           </button>
 
           <button
             onClick={handleEdit}
-            className="text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+            className="min-h-[44px] min-w-[36px] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
             title="Editar"
           >
-            <Pencil size={14} />
+            <Pencil size={16} />
           </button>
 
           <button
             onClick={handleDelete}
-            className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+            className="min-h-[44px] min-w-[36px] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
             title="Excluir"
           >
-            <Trash2 size={14} />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -218,8 +218,11 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
     });
   }, [tasks, filterMode, leads]);
 
+  const [weekOffset, setWeekOffset] = useState(0);
+
   const weekDays = useMemo(() => {
-    const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const baseStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const start = addDays(baseStart, weekOffset * 7);
 
     return Array.from({ length: 7 }).map((_, i) => {
       const date = addDays(start, i);
@@ -229,7 +232,7 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
         dateString: format(date, 'yyyy-MM-dd'),
       };
     });
-  }, []);
+  }, [weekOffset]);
 
   const getTasksForDay = (dateString: string) =>
     filteredTasks.filter((t) => t.data?.substring(0, 10) === dateString);
@@ -282,6 +285,36 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
             className="px-3 py-1 bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
           >
             Atrasadas
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => setWeekOffset(prev => prev - 1)}
+            className="px-4 py-2 min-h-[44px] text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
+          >
+            ← Semana anterior
+          </button>
+
+          <div className="text-center">
+            <span className="text-sm font-semibold text-[var(--text-primary)]">
+              {format(weekDays[0].date, "dd 'de' MMM", { locale: ptBR })} — {format(weekDays[6].date, "dd 'de' MMM", { locale: ptBR })}
+            </span>
+            {weekOffset !== 0 && (
+              <button
+                onClick={() => setWeekOffset(0)}
+                className="ml-3 text-xs text-[var(--accent)] hover:underline"
+              >
+                Voltar pra semana atual
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setWeekOffset(prev => prev + 1)}
+            className="px-4 py-2 min-h-[44px] text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
+          >
+            Próxima semana →
           </button>
         </div>
 

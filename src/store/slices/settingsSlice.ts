@@ -12,6 +12,9 @@ export interface WorkspaceSettings {
   percentualComissao: number;
   observacaoPadraoOrcamento: string;
   observacaoPadraoRecibo: string;
+  textoApresentacao: string;
+  condicoesContrato: string;
+  metodosPagamento: string;
 }
 
 const DEFAULT_SETTINGS: WorkspaceSettings = {
@@ -26,6 +29,9 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   percentualComissao: 0,
   observacaoPadraoOrcamento: '',
   observacaoPadraoRecibo: '',
+  textoApresentacao: 'Para a nossa empresa, é um prazer apresentar esta proposta. Este orçamento foi elaborado para ser o melhor investimento para você, oferecendo qualidade, durabilidade e sofisticação para seus ambientes.',
+  condicoesContrato: '1. Neste orçamento já estão considerados os valores de mão de obra, materiais e frete.\n2. A validade deste orçamento é de {{validade}} dias após a emissão.\n3. Para iniciarmos o trabalho é necessário o pagamento de sinal de 50% do valor total.\n4. Em caso de desistência, após o início da produção, o valor do sinal poderá não ser restituído.\n5. Garantia conforme Código de Defesa do Consumidor.',
+  metodosPagamento: 'pix,credito,debito,dinheiro,transferencia',
 };
 
 // Mapeamento camelCase → snake_case (key do banco)
@@ -41,6 +47,9 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   percentualComissao: 'percentual_comissao',
   observacaoPadraoOrcamento: 'observacao_padrao_orcamento',
   observacaoPadraoRecibo: 'observacao_padrao_recibo',
+  textoApresentacao: 'texto_apresentacao',
+  condicoesContrato: 'condicoes_contrato',
+  metodosPagamento: 'metodos_pagamento',
 };
 
 // Mapeamento inverso snake_case → camelCase

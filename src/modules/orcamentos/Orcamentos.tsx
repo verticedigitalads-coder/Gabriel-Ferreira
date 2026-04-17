@@ -61,6 +61,7 @@ export function Orcamentos() {
   const orcamentos = useStore((state) => state.orcamentos);
   const deleteOrcamento = useStore((state) => state.deleteOrcamento);
   const addToast = useStore((state) => state.addToast);
+  const defaultSettings = useDefaultSettings();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [orcToDelete, setOrcToDelete] = useState<string | null>(null);
 
@@ -134,6 +135,17 @@ export function Orcamentos() {
           cliente_telefone: primeiro.clienteTelefone || lead?.telefone || '',
           cliente_endereco: primeiro.clienteEndereco || lead?.endereco || '',
           mostrar_total_geral: true,
+          template_version: 'v2',
+          empresa_nome: defaultSettings.empresaNome,
+          empresa_telefone: defaultSettings.empresaTelefone,
+          empresa_email: defaultSettings.empresaEmail,
+          empresa_endereco: defaultSettings.empresaEndereco,
+          empresa_cnpj: defaultSettings.empresaCnpj,
+          empresa_logo_url: defaultSettings.empresaLogoUrl,
+          texto_apresentacao: defaultSettings.textoApresentacao,
+          condicoes_contrato: defaultSettings.condicoesContrato,
+          metodos_pagamento: defaultSettings.metodosPagamento,
+          cor_primaria: '#ff6a00',
         }),
       });
 
@@ -199,7 +211,18 @@ export function Orcamentos() {
           desconto: orc.desconto,
           total: orc.total,
           observacoes: orc.observacoes,
-          validade: orc.validadeEmDias,
+          validade: orc.validadeEmDias ?? defaultSettings.validadePadraoOrcamento,
+          template_version: 'v2',
+          empresa_nome: defaultSettings.empresaNome,
+          empresa_telefone: defaultSettings.empresaTelefone,
+          empresa_email: defaultSettings.empresaEmail,
+          empresa_endereco: defaultSettings.empresaEndereco,
+          empresa_cnpj: defaultSettings.empresaCnpj,
+          empresa_logo_url: defaultSettings.empresaLogoUrl,
+          texto_apresentacao: defaultSettings.textoApresentacao,
+          condicoes_contrato: defaultSettings.condicoesContrato,
+          metodos_pagamento: defaultSettings.metodosPagamento,
+          cor_primaria: '#ff6a00',
         }),
       });
 

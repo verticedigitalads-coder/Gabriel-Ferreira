@@ -14,5 +14,9 @@ export function useDefaultSettings() {
     empresaEmail: settings?.empresaEmail || '',
     empresaEndereco: settings?.empresaEndereco || '',
     empresaCnpj: settings?.empresaCnpj || '',
+    empresaLogoUrl: settings?.empresaLogoUrl || '',
+    textoApresentacao: settings?.textoApresentacao || '',
+    condicoesContrato: settings?.condicoesContrato || '',
+    metodosPagamento: settings?.metodosPagamento || 'pix,credito,debito,dinheiro,transferencia',
   };
 }

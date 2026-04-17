@@ -122,11 +122,9 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     📄 CARREGAR TEMPLATE HTML
     ========================================== */
 
-    const templatePath = path.resolve(
-      process.cwd(),
-      'templates',
-      'orcamento.html',
-    );
+    const template_version = dados.template_version || 'v1';
+    const templateFile = template_version === 'v2' ? 'orcamento-v2.html' : 'orcamento.html';
+    const templatePath = path.resolve(process.cwd(), 'templates', templateFile);
 
     console.log('📄 Caminho completo:', templatePath);
 
@@ -252,22 +250,142 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     🔁 SUBSTITUIÇÕES TEMPLATE
     ========================================== */
 
-    html = html
-      .replace(/{{cliente_nome}}/g, dados.cliente_nome)
-      .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
-      .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
-      .replace(/{{orcamento_id}}/g, numeroFormatado)
-      .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
-      .replace(/{{itens}}/g, itensHTML)
-      .replace(/{{subtotal}}/g, formatar(subtotal))
-      .replace(/{{desconto}}/g, formatar(dados.desconto))
-      .replace(/{{total}}/g, formatar(total))
-      .replace(/{{observacoes}}/g, dados.observacoes || '')
-      .replace(/{{validade}}/g, dados.validade || 7);
+    if (template_version === 'v2') {
+      // Campos de empresa
+      const empresa_nome = dados.empresa_nome || '';
+      const empresa_telefone = dados.empresa_telefone || '';
+      const empresa_endereco = dados.empresa_endereco || '';
+      const empresa_cnpj = dados.empresa_cnpj || '';
+      const empresa_logo_url = dados.empresa_logo_url || '';
+      const texto_apresentacao = dados.texto_apresentacao || '';
+      const condicoes_contrato = dados.condicoes_contrato || '';
+      const metodos_pagamento = dados.metodos_pagamento || '';
+      const cor_primaria = dados.cor_primaria || '#ff6a00';
 
-    // 🔥 IMAGENS DINÂMICAS
-    html = html.replace('{{logo}}', logoPath);
-    html = html.replace('{{logo_bg}}', logoBgPath);
+      // Logo HTML
+      const logoHtml = empresa_logo_url
+        ? `<img src="${empresa_logo_url}" style="width: 180px; margin-bottom: 8px;" />`
+        : '';
+
+      // Seção apresentação
+      const secaoApresentacao = texto_apresentacao
+        ? `<div class="secao">
+             <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
+             <div class="texto-apresentacao">${texto_apresentacao.replace(/\n/g, '<br/>')}</div>
+           </div>`
+        : '';
+
+      // Seção atividades
+      const atividadesHtml = (dados.itens || []).map(item => {
+        const ambiente = item.ambiente ? ` (${item.ambiente})` : '';
+        return `<div class="atividade-item"><strong>${item.descricao}${ambiente}</strong></div>`;
+      }).join('');
+
+      const secaoAtividades = atividadesHtml
+        ? `<div class="secao">
+             <div class="secao-titulo"><span class="icon">📝</span> Descrição das atividades</div>
+             ${atividadesHtml}
+           </div>`
+        : '';
+
+      // Preços (blocos por item)
+      const precosHtml = (dados.itens || []).map(item => `
+        <div class="preco-grupo">
+          <div class="preco-grupo-header">${item.descricao || 'Item'}</div>
+          <div class="preco-grupo-body">
+            <div class="preco-info">Qtde. ${item.quantidade || 1} un &nbsp;&nbsp; Valor unitário R$ ${formatar(item.valorUnitario)}</div>
+            <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Mão de obra
+      let maoDeObraBloco = '';
+      if (multiplicador > 1) {
+        const valorMdO = subtotal * (multiplicador - 1);
+        maoDeObraBloco = `
+          <div class="preco-grupo mao-de-obra">
+            <div class="preco-grupo-header">Mão de obra especializada</div>
+            <div class="preco-grupo-body">
+              <div class="preco-info">Qtde. 1 un</div>
+              <div class="preco-valor">R$ ${formatar(valorMdO)}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Totais
+      const descontoNum = Number(dados.desconto) || 0;
+      const totaisHtml = `
+        <div class="total-row"><span>Subtotal</span><span>R$ ${formatar(subtotal)}</span></div>
+        ${descontoNum > 0 ? `<div class="total-row"><span>Desconto</span><span>- R$ ${formatar(descontoNum)}</span></div>` : ''}
+        <div class="total-row final"><span>Total</span><span>R$ ${formatar(total)}</span></div>
+      `;
+
+      // Métodos de pagamento
+      const metodosLabels = {
+        pix: 'PIX', credito: 'Crédito', debito: 'Débito',
+        dinheiro: 'Dinheiro', transferencia: 'Transferência', boleto: 'Boleto',
+      };
+      const metodosBadges = (metodos_pagamento || '').split(',').filter(Boolean).map(m =>
+        `<span class="metodo-badge">${metodosLabels[m.trim()] || m.trim()}</span>`
+      ).join('');
+
+      const secaoMetodos = metodosBadges
+        ? `<div class="secao">
+             <div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div>
+             <div class="metodos-container">${metodosBadges}</div>
+           </div>`
+        : '';
+
+      // Condições de contrato
+      const condicoesItems = (condicoes_contrato || '').split('\n').filter(l => l.trim()).map(l => {
+        const texto = l.replace(/\{\{validade\}\}/g, String(dados.validade || 7));
+        return `<li>${texto}</li>`;
+      }).join('');
+
+      const secaoCondicoes = condicoesItems
+        ? `<div class="secao">
+             <div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div>
+             <ol class="condicoes-lista">${condicoesItems}</ol>
+           </div>`
+        : '';
+
+      html = html
+        .replace(/{{cor_primaria}}/g, cor_primaria)
+        .replace('{{logo_html}}', logoHtml)
+        .replace('{{logo_bg}}', logoBgPath)
+        .replace(/{{empresa_nome}}/g, empresa_nome || 'Empresa')
+        .replace(/{{empresa_cnpj}}/g, empresa_cnpj || '')
+        .replace(/{{empresa_endereco}}/g, empresa_endereco || '')
+        .replace(/{{empresa_telefone}}/g, empresa_telefone || '')
+        .replace(/{{cliente_nome}}/g, dados.cliente_nome || 'Cliente')
+        .replace(/{{orcamento_id}}/g, numeroFormatado)
+        .replace('{{secao_apresentacao}}', secaoApresentacao)
+        .replace('{{secao_atividades}}', secaoAtividades)
+        .replace('{{precos_blocos}}', precosHtml + maoDeObraBloco)
+        .replace('{{totais_html}}', totaisHtml)
+        .replace('{{secao_metodos_pagamento}}', secaoMetodos)
+        .replace('{{secao_condicoes}}', secaoCondicoes)
+        .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
+    } else {
+      html = html
+        .replace(/{{cliente_nome}}/g, dados.cliente_nome)
+        .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
+        .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
+        .replace(/{{orcamento_id}}/g, numeroFormatado)
+        .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
+        .replace(/{{itens}}/g, itensHTML)
+        .replace(/{{subtotal}}/g, formatar(subtotal))
+        .replace(/{{desconto}}/g, formatar(dados.desconto))
+        .replace(/{{total}}/g, formatar(total))
+        .replace(/{{observacoes}}/g, dados.observacoes || '')
+        .replace(/{{validade}}/g, dados.validade || 7);
+
+      // 🔥 IMAGENS DINÂMICAS
+      html = html.replace('{{logo}}', logoPath);
+      html = html.replace('{{logo_bg}}', logoBgPath);
+    }
 
     console.log('LOGO:', logoPath);
     console.log('LOGO BG:', logoBgPath);
@@ -350,6 +468,15 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
       mostrar_total_geral,
       empresa_telefone,
       empresa_email,
+      template_version,
+      empresa_nome,
+      empresa_cnpj,
+      empresa_endereco,
+      empresa_logo_url,
+      texto_apresentacao,
+      condicoes_contrato,
+      metodos_pagamento,
+      cor_primaria,
     } = req.body;
 
     if (!Array.isArray(orcamentos) || orcamentos.length === 0) {
@@ -446,13 +573,155 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
       </div>
     ` : '';
 
-    const templatePath = path.resolve(process.cwd(), 'templates', 'orcamento.html');
-    const baseHtml = fs.readFileSync(templatePath, 'utf-8');
+    let htmlFinal;
 
-    const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
-    const estilos = styleMatch ? styleMatch[1] : '';
+    if (template_version === 'v2') {
+      const v2TemplatePath = path.resolve(process.cwd(), 'templates', 'orcamento-v2.html');
+      const v2Base = fs.readFileSync(v2TemplatePath, 'utf-8');
+      const v2StyleMatch = v2Base.match(/<style>([\s\S]*?)<\/style>/);
+      const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
 
-    const htmlFinal = `<!doctype html>
+      const corPrimaria = cor_primaria || '#ff6a00';
+      const logoHtmlAgrupado = empresa_logo_url
+        ? `<img src="${empresa_logo_url}" style="width: 180px; margin-bottom: 8px;" />`
+        : '';
+
+      // Seção apresentação (aparece uma vez, antes dos orçamentos)
+      const secaoApresentacaoAgrp = texto_apresentacao
+        ? `<div class="secao">
+             <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
+             <div class="texto-apresentacao">${texto_apresentacao.replace(/\n/g, '<br/>')}</div>
+           </div>
+           <div class="divider"></div>`
+        : '';
+
+      // Blocos de orçamento no estilo v2
+      let totalGeralV2 = 0;
+      const blocosV2 = orcamentos.map((orc, index) => {
+        const pageBreak = index > 0 ? 'class="page-break"' : '';
+        const titulo = orc.ambiente || orc.observacoes?.substring(0, 40) || `Orçamento ${index + 1}`;
+        const subtotalOrc = Number(orc.subtotal) || 0;
+        const multiplicadorOrc = Number(orc.multiplicador) || 1;
+        const totalOrc = Number(orc.total) || 0;
+        totalGeralV2 += totalOrc;
+
+        const precosOrc = (orc.itens || []).map(item => `
+          <div class="preco-grupo">
+            <div class="preco-grupo-header">${item.descricao || 'Item'}</div>
+            <div class="preco-grupo-body">
+              <div class="preco-info">Qtde. ${item.quantidade || 1} un &nbsp;&nbsp; Valor unitário R$ ${formatar(item.valorUnitario)}</div>
+              <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
+            </div>
+          </div>
+        `).join('');
+
+        let maoDeObraBlocoOrc = '';
+        if (multiplicadorOrc > 1) {
+          const valorMdO = subtotalOrc * (multiplicadorOrc - 1);
+          maoDeObraBlocoOrc = `
+            <div class="preco-grupo mao-de-obra">
+              <div class="preco-grupo-header">Mão de obra especializada</div>
+              <div class="preco-grupo-body">
+                <div class="preco-info">Qtde. 1 un</div>
+                <div class="preco-valor">R$ ${formatar(valorMdO)}</div>
+              </div>
+            </div>
+          `;
+        }
+
+        const descontoOrc = Number(orc.desconto) || 0;
+        const totaisOrc = `
+          <div class="total-row"><span>Subtotal</span><span>R$ ${formatar(subtotalOrc)}</span></div>
+          ${descontoOrc > 0 ? `<div class="total-row"><span>Desconto</span><span>- R$ ${formatar(descontoOrc)}</span></div>` : ''}
+          <div class="total-row final"><span>Total</span><span>R$ ${formatar(totalOrc)}</span></div>
+        `;
+
+        return `
+          <div ${pageBreak}>
+            <div class="secao">
+              <div class="secao-titulo" style="color: ${corPrimaria}; border-bottom: 2px solid ${corPrimaria}; padding-bottom: 6px;">
+                ${titulo} — ${orc.numero || ''}
+              </div>
+            </div>
+            <div class="secao">
+              <div class="secao-titulo"><span class="icon">💰</span> Preços</div>
+              ${precosOrc}${maoDeObraBlocoOrc}
+              <div style="margin-top: 16px; padding-top: 8px;">${totaisOrc}</div>
+            </div>
+            <div class="divider"></div>
+          </div>
+        `;
+      }).join('');
+
+      // Total geral
+      const totalGeralBlocoV2 = mostrar_total_geral !== false ? `
+        <div class="secao" style="page-break-inside: avoid;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #222; color: #fff; padding: 16px 20px; border-radius: 8px; font-size: 20px; font-weight: 700;">
+            <span>TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</span>
+            <span>R$ ${formatar(totalGeralV2)}</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+      ` : '';
+
+      // Métodos de pagamento
+      const metodosLabelsAgrp = {
+        pix: 'PIX', credito: 'Crédito', debito: 'Débito',
+        dinheiro: 'Dinheiro', transferencia: 'Transferência', boleto: 'Boleto',
+      };
+      const metodosBadgesAgrp = (metodos_pagamento || '').split(',').filter(Boolean).map(m =>
+        `<span class="metodo-badge">${metodosLabelsAgrp[m.trim()] || m.trim()}</span>`
+      ).join('');
+      const secaoMetodosAgrp = metodosBadgesAgrp
+        ? `<div class="secao"><div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div><div class="metodos-container">${metodosBadgesAgrp}</div></div><div class="divider"></div>`
+        : '';
+
+      // Condições
+      const condicoesItemsAgrp = (condicoes_contrato || '').split('\n').filter(l => l.trim()).map(l =>
+        `<li>${l}</li>`
+      ).join('');
+      const secaoCondicoesAgrp = condicoesItemsAgrp
+        ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
+        : '';
+
+      htmlFinal = `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>${v2Estilos.replace(/{{cor_primaria}}/g, corPrimaria)}</style>
+</head>
+<body>
+  <div class="watermark"><img src="${logoBgPath}" style="width: 100%" /></div>
+  <div class="container">
+    <div class="top-bar" style="background: ${corPrimaria};"></div>
+    <div class="empresa-header">
+      ${logoHtmlAgrupado}
+      <div class="empresa-nome">${empresa_nome || ''}</div>
+      <div class="empresa-dados">${empresa_cnpj || ''}<br/>${empresa_endereco || ''}<br/>${empresa_telefone || ''}</div>
+    </div>
+    <div class="divider"></div>
+    <div class="titulo-orcamento">
+      <h1>Proposta ${cliente_nome || 'Cliente'}</h1>
+      <div class="cliente-sub">${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="divider"></div>
+    ${secaoApresentacaoAgrp}
+    ${blocosV2}
+    ${totalGeralBlocoV2}
+    ${secaoMetodosAgrp}
+    ${secaoCondicoesAgrp}
+    <div class="footer">Criado em ${new Date().toLocaleDateString('pt-BR')}</div>
+  </div>
+</body>
+</html>`;
+    } else {
+      const templatePath = path.resolve(process.cwd(), 'templates', 'orcamento.html');
+      const baseHtml = fs.readFileSync(templatePath, 'utf-8');
+
+      const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
+      const estilos = styleMatch ? styleMatch[1] : '';
+
+      htmlFinal = `<!doctype html>
 <html>
 <head>
   <meta charset="UTF-8" />
@@ -497,6 +766,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
   </div>
 </body>
 </html>`;
+    }
 
     const browser = await puppeteer.launch({
       headless: 'new',

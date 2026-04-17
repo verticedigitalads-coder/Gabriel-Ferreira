@@ -87,6 +87,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       payload.prioridade = updates.prioridade;
     if (updates.concluido !== undefined) payload.concluido = updates.concluido;
     if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.descricao !== undefined) payload.descricao = updates.descricao;
 
     const { data, error } = await supabase
       .from('operacional_tasks')
