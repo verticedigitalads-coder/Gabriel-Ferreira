@@ -40,6 +40,7 @@ export function Settings() {
   // ─── Documentos form state ────────────────────────────────
   const [validadePadrao, setValidadePadrao] = useState(15);
   const [multiplicadorPadrao, setMultiplicadorPadrao] = useState(1);
+  const [percentualComissao, setPercentualComissao] = useState(0);
   const [obsPadraoOrcamento, setObsPadraoOrcamento] = useState('');
   const [obsPadraoRecibo, setObsPadraoRecibo] = useState('');
 
@@ -54,6 +55,7 @@ export function Settings() {
     setEmpresaLogoUrl(settings.empresaLogoUrl || '');
     setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
     setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
+    setPercentualComissao(settings.percentualComissao ?? 0);
     setObsPadraoOrcamento(settings.observacaoPadraoOrcamento || '');
     setObsPadraoRecibo(settings.observacaoPadraoRecibo || '');
   }, [settings]);
@@ -85,6 +87,7 @@ export function Settings() {
       await updateSettings({
         validadePadraoOrcamento: validadePadrao,
         multiplicadorPadrao,
+        percentualComissao,
         observacaoPadraoOrcamento: obsPadraoOrcamento,
         observacaoPadraoRecibo: obsPadraoRecibo,
       });
@@ -405,6 +408,24 @@ export function Settings() {
                 onChange={e => setMultiplicadorPadrao(Number(e.target.value))}
                 className="w-24 px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
+                Comissão da planejadora (%)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.5}
+                value={percentualComissao}
+                onChange={e => setPercentualComissao(Number(e.target.value))}
+                className="w-24 px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Aplicado automaticamente em novos orçamentos. Pode ser ajustado por orçamento. Use 0 para desativar.
+              </p>
             </div>
 
             <div className="md:col-span-2">

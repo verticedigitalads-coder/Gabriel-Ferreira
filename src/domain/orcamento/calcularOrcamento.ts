@@ -12,6 +12,7 @@ interface CalculoParams {
   itens: ItemCalculo[];
   multiplicador: number;
   desconto?: number;
+  percentualComissao?: number;
 }
 
 export function calcularItemTotal(item: ItemCalculo): number {
@@ -25,6 +26,7 @@ export function calcularOrcamento({
   itens,
   multiplicador,
   desconto = 0,
+  percentualComissao = 0,
 }: CalculoParams) {
   const subtotal = itens.reduce(
     (sum, item) => sum + calcularItemTotal(item),
@@ -33,11 +35,13 @@ export function calcularOrcamento({
 
   const totalBruto = subtotal * multiplicador;
   const maoDeObra = totalBruto - subtotal;
-  const total = totalBruto - desconto;
+  const comissao = percentualComissao > 0 ? totalBruto * (percentualComissao / 100) : 0;
+  const total = totalBruto + comissao - desconto;
 
   return {
     subtotal,
     maoDeObra,
+    comissao,
     total,
   };
 }

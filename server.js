@@ -337,6 +337,196 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 });
 
 /* ==========================================
+📄 GERAR PDF AGRUPADO (múltiplos orçamentos)
+========================================== */
+
+app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
+  try {
+    const {
+      orcamentos,
+      cliente_nome,
+      cliente_telefone,
+      cliente_endereco,
+      mostrar_total_geral,
+      empresa_telefone,
+      empresa_email,
+    } = req.body;
+
+    if (!Array.isArray(orcamentos) || orcamentos.length === 0) {
+      return res.status(400).json({ error: 'Nenhum orçamento fornecido' });
+    }
+
+    const formatar = (v) =>
+      Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+    const contatoTelefone = empresa_telefone || '(34) 9 9199-8953';
+    const contatoEmail = empresa_email || 'flartmetal.uberaba@gmail.com';
+
+    let totalGeral = 0;
+
+    const blocos = orcamentos.map((orc, index) => {
+      const itensLinhas = (orc.itens || []).map((item) => `
+        <tr>
+          <td>${item.descricao || ''}</td>
+          <td class="right">${item.quantidade || 1}</td>
+          <td class="right">R$ ${formatar(item.valorUnitario)}</td>
+          <td class="right">R$ ${formatar(item.valorTotal)}</td>
+        </tr>
+      `).join('');
+
+      const subtotal = Number(orc.subtotal) || 0;
+      const multiplicador = Number(orc.multiplicador) || 1;
+      const total = Number(orc.total) || 0;
+
+      totalGeral += total;
+
+      let maoDeObraHTML = '';
+      if (multiplicador > 1) {
+        const valor = subtotal * (multiplicador - 1);
+        maoDeObraHTML = `
+          <tr class="mao-de-obra">
+            <td>Mão de obra especializada</td>
+            <td class="right">1</td>
+            <td class="right">R$ ${formatar(valor)}</td>
+            <td class="right">R$ ${formatar(valor)}</td>
+          </tr>`;
+      }
+
+      const pageBreak = index > 0 ? 'page-break-before: always;' : '';
+
+      const titulo = orc.ambiente
+        ? orc.ambiente
+        : orc.observacoes
+          ? orc.observacoes.substring(0, 40)
+          : `Orçamento ${index + 1}`;
+
+      return `
+        <div style="${pageBreak}">
+          <h2 style="color: #ff6a00; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid #ff6a00; padding-bottom: 6px;">
+            ${titulo} — ${orc.numero || ''}
+          </h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th class="right">Qtd</th>
+                <th class="right">Valor Unit</th>
+                <th class="right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itensLinhas}
+              ${maoDeObraHTML}
+            </tbody>
+          </table>
+          <div class="totals">
+            <div class="totals-row">
+              <span>Subtotal</span>
+              <span>R$ ${formatar(subtotal)}</span>
+            </div>
+            <div class="totals-row">
+              <span>Desconto</span>
+              <span>R$ ${formatar(orc.desconto || 0)}</span>
+            </div>
+            <div class="total-box">
+              <div class="total-label">TOTAL</div>
+              <div class="total-value">R$ ${formatar(total)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const totalGeralHTML = mostrar_total_geral !== false ? `
+      <div style="page-break-inside: avoid; margin-top: 40px;">
+        <div class="total-box" style="background: linear-gradient(135deg, #222, #444);">
+          <div class="total-label">TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</div>
+          <div class="total-value">R$ ${formatar(totalGeral)}</div>
+        </div>
+      </div>
+    ` : '';
+
+    const templatePath = path.resolve(process.cwd(), 'templates', 'orcamento.html');
+    const baseHtml = fs.readFileSync(templatePath, 'utf-8');
+
+    const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
+    const estilos = styleMatch ? styleMatch[1] : '';
+
+    const htmlFinal = `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>${estilos}</style>
+</head>
+<body>
+  <div class="watermark">
+    <img src="${logoBgPath}" style="width: 100%" />
+  </div>
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 10px">
+      <img src="${logoPath}" style="width: 220px; margin-bottom: 6px" />
+    </div>
+    <div class="contact-bar">
+      📞 ${contatoTelefone} &nbsp;&nbsp; | &nbsp;&nbsp; ✉ ${contatoEmail}
+    </div>
+    <div class="client-section">
+      <div class="client-row">
+        <div class="client-box">
+          <div class="client-title">Cliente</div>
+          <div class="client-name">${cliente_nome || 'Cliente'}</div>
+          <div class="client-info">
+            📞 ${cliente_telefone || '-'}<br/>
+            📍 ${cliente_endereco || '-'}
+          </div>
+        </div>
+        <div class="orc-info">
+          <div class="orc-title">PROPOSTA CONSOLIDADA</div>
+          <div class="orc-date">Emitido em ${new Date().toLocaleDateString('pt-BR')}</div>
+          <div style="font-size: 13px; color: #888; margin-top: 4px;">
+            ${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+    ${blocos}
+    ${totalGeralHTML}
+    <div class="footer" style="page-break-inside: avoid;">
+      Agradecemos pela oportunidade.<br/>
+      Aguardamos seu retorno para darmos início ao cronograma de execução.
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1240, height: 1754 });
+    await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
+
+    await page.evaluate(async () => {
+      const imgs = Array.from(document.images);
+      await Promise.all(imgs.map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
+      }));
+    });
+
+    const pdf = await page.pdf({ format: 'A4', printBackground: true });
+    await browser.close();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    return res.send(pdf);
+  } catch (error) {
+    console.error('[Server] Erro ao gerar PDF agrupado:', error);
+    return res.status(500).json({ error: 'Erro ao gerar PDF agrupado' });
+  }
+});
+
+/* ==========================================
 🧾 VALOR POR EXTENSO (pt-BR, até 999.999,99)
 ========================================== */
 

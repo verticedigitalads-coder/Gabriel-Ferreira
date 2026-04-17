@@ -40,13 +40,23 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       return;
     }
 
-    const transaction = {
+    const isDespesa = ['despesa', 'comissao', 'pagamento_funcionario'].includes(data.tipo);
+
+    const transaction: any = {
       id: uuid(),
       workspace_id: workspaceId,
       descricao: data.descricao,
       valor: data.valor,
-      tipo: data.tipo, // entrada | saida
+      tipo: data.tipo,
       data: data.data,
+      categoria: data.categoria || null,
+      lead_id: data.leadId || null,
+      observacoes: data.observacoes || null,
+      // Fase 15 — Status de pagamento
+      status_pagamento: data.tipo === 'receita' ? 'pago' : 'pendente',
+      data_vencimento: isDespesa ? (data.dataVencimento || data.data) : null,
+      data_pagamento: data.tipo === 'receita' ? data.data : null,
+      forma_pagamento: data.formaPagamento || null,
       created_at: now,
       updated_at: now,
     };
@@ -87,6 +97,14 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     if (data.valor !== undefined) payload.valor = data.valor;
     if (data.tipo !== undefined) payload.tipo = data.tipo;
     if (data.data !== undefined) payload.data = data.data;
+    if (data.categoria !== undefined) payload.categoria = data.categoria;
+    if (data.leadId !== undefined) payload.lead_id = data.leadId || null;
+    if (data.observacoes !== undefined) payload.observacoes = data.observacoes;
+    // Fase 15
+    if (data.statusPagamento !== undefined) payload.status_pagamento = data.statusPagamento;
+    if (data.dataVencimento !== undefined) payload.data_vencimento = data.dataVencimento;
+    if (data.dataPagamento !== undefined) payload.data_pagamento = data.dataPagamento;
+    if (data.formaPagamento !== undefined) payload.forma_pagamento = data.formaPagamento;
 
     const { data: updated, error } = await supabase
       .from('transactions')
@@ -131,5 +149,36 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     set((state: any) => ({
       transactions: state.transactions.filter((t: any) => t.id !== id),
     }));
+  },
+
+  // ================= MARCAR COMO PAGO =================
+  marcarComoPago: async (id: string, formaPagamento: string) => {
+    const now = new Date().toISOString();
+    const hoje = now.split('T')[0];
+
+    const { data: updated, error } = await supabase
+      .from('transactions')
+      .update({
+        status_pagamento: 'pago',
+        data_pagamento: hoje,
+        forma_pagamento: formaPagamento,
+        updated_at: now,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[FinanceiroSlice] Erro ao marcar como pago:', error);
+      return;
+    }
+
+    set((state: any) => ({
+      transactions: state.transactions.map((t: any) =>
+        t.id === id ? formatTransaction(updated) : t,
+      ),
+    }));
+
+    return formatTransaction(updated);
   },
 });

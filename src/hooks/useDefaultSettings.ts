@@ -6,6 +6,7 @@ export function useDefaultSettings() {
   return {
     validadePadraoOrcamento: settings?.validadePadraoOrcamento || 15,
     multiplicadorPadrao: settings?.multiplicadorPadrao || 1,
+    percentualComissao: settings?.percentualComissao ?? 0,
     observacaoPadraoOrcamento: settings?.observacaoPadraoOrcamento || '',
     observacaoPadraoRecibo: settings?.observacaoPadraoRecibo || '',
     empresaNome: settings?.empresaNome || 'Vértice Digital',

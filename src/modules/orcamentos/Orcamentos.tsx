@@ -13,6 +13,7 @@ import { ptBR } from 'date-fns/locale';
 import { v4 as uuid } from 'uuid';
 import { calcularOrcamento, calcularItemTotal } from '@/domain/orcamento/calcularOrcamento';
 import { useWorkspaceSegment } from '@/hooks/useWorkspaceSegment';
+import { useDefaultSettings } from '@/hooks/useDefaultSettings';
 import {
   Plus,
   FileText,
@@ -68,6 +69,9 @@ export function Orcamentos() {
     null,
   );
 
+  const [modoSelecao, setModoSelecao] = useState(false);
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+
   const sortedOrcamentos = useMemo(() => {
     return [...orcamentos].sort(
       (a, b) =>
@@ -85,6 +89,75 @@ export function Orcamentos() {
 
   const getLeadName = (orc: Orcamento) =>
     orc.clienteNome || leadsMap[orc.leadId] || 'Cliente';
+
+  const orcamentosPorCliente = useMemo(() => {
+    const grupos: Record<string, { nome: string; orcamentos: Orcamento[] }> = {};
+    sortedOrcamentos.forEach((orc) => {
+      const key = orc.leadId || 'sem-cliente';
+      const nome = getLeadName(orc);
+      if (!grupos[key]) grupos[key] = { nome, orcamentos: [] };
+      grupos[key].orcamentos.push(orc);
+    });
+    return grupos;
+  }, [sortedOrcamentos, leadsMap]);
+
+  const totalSelecionado = useMemo(
+    () =>
+      sortedOrcamentos
+        .filter((o) => selecionados.has(o.id))
+        .reduce((sum, o) => sum + (o.total || 0), 0),
+    [selecionados, sortedOrcamentos],
+  );
+
+  const handleGerarPDFAgrupado = async () => {
+    const orcsSelecionados = sortedOrcamentos.filter((o) => selecionados.has(o.id));
+    if (orcsSelecionados.length === 0) return;
+
+    const primeiro = orcsSelecionados[0];
+    const lead = leads.find((l: Lead) => l.id === primeiro.leadId);
+
+    try {
+      const response = await apiFetch('/api/gerar-orcamento-agrupado', {
+        method: 'POST',
+        body: JSON.stringify({
+          orcamentos: orcsSelecionados.map((orc) => ({
+            numero: orc.numero,
+            itens: orc.itens,
+            subtotal: orc.subtotal,
+            multiplicador: orc.multiplicador ?? 1,
+            desconto: orc.desconto,
+            total: orc.total,
+            observacoes: orc.observacoes,
+            ambiente: orc.ambiente || '',
+          })),
+          cliente_nome: primeiro.clienteNome || lead?.nome || 'Cliente',
+          cliente_telefone: primeiro.clienteTelefone || lead?.telefone || '',
+          cliente_endereco: primeiro.clienteEndereco || lead?.endereco || '',
+          mostrar_total_geral: true,
+        }),
+      });
+
+      if (!response.ok) {
+        addToast({ type: 'error', message: 'Erro ao gerar PDF agrupado' });
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `proposta-${primeiro.clienteNome || lead?.nome || 'cliente'}-${orcsSelecionados.length}-orcamentos.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      addToast({ type: 'success', message: `PDF gerado com ${orcsSelecionados.length} orçamento(s)!` });
+      setModoSelecao(false);
+      setSelecionados(new Set());
+    } catch (error) {
+      console.error('Erro:', error);
+      addToast({ type: 'error', message: 'Erro na conexão com o servidor' });
+    }
+  };
 
   const handleEdit = (orc: Orcamento) => {
     setEditingOrcamento(orc);
@@ -152,6 +225,83 @@ export function Orcamentos() {
     }
   };
 
+  const renderOrcCard = (orc: Orcamento) => {
+    const isSelecionado = selecionados.has(orc.id);
+    return (
+      <Card
+        key={orc.id}
+        className={`p-4${modoSelecao && isSelecionado ? ' ring-2 ring-[var(--accent)]' : ''}`}
+        hoverable
+      >
+        <div className="flex items-center gap-4">
+          {modoSelecao && (
+            <input
+              type="checkbox"
+              checked={isSelecionado}
+              onChange={() => {
+                setSelecionados((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(orc.id)) next.delete(orc.id);
+                  else next.add(orc.id);
+                  return next;
+                });
+              }}
+              style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
+            />
+          )}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-sm font-semibold text-[var(--text-primary)]">
+                {orc.numero}
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[orc.status as OrcamentoStatus]}`}
+              >
+                {statusOptions.find((s) => s.value === orc.status)?.label}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
+              <span className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                {getLeadName(orc)}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {orc.createdAt
+                  ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', { locale: ptBR })
+                  : '-'}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-bold text-[var(--text-primary)]">
+              {formatCurrency(orc.total)}
+            </p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              {orc.itens.length} {orc.itens.length === 1 ? 'item' : 'itens'}
+            </p>
+            {(orc.valorComissao ?? 0) > 0 && (
+              <p className="text-xs mt-0.5" style={{ color: 'var(--warning)' }}>
+                Comissão: {formatCurrency(orc.valorComissao ?? 0)}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)}>
+              <Download className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)}>
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)}>
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -163,16 +313,29 @@ export function Orcamentos() {
               {orcamentos.length} orçamentos
             </p>
           </div>
-          <Button
-            onClick={() => {
-              setEditingOrcamento(null);
-              setShowModal(true);
-            }}
-            className="gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Novo Orçamento
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={modoSelecao ? 'primary' : 'secondary'}
+              onClick={() => {
+                setModoSelecao(!modoSelecao);
+                setSelecionados(new Set());
+              }}
+              className="gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              {modoSelecao ? 'Cancelar seleção' : 'PDF Agrupado'}
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingOrcamento(null);
+                setShowModal(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Novo Orçamento
+            </Button>
+          </div>
         </div>
 
         <ConfirmDialog
@@ -197,77 +360,57 @@ export function Orcamentos() {
               Criar primeiro orçamento
             </Button>
           </div>
-        ) : (
+        ) : !modoSelecao ? (
           <div className="space-y-3">
-            {sortedOrcamentos.map((orc) => (
-              <Card key={orc.id} className="p-4" hoverable>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-sm font-semibold text-[var(--text-primary)]">
-                        {orc.numero}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[orc.status as OrcamentoStatus]}`}
-                      >
-                        {
-                          statusOptions.find((s) => s.value === orc.status)
-                            ?.label
-                        }
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
-                      <span className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        {getLeadName(orc)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {orc.createdAt
-                          ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', {
-                              locale: ptBR,
-                            })
-                          : '-'}
-                      </span>
-                    </div>
+            {sortedOrcamentos.map((orc) => renderOrcCard(orc))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(orcamentosPorCliente).map(([clienteKey, grupo]) => (
+              <div key={clienteKey}>
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-[var(--text-secondary)]" />
+                    <span className="font-semibold text-[var(--text-primary)]">
+                      {grupo.nome}
+                    </span>
+                    <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-surface-2)] px-2 py-0.5 rounded-full">
+                      {grupo.orcamentos.length} orçamento{grupo.orcamentos.length !== 1 ? 's' : ''}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-[var(--text-primary)]">
-                      {formatCurrency(orc.total)}
-                    </p>
-                    <p className="text-xs text-[var(--text-secondary)]">
-                      {orc.itens.length} {orc.itens.length === 1 ? 'item' : 'itens'}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => generatePDF(orc)}
-                    >
-                      <Download className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(orc)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(orc.id)}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </div>
+                  <span className="text-sm text-[var(--text-secondary)]">
+                    Total:{' '}
+                    <span className="font-semibold text-[var(--text-primary)]">
+                      {formatCurrency(grupo.orcamentos.reduce((s, o) => s + (o.total || 0), 0))}
+                    </span>
+                  </span>
                 </div>
-              </Card>
+                <div className="space-y-2">
+                  {grupo.orcamentos.map((orc) => renderOrcCard(orc))}
+                </div>
+              </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Barra de seleção agrupada */}
+      {modoSelecao && selecionados.size > 0 && (
+        <div className="border-t border-[var(--border)] bg-[var(--bg-surface)] p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-[var(--text-secondary)]">
+              {selecionados.size} orçamento{selecionados.size !== 1 ? 's' : ''} selecionado{selecionados.size !== 1 ? 's' : ''}
+            </span>
+            <span className="text-lg font-bold text-[var(--text-primary)]">
+              Total: {formatCurrency(totalSelecionado)}
+            </span>
+          </div>
+          <Button onClick={handleGerarPDFAgrupado} className="gap-2">
+            <Download className="w-4 h-4" />
+            Gerar PDF Agrupado
+          </Button>
+        </div>
+      )}
 
       {/* Modal */}
       <Modal
@@ -518,6 +661,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const movimentarEstoque = useStore((state) => state.movimentarEstoque);
   const addToast = useStore((state: any) => state.addToast);
 
+  const { percentualComissao: percentualPadrao } = useDefaultSettings();
+
   const [leadId, setLeadId] = useState(orcamento?.leadId || '');
   const [status, setStatus] = useState<OrcamentoStatus>(
     orcamento?.status || 'rascunho',
@@ -526,6 +671,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const [desconto, setDesconto] = useState(orcamento?.desconto || 0);
   const [multiplicador, setMultiplicador] = useState(
     orcamento?.multiplicador || 1,
+  );
+  const [percentualComissao, setPercentualComissao] = useState(
+    orcamento?.percentualComissao ?? percentualPadrao,
   );
 
   const [validadeEmDias, setValidadeEmDias] = useState(
@@ -539,10 +687,11 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const segment = useWorkspaceSegment();
   const isMarcenaria = segment === 'marcenaria';
 
-  const { subtotal, total, maoDeObra } = calcularOrcamento({
+  const { subtotal, total, maoDeObra, comissao } = calcularOrcamento({
     itens,
     multiplicador,
     desconto,
+    percentualComissao,
   });
 
   const activeLeads = leads.filter((l: Lead) => l.status !== 'perdido');
@@ -640,6 +789,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
       itens,
       desconto,
       multiplicador,
+      percentualComissao,
+      valorComissao: comissao,
       status,
       observacoes,
       validadeEmDias,
@@ -829,6 +980,34 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         <p className="text-xs text-[var(--text-tertiary)] text-right">
           Ex: 2.5 = 250% do valor
         </p>
+
+        {/* Comissão planejadora */}
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-[var(--text-secondary)]">Comissão (%):</span>
+          <Input
+            type="number"
+            step="0.5"
+            min="0"
+            max="100"
+            value={percentualComissao}
+            onChange={(e) => setPercentualComissao(Number(e.target.value))}
+            className="w-32 text-right py-2 bg-[var(--bg-app)] text-[var(--text-primary)] border-[var(--border)]"
+          />
+        </div>
+
+        {percentualComissao > 0 && (
+          <>
+            <div className="flex justify-between text-sm">
+              <span className="text-[var(--text-secondary)]">Comissão planejadora ({percentualComissao}%):</span>
+              <span className="font-medium" style={{ color: 'var(--warning)' }}>
+                {formatCurrency(comissao)}
+              </span>
+            </div>
+            <p className="text-xs text-right" style={{ color: 'var(--text-tertiary)' }}>
+              Embutida no total — não aparece no PDF do cliente
+            </p>
+          </>
+        )}
 
         {/* Desconto */}
         <div className="flex justify-between items-center">

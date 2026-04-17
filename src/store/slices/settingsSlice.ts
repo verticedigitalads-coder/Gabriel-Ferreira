@@ -9,6 +9,7 @@ export interface WorkspaceSettings {
   empresaLogoUrl: string;
   validadePadraoOrcamento: number;
   multiplicadorPadrao: number;
+  percentualComissao: number;
   observacaoPadraoOrcamento: string;
   observacaoPadraoRecibo: string;
 }
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   empresaLogoUrl: '',
   validadePadraoOrcamento: 15,
   multiplicadorPadrao: 1,
+  percentualComissao: 0,
   observacaoPadraoOrcamento: '',
   observacaoPadraoRecibo: '',
 };
@@ -36,6 +38,7 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   empresaLogoUrl: 'empresa_logo_url',
   validadePadraoOrcamento: 'validade_padrao_orcamento',
   multiplicadorPadrao: 'multiplicador_padrao',
+  percentualComissao: 'percentual_comissao',
   observacaoPadraoOrcamento: 'observacao_padrao_orcamento',
   observacaoPadraoRecibo: 'observacao_padrao_recibo',
 };
@@ -69,7 +72,7 @@ export const createSettingsSlice = (set: any, get: any) => ({
       if (!camelKey) continue;
 
       const val = row.value;
-      if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao') {
+      if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao') {
         (merged as any)[camelKey] = Number(val) || DEFAULT_SETTINGS[camelKey];
       } else {
         (merged as any)[camelKey] = val ?? '';
@@ -104,7 +107,7 @@ export const createSettingsSlice = (set: any, get: any) => ({
     if (camelKey) {
       set((state: any) => {
         const updated = { ...state.settings };
-        if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao') {
+        if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao') {
           (updated as any)[camelKey] = Number(value) || DEFAULT_SETTINGS[camelKey];
         } else {
           (updated as any)[camelKey] = value;

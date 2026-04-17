@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { Orcamento } from '@/types';
 import { calcularOrcamento } from '@/domain/orcamento/calcularOrcamento';
+import { formatOrcamento } from '@/store/formatters';
 
 function normalizarItens(itens: any[]) {
   return itens.map((item: any) => {
@@ -38,10 +39,11 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     const itensNormalizados =
       data.itens && data.itens.length > 0 ? normalizarItens(data.itens) : [];
 
-    const { subtotal, total } = calcularOrcamento({
+    const { subtotal, total, comissao } = calcularOrcamento({
       itens: itensNormalizados,
       multiplicador: data.multiplicador ?? 1,
       desconto: data.desconto || 0,
+      percentualComissao: data.percentualComissao ?? 0,
     });
 
     const novo = {
@@ -58,6 +60,8 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       desconto: data.desconto || 0,
       multiplicador: data.multiplicador ?? 1,
+      percentual_comissao: data.percentualComissao ?? 0,
+      valor_comissao: comissao,
 
       status: data.status || 'rascunho',
 
@@ -85,11 +89,11 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       if (exists) return state;
 
       return {
-        orcamentos: [inserted, ...state.orcamentos],
+        orcamentos: [formatOrcamento(inserted), ...state.orcamentos],
       };
     });
 
-    return inserted;
+    return formatOrcamento(inserted);
   },
 
   // ================= DELETE =================
@@ -120,14 +124,16 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       payload.itens = itensNormalizados;
 
-      const { subtotal, total } = calcularOrcamento({
+      const { subtotal, total, comissao } = calcularOrcamento({
         itens: itensNormalizados,
         multiplicador: data.multiplicador ?? 1,
         desconto: data.desconto || 0,
+        percentualComissao: data.percentualComissao ?? 0,
       });
 
       payload.subtotal = subtotal;
       payload.total = total;
+      payload.valor_comissao = comissao;
     }
 
     if (data.subtotal !== undefined)
@@ -139,6 +145,10 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     if (data.multiplicador !== undefined)
       payload.multiplicador = data.multiplicador;
+    if (data.percentualComissao !== undefined)
+      payload.percentual_comissao = data.percentualComissao;
+    if (data.valorComissao !== undefined)
+      payload.valor_comissao = data.valorComissao;
     if (data.status !== undefined) payload.status = data.status;
     if (data.observacoes !== undefined) payload.observacoes = data.observacoes;
     if (data.validadeEmDias !== undefined)
@@ -161,17 +171,17 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       if (!exists) {
         return {
-          orcamentos: [updated, ...state.orcamentos],
+          orcamentos: [formatOrcamento(updated), ...state.orcamentos],
         };
       }
 
       return {
         orcamentos: state.orcamentos.map((o: any) =>
-          o.id === id ? updated : o,
+          o.id === id ? formatOrcamento(updated) : o,
         ),
       };
     });
 
-    return updated;
+    return formatOrcamento(updated);
   },
 });

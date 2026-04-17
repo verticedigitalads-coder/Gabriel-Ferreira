@@ -18,7 +18,7 @@ import { createFormSlice } from './slices/formSlice';
 import { createContasReceberSlice } from './slices/contasReceberSlice';
 import { createReciboSlice } from './slices/reciboSlice';
 import { createSettingsSlice, type WorkspaceSettings } from './slices/settingsSlice';
-import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor } from './formatters';
+import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor, formatOrcamento } from './formatters';
 let realtimeStarted = false;
 
 type StoreState = {
@@ -44,6 +44,7 @@ type StoreState = {
   addTransaction: (data: any) => Promise<any>;
   updateTransaction: (id: string, data: any) => Promise<any>;
   deleteTransaction: (id: string) => Promise<void>;
+  marcarComoPago: (id: string, formaPagamento: string) => Promise<any>;
 
   notas: any[];
   operacionalTasks: any[];
@@ -183,30 +184,10 @@ export const useStore = create<StoreState>()(
                 .order('data_vencimento', { ascending: true }),
             ]);
 
-          const formattedOrcamentos = (orcamentosRes.data || []).map(
-            (o: any) => ({
-              id: o.id,
-              workspaceId: o.workspace_id,
-              leadId: o.lead_id,
-              numero: o.numero,
-              itens: o.itens,
-              subtotal: o.subtotal,
-              desconto: o.desconto,
-              total: o.total,
-              multiplicador: o.multiplicador ?? 1,
-              status: o.status,
-              observacoes: o.observacoes,
-              validadeEmDias: o.validade_em_dias,
-              historico: o.historico,
-              createdAt: o.created_at,
-              updatedAt: o.updated_at,
-            }),
-          );
-
           set({
             workspaceId,
             leads: (leadsRes.data || []).map(formatLead),
-            orcamentos: formattedOrcamentos,
+            orcamentos: (orcamentosRes.data || []).map(formatOrcamento),
             operacionalTasks: (tasksRes.data || []).map(formatOperacionalTask),
             transactions: (transactionsRes.data || []).map(formatTransaction),
             contasReceber: (contasReceberRes.data || []).map(formatContaReceber),
@@ -293,24 +274,6 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              const format = (o: any) => ({
-                id: o.id,
-                workspaceId: o.workspace_id,
-                leadId: o.lead_id,
-                numero: o.numero,
-                itens: o.itens,
-                subtotal: o.subtotal,
-                desconto: o.desconto,
-                total: o.total,
-                multiplicador: o.multiplicador ?? 1,
-                status: o.status,
-                observacoes: o.observacoes,
-                validadeEmDias: o.validade_em_dias,
-                historico: o.historico,
-                createdAt: o.created_at,
-                updatedAt: o.updated_at,
-              });
-
               set((state: any) => {
                 const orcamentos = state.orcamentos || [];
 
@@ -323,7 +286,7 @@ export const useStore = create<StoreState>()(
                   if (exists) return state;
 
                   return {
-                    orcamentos: [format(payload.new), ...orcamentos],
+                    orcamentos: [formatOrcamento(payload.new), ...orcamentos],
                   };
                 }
 
@@ -331,7 +294,7 @@ export const useStore = create<StoreState>()(
                 if (payload.eventType === 'UPDATE') {
                   return {
                     orcamentos: orcamentos.map((o: any) =>
-                      o.id === payload.new.id ? format(payload.new) : o,
+                      o.id === payload.new.id ? formatOrcamento(payload.new) : o,
                     ),
                   };
                 }

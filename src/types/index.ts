@@ -41,6 +41,16 @@ export type TransactionType =
   | 'comissao'
   | 'pagamento_funcionario';
 
+export type StatusPagamento = 'pendente' | 'pago';
+export type StatusPagamentoDisplay = 'a_vencer' | 'vencido' | 'pago';
+export type FormaPagamentoTransacao =
+  | 'pix'
+  | 'boleto'
+  | 'transferencia'
+  | 'dinheiro'
+  | 'cartao'
+  | 'debito_automatico';
+
 export type NotaStatus = 'pendente' | 'emitida' | 'cancelada';
 
 export type ContaReceberStatus = 'pendente' | 'recebido' | 'atrasado' | 'cancelado';
@@ -184,6 +194,8 @@ export interface Orcamento {
   total: number;
 
   multiplicador?: number;
+  percentualComissao?: number;
+  valorComissao?: number;
 
   status: OrcamentoStatus;
   observacoes: string;
@@ -212,6 +224,12 @@ export interface Transaction {
   data: string;
   categoria: string;
   observacoes: string;
+
+  // Fase 15 — Status de pagamento
+  statusPagamento: StatusPagamento;
+  dataVencimento: string | null;
+  dataPagamento: string | null;
+  formaPagamento: FormaPagamentoTransacao | null;
 
   createdAt: string;
   updatedAt: string;
