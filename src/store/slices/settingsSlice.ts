@@ -7,6 +7,7 @@ export interface WorkspaceSettings {
   empresaEndereco: string;
   empresaCnpj: string;
   empresaLogoUrl: string;
+  empresaLogoBgUrl: string;
   validadePadraoOrcamento: number;
   multiplicadorPadrao: number;
   percentualComissao: number;
@@ -24,6 +25,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   empresaEndereco: '',
   empresaCnpj: '',
   empresaLogoUrl: '',
+  empresaLogoBgUrl: '',
   validadePadraoOrcamento: 15,
   multiplicadorPadrao: 1,
   percentualComissao: 0,
@@ -42,6 +44,7 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   empresaEndereco: 'empresa_endereco',
   empresaCnpj: 'empresa_cnpj',
   empresaLogoUrl: 'empresa_logo_url',
+  empresaLogoBgUrl: 'empresa_logo_bg_url',
   validadePadraoOrcamento: 'validade_padrao_orcamento',
   multiplicadorPadrao: 'multiplicador_padrao',
   percentualComissao: 'percentual_comissao',

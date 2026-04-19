@@ -73,58 +73,58 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
         ${isCritical ? 'ring-2 ring-red-600' : ''}
       `}
     >
-      <div className="flex justify-between items-start gap-2">
-        <div
-          {...listeners}
-          {...attributes}
-          className="flex-1 cursor-grab active:cursor-grabbing"
-        >
-          <p className={`font-semibold line-clamp-2 break-words ${task.concluido ? 'line-through italic' : ''}`} title={task.titulo}>{task.titulo}</p>
-
-          <p className="text-[10px] opacity-70 capitalize">
-            Status: {task.status?.replace('_', ' ')}
+      {/* Área arrastável */}
+      <div
+        {...listeners}
+        {...attributes}
+        className="cursor-grab active:cursor-grabbing mb-2"
+      >
+        <p className={`font-semibold text-xs leading-tight break-words ${task.concluido ? 'line-through italic' : ''}`} title={task.titulo}>
+          {task.titulo}
+        </p>
+        <p className="text-[10px] opacity-70 capitalize mt-0.5">
+          Status: {task.status?.replace('_', ' ')}
+        </p>
+        {lead && (
+          <p className="text-[10px] opacity-70 truncate">
+            {lead.nome} • {lead.status}
           </p>
+        )}
+        {isCritical && (
+          <span className="inline-block text-[9px] bg-red-700 text-white px-1 rounded mt-1">
+            CRÍTICA
+          </span>
+        )}
+      </div>
 
-          {lead && (
-            <p className="text-[10px] opacity-70">
-              {lead.nome} • {lead.status}
-            </p>
-          )}
-          {isCritical && (
-            <span className="text-[9px] bg-red-700 text-white px-1 rounded">
-              CRÍTICA
-            </span>
-          )}
-        </div>
+      {/* Botões de ação — linha separada no fundo do card */}
+      <div className="flex items-center justify-end gap-1 pt-1 border-t border-current/10">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            updateTask(task.id, { concluido: !task.concluido });
+          }}
+          className={`p-1.5 rounded transition-colors ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
+          title={task.concluido ? 'Marcar como pendente' : 'Concluir'}
+        >
+          {task.concluido ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+        </button>
 
-        <div className="flex gap-1 items-center shrink-0">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              updateTask(task.id, { concluido: !task.concluido });
-            }}
-            className={`min-h-[44px] min-w-[36px] flex items-center justify-center transition-colors ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
-            title={task.concluido ? 'Marcar como pendente' : 'Marcar como concluída'}
-          >
-            {task.concluido ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-          </button>
+        <button
+          onClick={handleEdit}
+          className="p-1.5 rounded text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+          title="Editar"
+        >
+          <Pencil size={14} />
+        </button>
 
-          <button
-            onClick={handleEdit}
-            className="min-h-[44px] min-w-[36px] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
-            title="Editar"
-          >
-            <Pencil size={16} />
-          </button>
-
-          <button
-            onClick={handleDelete}
-            className="min-h-[44px] min-w-[36px] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
-            title="Excluir"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
+        <button
+          onClick={handleDelete}
+          className="p-1.5 rounded text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+          title="Excluir"
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
     </div>
   );

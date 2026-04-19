@@ -36,6 +36,7 @@ export function Settings() {
   const [empresaEndereco, setEmpresaEndereco] = useState('');
   const [empresaCnpj, setEmpresaCnpj] = useState('');
   const [empresaLogoUrl, setEmpresaLogoUrl] = useState('');
+  const [empresaLogoBgUrl, setEmpresaLogoBgUrl] = useState('');
 
   // ─── Documentos form state ────────────────────────────────
   const [validadePadrao, setValidadePadrao] = useState(15);
@@ -56,6 +57,7 @@ export function Settings() {
     setEmpresaEndereco(settings.empresaEndereco || '');
     setEmpresaCnpj(settings.empresaCnpj || '');
     setEmpresaLogoUrl(settings.empresaLogoUrl || '');
+    setEmpresaLogoBgUrl(settings.empresaLogoBgUrl || '');
     setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
     setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
     setPercentualComissao(settings.percentualComissao ?? 0);
@@ -77,6 +79,7 @@ export function Settings() {
         empresaEndereco,
         empresaCnpj,
         empresaLogoUrl,
+        empresaLogoBgUrl,
       });
       addToast({ type: 'success', message: 'Dados da empresa salvos!' });
     } catch {
@@ -364,11 +367,22 @@ export function Settings() {
             </div>
             <div className="md:col-span-2">
               <Input
-                label="Logo URL"
+                label="Logo Principal URL"
                 value={empresaLogoUrl}
                 onChange={e => setEmpresaLogoUrl(e.target.value)}
                 placeholder="URL da logo (upload de arquivo será futuro)"
               />
+            </div>
+            <div className="md:col-span-2">
+              <Input
+                label="Logo de fundo / Mascote URL"
+                value={empresaLogoBgUrl}
+                onChange={e => setEmpresaLogoBgUrl(e.target.value)}
+                placeholder="URL da logo de fundo (watermark no PDF)"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Aparece como marca d'água atrás do conteúdo do PDF. Idealmente uma imagem maior/diferente da logo principal.
+              </p>
             </div>
           </div>
 

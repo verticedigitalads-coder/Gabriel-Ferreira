@@ -15,6 +15,7 @@ export function useDefaultSettings() {
     empresaEndereco: settings?.empresaEndereco || '',
     empresaCnpj: settings?.empresaCnpj || '',
     empresaLogoUrl: settings?.empresaLogoUrl || '',
+    empresaLogoBgUrl: settings?.empresaLogoBgUrl || '',
     textoApresentacao: settings?.textoApresentacao || '',
     condicoesContrato: settings?.condicoesContrato || '',
     metodosPagamento: settings?.metodosPagamento || 'pix,credito,debito,dinheiro,transferencia',
