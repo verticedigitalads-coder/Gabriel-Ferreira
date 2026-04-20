@@ -891,10 +891,13 @@ app.post('/api/gerar-recibo', async (req, res) => {
     📄 CARREGAR TEMPLATE HTML
     ========================================== */
 
+    const templateVersion = dados.template_version || 'v1';
+    const templateFile = templateVersion === 'v2' ? 'recibo-v2.html' : 'recibo.html';
+
     const templatePath = path.resolve(
       process.cwd(),
       'templates',
-      'recibo.html',
+      templateFile,
     );
 
     console.log('📄 [Recibo] Caminho do template:', templatePath);
@@ -971,8 +974,23 @@ app.post('/api/gerar-recibo', async (req, res) => {
       .replace(/{{data_extenso}}/g, dataExtenso(dados.data_emissao));
 
     // 🔥 IMAGENS DINÂMICAS
-    html = html.replace('{{logo}}', logoPath);
-    html = html.replace('{{logo_bg}}', logoBgPath);
+    if (templateVersion === 'v2') {
+      const logoUrl = dados.empresa_logo_url || logoPath;
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />` : '';
+      const logoBgUrl = dados.empresa_logo_bg_url || logoBgPath;
+
+      html = html
+        .replace(/{{cor_primaria}}/g, dados.cor_primaria || '#ff6a00')
+        .replace(/{{logo_html}}/g, logoHtml)
+        .replace(/{{logo_bg}}/g, logoBgUrl)
+        .replace(/{{empresa_nome}}/g, dados.empresa_nome || '')
+        .replace(/{{empresa_cnpj}}/g, dados.empresa_cnpj || '')
+        .replace(/{{empresa_endereco}}/g, dados.empresa_endereco || '')
+        .replace(/{{empresa_telefone}}/g, dados.empresa_telefone || '');
+    } else {
+      html = html.replace('{{logo}}', logoPath);
+      html = html.replace('{{logo_bg}}', logoBgPath);
+    }
 
     /* ==========================================
     🧠 GERAR PDF (PUPPETEER)

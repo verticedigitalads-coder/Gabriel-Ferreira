@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+      color: #222;
+      background: #fff;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.06;
+      width: 500px;
+      z-index: 0;
+      pointer-events: none;
+      filter: grayscale(100%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      padding: 0;
+    }
+
+    .top-bar {
+      background: {{cor_primaria}};
+      height: 60px;
+      width: 100%;
+    }
+
+    .empresa-header {
+      text-align: center;
+      padding: 24px 32px 16px;
+    }
+
+    .empresa-header img {
+      width: 180px;
+      margin-bottom: 8px;
+    }
+
+    .empresa-nome {
+      font-size: 20px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .empresa-dados {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e5e5e5;
+      margin: 16px 32px;
+    }
+
+    .doc-title {
+      text-align: center;
+      padding: 20px 32px;
+    }
+
+    .doc-title h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #222;
+      letter-spacing: 1px;
+    }
+
+    .doc-title .rec-numero {
+      font-size: 14px;
+      color: #888;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .doc-title .rec-data {
+      font-size: 13px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .secao {
+      padding: 16px 32px;
+      page-break-inside: avoid;
+    }
+
+    /* CLIENT */
+
+    .client-box {
+      background: #f5f5f5;
+      border-left: 6px solid {{cor_primaria}};
+      padding: 14px 18px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .client-title {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .client-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .client-info {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* DECLARAÇÃO */
+
+    .declaracao {
+      background: #fff7ed;
+      border: 1px solid {{cor_primaria}};
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #333;
+    }
+
+    /* TABELA */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th {
+      background: #f6f6f6;
+      text-align: left;
+      padding: 12px;
+      font-size: 12px;
+      text-transform: uppercase;
+      border-bottom: 2px solid #e5e5e5;
+      letter-spacing: 0.5px;
+      color: #444;
+    }
+
+    td {
+      padding: 15px;
+      font-size: 14px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    /* TOTAL */
+
+    .totals {
+      width: 340px;
+      margin-left: auto;
+    }
+
+    .total-box {
+      background: {{cor_primaria}};
+      color: white;
+      padding: 16px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .total-label {
+      font-size: 14px;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .total-value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    /* OBSERVAÇÕES */
+
+    .conditions {
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.8;
+      border: 1px solid #eee;
+    }
+
+    .conditions-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* ASSINATURA */
+
+    .assinatura {
+      margin-top: 32px;
+      display: flex;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .assinatura-bloco {
+      flex: 1;
+      text-align: center;
+    }
+
+    .assinatura-linha {
+      border-top: 1.5px solid #444;
+      margin-bottom: 8px;
+    }
+
+    .assinatura-label {
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* FOOTER */
+
+    .footer {
+      text-align: center;
+      padding: 20px 32px;
+      font-size: 13px;
+      color: #888;
+      border-top: 1px solid #e5e5e5;
+      margin-top: 20px;
+    }
+
+    table,
+    .client-box {
+      page-break-inside: avoid;
+    }
+
+    .bottom-block {
+      page-break-inside: avoid;
+    }
+
+    @media print {
+      body { font-size: 11px; }
+      .secao { padding: 10px 24px; }
+      .empresa-header { padding: 16px 24px 10px; }
+      .top-bar { height: 40px; }
+      td { padding: 8px 10px; font-size: 11px; }
+      th { padding: 8px 10px; font-size: 10px; }
+      .total-value { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="watermark">
+    <img src="{{logo_bg}}" style="width: 100%" />
+  </div>
+
+  <div class="container">
+    <div class="top-bar"></div>
+
+    <div class="empresa-header">
+      {{logo_html}}
+      <div class="empresa-nome">{{empresa_nome}}</div>
+      <div class="empresa-dados">
+        {{empresa_cnpj}}<br/>
+        {{empresa_endereco}}<br/>
+        {{empresa_telefone}}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="doc-title">
+      <h1>Recibo de Prestação de Serviços</h1>
+      <div class="rec-numero">{{numero_recibo}}</div>
+      <div class="rec-data">Emitido em {{data_emissao}}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="secao">
+      <div class="client-box">
+        <div class="client-title">Cliente</div>
+        <div class="client-name">{{cliente_nome}}</div>
+        <div class="client-info">
+          📞 {{cliente_telefone}}<br/>
+          📍 {{cliente_endereco}}
+        </div>
+      </div>
+    </div>
+
+    <div class="secao">
+      <div class="declaracao">
+        Recebemos de <strong>{{cliente_nome}}</strong> a importância de
+        <strong>R$ {{valor_total}}</strong>
+        (<em>{{valor_por_extenso}}</em>) referente aos serviços abaixo descritos:
+      </div>
+    </div>
+
+    <div class="secao">
+      <table>
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th class="right">Qtd</th>
+            <th class="right">Valor Unit</th>
+            <th class="right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{itens}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bottom-block">
+      <div class="secao">
+        <div class="totals">
+          <div class="total-box">
+            <div class="total-label">VALOR TOTAL RECEBIDO</div>
+            <div class="total-value">R$ {{valor_total}}</div>
+          </div>
+        </div>
+      </div>
+
+      {{observacoes_bloco}}
+
+      <div class="secao">
+        <div class="assinatura">
+          <div class="assinatura-bloco">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-label">Assinatura do Cliente</div>
+          </div>
+          <div class="assinatura-bloco">
+            <div class="assinatura-linha"></div>
+            <div class="assinatura-label">{{empresa_nome}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      {{data_extenso}}<br/>
+      Agradecemos pela confiança em nossos serviços.
+    </div>
+  </div>
+</body>
+</html>

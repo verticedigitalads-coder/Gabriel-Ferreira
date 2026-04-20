@@ -16,6 +16,7 @@ import { ptBR } from 'date-fns/locale';
 import {
   Phone,
   Mail,
+  MapPin,
   MessageCircle,
   Calendar,
   DollarSign,
@@ -231,6 +232,16 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             </div>
             {lead.email
               ? <p className="text-sm font-medium text-[var(--text-primary)] truncate">{lead.email}</p>
+              : <p className="text-sm italic text-[var(--text-tertiary)]">Não informado</p>
+            }
+          </div>
+          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md col-span-2">
+            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
+              <MapPin className="w-4 h-4" />
+              <span className="text-xs font-medium">Endereço</span>
+            </div>
+            {lead.endereco
+              ? <p className="text-sm font-medium text-[var(--text-primary)]">{lead.endereco}</p>
               : <p className="text-sm italic text-[var(--text-tertiary)]">Não informado</p>
             }
           </div>

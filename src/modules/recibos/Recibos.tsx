@@ -1,5 +1,6 @@
 import { formatCurrency } from '@/utils/formatters';
 import { apiFetch } from '@/lib/apiFetch';
+import { useDefaultSettings } from '@/hooks/useDefaultSettings';
 import type { Recibo, ReciboStatus } from '@/types';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
@@ -41,6 +42,7 @@ export function Recibos() {
   const emitirRecibo = useStore((state) => state.emitirRecibo);
   const updateRecibo = useStore((state) => state.updateRecibo);
   const addToast = useStore((state) => state.addToast);
+  const defaultSettings = useDefaultSettings();
 
   const [showModal, setShowModal] = useState(false);
   const [editingRecibo, setEditingRecibo] = useState<Recibo | null>(null);
@@ -77,6 +79,7 @@ export function Recibos() {
       const response = await apiFetch('/api/gerar-recibo', {
         method: 'POST',
         body: JSON.stringify({
+          template_version: 'v2',
           numero_recibo: recibo.numeroRecibo,
           cliente_nome: recibo.clienteNome,
           cliente_telefone: recibo.clienteTelefone || '',
@@ -88,6 +91,14 @@ export function Recibos() {
           data_emissao: recibo.dataEmissao
             ? new Date(recibo.dataEmissao).toLocaleDateString('pt-BR')
             : new Date().toLocaleDateString('pt-BR'),
+          empresa_nome: defaultSettings.empresaNome,
+          empresa_telefone: defaultSettings.empresaTelefone,
+          empresa_email: defaultSettings.empresaEmail,
+          empresa_endereco: defaultSettings.empresaEndereco,
+          empresa_cnpj: defaultSettings.empresaCnpj,
+          empresa_logo_url: defaultSettings.empresaLogoUrl,
+          empresa_logo_bg_url: defaultSettings.empresaLogoBgUrl,
+          cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
         }),
       });
 

@@ -77,6 +77,7 @@
 - ✅ Fase 18 — Template PDF profissional v2 (orcamento-v2.html, campos textoApresentacao/condicoesContrato/metodosPagamento em settings, backward compat v1)
 - ✅ Fase 19 — Cores personalizáveis por empresa (corPrimaria em settings, color picker + presets + preview, aplicada em ambas rotas PDF v2)
 - ✅ Fix Operacional — Navegação semanal (← →) + modal edição completa (título, data, prioridade, status, descrição) + touch targets 44px
+- ✅ Fase 20 — Recibo PDF v2 (template dinâmico: cor, logo, dados empresa) + card Endereço no LeadDetail
 
 ### Auditoria
 - ✅ Fase 11 etapa 1 — Auditoria RLS (migration gerada, não executada integralmente)
@@ -90,6 +91,7 @@
 - v2.17.0 — PDF agrupado por cliente + formatOrcamento (Fase 17)
 - v2.18.0 — Template PDF profissional v2 (marcenaria + genérico, dados da empresa, apresentação, condições, métodos pagamento)
 - v2.19.0 — Cores personalizáveis por empresa (Fase 19)
+- v2.20.0 — Recibo PDF v2 (template dinâmico multi-empresa) + Endereço no LeadDetail
 
 ## Implementações Prioritárias (definidas com cliente GPP)
 
