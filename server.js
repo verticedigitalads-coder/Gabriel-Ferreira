@@ -529,7 +529,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
 
       return `
         <div style="${pageBreak}">
-          <h2 style="color: #ff6a00; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid #ff6a00; padding-bottom: 6px;">
+          <h2 style="color: ${cor_primaria || '#ff6a00'}; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid ${cor_primaria || '#ff6a00'}; padding-bottom: 6px;">
             ${titulo} — ${orc.numero || ''}
           </h2>
           <table>

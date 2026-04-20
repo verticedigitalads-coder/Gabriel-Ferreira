@@ -75,6 +75,7 @@
 - ✅ Fase 16 — Comissão da planejadora (percentualComissao em settings, salvo por orçamento, visível internamente, embutida no total do PDF)
 - ✅ Fase 17 — PDF agrupado (seleção múltipla, agrupamento por cliente, rota /api/gerar-orcamento-agrupado, formatOrcamento corrigido)
 - ✅ Fase 18 — Template PDF profissional v2 (orcamento-v2.html, campos textoApresentacao/condicoesContrato/metodosPagamento em settings, backward compat v1)
+- ✅ Fase 19 — Cores personalizáveis por empresa (corPrimaria em settings, color picker + presets + preview, aplicada em ambas rotas PDF v2)
 - ✅ Fix Operacional — Navegação semanal (← →) + modal edição completa (título, data, prioridade, status, descrição) + touch targets 44px
 
 ### Auditoria
@@ -88,6 +89,7 @@
 - v2.16.0 — Comissão da planejadora nos orçamentos (Fase 16)
 - v2.17.0 — PDF agrupado por cliente + formatOrcamento (Fase 17)
 - v2.18.0 — Template PDF profissional v2 (marcenaria + genérico, dados da empresa, apresentação, condições, métodos pagamento)
+- v2.19.0 — Cores personalizáveis por empresa (Fase 19)
 
 ## Implementações Prioritárias (definidas com cliente GPP)
 
@@ -99,7 +101,7 @@
 | 2 | Comissão da planejadora (multiplicador + % sobre subtotal) | ALTA | ✅ Concluído (Fase 16) |
 | 3 | Múltiplos orçamentos agrupados por cliente | ALTA | ✅ Concluído (Fase 17) |
 | 4 | Template PDF profissional (texto intro + condições + cores) | ALTA | ✅ Concluído (Fase 18) |
-| 5 | Cores personalizáveis por empresa (configurações) | MÉDIA | Pendente |
+| 5 | Cores personalizáveis por empresa (configurações) | MÉDIA | ✅ Concluído (Fase 19) |
 | 6 | Notificações push (PWA) | MÉDIA | Pendente |
 | 7 | QR Code como link | BAIXA | Pendente |
 | 8 | Assinatura digital | MÉDIA | Pendente |

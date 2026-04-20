@@ -8,6 +8,7 @@ export interface WorkspaceSettings {
   empresaCnpj: string;
   empresaLogoUrl: string;
   empresaLogoBgUrl: string;
+  corPrimaria: string;
   validadePadraoOrcamento: number;
   multiplicadorPadrao: number;
   percentualComissao: number;
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   empresaCnpj: '',
   empresaLogoUrl: '',
   empresaLogoBgUrl: '',
+  corPrimaria: '#ff6a00',
   validadePadraoOrcamento: 15,
   multiplicadorPadrao: 1,
   percentualComissao: 0,
@@ -45,6 +47,7 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   empresaCnpj: 'empresa_cnpj',
   empresaLogoUrl: 'empresa_logo_url',
   empresaLogoBgUrl: 'empresa_logo_bg_url',
+  corPrimaria: 'cor_primaria',
   validadePadraoOrcamento: 'validade_padrao_orcamento',
   multiplicadorPadrao: 'multiplicador_padrao',
   percentualComissao: 'percentual_comissao',

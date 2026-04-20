@@ -145,7 +145,7 @@ export function Orcamentos() {
           texto_apresentacao: defaultSettings.textoApresentacao,
           condicoes_contrato: defaultSettings.condicoesContrato,
           metodos_pagamento: defaultSettings.metodosPagamento,
-          cor_primaria: '#ff6a00',
+          cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
         }),
       });
 
@@ -222,7 +222,7 @@ export function Orcamentos() {
           texto_apresentacao: defaultSettings.textoApresentacao,
           condicoes_contrato: defaultSettings.condicoesContrato,
           metodos_pagamento: defaultSettings.metodosPagamento,
-          cor_primaria: '#ff6a00',
+          cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
         }),
       });
 

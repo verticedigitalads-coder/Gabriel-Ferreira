@@ -37,6 +37,7 @@ export function Settings() {
   const [empresaCnpj, setEmpresaCnpj] = useState('');
   const [empresaLogoUrl, setEmpresaLogoUrl] = useState('');
   const [empresaLogoBgUrl, setEmpresaLogoBgUrl] = useState('');
+  const [corPrimaria, setCorPrimaria] = useState('#ff6a00');
 
   // ─── Documentos form state ────────────────────────────────
   const [validadePadrao, setValidadePadrao] = useState(15);
@@ -58,6 +59,7 @@ export function Settings() {
     setEmpresaCnpj(settings.empresaCnpj || '');
     setEmpresaLogoUrl(settings.empresaLogoUrl || '');
     setEmpresaLogoBgUrl(settings.empresaLogoBgUrl || '');
+    setCorPrimaria(settings.corPrimaria || '#ff6a00');
     setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
     setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
     setPercentualComissao(settings.percentualComissao ?? 0);
@@ -80,6 +82,7 @@ export function Settings() {
         empresaCnpj,
         empresaLogoUrl,
         empresaLogoBgUrl,
+        corPrimaria,
       });
       addToast({ type: 'success', message: 'Dados da empresa salvos!' });
     } catch {
@@ -383,6 +386,88 @@ export function Settings() {
               <p className="text-xs text-[var(--text-tertiary)] mt-1">
                 Aparece como marca d'água atrás do conteúdo do PDF. Idealmente uma imagem maior/diferente da logo principal.
               </p>
+            </div>
+
+            <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Identidade Visual</h3>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
+                Cor principal da empresa
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={corPrimaria}
+                  onChange={e => setCorPrimaria(e.target.value)}
+                  className="rounded-lg border border-[var(--border)] cursor-pointer p-1 bg-transparent"
+                  style={{ minHeight: '48px', minWidth: '48px', width: '48px', height: '48px' }}
+                />
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={corPrimaria}
+                    onChange={e => setCorPrimaria(e.target.value)}
+                    placeholder="#ff6a00"
+                    className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] font-mono"
+                  />
+                </div>
+                <div
+                  className="w-20 h-10 rounded-md border border-[var(--border)]"
+                  style={{ backgroundColor: corPrimaria }}
+                />
+              </div>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Usada na barra do topo, destaques e caixa de total nos PDFs.
+              </p>
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {[
+                  { cor: '#ff6a00', label: 'Laranja' },
+                  { cor: '#2e7d32', label: 'Verde' },
+                  { cor: '#1565c0', label: 'Azul' },
+                  { cor: '#c62828', label: 'Vermelho' },
+                  { cor: '#4a148c', label: 'Roxo' },
+                  { cor: '#37474f', label: 'Grafite' },
+                  { cor: '#bf360c', label: 'Terracota' },
+                ].map(p => (
+                  <button
+                    key={p.cor}
+                    type="button"
+                    onClick={() => setCorPrimaria(p.cor)}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs border transition-colors ${
+                      corPrimaria === p.cor
+                        ? 'border-[var(--accent)] text-[var(--text-primary)]'
+                        : 'border-[var(--border)] text-[var(--text-tertiary)]'
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: p.cor }} />
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="border border-[var(--border)] rounded-lg overflow-hidden" style={{ maxWidth: 280 }}>
+                <div style={{ background: corPrimaria, height: 24 }} />
+                <div className="p-3 text-center">
+                  <p className="text-xs font-bold text-[var(--text-primary)]">{empresaNome || 'Nome da Empresa'}</p>
+                  <p className="text-[10px] text-[var(--text-tertiary)]">{empresaTelefone || '(00) 00000-0000'}</p>
+                </div>
+                <div className="px-3 pb-2">
+                  <div style={{ borderBottom: `2px solid ${corPrimaria}` }} className="mb-2" />
+                  <p className="text-[10px] text-[var(--text-tertiary)]">Orçamento Cliente</p>
+                </div>
+                <div className="px-3 pb-3">
+                  <div
+                    className="text-center text-white text-xs font-bold py-2 rounded"
+                    style={{ background: corPrimaria }}
+                  >
+                    R$ 0.000,00
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
