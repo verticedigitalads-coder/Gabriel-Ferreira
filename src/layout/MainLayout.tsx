@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
 import { Menu } from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -15,6 +16,12 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logout = useStore(state => state.logout);
+
+  const { setupNotifications } = useNotifications();
+
+  useEffect(() => {
+    setupNotifications();
+  }, []);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);

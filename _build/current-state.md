@@ -78,6 +78,7 @@
 - ✅ Fase 19 — Cores personalizáveis por empresa (corPrimaria em settings, color picker + presets + preview, aplicada em ambas rotas PDF v2)
 - ✅ Fix Operacional — Navegação semanal (← →) + modal edição completa (título, data, prioridade, status, descrição) + touch targets 44px
 - ✅ Fase 20 — Recibo PDF v2 (template dinâmico: cor, logo, dados empresa) + card Endereço no LeadDetail
+- ✅ Fase 21 — Notificações locais (Browser Notification API): badge título aba, resumo ao abrir, intervalo 30min, banner dashboard, bell badge numérico
 
 ### Auditoria
 - ✅ Fase 11 etapa 1 — Auditoria RLS (migration gerada, não executada integralmente)
@@ -92,6 +93,7 @@
 - v2.18.0 — Template PDF profissional v2 (marcenaria + genérico, dados da empresa, apresentação, condições, métodos pagamento)
 - v2.19.0 — Cores personalizáveis por empresa (Fase 19)
 - v2.20.0 — Recibo PDF v2 (template dinâmico multi-empresa) + Endereço no LeadDetail
+- v2.21.0 — Notificações locais (Browser Notification API) + badge título aba + bell badge numérico
 
 ## Implementações Prioritárias (definidas com cliente GPP)
 
@@ -104,7 +106,7 @@
 | 3 | Múltiplos orçamentos agrupados por cliente | ALTA | ✅ Concluído (Fase 17) |
 | 4 | Template PDF profissional (texto intro + condições + cores) | ALTA | ✅ Concluído (Fase 18) |
 | 5 | Cores personalizáveis por empresa (configurações) | MÉDIA | ✅ Concluído (Fase 19) |
-| 6 | Notificações push (PWA) | MÉDIA | Pendente |
+| 6 | Notificações push (PWA) | MÉDIA | ✅ Concluído (Fase 21) |
 | 7 | QR Code como link | BAIXA | Pendente |
 | 8 | Assinatura digital | MÉDIA | Pendente |
 | 9 | Pré-visualização AR de cômodo | INVIÁVEL | Descartado |

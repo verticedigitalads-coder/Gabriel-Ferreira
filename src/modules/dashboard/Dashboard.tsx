@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { formatCurrency } from '@/utils/formatters';
 import { useStore } from '@/store/useStore'
 import { useDashboardStats } from '@/store/selectors/dashboardSelectors'
+import { useNotifications } from '@/hooks/useNotifications';
 import { StatCard, Card } from '@/components/ui/Card';
 import { PriorityBadge } from '@/components/ui/Badge';
 import { format, parseISO, isToday, isTomorrow, differenceInDays, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
@@ -12,11 +13,18 @@ import {
   Briefcase,
   ShieldCheck,
   Target,
+  Bell,
+  X,
 } from 'lucide-react';
 
 export function Dashboard() {
 
   const stats = useDashboardStats();
+
+  const { requestPermission, permissionGranted } = useNotifications();
+  const [showNotifBanner, setShowNotifBanner] = useState(
+    typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default'
+  );
 
   const leads = useStore(state => state.leads);
   const tasks = useStore(state => state.operacionalTasks);
@@ -140,6 +148,35 @@ export function Dashboard() {
   return (
 
     <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+
+      {showNotifBanner && !permissionGranted && (
+        <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--accent)] bg-[var(--accent-subtle)]">
+          <Bell className="w-5 h-5 text-[var(--accent)] shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-[var(--text-primary)]">
+              Ative as notificações
+            </p>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Receba lembretes de tarefas do dia e atividades atrasadas.
+            </p>
+          </div>
+          <button
+            onClick={async () => {
+              await requestPermission();
+              setShowNotifBanner(false);
+            }}
+            className="px-3 py-1.5 text-sm font-medium bg-[var(--accent)] text-white rounded-md hover:opacity-90 min-h-[44px]"
+          >
+            Ativar
+          </button>
+          <button
+            onClick={() => setShowNotifBanner(false)}
+            className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Header */}
 

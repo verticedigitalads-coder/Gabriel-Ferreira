@@ -1,6 +1,7 @@
 import { useStore } from '@/store/useStore';
 import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
 import { useDefaultSettings } from '@/hooks/useDefaultSettings';
+import { useNotifications } from '@/hooks/useNotifications';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Bell, Building2, AlertCircle, Calendar } from 'lucide-react';
@@ -9,6 +10,8 @@ export function HeaderGlobal() {
   const activeModule = useStore(state => state.activeModule);
   const stats = useDashboardStats();
   const { empresaNome } = useDefaultSettings();
+  const { permissionGranted, tarefasHoje, tarefasAtrasadas } = useNotifications();
+  const totalPendente = tarefasHoje + tarefasAtrasadas;
 
   const moduleNames: Record<string, string> = {
     dashboard: 'Dashboard Executivo',
@@ -62,10 +65,18 @@ export function HeaderGlobal() {
         </div>
 
         {/* Notificações */}
-        <button className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors hidden md:block">
+        <button
+          className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors hidden md:block"
+          title={permissionGranted ? `${totalPendente} tarefa(s) pendente(s)` : 'Notificações desativadas'}
+        >
           <Bell className="w-5 h-5" />
-          {stats.tarefasAtrasadas > 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--danger)] rounded-full" />
+          {totalPendente > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center bg-[var(--danger)] text-white text-[10px] font-bold rounded-full px-1">
+              {totalPendente > 9 ? '9+' : totalPendente}
+            </span>
+          )}
+          {!permissionGranted && totalPendente === 0 && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--warning)] rounded-full" />
           )}
         </button>
 
