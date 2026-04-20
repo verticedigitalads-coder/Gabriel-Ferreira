@@ -60,7 +60,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
             <div className="text-right hidden md:block">
               <p className="text-sm font-medium text-[var(--text-primary)]">
-                {userName || 'Usuário'}
+                {userName || userEmail?.split('@')[0] || 'Usuário'}
               </p>
               <p className="text-xs text-[var(--text-tertiary)]">
                 {userEmail}
