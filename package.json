@@ -27,6 +27,7 @@
     "lucide-react": "^0.574.0",
     "node-fetch": "^3.3.2",
     "puppeteer": "^24.37.5",
+    "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.1",

@@ -6,6 +6,8 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
+import QRCode from 'qrcode';
+import { pixPayload } from './utils/pixPayload.js';
 
 dotenv.config({ path: './.env' });
 
@@ -27,6 +29,28 @@ const logoBgBase64 = fs.readFileSync(path.join(assetsPath, 'logo_bg.png'), {
 
 const logoPath = `data:image/png;base64,${logoBase64}`;
 const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
+
+async function gerarQrCodePixHtml({ chavePix, nomeRecebedor, cidadeRecebedor, valor, txid }) {
+  if (!chavePix) return '';
+  try {
+    const payload = pixPayload({ chavePix, nomeRecebedor, cidadeRecebedor, valor: valor || null, txid: txid || '***' });
+    const qrDataUrl = await QRCode.toDataURL(payload, { width: 180, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } });
+    return `
+      <div style="text-align: center; margin-top: 20px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; page-break-inside: avoid;">
+        <img src="${qrDataUrl}" alt="QR Code PIX" style="width: 150px; height: 150px; margin: 0 auto; display: block;" />
+        <p style="font-size: 12px; color: #333; margin-top: 10px; font-weight: 700;">Pague via PIX</p>
+        <p style="font-size: 9px; color: #999; margin-top: 2px;">Chave: ${chavePix}</p>
+        <div style="margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 6px; border: 1px dashed #ccc;">
+          <p style="font-size: 8px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">PIX Copia e Cola</p>
+          <p style="font-size: 7px; color: #555; word-break: break-all; font-family: monospace; line-height: 1.4; margin: 0;">${payload}</p>
+        </div>
+      </div>`;
+  } catch (err) {
+    console.error('[QR PIX] Erro ao gerar:', err);
+    return '';
+  }
+}
+
 /* ==========================================
 🌐 CORS (PRODUÇÃO — RENDER + VERCEL)
 ========================================== */
@@ -351,6 +375,14 @@ app.post('/api/gerar-orcamento', async (req, res) => {
            </div>`
         : '';
 
+      const qrCodePixHtml = await gerarQrCodePixHtml({
+        chavePix: dados.chave_pix || '',
+        nomeRecebedor: dados.nome_recebedor_pix || empresa_nome || 'EMPRESA',
+        cidadeRecebedor: dados.cidade_pix || 'UBERABA',
+        valor: total,
+        txid: numeroFormatado,
+      });
+
       html = html
         .replace(/{{cor_primaria}}/g, cor_primaria)
         .replace('{{logo_html}}', logoHtml)
@@ -367,8 +399,17 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         .replace('{{totais_html}}', totaisHtml)
         .replace('{{secao_metodos_pagamento}}', secaoMetodos)
         .replace('{{secao_condicoes}}', secaoCondicoes)
+        .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
     } else {
+      const qrCodePixHtmlV1 = await gerarQrCodePixHtml({
+        chavePix: dados.chave_pix || '',
+        nomeRecebedor: dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
+        cidadeRecebedor: dados.cidade_pix || 'UBERABA',
+        valor: total,
+        txid: numeroFormatado,
+      });
+
       html = html
         .replace(/{{cliente_nome}}/g, dados.cliente_nome)
         .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
@@ -380,7 +421,8 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         .replace(/{{desconto}}/g, formatar(dados.desconto))
         .replace(/{{total}}/g, formatar(total))
         .replace(/{{observacoes}}/g, dados.observacoes || '')
-        .replace(/{{validade}}/g, dados.validade || 7);
+        .replace(/{{validade}}/g, dados.validade || 7)
+        .replace('{{QR_CODE_PIX}}', qrCodePixHtmlV1);
 
       // 🔥 IMAGENS DINÂMICAS
       html = html.replace('{{logo}}', logoPath);
@@ -477,6 +519,9 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
       condicoes_contrato,
       metodos_pagamento,
       cor_primaria,
+      chave_pix,
+      nome_recebedor_pix,
+      cidade_pix,
     } = req.body;
 
     if (!Array.isArray(orcamentos) || orcamentos.length === 0) {
@@ -710,6 +755,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
     ${totalGeralBlocoV2}
     ${secaoMetodosAgrp}
     ${secaoCondicoesAgrp}
+    ${await gerarQrCodePixHtml({ chavePix: chave_pix || '', nomeRecebedor: nome_recebedor_pix || empresa_nome || 'EMPRESA', cidadeRecebedor: cidade_pix || 'UBERABA', valor: totalGeralV2, txid: 'PROPOSTA' })}
     <div class="footer">Criado em ${new Date().toLocaleDateString('pt-BR')}</div>
   </div>
 </body>
@@ -759,6 +805,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
     </div>
     ${blocos}
     ${totalGeralHTML}
+    ${await gerarQrCodePixHtml({ chavePix: chave_pix || '', nomeRecebedor: nome_recebedor_pix || empresa_nome || 'EMPRESA', cidadeRecebedor: cidade_pix || 'UBERABA', valor: totalGeral, txid: 'PROPOSTA' })}
     <div class="footer" style="page-break-inside: avoid;">
       Agradecemos pela oportunidade.<br/>
       Aguardamos seu retorno para darmos início ao cronograma de execução.
@@ -973,6 +1020,14 @@ app.post('/api/gerar-recibo', async (req, res) => {
       .replace(/{{observacoes_bloco}}/g, obsHtml)
       .replace(/{{data_extenso}}/g, dataExtenso(dados.data_emissao));
 
+    const qrCodePixHtmlRecibo = await gerarQrCodePixHtml({
+      chavePix: dados.chave_pix || '',
+      nomeRecebedor: dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
+      cidadeRecebedor: dados.cidade_pix || 'UBERABA',
+      valor: dados.valor_total,
+      txid: dados.numero_recibo || 'RECIBO',
+    });
+
     // 🔥 IMAGENS DINÂMICAS
     if (templateVersion === 'v2') {
       const logoUrl = dados.empresa_logo_url || logoPath;
@@ -986,10 +1041,12 @@ app.post('/api/gerar-recibo', async (req, res) => {
         .replace(/{{empresa_nome}}/g, dados.empresa_nome || '')
         .replace(/{{empresa_cnpj}}/g, dados.empresa_cnpj || '')
         .replace(/{{empresa_endereco}}/g, dados.empresa_endereco || '')
-        .replace(/{{empresa_telefone}}/g, dados.empresa_telefone || '');
+        .replace(/{{empresa_telefone}}/g, dados.empresa_telefone || '')
+        .replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
     } else {
       html = html.replace('{{logo}}', logoPath);
       html = html.replace('{{logo_bg}}', logoBgPath);
+      html = html.replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
     }
 
     /* ==========================================
@@ -1046,6 +1103,33 @@ app.post('/api/gerar-recibo', async (req, res) => {
   } catch (error) {
     console.error('[Recibo] Erro ao gerar PDF:', error);
     return res.status(500).json({ error: 'Erro ao gerar PDF do recibo' });
+  }
+});
+
+/* ==========================================
+💸 PIX — Gerar payload Copia e Cola
+========================================== */
+
+app.post('/api/pix-payload', async (req, res) => {
+  try {
+    const { chavePix, nomeRecebedor, cidadeRecebedor, valor, txid } = req.body;
+
+    if (!chavePix) {
+      return res.status(400).json({ error: 'Chave PIX não informada' });
+    }
+
+    const payload = pixPayload({
+      chavePix,
+      nomeRecebedor: nomeRecebedor || 'EMPRESA',
+      cidadeRecebedor: cidadeRecebedor || 'UBERABA',
+      valor: valor || null,
+      txid: txid || '***',
+    });
+
+    res.json({ payload, chavePix });
+  } catch (err) {
+    console.error('[PIX Payload] Erro:', err);
+    res.status(500).json({ error: 'Erro ao gerar payload PIX' });
   }
 });
 

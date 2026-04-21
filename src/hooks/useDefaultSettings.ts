@@ -20,5 +20,9 @@ export function useDefaultSettings() {
     textoApresentacao: settings?.textoApresentacao || '',
     condicoesContrato: settings?.condicoesContrato || '',
     metodosPagamento: settings?.metodosPagamento || 'pix,credito,debito,dinheiro,transferencia',
+    chavePix: settings?.chavePix || '',
+    tipoChavePix: settings?.tipoChavePix,
+    nomeRecebedorPix: settings?.nomeRecebedorPix || '',
+    cidadePix: settings?.cidadePix || '',
   };
 }

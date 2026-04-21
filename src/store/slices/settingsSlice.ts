@@ -17,6 +17,10 @@ export interface WorkspaceSettings {
   textoApresentacao: string;
   condicoesContrato: string;
   metodosPagamento: string;
+  chavePix?: string;
+  tipoChavePix?: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
+  nomeRecebedorPix?: string;
+  cidadePix?: string;
 }
 
 const DEFAULT_SETTINGS: WorkspaceSettings = {
@@ -36,6 +40,10 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   textoApresentacao: 'Para a nossa empresa, é um prazer apresentar esta proposta. Este orçamento foi elaborado para ser o melhor investimento para você, oferecendo qualidade, durabilidade e sofisticação para seus ambientes.',
   condicoesContrato: '1. Neste orçamento já estão considerados os valores de mão de obra, materiais e frete.\n2. A validade deste orçamento é de {{validade}} dias após a emissão.\n3. Para iniciarmos o trabalho é necessário o pagamento de sinal de 50% do valor total.\n4. Em caso de desistência, após o início da produção, o valor do sinal poderá não ser restituído.\n5. Garantia conforme Código de Defesa do Consumidor.',
   metodosPagamento: 'pix,credito,debito,dinheiro,transferencia',
+  chavePix: '',
+  tipoChavePix: undefined,
+  nomeRecebedorPix: '',
+  cidadePix: '',
 };
 
 // Mapeamento camelCase → snake_case (key do banco)
@@ -56,6 +64,10 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   textoApresentacao: 'texto_apresentacao',
   condicoesContrato: 'condicoes_contrato',
   metodosPagamento: 'metodos_pagamento',
+  chavePix: 'chave_pix',
+  tipoChavePix: 'tipo_chave_pix',
+  nomeRecebedorPix: 'nome_recebedor_pix',
+  cidadePix: 'cidade_pix',
 };
 
 // Mapeamento inverso snake_case → camelCase

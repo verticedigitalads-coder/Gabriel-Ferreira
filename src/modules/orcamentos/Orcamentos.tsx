@@ -24,7 +24,9 @@ import {
   Calendar,
   PackageMinus,
   CheckCircle2,
+  QrCode,
 } from 'lucide-react';
+import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
 import type { Orcamento, OrcamentoItem, OrcamentoStatus, UnidadeOrcamento } from '@/types';
 
 const unitOptionsBySegment: Record<string, { value: string; label: string }[]> = {
@@ -146,6 +148,9 @@ export function Orcamentos() {
           condicoes_contrato: defaultSettings.condicoesContrato,
           metodos_pagamento: defaultSettings.metodosPagamento,
           cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
+          chave_pix: defaultSettings.chavePix || '',
+          nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
+          cidade_pix: defaultSettings.cidadePix || '',
         }),
       });
 
@@ -223,6 +228,9 @@ export function Orcamentos() {
           condicoes_contrato: defaultSettings.condicoesContrato,
           metodos_pagamento: defaultSettings.metodosPagamento,
           cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
+          chave_pix: defaultSettings.chavePix || '',
+          nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
+          cidade_pix: defaultSettings.cidadePix || '',
         }),
       });
 
@@ -313,6 +321,29 @@ export function Orcamentos() {
             <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)}>
               <Download className="w-4 h-4" />
             </Button>
+            {defaultSettings.chavePix && (leads.find(l => l.id === orc.leadId)?.telefone || orc.clienteTelefone) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Enviar PIX via WhatsApp"
+                onClick={() => {
+                  const lead = leads.find(l => l.id === orc.leadId);
+                  enviarPixWhatsapp({
+                    telefoneCliente: orc.clienteTelefone || lead?.telefone || '',
+                    nomeCliente: orc.clienteNome || lead?.nome || 'Cliente',
+                    empresaNome: defaultSettings.empresaNome,
+                    codigoDocumento: orc.numero || `ORC-${orc.id?.slice(0, 8)}`,
+                    tipoDocumento: 'orçamento',
+                    valorTotal: orc.total || 0,
+                    chavePix: defaultSettings.chavePix || '',
+                    nomeRecebedorPix: defaultSettings.nomeRecebedorPix || '',
+                    cidadePix: defaultSettings.cidadePix || '',
+                  });
+                }}
+              >
+                <QrCode className="w-4 h-4 text-green-500" />
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)}>
               <Edit className="w-4 h-4" />
             </Button>

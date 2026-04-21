@@ -19,7 +19,9 @@ import {
   Plus,
   CalendarDays,
   User,
+  QrCode,
 } from 'lucide-react';
+import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
 
 const statusColors: Record<ReciboStatus, string> = {
   pendente: 'bg-yellow-100 text-yellow-700',
@@ -99,6 +101,9 @@ export function Recibos() {
           empresa_logo_url: defaultSettings.empresaLogoUrl,
           empresa_logo_bg_url: defaultSettings.empresaLogoBgUrl,
           cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
+          chave_pix: defaultSettings.chavePix || '',
+          nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
+          cidade_pix: defaultSettings.cidadePix || '',
         }),
       });
 
@@ -260,6 +265,30 @@ export function Recibos() {
                       >
                         <Download className="w-4 h-4" />
                         <span className="hidden sm:inline">PDF</span>
+                      </Button>
+                    )}
+
+                    {/* PIX WhatsApp — só emitido com chave PIX e telefone */}
+                    {r.status === 'emitido' && defaultSettings.chavePix && r.clienteTelefone && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="gap-1 min-h-[44px] px-3"
+                        title="Enviar PIX via WhatsApp"
+                        onClick={() => enviarPixWhatsapp({
+                          telefoneCliente: r.clienteTelefone || '',
+                          nomeCliente: r.clienteNome || 'Cliente',
+                          empresaNome: defaultSettings.empresaNome,
+                          codigoDocumento: r.numeroRecibo || `REC-${r.id?.slice(0, 8)}`,
+                          tipoDocumento: 'recibo',
+                          valorTotal: r.valorTotal || 0,
+                          chavePix: defaultSettings.chavePix || '',
+                          nomeRecebedorPix: defaultSettings.nomeRecebedorPix || '',
+                          cidadePix: defaultSettings.cidadePix || '',
+                        })}
+                      >
+                        <QrCode className="w-4 h-4" />
+                        <span className="hidden sm:inline">PIX</span>
                       </Button>
                     )}
 

@@ -1,4 +1,4 @@
-import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database } from 'lucide-react';
+import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, QrCode } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/lib/supabase';
@@ -48,6 +48,10 @@ export function Settings() {
   const [textoApresentacao, setTextoApresentacao] = useState('');
   const [condicoesContrato, setCondicoesContrato] = useState('');
   const [metodosPagamento, setMetodosPagamento] = useState('');
+  const [chavePix, setChavePix] = useState('');
+  const [tipoChavePix, setTipoChavePix] = useState('');
+  const [nomeRecebedorPix, setNomeRecebedorPix] = useState('');
+  const [cidadePix, setCidadePix] = useState('');
 
   // Popula formulários quando settings carrega
   useEffect(() => {
@@ -68,6 +72,10 @@ export function Settings() {
     setTextoApresentacao(settings.textoApresentacao || '');
     setCondicoesContrato(settings.condicoesContrato || '');
     setMetodosPagamento(settings.metodosPagamento || '');
+    setChavePix(settings.chavePix || '');
+    setTipoChavePix(settings.tipoChavePix || '');
+    setNomeRecebedorPix(settings.nomeRecebedorPix || '');
+    setCidadePix(settings.cidadePix || '');
   }, [settings]);
 
   // ─── Salvar Empresa ───────────────────────────────────────
@@ -105,6 +113,10 @@ export function Settings() {
         textoApresentacao,
         condicoesContrato,
         metodosPagamento,
+        chavePix,
+        tipoChavePix: tipoChavePix as any,
+        nomeRecebedorPix,
+        cidadePix,
       });
       addToast({ type: 'success', message: 'Configurações de documentos salvas!' });
     } catch {
@@ -623,6 +635,67 @@ export function Settings() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-[var(--accent)]" />
+                Dados PIX (QR Code nos documentos)
+              </h3>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Tipo da Chave</label>
+              <select
+                value={tipoChavePix}
+                onChange={e => setTipoChavePix(e.target.value)}
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
+              >
+                <option value="">Selecione...</option>
+                <option value="cpf">CPF</option>
+                <option value="cnpj">CNPJ</option>
+                <option value="email">E-mail</option>
+                <option value="telefone">Telefone</option>
+                <option value="aleatoria">Chave Aleatória</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Chave PIX</label>
+              <input
+                type="text"
+                value={chavePix}
+                onChange={e => setChavePix(e.target.value)}
+                placeholder="Ex: 12345678900, email@empresa.com..."
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Nome do Recebedor (max 25 caracteres)</label>
+              <input
+                type="text"
+                value={nomeRecebedorPix}
+                onChange={e => setNomeRecebedorPix(e.target.value.slice(0, 25))}
+                maxLength={25}
+                placeholder="Ex: FL ART METAL"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Cidade (max 15 caracteres)</label>
+              <input
+                type="text"
+                value={cidadePix}
+                onChange={e => setCidadePix(e.target.value.slice(0, 15))}
+                maxLength={15}
+                placeholder="Ex: Uberaba"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                O QR Code PIX aparecerá automaticamente nos PDFs quando a chave estiver preenchida.
+              </p>
             </div>
           </div>
 
