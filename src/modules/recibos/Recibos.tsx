@@ -104,6 +104,7 @@ export function Recibos() {
           chave_pix: defaultSettings.chavePix || '',
           nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
           cidade_pix: defaultSettings.cidadePix || '',
+          assinatura_empresa: defaultSettings.assinaturaEmpresa || null,
         }),
       });
 

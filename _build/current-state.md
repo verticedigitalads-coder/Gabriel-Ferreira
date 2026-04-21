@@ -80,6 +80,7 @@
 - ✅ Fase 20 — Recibo PDF v2 (template dinâmico: cor, logo, dados empresa) + card Endereço no LeadDetail
 - ✅ Fase 21 — Notificações locais (Browser Notification API): badge título aba, resumo ao abrir, intervalo 30min, banner dashboard, bell badge numérico
 - ✅ Feature 7 — QR Code PIX nos PDFs (EMV/BR Code) + PIX Copia e Cola + botão "PIX WhatsApp" em Orçamentos e Recibos
+- ✅ Feature 8 — Assinatura Digital nos PDFs (empresa: canvas persistido em settings; cliente: canvas salvo em orcamentos; ambas injetadas nos 4 templates)
 
 ### Auditoria
 - ✅ Fase 11 etapa 1 — Auditoria RLS (migration gerada, não executada integralmente)
@@ -96,6 +97,7 @@
 - v2.20.0 — Recibo PDF v2 (template dinâmico multi-empresa) + Endereço no LeadDetail
 - v2.21.0 — Notificações locais (Browser Notification API) + badge título aba + bell badge numérico
 - v2.22.0 — QR Code PIX nos PDFs (EMV/BR Code) + PIX Copia e Cola + botão PIX WhatsApp em Orçamentos e Recibos
+- v2.23.0 — Assinatura digital nos PDFs (canvas empresa em Settings + canvas cliente em Orçamentos + injeção nos 4 templates)
 
 ## Implementações Prioritárias (definidas com cliente GPP)
 
@@ -110,7 +112,7 @@
 | 5 | Cores personalizáveis por empresa (configurações) | MÉDIA | ✅ Concluído (Fase 19) |
 | 6 | Notificações push (PWA) | MÉDIA | ✅ Concluído (Fase 21) |
 | 7 | QR Code PIX nos PDFs + PIX WhatsApp | BAIXA | ✅ Concluído (Feature 7) |
-| 8 | Assinatura digital | MÉDIA | Pendente |
+| 8 | Assinatura digital | MÉDIA | ✅ Concluído (Feature 8) |
 | 9 | Pré-visualização AR de cômodo | INVIÁVEL | Descartado |
 
 ### Detalhes técnicos das features prioritárias

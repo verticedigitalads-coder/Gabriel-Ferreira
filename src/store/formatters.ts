@@ -180,6 +180,8 @@ export const formatOrcamento = (raw: any) => ({
   validadeEmDias: raw.validade_em_dias ?? 7,
   ambiente: raw.ambiente ?? null,
   historico: raw.historico || [],
+  assinaturaCliente: raw.assinatura_cliente || undefined,
+  dataAssinatura: raw.data_assinatura || undefined,
   createdAt: raw.created_at,
   updatedAt: raw.updated_at,
 })

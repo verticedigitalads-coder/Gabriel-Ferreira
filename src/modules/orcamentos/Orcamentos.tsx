@@ -25,8 +25,10 @@ import {
   PackageMinus,
   CheckCircle2,
   QrCode,
+  PenTool,
 } from 'lucide-react';
 import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
+import { SignatureModal } from '@/components/ui/SignatureModal';
 import type { Orcamento, OrcamentoItem, OrcamentoStatus, UnidadeOrcamento } from '@/types';
 
 const unitOptionsBySegment: Record<string, { value: string; label: string }[]> = {
@@ -62,6 +64,7 @@ export function Orcamentos() {
   const leads = useStore((state) => state.leads) as Lead[];
   const orcamentos = useStore((state) => state.orcamentos);
   const deleteOrcamento = useStore((state) => state.deleteOrcamento);
+  const salvarAssinaturaCliente = useStore((state) => state.salvarAssinaturaCliente);
   const addToast = useStore((state) => state.addToast);
   const defaultSettings = useDefaultSettings();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -71,6 +74,9 @@ export function Orcamentos() {
   const [editingOrcamento, setEditingOrcamento] = useState<Orcamento | null>(
     null,
   );
+
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [selectedOrcamentoForSign, setSelectedOrcamentoForSign] = useState<Orcamento | null>(null);
 
   const [modoSelecao, setModoSelecao] = useState(false);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
@@ -231,6 +237,9 @@ export function Orcamentos() {
           chave_pix: defaultSettings.chavePix || '',
           nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
           cidade_pix: defaultSettings.cidadePix || '',
+          assinatura_empresa: defaultSettings.assinaturaEmpresa || null,
+          assinatura_cliente: orc.assinaturaCliente || null,
+          data_assinatura: orc.dataAssinatura || null,
         }),
       });
 
@@ -350,6 +359,24 @@ export function Orcamentos() {
             <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)}>
               <Trash2 className="w-4 h-4 text-red-500" />
             </Button>
+            {!orc.assinaturaCliente ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Coletar assinatura do cliente"
+                onClick={() => {
+                  setSelectedOrcamentoForSign(orc);
+                  setSignatureModalOpen(true);
+                }}
+              >
+                <PenTool className="w-4 h-4 text-amber-500" />
+              </Button>
+            ) : (
+              <span className="flex items-center gap-1 text-xs text-green-600 px-2" title="Orçamento assinado">
+                <PenTool className="w-3 h-3" />
+                Assinado
+              </span>
+            )}
           </div>
         </div>
       </Card>
@@ -478,6 +505,24 @@ export function Orcamentos() {
           onClose={() => setShowModal(false)}
         />
       </Modal>
+
+      <SignatureModal
+        isOpen={signatureModalOpen}
+        onClose={() => {
+          setSignatureModalOpen(false);
+          setSelectedOrcamentoForSign(null);
+        }}
+        onConfirm={async (assinatura) => {
+          if (selectedOrcamentoForSign) {
+            const ok = await salvarAssinaturaCliente(selectedOrcamentoForSign.id, assinatura);
+            if (ok) addToast({ type: 'success', message: 'Assinatura salva com sucesso!' });
+            else addToast({ type: 'error', message: 'Erro ao salvar assinatura' });
+          }
+        }}
+        nomeCliente={selectedOrcamentoForSign?.clienteNome || leads.find(l => l.id === selectedOrcamentoForSign?.leadId)?.nome || 'Cliente'}
+        codigoDocumento={selectedOrcamentoForSign?.numero || ''}
+        valorTotal={(selectedOrcamentoForSign?.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+      />
     </div>
   );
 }

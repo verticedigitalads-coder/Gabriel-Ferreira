@@ -21,6 +21,7 @@ export interface WorkspaceSettings {
   tipoChavePix?: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
   nomeRecebedorPix?: string;
   cidadePix?: string;
+  assinaturaEmpresa?: string;
 }
 
 const DEFAULT_SETTINGS: WorkspaceSettings = {
@@ -68,6 +69,7 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   tipoChavePix: 'tipo_chave_pix',
   nomeRecebedorPix: 'nome_recebedor_pix',
   cidadePix: 'cidade_pix',
+  assinaturaEmpresa: 'assinatura_empresa',
 };
 
 // Mapeamento inverso snake_case → camelCase

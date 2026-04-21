@@ -184,4 +184,30 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     return formatOrcamento(updated);
   },
+
+  // ================= ASSINATURA CLIENTE =================
+  salvarAssinaturaCliente: async (orcamentoId: string, assinatura: string) => {
+    const { error } = await supabase
+      .from('orcamentos')
+      .update({
+        assinatura_cliente: assinatura,
+        data_assinatura: new Date().toISOString(),
+      })
+      .eq('id', orcamentoId);
+
+    if (error) {
+      console.error('[OrcamentoSlice] Erro ao salvar assinatura:', error);
+      return false;
+    }
+
+    set((state: any) => ({
+      orcamentos: state.orcamentos.map((o: any) =>
+        o.id === orcamentoId
+          ? { ...o, assinaturaCliente: assinatura, dataAssinatura: new Date().toISOString() }
+          : o,
+      ),
+    }));
+
+    return true;
+  },
 });

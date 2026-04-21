@@ -204,6 +204,9 @@ export interface Orcamento {
 
   historico: HistoricoEntry[];
 
+  assinaturaCliente?: string;
+  dataAssinatura?: string;
+
   createdAt: string;
   updatedAt: string;
 }

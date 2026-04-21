@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -345,10 +346,13 @@
       <div class="secao">
         <div class="assinatura">
           <div class="assinatura-bloco">
+            {{ASSINATURA_CLIENTE}}
             <div class="assinatura-linha"></div>
             <div class="assinatura-label">Assinatura do Cliente</div>
+            {{DATA_ASSINATURA}}
           </div>
           <div class="assinatura-bloco">
+            {{ASSINATURA_EMPRESA}}
             <div class="assinatura-linha"></div>
             <div class="assinatura-label">{{empresa_nome}}</div>
           </div>

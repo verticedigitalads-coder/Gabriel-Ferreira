@@ -1,4 +1,5 @@
-import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, QrCode } from 'lucide-react';
+import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, QrCode, PenTool } from 'lucide-react';
+import { SignaturePad } from '@/components/ui/SignaturePad';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/lib/supabase';
@@ -19,6 +20,7 @@ export function Settings() {
   const workspaceId = useStore(s => s.workspaceId);
   const settings = useStore(s => s.settings);
   const updateSettings = useStore(s => s.updateSettings);
+  const updateSetting = useStore(s => s.updateSetting);
   const initialize = useStore(s => s.initialize);
   const addToast = useStore(s => s.addToast);
   const addLead = useStore(s => s.addLead);
@@ -696,6 +698,41 @@ export function Settings() {
               <p className="text-xs text-[var(--text-tertiary)] mt-1">
                 O QR Code PIX aparecerá automaticamente nos PDFs quando a chave estiver preenchida.
               </p>
+            </div>
+
+            <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-2">
+                <PenTool className="w-4 h-4 text-[var(--accent)]" />
+                Assinatura da Empresa
+              </h3>
+              <p className="text-xs text-[var(--text-secondary)] mb-3">
+                Esta assinatura será incluída automaticamente nos orçamentos e recibos.
+              </p>
+              {settings.assinaturaEmpresa ? (
+                <div className="space-y-2">
+                  <div className="p-3 bg-white rounded-lg border border-[var(--border)] inline-block">
+                    <img
+                      src={settings.assinaturaEmpresa}
+                      alt="Assinatura da empresa"
+                      className="h-16 w-auto"
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => updateSetting('assinaturaEmpresa', '')}
+                      className="text-xs text-[var(--danger)] hover:underline"
+                    >
+                      Remover assinatura
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <SignaturePad
+                  onSave={(dataUrl) => updateSetting('assinaturaEmpresa', dataUrl)}
+                  height={150}
+                />
+              )}
             </div>
           </div>
 

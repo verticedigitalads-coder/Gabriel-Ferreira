@@ -401,6 +401,21 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         .replace('{{secao_condicoes}}', secaoCondicoes)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
+
+      // ===== ASSINATURAS DIGITAIS (v2) =====
+      const assinaturaEmpresaHtmlV2 = dados.assinatura_empresa
+        ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+        : '';
+      const assinaturaClienteHtmlV2 = dados.assinatura_cliente
+        ? `<img src="${dados.assinatura_cliente}" alt="Assinatura do cliente" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+        : '';
+      const dataAssinaturaHtmlV2 = dados.data_assinatura
+        ? `<p style="font-size:7px;color:#999;text-align:center;margin-top:2px;">Assinado digitalmente em ${new Date(dados.data_assinatura).toLocaleString('pt-BR')}</p>`
+        : '';
+      html = html
+        .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlV2)
+        .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV2)
+        .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV2);
     } else {
       const qrCodePixHtmlV1 = await gerarQrCodePixHtml({
         chavePix: dados.chave_pix || '',
@@ -423,6 +438,21 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         .replace(/{{observacoes}}/g, dados.observacoes || '')
         .replace(/{{validade}}/g, dados.validade || 7)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlV1);
+
+      // ===== ASSINATURAS DIGITAIS (v1) =====
+      const assinaturaEmpresaHtmlV1 = dados.assinatura_empresa
+        ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+        : '';
+      const assinaturaClienteHtmlV1 = dados.assinatura_cliente
+        ? `<img src="${dados.assinatura_cliente}" alt="Assinatura do cliente" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+        : '';
+      const dataAssinaturaHtmlV1 = dados.data_assinatura
+        ? `<p style="font-size:7px;color:#999;text-align:center;margin-top:2px;">Assinado digitalmente em ${new Date(dados.data_assinatura).toLocaleString('pt-BR')}</p>`
+        : '';
+      html = html
+        .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlV1)
+        .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV1)
+        .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV1);
 
       // 🔥 IMAGENS DINÂMICAS
       html = html.replace('{{logo}}', logoPath);
@@ -1043,10 +1073,28 @@ app.post('/api/gerar-recibo', async (req, res) => {
         .replace(/{{empresa_endereco}}/g, dados.empresa_endereco || '')
         .replace(/{{empresa_telefone}}/g, dados.empresa_telefone || '')
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
+
+      // ===== ASSINATURAS DIGITAIS RECIBO (v2) =====
+      const assinaturaEmpresaHtmlRecibo = dados.assinatura_empresa
+        ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+        : '';
+      html = html
+        .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlRecibo)
+        .replace('{{ASSINATURA_CLIENTE}}', '')
+        .replace('{{DATA_ASSINATURA}}', '');
     } else {
       html = html.replace('{{logo}}', logoPath);
       html = html.replace('{{logo_bg}}', logoBgPath);
       html = html.replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
+
+      // ===== ASSINATURAS DIGITAIS RECIBO (v1) =====
+      const assinaturaEmpresaHtmlReciboV1 = dados.assinatura_empresa
+        ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+        : '';
+      html = html
+        .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlReciboV1)
+        .replace('{{ASSINATURA_CLIENTE}}', '')
+        .replace('{{DATA_ASSINATURA}}', '');
     }
 
     /* ==========================================
