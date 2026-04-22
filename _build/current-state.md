@@ -81,6 +81,9 @@
 - ✅ Fase 21 — Notificações locais (Browser Notification API): badge título aba, resumo ao abrir, intervalo 30min, banner dashboard, bell badge numérico
 - ✅ Feature 7 — QR Code PIX nos PDFs (EMV/BR Code) + PIX Copia e Cola + botão "PIX WhatsApp" em Orçamentos e Recibos
 - ✅ Feature 8 — Assinatura Digital nos PDFs (empresa: canvas persistido em settings; cliente: canvas salvo em orcamentos; ambas injetadas nos 4 templates)
+- ✅ Fix PDF — Placeholders visíveis: safety net regex após todos os replaces nas 3 rotas PDF
+- ✅ Fix PDF — Espaçamentos: orcamento-v2.html e recibo-v2.html compactados (objetivo: orçamento ≤2 páginas, recibo 1 página)
+- ✅ Fix PDF — Itens zerados: filtro aplicado nas 4 iterações de itens (gerar-orcamento v1/v2, agrupado v1/v2)
 
 ### Auditoria
 - ✅ Fase 11 etapa 1 — Auditoria RLS (migration gerada, não executada integralmente)

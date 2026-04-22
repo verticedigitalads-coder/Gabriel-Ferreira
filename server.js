@@ -185,6 +185,14 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     }
 
     const itensLinhas = dados.itens
+      .filter((item) => {
+        const nome = (item.descricao || '').trim().toLowerCase();
+        const valor = parseFloat(item.valorTotal || 0);
+        if (!nome || nome === 'item') return false;
+        const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
+        if (valor === 0 && !isMaoDeObra) return false;
+        return true;
+      })
       .map(
         (item) => `
         <tr>
@@ -313,7 +321,16 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         : '';
 
       // Preços (blocos por item)
-      const precosHtml = (dados.itens || []).map(item => `
+      const precosHtml = (dados.itens || [])
+        .filter((item) => {
+          const nome = (item.descricao || '').trim().toLowerCase();
+          const valor = parseFloat(item.valorTotal || 0);
+          if (!nome || nome === 'item') return false;
+          const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
+          if (valor === 0 && !isMaoDeObra) return false;
+          return true;
+        })
+        .map(item => `
         <div class="preco-grupo">
           <div class="preco-grupo-header">${item.descricao || 'Item'}</div>
           <div class="preco-grupo-body">
@@ -483,6 +500,9 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       height: 1754,
     });
 
+    // Safety net: limpar placeholders não substituídos
+    html = html.replace(/\{\{[A-Za-z_]+\}\}/g, '');
+
     await page.setContent(html, {
       waitUntil: 'networkidle0',
     });
@@ -567,7 +587,16 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
     let totalGeral = 0;
 
     const blocos = orcamentos.map((orc, index) => {
-      const itensLinhas = (orc.itens || []).map((item) => `
+      const itensLinhas = (orc.itens || [])
+        .filter((item) => {
+          const nome = (item.descricao || '').trim().toLowerCase();
+          const valor = parseFloat(item.valorTotal || 0);
+          if (!nome || nome === 'item') return false;
+          const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
+          if (valor === 0 && !isMaoDeObra) return false;
+          return true;
+        })
+        .map((item) => `
         <tr>
           <td>${item.descricao || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
@@ -680,7 +709,16 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
         const totalOrc = Number(orc.total) || 0;
         totalGeralV2 += totalOrc;
 
-        const precosOrc = (orc.itens || []).map(item => `
+        const precosOrc = (orc.itens || [])
+          .filter((item) => {
+            const nome = (item.descricao || '').trim().toLowerCase();
+            const valor = parseFloat(item.valorTotal || 0);
+            if (!nome || nome === 'item') return false;
+            const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
+            if (valor === 0 && !isMaoDeObra) return false;
+            return true;
+          })
+          .map(item => `
           <div class="preco-grupo">
             <div class="preco-grupo-header">${item.descricao || 'Item'}</div>
             <div class="preco-grupo-body">
@@ -852,6 +890,10 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1240, height: 1754 });
+
+    // Safety net: limpar placeholders não substituídos
+    htmlFinal = htmlFinal.replace(/\{\{[A-Za-z_]+\}\}/g, '');
+
     await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
 
     await page.evaluate(async () => {
@@ -1117,6 +1159,9 @@ app.post('/api/gerar-recibo', async (req, res) => {
       width: 1240,
       height: 1754,
     });
+
+    // Safety net: limpar placeholders não substituídos
+    html = html.replace(/\{\{[A-Za-z_]+\}\}/g, '');
 
     await page.setContent(html, {
       waitUntil: 'networkidle0',
