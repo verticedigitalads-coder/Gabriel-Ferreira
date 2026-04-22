@@ -299,22 +299,24 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         ? `<img src="${empresa_logo_url}" style="width: 180px; margin-bottom: 8px;" />`
         : '';
 
-      // Seção apresentação
+      // Seção apresentação (divider embutido — só aparece se há conteúdo)
       const secaoApresentacao = texto_apresentacao
-        ? `<div class="secao">
+        ? `<div class="divider"></div>
+           <div class="secao">
              <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
              <div class="texto-apresentacao">${texto_apresentacao.replace(/\n/g, '<br/>')}</div>
            </div>`
         : '';
 
-      // Seção atividades
+      // Seção atividades (divider embutido)
       const atividadesHtml = (dados.itens || []).map(item => {
         const ambiente = item.ambiente ? ` (${item.ambiente})` : '';
         return `<div class="atividade-item"><strong>${item.descricao}${ambiente}</strong></div>`;
       }).join('');
 
       const secaoAtividades = atividadesHtml
-        ? `<div class="secao">
+        ? `<div class="divider"></div>
+           <div class="secao">
              <div class="secao-titulo"><span class="icon">📝</span> Descrição das atividades</div>
              ${atividadesHtml}
            </div>`
@@ -326,8 +328,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
           const nome = (item.descricao || '').trim().toLowerCase();
           const valor = parseFloat(item.valorTotal || 0);
           if (!nome || nome === 'item') return false;
-          const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
-          if (valor === 0 && !isMaoDeObra) return false;
+          if (valor === 0) return false;
           return true;
         })
         .map(item => `
@@ -373,7 +374,8 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       ).join('');
 
       const secaoMetodos = metodosBadges
-        ? `<div class="secao">
+        ? `<div class="divider"></div>
+           <div class="secao">
              <div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div>
              <div class="metodos-container">${metodosBadges}</div>
            </div>`
@@ -386,7 +388,8 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       }).join('');
 
       const secaoCondicoes = condicoesItems
-        ? `<div class="secao">
+        ? `<div class="divider"></div>
+           <div class="secao">
              <div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div>
              <ol class="condicoes-lista">${condicoesItems}</ol>
            </div>`
@@ -714,8 +717,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
             const nome = (item.descricao || '').trim().toLowerCase();
             const valor = parseFloat(item.valorTotal || 0);
             if (!nome || nome === 'item') return false;
-            const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
-            if (valor === 0 && !isMaoDeObra) return false;
+            if (valor === 0) return false;
             return true;
           })
           .map(item => `

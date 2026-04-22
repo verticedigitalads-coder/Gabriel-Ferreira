@@ -92,7 +92,6 @@
 
     .secao {
       padding: 10px 24px;
-      page-break-inside: avoid;
     }
 
     .secao-titulo {
@@ -230,12 +229,9 @@
 
     @media print {
       body { font-size: 11px; }
-      .secao { padding: 12px 24px; }
       .empresa-header { padding: 16px 24px 10px; }
-      .top-bar { height: 40px; }
+      .top-bar { height: 35px; }
     }
-
-    .page-break { page-break-before: always; }
   </style>
 </head>
 <body>
@@ -268,8 +264,6 @@
 
     {{secao_apresentacao}}
 
-    <div class="divider"></div>
-
     {{secao_atividades}}
 
     <div class="divider"></div>
@@ -278,22 +272,18 @@
       <div class="secao-titulo"><span class="icon">💰</span> Preços</div>
       {{precos_blocos}}
 
-      <div style="margin-top: 16px; padding-top: 8px;">
+      <div style="margin-top: 8px; padding-top: 8px;">
         {{totais_html}}
       </div>
     </div>
 
-    <div class="divider"></div>
-
     {{secao_metodos_pagamento}}
-
-    <div class="divider"></div>
 
     {{secao_condicoes}}
 
     {{QR_CODE_PIX}}
 
-    <div style="display:flex;justify-content:space-between;gap:32px;margin-top:20px;padding:0 20px;">
+    <div style="display:flex;justify-content:space-between;gap:32px;margin-top:8px;padding:0 20px;">
       <div style="flex:1;text-align:center;">
         {{ASSINATURA_CLIENTE}}
         <hr style="border:none;border-top:1px solid #333;margin:4px 0;" />
