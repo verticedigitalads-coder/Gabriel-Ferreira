@@ -33,13 +33,13 @@ export function useLeadActions() {
       // 1️⃣ Atualiza com valor
       await updateLead(lead.id, {
         status: 'orcado',
-        valorOrcado: lead.valorOrcado, // 👈 precisa vir atualizado do modal
+        valorOrcado: valor,
       });
 
       // 2️⃣ Cria lead atualizado manualmente
       const leadAtualizado = {
         ...lead,
-        valorOrcado: lead.valorOrcado,
+        valorOrcado: valor,
       };
 
       const orcamento = criarOrcamentoFromLead(leadAtualizado);

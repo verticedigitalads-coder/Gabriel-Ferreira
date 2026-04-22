@@ -13,6 +13,17 @@ dotenv.config({ path: './.env' });
 
 console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
 
+// ===== Sanitização de HTML =====
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -140,7 +151,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
   try {
     const dados = req.body;
 
-    console.log('📥 Dados recebidos:', dados);
+    console.log('[Orcamento] Gerando PDF | lead_id:', dados.lead_id || 'N/A');
 
     /* ==========================================
     📄 CARREGAR TEMPLATE HTML
@@ -196,7 +207,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       .map(
         (item) => `
         <tr>
-          <td>${item.descricao}</td>
+          <td>${escapeHtml(item.descricao)}</td>
           <td class="right">${item.quantidade}</td>
           <td class="right">R$ ${formatar(item.valorUnitario)}</td>
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
@@ -251,7 +262,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     const anoAtual = new Date().getFullYear();
 
     // 🔥 BUSCAR ÚLTIMO ORÇAMENTO DO ANO
-    const ultimoNumero = await fetch(
+    const _respSequencial = await fetch(
       `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
       {
         headers: {
@@ -260,10 +271,11 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         },
       },
     );
+    const ultimoNumero = await _respSequencial.json();
 
     let sequencial = 1;
 
-    if (ultimoNumero.length > 0) {
+    if (Array.isArray(ultimoNumero) && ultimoNumero.length > 0) {
       const ultimo = ultimoNumero[0].numero;
 
       const partes = ultimo.split('-');
@@ -310,8 +322,8 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 
       // Seção atividades (divider embutido)
       const atividadesHtml = (dados.itens || []).map(item => {
-        const ambiente = item.ambiente ? ` (${item.ambiente})` : '';
-        return `<div class="atividade-item"><strong>${item.descricao}${ambiente}</strong></div>`;
+        const ambiente = item.ambiente ? ` (${escapeHtml(item.ambiente)})` : '';
+        return `<div class="atividade-item"><strong>${escapeHtml(item.descricao)}${ambiente}</strong></div>`;
       }).join('');
 
       const secaoAtividades = atividadesHtml
@@ -333,7 +345,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         })
         .map(item => `
         <div class="preco-grupo">
-          <div class="preco-grupo-header">${item.descricao || 'Item'}</div>
+          <div class="preco-grupo-header">${escapeHtml(item.descricao) || 'Item'}</div>
           <div class="preco-grupo-body">
             <div class="preco-info">Qtde. ${item.quantidade || 1} un &nbsp;&nbsp; Valor unitário R$ ${formatar(item.valorUnitario)}</div>
             <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
@@ -407,11 +419,11 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         .replace(/{{cor_primaria}}/g, cor_primaria)
         .replace('{{logo_html}}', logoHtml)
         .replace('{{logo_bg}}', logoBgPath)
-        .replace(/{{empresa_nome}}/g, empresa_nome || 'Empresa')
-        .replace(/{{empresa_cnpj}}/g, empresa_cnpj || '')
-        .replace(/{{empresa_endereco}}/g, empresa_endereco || '')
-        .replace(/{{empresa_telefone}}/g, empresa_telefone || '')
-        .replace(/{{cliente_nome}}/g, dados.cliente_nome || 'Cliente')
+        .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
+        .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
+        .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
+        .replace(/{{empresa_telefone}}/g, escapeHtml(empresa_telefone) || '')
+        .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome) || 'Cliente')
         .replace(/{{orcamento_id}}/g, numeroFormatado)
         .replace('{{secao_apresentacao}}', secaoApresentacao)
         .replace('{{secao_atividades}}', secaoAtividades)
@@ -446,16 +458,16 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       });
 
       html = html
-        .replace(/{{cliente_nome}}/g, dados.cliente_nome)
-        .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
-        .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
+        .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome))
+        .replace(/{{cliente_telefone}}/g, escapeHtml(dados.cliente_telefone) || '-')
+        .replace(/{{cliente_endereco}}/g, escapeHtml(dados.cliente_endereco) || '-')
         .replace(/{{orcamento_id}}/g, numeroFormatado)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
         .replace(/{{itens}}/g, itensHTML)
         .replace(/{{subtotal}}/g, formatar(subtotal))
         .replace(/{{desconto}}/g, formatar(dados.desconto))
         .replace(/{{total}}/g, formatar(total))
-        .replace(/{{observacoes}}/g, dados.observacoes || '')
+        .replace(/{{observacoes}}/g, escapeHtml(dados.observacoes) || '')
         .replace(/{{validade}}/g, dados.validade || 7)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlV1);
 
@@ -601,7 +613,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
         })
         .map((item) => `
         <tr>
-          <td>${item.descricao || ''}</td>
+          <td>${escapeHtml(item.descricao) || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
           <td class="right">R$ ${formatar(item.valorUnitario)}</td>
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
@@ -628,11 +640,9 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
 
       const pageBreak = index > 0 ? 'page-break-before: always;' : '';
 
-      const titulo = orc.ambiente
-        ? orc.ambiente
-        : orc.observacoes
-          ? orc.observacoes.substring(0, 40)
-          : `Orçamento ${index + 1}`;
+      const titulo = escapeHtml(
+        orc.ambiente || (orc.observacoes ? orc.observacoes.substring(0, 40) : null) || `Orçamento ${index + 1}`
+      );
 
       return `
         <div style="${pageBreak}">
@@ -706,7 +716,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
       let totalGeralV2 = 0;
       const blocosV2 = orcamentos.map((orc, index) => {
         const pageBreak = index > 0 ? 'class="page-break"' : '';
-        const titulo = orc.ambiente || orc.observacoes?.substring(0, 40) || `Orçamento ${index + 1}`;
+        const titulo = escapeHtml(orc.ambiente || orc.observacoes?.substring(0, 40) || `Orçamento ${index + 1}`);
         const subtotalOrc = Number(orc.subtotal) || 0;
         const multiplicadorOrc = Number(orc.multiplicador) || 1;
         const totalOrc = Number(orc.total) || 0;
@@ -722,7 +732,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
           })
           .map(item => `
           <div class="preco-grupo">
-            <div class="preco-grupo-header">${item.descricao || 'Item'}</div>
+            <div class="preco-grupo-header">${escapeHtml(item.descricao) || 'Item'}</div>
             <div class="preco-grupo-body">
               <div class="preco-info">Qtde. ${item.quantidade || 1} un &nbsp;&nbsp; Valor unitário R$ ${formatar(item.valorUnitario)}</div>
               <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
@@ -811,12 +821,12 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
     <div class="top-bar" style="background: ${corPrimaria};"></div>
     <div class="empresa-header">
       ${logoHtmlAgrupado}
-      <div class="empresa-nome">${empresa_nome || ''}</div>
-      <div class="empresa-dados">${empresa_cnpj || ''}<br/>${empresa_endereco || ''}<br/>${empresa_telefone || ''}</div>
+      <div class="empresa-nome">${escapeHtml(empresa_nome) || ''}</div>
+      <div class="empresa-dados">${escapeHtml(empresa_cnpj) || ''}<br/>${escapeHtml(empresa_endereco) || ''}<br/>${escapeHtml(empresa_telefone) || ''}</div>
     </div>
     <div class="divider"></div>
     <div class="titulo-orcamento">
-      <h1>Proposta ${cliente_nome || 'Cliente'}</h1>
+      <h1>Proposta ${escapeHtml(cliente_nome) || 'Cliente'}</h1>
       <div class="cliente-sub">${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''}</div>
     </div>
     <div class="divider"></div>
@@ -858,10 +868,10 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
       <div class="client-row">
         <div class="client-box">
           <div class="client-title">Cliente</div>
-          <div class="client-name">${cliente_nome || 'Cliente'}</div>
+          <div class="client-name">${escapeHtml(cliente_nome) || 'Cliente'}</div>
           <div class="client-info">
-            📞 ${cliente_telefone || '-'}<br/>
-            📍 ${cliente_endereco || '-'}
+            📞 ${escapeHtml(cliente_telefone) || '-'}<br/>
+            📍 ${escapeHtml(cliente_endereco) || '-'}
           </div>
         </div>
         <div class="orc-info">
@@ -1006,7 +1016,7 @@ app.post('/api/gerar-recibo', async (req, res) => {
   try {
     const dados = req.body;
 
-    console.log('📥 [Recibo] Dados recebidos:', dados);
+    console.log('[Recibo] Gerando PDF | lead_id:', dados.lead_id || 'N/A');
 
     /* ==========================================
     📄 CARREGAR TEMPLATE HTML
@@ -1055,7 +1065,7 @@ app.post('/api/gerar-recibo', async (req, res) => {
       .map(
         (item) => `
         <tr>
-          <td>${item.descricao || ''}</td>
+          <td>${escapeHtml(item.descricao) || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
           <td class="right">R$ ${formatar(item.valorUnitario)}</td>
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
@@ -1071,7 +1081,7 @@ app.post('/api/gerar-recibo', async (req, res) => {
     const obsHtml = dados.observacoes
       ? `<div class="conditions">
            <div class="conditions-title">Observações</div>
-           ${dados.observacoes}
+           ${escapeHtml(dados.observacoes)}
          </div>`
       : '';
 
@@ -1085,9 +1095,9 @@ app.post('/api/gerar-recibo', async (req, res) => {
     html = html
       .replace(/{{numero_recibo}}/g, dados.numero_recibo || 'RECIBO')
       .replace(/{{data_emissao}}/g, dataEmissaoFormatada)
-      .replace(/{{cliente_nome}}/g, dados.cliente_nome || 'Cliente')
-      .replace(/{{cliente_telefone}}/g, dados.cliente_telefone || '-')
-      .replace(/{{cliente_endereco}}/g, dados.cliente_endereco || '-')
+      .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome) || 'Cliente')
+      .replace(/{{cliente_telefone}}/g, escapeHtml(dados.cliente_telefone) || '-')
+      .replace(/{{cliente_endereco}}/g, escapeHtml(dados.cliente_endereco) || '-')
       .replace(/{{valor_total}}/g, formatar(dados.valor_total))
       .replace(/{{valor_por_extenso}}/g, valorPorExtenso(dados.valor_total))
       .replace(/{{itens}}/g, itensLinhas)
@@ -1112,10 +1122,10 @@ app.post('/api/gerar-recibo', async (req, res) => {
         .replace(/{{cor_primaria}}/g, dados.cor_primaria || '#ff6a00')
         .replace(/{{logo_html}}/g, logoHtml)
         .replace(/{{logo_bg}}/g, logoBgUrl)
-        .replace(/{{empresa_nome}}/g, dados.empresa_nome || '')
-        .replace(/{{empresa_cnpj}}/g, dados.empresa_cnpj || '')
-        .replace(/{{empresa_endereco}}/g, dados.empresa_endereco || '')
-        .replace(/{{empresa_telefone}}/g, dados.empresa_telefone || '')
+        .replace(/{{empresa_nome}}/g, escapeHtml(dados.empresa_nome) || '')
+        .replace(/{{empresa_cnpj}}/g, escapeHtml(dados.empresa_cnpj) || '')
+        .replace(/{{empresa_endereco}}/g, escapeHtml(dados.empresa_endereco) || '')
+        .replace(/{{empresa_telefone}}/g, escapeHtml(dados.empresa_telefone) || '')
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
 
       // ===== ASSINATURAS DIGITAIS RECIBO (v2) =====

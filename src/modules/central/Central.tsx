@@ -46,7 +46,7 @@ export function Central() {
 
   const receitaTravada = leadsComScore
     .filter(l => l.status === 'orcado')
-    .reduce((acc, l) => acc + l.valorOrcado, 0);
+    .reduce((acc, l) => acc + (l.valorOrcado ?? 0), 0);
 
   const executionScoreTotal = Math.min(
     100,

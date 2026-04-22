@@ -48,7 +48,7 @@ export function Dashboard() {
         if (c.status !== 'pendente') return false;
         return isWithinInterval(parseISO(c.dataVencimento), { start: mStart, end: mEnd });
       })
-      .reduce((sum, c) => sum + c.valor, 0);
+      .reduce((sum, c) => sum + (c.valor ?? 0), 0);
   }, [contasReceber]);
 
   const estoqueBaixo = materiais.filter(

@@ -13,7 +13,7 @@ export const useDashboardStats = (): DashboardStats => {
 
   const receitasMes = transactions
     .filter(t => t.tipo === 'receita')
-    .reduce((sum,t) => sum + t.valor,0)
+    .reduce((sum,t) => sum + (t.valor ?? 0),0)
 
   const fechados = leads.filter(l => l.status === 'fechado')
 

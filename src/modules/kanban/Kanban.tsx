@@ -53,7 +53,7 @@ export function Kanban() {
         .filter(l => l.status === col.id)
         .sort((a, b) => b.prioridadeScore - a.prioridadeScore);
 
-      const valorTotal = columnLeads.reduce((sum, l) => sum + l.valorOrcado, 0);
+      const valorTotal = columnLeads.reduce((sum, l) => sum + (l.valorOrcado ?? 0), 0);
 
       return {
         id: col.id,

@@ -20,6 +20,15 @@ import { createReciboSlice } from './slices/reciboSlice';
 import { createSettingsSlice, type WorkspaceSettings } from './slices/settingsSlice';
 import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor, formatOrcamento } from './formatters';
 let realtimeStarted = false;
+let realtimeChannels: ReturnType<typeof supabase.channel>[] = [];
+
+const cleanupRealtime = () => {
+  realtimeChannels.forEach((ch) => {
+    try { supabase.removeChannel(ch); } catch (_) { /* ignore */ }
+  });
+  realtimeChannels = [];
+  realtimeStarted = false;
+};
 
 type StoreState = {
   startRealtime: () => void;
@@ -218,7 +227,7 @@ export const useStore = create<StoreState>()(
         console.log('🚀 Iniciando realtime...');
 
         // ================= LEADS =================
-        supabase
+        realtimeChannels.push(supabase
           .channel('realtime-leads')
           .on(
             'postgres_changes',
@@ -260,10 +269,10 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe();
+          .subscribe());
 
         // ================= ORÇAMENTOS =================
-        supabase
+        realtimeChannels.push(supabase
           .channel('realtime-orcamentos')
           .on(
             'postgres_changes',
@@ -312,10 +321,10 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe();
+          .subscribe());
 
         // ================= OPERACIONAL TASKS =================
-        supabase
+        realtimeChannels.push(supabase
           .channel('realtime-operacional')
           .on(
             'postgres_changes',
@@ -360,10 +369,10 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe();
+          .subscribe());
 
         // ================= FINANCEIRO =================
-        supabase
+        realtimeChannels.push(supabase
           .channel('realtime-transactions')
           .on(
             'postgres_changes',
@@ -433,10 +442,10 @@ export const useStore = create<StoreState>()(
           )
           .subscribe((status) => {
             console.log('📡 TRANSACTION STATUS:', status);
-          });
+          }));
 
         // ================= CONTAS A RECEBER =================
-        supabase
+        realtimeChannels.push(supabase
           .channel('realtime-contas-receber')
           .on(
             'postgres_changes',
@@ -471,10 +480,10 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe();
+          .subscribe());
 
         // ================= FORNECEDORES =================
-        supabase
+        realtimeChannels.push(supabase
           .channel('realtime-fornecedores')
           .on(
             'postgres_changes',
@@ -509,7 +518,7 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe();
+          .subscribe());
       },
 
       // ================= WORKSPACE =================
@@ -539,6 +548,7 @@ export const useStore = create<StoreState>()(
       // ================= LOGOUT =================
 
       logout: async () => {
+        cleanupRealtime();
         set({
           leads: [],
           orcamentos: [],

@@ -113,11 +113,11 @@ export function ContasReceber() {
 
     const pendente = allThisMonth
       .filter((c) => c.status === 'pendente')
-      .reduce((sum, c) => sum + c.valor, 0);
+      .reduce((sum, c) => sum + (c.valor ?? 0), 0);
 
     const recebido = allThisMonth
       .filter((c) => c.status === 'recebido')
-      .reduce((sum, c) => sum + c.valor, 0);
+      .reduce((sum, c) => sum + (c.valor ?? 0), 0);
 
     const atrasado = contasReceber
       .filter((c) => {
@@ -125,7 +125,7 @@ export function ContasReceber() {
         venc.setHours(0, 0, 0, 0);
         return c.status === 'pendente' && venc < today;
       })
-      .reduce((sum, c) => sum + c.valor, 0);
+      .reduce((sum, c) => sum + (c.valor ?? 0), 0);
 
     const proximosVencimentos = contasReceber.filter((c) => {
       const venc = parseISO(c.dataVencimento);
