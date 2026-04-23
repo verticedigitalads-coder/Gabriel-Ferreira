@@ -524,6 +524,10 @@ export const useStore = create<StoreState>()(
       // ================= WORKSPACE =================
 
       setWorkspaceId: (id: string) => {
+        const currentId = get().workspaceId;
+        if (id !== currentId) {
+          cleanupRealtime();
+        }
         set({ workspaceId: id });
       },
 

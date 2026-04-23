@@ -103,6 +103,7 @@ function ModuleRouter() {
 export function App() {
   const initialize = useStore((state) => state.initialize);
   const setWorkspaceId = useStore((state) => state.setWorkspaceId);
+  const workspaceId = useStore((state) => state.workspaceId);
   const isLoading = useStore((state) => state.isLoading);
   const realtimeStarted = useRef(false);
 
@@ -163,6 +164,11 @@ export function App() {
 
     init();
   }, [session]);
+
+  // Ao trocar workspace, permite que startRealtime reinicialize
+  useEffect(() => {
+    realtimeStarted.current = false;
+  }, [workspaceId]);
 
   if (!authChecked) {
     return null;

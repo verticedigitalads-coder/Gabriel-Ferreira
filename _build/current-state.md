@@ -85,6 +85,7 @@
 - ✅ Fix PDF — Espaçamentos: orcamento-v2.html e recibo-v2.html compactados (objetivo: orçamento ≤2 páginas, recibo 1 página)
 - ✅ Fix PDF — Itens zerados: filtro aplicado nas 4 iterações de itens (gerar-orcamento v1/v2, agrupado v1/v2)
 - ✅ Auditoria: 6 bugs corrigidos (fetch sem .json no sequencial, injeção HTML nos PDFs, parâmetro valor ignorado em useLeadActions, NaN por valorOrcado/valor null em 5 arquivos, realtime sem cleanup no logout, logs com PII de clientes)
+- ✅ Auditoria round 2: 3 bugs restantes corrigidos (escapeHtml em texto_apresentacao/condicoes/metodos, cleanupRealtime em setWorkspaceId + reset ref App.tsx, log admin sem PII)
 
 ### Auditoria
 - ✅ Fase 11 etapa 1 — Auditoria RLS (migration gerada, não executada integralmente)

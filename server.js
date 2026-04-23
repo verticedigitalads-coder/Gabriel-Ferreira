@@ -316,7 +316,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         ? `<div class="divider"></div>
            <div class="secao">
              <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
-             <div class="texto-apresentacao">${texto_apresentacao.replace(/\n/g, '<br/>')}</div>
+             <div class="texto-apresentacao">${escapeHtml(texto_apresentacao).replace(/\n/g, '<br/>')}</div>
            </div>`
         : '';
 
@@ -382,7 +382,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         dinheiro: 'Dinheiro', transferencia: 'Transferência', boleto: 'Boleto',
       };
       const metodosBadges = (metodos_pagamento || '').split(',').filter(Boolean).map(m =>
-        `<span class="metodo-badge">${metodosLabels[m.trim()] || m.trim()}</span>`
+        `<span class="metodo-badge">${escapeHtml(metodosLabels[m.trim()] || m.trim())}</span>`
       ).join('');
 
       const secaoMetodos = metodosBadges
@@ -396,7 +396,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       // Condições de contrato
       const condicoesItems = (condicoes_contrato || '').split('\n').filter(l => l.trim()).map(l => {
         const texto = l.replace(/\{\{validade\}\}/g, String(dados.validade || 7));
-        return `<li>${texto}</li>`;
+        return `<li>${escapeHtml(texto)}</li>`;
       }).join('');
 
       const secaoCondicoes = condicoesItems
@@ -707,7 +707,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
       const secaoApresentacaoAgrp = texto_apresentacao
         ? `<div class="secao">
              <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
-             <div class="texto-apresentacao">${texto_apresentacao.replace(/\n/g, '<br/>')}</div>
+             <div class="texto-apresentacao">${escapeHtml(texto_apresentacao).replace(/\n/g, '<br/>')}</div>
            </div>
            <div class="divider"></div>`
         : '';
@@ -795,7 +795,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
         dinheiro: 'Dinheiro', transferencia: 'Transferência', boleto: 'Boleto',
       };
       const metodosBadgesAgrp = (metodos_pagamento || '').split(',').filter(Boolean).map(m =>
-        `<span class="metodo-badge">${metodosLabelsAgrp[m.trim()] || m.trim()}</span>`
+        `<span class="metodo-badge">${escapeHtml(metodosLabelsAgrp[m.trim()] || m.trim())}</span>`
       ).join('');
       const secaoMetodosAgrp = metodosBadgesAgrp
         ? `<div class="secao"><div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div><div class="metodos-container">${metodosBadgesAgrp}</div></div><div class="divider"></div>`
@@ -803,7 +803,7 @@ app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
 
       // Condições
       const condicoesItemsAgrp = (condicoes_contrato || '').split('\n').filter(l => l.trim()).map(l =>
-        `<li>${l}</li>`
+        `<li>${escapeHtml(l)}</li>`
       ).join('');
       const secaoCondicoesAgrp = condicoesItemsAgrp
         ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
@@ -1337,7 +1337,7 @@ app.post('/api/admin/criar-empresa', async (req, res) => {
       return res.status(500).json({ error: 'Erro ao vincular usuário ao workspace: ' + memberError.message });
     }
 
-    console.log(`[Admin] Empresa criada: ${nome} | user: ${email} | ws: ${workspace.id}`);
+    console.log(`[Admin] Empresa criada | ws: ${workspace.id}`);
 
     return res.json({
       workspace_id: workspace.id,
