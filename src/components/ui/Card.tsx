@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
 interface CardProps {
@@ -6,9 +6,10 @@ interface CardProps {
   className?: string;
   onClick?: () => void;
   hoverable?: boolean;
+  style?: CSSProperties;
 }
 
-export function Card({ children, className, onClick, hoverable }: CardProps) {
+export function Card({ children, className, onClick, hoverable, style }: CardProps) {
   return (
     <div
       className={cn(
@@ -19,6 +20,7 @@ export function Card({ children, className, onClick, hoverable }: CardProps) {
         onClick && 'cursor-pointer',
         className
       )}
+      style={style}
       onClick={onClick}
     >
       {children}

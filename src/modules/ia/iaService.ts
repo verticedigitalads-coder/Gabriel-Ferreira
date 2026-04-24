@@ -44,7 +44,7 @@ export function analyzeLeadWithIA(lead: Lead): IAAnalysis {
     ? Math.floor((now.getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
-  const temOrcamento = lead.valorOrcado > 0;
+  const temOrcamento = (lead.valorOrcado ?? 0) > 0;
   const temPrazoCurto = lead.proximoContato ? new Date(lead.proximoContato) <= now : false;
   const prazoVencido = lead.proximoContato ? new Date(lead.proximoContato) < now : false;
 
@@ -93,7 +93,7 @@ export function analyzeLeadWithIA(lead: Lead): IAAnalysis {
   }
 
   // Urgência por valor alto (oportunidade grande)
-  if (lead.valorOrcado > 10000) {
+  if ((lead.valorOrcado ?? 0) > 10000) {
     nivelDeUrgencia = Math.max(nivelDeUrgencia, 3) as 1 | 2 | 3 | 4 | 5;
   }
 
@@ -114,7 +114,7 @@ export function analyzeLeadWithIA(lead: Lead): IAAnalysis {
     lead.temperatura === 'frio' ? 'fria' : lead.temperatura === 'morno' ? 'morna' : 'quente';
 
   // Upgrade de temperatura
-  if (temOrcamento && lead.valorOrcado > 5000 && diasSemContato <= 3) {
+  if (temOrcamento && (lead.valorOrcado ?? 0) > 5000 && diasSemContato <= 3) {
     temperaturaSugerida = 'quente'; // Orçamento alto + contato recente
   }
   if (lead.status === 'atendimento' && diasSemContato <= 2) {
@@ -180,9 +180,9 @@ export function analyzeLeadWithIA(lead: Lead): IAAnalysis {
   }
 
   // Baseado no valor
-  if (lead.valorOrcado > 10000) {
+  if ((lead.valorOrcado ?? 0) > 10000) {
     estrategias.push('💎 Oportunidade de alto valor - dedicar tempo extra e proposta personalizada');
-  } else if (lead.valorOrcado > 0 && lead.valorOrcado <= 3000) {
+  } else if ((lead.valorOrcado ?? 0) > 0 && (lead.valorOrcado ?? 0) <= 3000) {
     estrategias.push('⚡ Oportunidade de fechamento rápido - proposta objetiva e direta');
   }
 
@@ -225,7 +225,7 @@ export function analyzeLeadWithIA(lead: Lead): IAAnalysis {
     diasSemContato,
     riscoDePerda,
     temperaturaSugerida,
-    lead.valorOrcado,
+    lead.valorOrcado ?? 0,
     diasDesdeCriacao
   );
 
@@ -310,10 +310,10 @@ function generateExecutiveSummary(
   }
 
   // Valor
-  if (lead.valorOrcado > 10000) {
-    parts.push(`Oportunidade de R$ ${lead.valorOrcado.toLocaleString('pt-BR')} - alto potencial.`);
-  } else if (lead.valorOrcado > 0) {
-    parts.push(`Orçamento de R$ ${lead.valorOrcado.toLocaleString('pt-BR')} enviado.`);
+  if ((lead.valorOrcado ?? 0) > 10000) {
+    parts.push(`Oportunidade de R$ ${(lead.valorOrcado ?? 0).toLocaleString('pt-BR')} - alto potencial.`);
+  } else if ((lead.valorOrcado ?? 0) > 0) {
+    parts.push(`Orçamento de R$ ${(lead.valorOrcado ?? 0).toLocaleString('pt-BR')} enviado.`);
   }
 
   // Temperatura
@@ -451,10 +451,10 @@ export function analyzeLeadsBatch(leads: Lead[]): {
   });
 
   return {
-    criticos: criticos.sort((a, b) => b.valorOrcado - a.valorOrcado),
-    altaPrioridade: altaPrioridade.sort((a, b) => b.valorOrcado - a.valorOrcado),
-    mediaPrioridade: mediaPrioridade.sort((a, b) => b.valorOrcado - a.valorOrcado),
-    baixaPrioridade: baixaPrioridade.sort((a, b) => b.valorOrcado - a.valorOrcado),
+    criticos: criticos.sort((a, b) => (b.valorOrcado ?? 0) - (a.valorOrcado ?? 0)),
+    altaPrioridade: altaPrioridade.sort((a, b) => (b.valorOrcado ?? 0) - (a.valorOrcado ?? 0)),
+    mediaPrioridade: mediaPrioridade.sort((a, b) => (b.valorOrcado ?? 0) - (a.valorOrcado ?? 0)),
+    baixaPrioridade: baixaPrioridade.sort((a, b) => (b.valorOrcado ?? 0) - (a.valorOrcado ?? 0)),
     sugeridosDescarte,
   };
 }

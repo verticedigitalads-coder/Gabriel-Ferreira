@@ -45,6 +45,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   tipoChavePix: undefined,
   nomeRecebedorPix: '',
   cidadePix: '',
+  assinaturaEmpresa: '',
 };
 
 // Mapeamento camelCase → snake_case (key do banco)

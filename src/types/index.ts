@@ -298,6 +298,20 @@ export interface DashboardStats {
   tarefasHoje: number;
   tarefasAtrasadas: number;
   tarefasSemana: number;
+  scoreOperacional: number;
+  scoreComercial: number;
+  tarefasCriticas: number;
+}
+
+// =========================
+// KANBAN
+// =========================
+
+export interface KanbanColumn {
+  id: LeadStatus;
+  title: string;
+  leads: Lead[];
+  valorTotal: number;
 }
 
 // =========================

@@ -24,5 +24,6 @@ export function useDefaultSettings() {
     tipoChavePix: settings?.tipoChavePix,
     nomeRecebedorPix: settings?.nomeRecebedorPix || '',
     cidadePix: settings?.cidadePix || '',
+    assinaturaEmpresa: settings?.assinaturaEmpresa || '',
   };
 }

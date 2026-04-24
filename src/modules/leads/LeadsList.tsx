@@ -257,8 +257,8 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
         </div>
 
         <div className="text-right shrink-0 max-w-[110px]">
-          {lead.valorOrcado > 0
-            ? <p className="text-sm font-semibold text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado)}</p>
+          {(lead.valorOrcado ?? 0) > 0
+            ? <p className="text-sm font-semibold text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
             : <p className="text-sm text-[var(--text-tertiary)]">Sem valor</p>
           }
           <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">

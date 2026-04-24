@@ -36,7 +36,7 @@ export function useNotifications() {
         badge: '/favicon-32x32.png',
         tag: tag || 'crm-notification',
         renotify: true,
-      });
+      } as NotificationOptions);
     } catch (e) {
       console.warn('[Notifications] Não foi possível enviar:', e);
     }

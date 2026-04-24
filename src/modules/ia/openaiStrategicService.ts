@@ -23,7 +23,7 @@ function formatarHistoricoRecente(lead: Lead): string {
   return lead.historico
     .slice(-5)
     .map((h) => {
-      return `- ${h.tipo.toUpperCase()} | ${h.descricao} | ${h.data}`;
+      return `- ${h.tipo.toUpperCase()} | ${h.descricao} | ${h.createdAt}`;
     })
     .join('\n');
 }

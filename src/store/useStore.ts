@@ -62,6 +62,18 @@ type StoreState = {
   activeModule: string;
 
   addToast: (data: any) => void;
+  toasts: any[];
+  removeToast: (id: string) => void;
+  setActiveModule: (module: string) => void;
+  selectLead: (id: string | null) => void;
+  leadForm: any;
+  setLeadForm: (data: any) => void;
+  resetLeadForm: () => void;
+  addNota: (data: any) => Promise<void>;
+  updateNota: (id: string, data: any) => Promise<void>;
+  deleteNota: (id: string) => Promise<void>;
+  salvarAssinaturaCliente: (orcamentoId: string, assinatura: string) => Promise<boolean>;
+  metaMensal: number;
   addOperacionalTask: (data: any) => Promise<void>;
 
   filters: any;
