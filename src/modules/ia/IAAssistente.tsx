@@ -1,4 +1,5 @@
 import { HISTORICO_TIPO } from '@/types'
+import type { HistoricoEntry } from '@/types'
 import type { StrategicDiagnosis } from './strategicDiagnosisService'
 import { generateFullStrategicDiagnosisWithAI } from './strategicDiagnosisService'
 import { useState, useMemo, useEffect } from 'react'
@@ -9,12 +10,9 @@ import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Select } from '@/components/ui/Input'
 import { StatusBadge, TemperatureBadge, PriorityBadge } from '@/components/ui/Badge'
-import { format, parseISO } from 'date-fns'
 import {
   Sparkles,
   Brain,
-  Loader,
-  Zap,
   FileText,
   Search,
   X,
@@ -34,8 +32,8 @@ export function IAAssistente() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<StrategicDiagnosis | null>(null)
   const [showPreview, setShowPreview] = useState(false)
-  const [showReport, setShowReport] = useState(false)
-  const [priorityReport, setPriorityReport] = useState<string>('')
+  const [_showReport, setShowReport] = useState(false)
+  const [_priorityReport, setPriorityReport] = useState<string>('')
 
   // 🔎 Busca com debounce
   const [searchInput, setSearchInput] = useState<string>(filters.search)
@@ -81,7 +79,7 @@ export function IAAssistente() {
     // 🔥 NOVO FILTRO
     if (filters.analysisStatus !== 'all') {
       const jaAnalisado = lead.historico?.some(
-        h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
+        (h: HistoricoEntry) => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
       );
 
       if (
@@ -336,7 +334,7 @@ export function IAAssistente() {
 
     {(() => {
       const iaAnalises = selectedLead.historico?.filter(
-        h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
+        (h: HistoricoEntry) => h.tipo === HISTORICO_TIPO.IA_ANALYSIS
       ) || []
 
       const ultima = iaAnalises[iaAnalises.length - 1]

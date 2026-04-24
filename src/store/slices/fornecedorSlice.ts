@@ -19,7 +19,7 @@ export const createFornecedorSlice = (set: any, get: any) => ({
 
   addFornecedor: async (data: Partial<Fornecedor>) => {
 
-    const { workspaceId, fornecedores } = get()
+    const { workspaceId } = get()
 
     if (!workspaceId) {
       console.error('[FornecedorSlice] workspaceId não encontrado')

@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
 
-export const createUISlice = (set: any, get: any) => ({
+export const createUISlice = (set: any) => ({
 
   activeModule: 'dashboard',
   selectedLeadId: null,

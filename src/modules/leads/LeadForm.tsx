@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
 import { Input, TextArea, Select } from '@/components/ui/Input';
-import type { Lead, LeadStatus, LeadTemperature } from '@/types';
+import type { Lead } from '@/types';
 
 interface LeadFormProps {
   lead?: Lead | null;

@@ -137,7 +137,7 @@ export function Notas() {
           </div>
         ) : (
           <div className="space-y-2">
-            {sortedNotas.map(nota => (
+            {sortedNotas.map((nota: Nota) => (
               <Card key={nota.id} className="p-4" hoverable>
                 <div className="flex items-center gap-4">
                   {statusIcons[nota.status]}

@@ -26,6 +26,14 @@ export function useLeadActions() {
     [addToast],
   );
 
+  const registerContact = useCallback(
+    async (leadId: string) => {
+      await updateLead(leadId, { ultimoContato: new Date().toISOString() });
+      addToast({ type: 'success', message: 'Contato registrado' });
+    },
+    [updateLead, addToast],
+  );
+
   const handleMarkAsOrcado = useCallback(
     async (lead: any, valor: number) => {
       if (!lead) return;
@@ -63,6 +71,7 @@ export function useLeadActions() {
     deleteLead,
     openWhatsApp,
     copyPhone,
-    handleMarkAsOrcado, // 🔥 fluxo correto
+    handleMarkAsOrcado,
+    registerContact,
   };
 }
