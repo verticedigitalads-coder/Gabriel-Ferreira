@@ -262,26 +262,33 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     const anoAtual = new Date().getFullYear();
 
     // 🔥 BUSCAR ÚLTIMO ORÇAMENTO DO ANO
-    const _respSequencial = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
-      {
-        headers: {
-          apikey: process.env.SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-      },
-    );
-    const ultimoNumero = await _respSequencial.json();
-
     let sequencial = 1;
 
-    if (Array.isArray(ultimoNumero) && ultimoNumero.length > 0) {
-      const ultimo = ultimoNumero[0].numero;
+    try {
+      const _respSequencial = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
+        {
+          headers: {
+            apikey: process.env.SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          },
+        },
+      );
+      const ultimoNumero = await _respSequencial.json();
 
-      const partes = ultimo.split('-');
-      const numeroAtual = parseInt(partes[2]);
+      if (Array.isArray(ultimoNumero) && ultimoNumero.length > 0) {
+        const ultimo = ultimoNumero[0].numero;
 
-      sequencial = numeroAtual + 1;
+        const partes = ultimo.split('-');
+        const numeroAtual = parseInt(partes[2]);
+
+        sequencial = numeroAtual + 1;
+      }
+    } catch (error) {
+      const fallbackNumber = Date.now().toString().slice(-6);
+      console.error('[PDF] Falha ao buscar sequencial:', error.message);
+      console.warn('[PDF] Usando número sequencial de fallback:', fallbackNumber);
+      sequencial = parseInt(fallbackNumber, 10);
     }
 
     // 🔥 FORMATA 001, 002, 003...

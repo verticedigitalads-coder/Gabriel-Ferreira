@@ -32,6 +32,7 @@ Versão: v2.25.1
 - Logs sem PII nas rotas admin
 - Idempotência básica (orcamentos + recibos)
 - PDFs compactos (seções vazias colapsam)
+- Fix: try/catch com fallback na busca sequencial do orçamento (server.js) — PDF gerado mesmo com Supabase inacessível
 
 ## Clientes Ativos
 - FL Art Metal (metalúrgica) — ativo, usando diariamente
