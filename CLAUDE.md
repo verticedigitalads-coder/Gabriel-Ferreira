@@ -1,19 +1,36 @@
-# CRM — Contexto do Sistema
+# CRM Vértice Digital — Contexto do Sistema
 
 ## Stack
 
-- Frontend: React + Zustand (slices modulares)
-- Backend: Node.js (Express)
-- Persistence: Supabase (PostgreSQL + Realtime)
-- PDF: Puppeteer + templates HTML
+- Frontend: React 19 + TypeScript + Zustand (slices modulares) + Vite + Tailwind
+- Backend: Node.js (Express) — server.js único
+- Persistência: Supabase (PostgreSQL + Realtime + RLS multi-tenant)
+- PDF: Puppeteer + templates HTML (v1 legado + v2 profissional)
+- PWA: vite-plugin-pwa + Workbox
+- Deploy: Frontend Vercel | Backend local via ngrok (migração VPS planejada)
 - Ambiente: Windows 10, Node.js 22
 
 ## Arquitetura
 
-- `/src/components` → UI puro, sem lógica de negócio
-- `/src/store` → Zustand slices (um por domínio)
-- `/src/services` → integrações externas e chamadas API
-- `/backend` → rotas e controladores Node.js
+- `src/components/` → UI puro, sem lógica de negócio
+- `src/modules/` → módulos da aplicação (dashboard, leads, orcamentos, etc.)
+- `src/store/` → Zustand slices (um por domínio) + formatters.ts centralizado
+- `src/store/selectors/` → selectors derivados (dashboardSelectors)
+- `src/hooks/` → hooks customizados (useDefaultSettings, useNotifications, useLeadActions)
+- `src/domain/` → lógica de negócio pura (calcularOrcamento)
+- `src/types/` → tipos TypeScript centrais
+- `src/services/` → integrações externas
+- `src/styles/tokens.css` → design tokens CSS (variáveis de cor, espaçamento, etc.)
+- `server.js` → backend Express (PDF, CNPJ, PIX, admin, OpenAI)
+- `templates/` → templates HTML para PDFs (orcamento v1/v2, recibo v1/v2)
+- `utils/` → utilitários backend (pixPayload.js)
+
+## Multi-Tenant
+
+- Isolamento por workspace_id em TODAS as tabelas
+- RLS Supabase: 14 tabelas, cada uma com 1 policy filtrada
+- Workspaces ativos: FL Art Metal, GPP Móveis Planejados, Teste
+- Settings por workspace via workspace_settings (key-value)
 
 ## Regras Absolutas
 
@@ -24,12 +41,10 @@
 5. Prefira solução simples sobre solução elegante
 6. Código sempre completo — nunca use "..." ou "resto do código"
 7. Sempre indicar arquivo + localização exata da mudança
-
-## Estado Atual
-
-- Sistema funcional em desenvolvimento ativo
-- Evoluindo para SaaS/ERP comercializável
-- Clientes reais em uso
+8. SEMPRE usar CSS vars de tokens.css — nunca Tailwind hardcoded
+9. Touch targets mínimo 44px (mobile-first)
+10. Snake_case no banco → camelCase no frontend (via src/store/formatters.ts)
+11. Sanitizar TODA interpolação de dados do usuário em templates HTML (escapeHtml)
 
 ## Padrão de Resposta
 
@@ -37,32 +52,34 @@
 2. Plano de ação (steps numerados)
 3. Código completo (copy/paste ready)
 4. Arquivo + localização exata
+5. Atualizar _build/current-state.md ao finalizar
 
 ## Áreas Críticas — Máximo Cuidado
 
 ### 🔴 NÃO TOCAR SEM PLANO COMPLETO
 
-- `src/store/useStore.ts` — afeta 100% dos componentes
-- `backend/server.js` — geração de PDF, falha silenciosa
+- `src/store/useStore.ts` — afeta 100% dos componentes, realtime channels
+- `server.js` — geração de PDF, sanitização, rotas admin
 - `src/store/slices/leadSlice.ts` — automações encadeadas
 
-### 🟠 CUIDADO ELEVADO
+### 🟡 CUIDADO ELEVADO
 
-- `src/store/selectors/dashboardSelectors.ts` — 18+ métricas, quebra silenciosa
-- `src/services/iaService.ts` — lógica de risco baseada em datas
-- `src/modules/leads/LeadDetail.tsx` — componente monolítico (444 linhas)
-
-### ⚠️ INCONSISTÊNCIAS CONHECIDAS (não introduzir novas)
-
-- Conversão snake→camel inconsistente entre slices
-- Lógica de cálculo de orçamento duplicada em 3 locais
-- Histórico usa strings hardcoded em vez de enum
-- syncService.ts (IndexedDB) — offline não implementado
+- `src/store/selectors/dashboardSelectors.ts` — 18+ métricas
+- `src/modules/ia/iaService.ts` — lógica de risco, valorOrcado nullable
+- `src/modules/leads/LeadDetail.tsx` — componente grande
+- `templates/orcamento-v2.html` e `recibo-v2.html` — espaçamentos sensíveis
 
 ### Regra de Ouro
 
-Antes de modificar qualquer arquivo 🔴 ou 🟠:
+Antes de modificar qualquer arquivo 🔴:
 
 1. Leia o arquivo completo primeiro
-2. Mapeie todos os consumidores (@mention no Claude)
+2. Mapeie todos os consumidores
 3. Defina o plano antes de escrever código
+
+### Referências
+
+- `_build/current-state.md` — estado atual do projeto
+- `_build/decisions.md` — decisões arquiteturais
+- `_build/mistakes.md` — erros que custaram tempo
+- `_build/patterns.md` — padrões reutilizáveis

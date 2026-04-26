@@ -14,6 +14,7 @@
 **Causa raiz:** Padrão não foi definido antes de criar os slices. Cada um foi implementado de forma independente.
 **Como prevenir:** Todo slice novo precisa de format() explícito antes do primeiro uso. Consultar patterns.md antes de criar slice.
 **Impacto:** Campo novo no Supabase pode aparecer como undefined no frontend se o slice não mapear a conversão.
+**Status:** ✅ CORRIGIDO — formatters.ts centralizado criado, todos os slices usando.
 
 ---
 
@@ -32,6 +33,7 @@
 **Causa raiz:** Proteção por flag interna — frágil em ambiente de desenvolvimento intenso.
 **Como prevenir:** Nunca chamar startRealtime() fora do fluxo de inicialização. Nunca remover a flag de proteção existente.
 **Impacto:** Listeners duplicados causam updates duplos no estado — difícil de debugar.
+**Status:** ✅ CORRIGIDO — cleanupRealtime() implementado, chamado no logout e troca de workspace.
 
 ---
 
@@ -61,3 +63,4 @@ dados raw do Supabase sem converter snake_case → camelCase.
 campos inline fora desse arquivo.
 **Impacto:** Campos como workspace_id, created_at, lead_id apareciam
 como undefined em vez de workspaceId, createdAt, leadId.
+**Status:** ✅ CORRIGIDO — formatters.ts centralizado, todos os slices migrados.

@@ -129,3 +129,88 @@ set(state => ({
 **Quando usar:** Referência para entender automações encadeadas
 **Onde já foi usado:** leadSlice.ts → orcamentoSlice.ts → operacionalSlice.ts
 **Estrutura:**
+
+---
+
+## Padrão: Sanitização HTML em PDFs
+
+**Quando usar:** Sempre que interpolar dados do usuário em templates HTML (server.js)
+**Onde já foi usado:** server.js (todas as rotas de PDF)
+**Estrutura:**
+
+```javascript
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Uso: SEMPRE antes de interpolar
+html = html.replace('{{CAMPO}}', escapeHtml(valorDoUsuario));
+```
+
+**Não usar quando:** HTML gerado internamente (qrCodePixHtml, assinaturaHtml)
+
+---
+
+## Padrão: Cleanup de Placeholders em PDFs
+
+**Quando usar:** Como último passo antes do Puppeteer renderizar
+**Onde já foi usado:** server.js (todas as rotas de PDF)
+**Estrutura:**
+
+```javascript
+// ÚLTIMO replace antes de page.setContent(html)
+html = html.replace(/\{\{[A-Z_]+\}\}/g, '');
+```
+
+**Não usar quando:** Nunca pular — é safety net obrigatório
+
+---
+
+## Padrão: Settings por Workspace
+
+**Quando usar:** Configuração que varia entre clientes (nome empresa, cor, chave PIX, etc.)
+**Onde já foi usado:** useDefaultSettings.ts, Settings.tsx
+**Estrutura:**
+
+```typescript
+// Hook: src/hooks/useDefaultSettings.ts
+const settings = useDefaultSettings();
+// Retorna objeto com todos os settings + defaults
+
+// Salvar: via updateSetting('chave', valor) no Settings.tsx
+// Banco: tabela workspace_settings (key-value por workspace_id)
+```
+
+**Não usar quando:** Dados que pertencem a uma entidade específica (lead, orçamento) — usar coluna na tabela
+
+---
+
+## Padrão: Prompt para Claude Code
+
+**Quando usar:** Toda tarefa de código gerada pelo chat
+**Estrutura:**
+
+```markdown
+# PROMPT PARA CLAUDE CODE
+
+@CLAUDE.md @_build/current-state.md
+
+[TÍTULO]
+
+## TAREFA 1 — [Nome]
+### Arquivo: [caminho]
+ANTES: [código atual]
+DEPOIS: [código corrigido]
+
+## REGRAS
+- ...
+- AO FINALIZAR: atualizar _build/current-state.md
+```
+
+**Não usar quando:** Perguntas exploratórias ou de diagnóstico sem implementação
