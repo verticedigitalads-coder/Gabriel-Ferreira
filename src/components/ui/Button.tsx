@@ -2,7 +2,7 @@ import { forwardRef, ButtonHTMLAttributes } from 'react';
 import { cn } from '@/utils/cn';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success' | 'ia';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -31,6 +31,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'bg-transparent text-[var(--text-tertiary)] hover:bg-[var(--bg-surface-2)] focus:ring-[var(--border-strong)]': variant === 'ghost',
             // Success - Verde confirmação
             'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm': variant === 'success',
+            // IA - Roxo
+            'bg-[#a855f7] text-white hover:bg-[#9333ea] focus:ring-purple-500 shadow-sm': variant === 'ia',
           },
           
           // Sizes - compacto

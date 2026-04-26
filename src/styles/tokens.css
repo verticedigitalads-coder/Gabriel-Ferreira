@@ -5,11 +5,11 @@
 
 :root {
   /* --- CORES BASE --- */
-  --bg-app: #111113; /* fundo global */
-  --bg-sidebar: #0a0a0b; /* sidebar escura */
-  --bg-surface: #18181b; /* cards, modais, painéis */
-  --bg-surface-2: #1e1e22; /* superfície elevada (hover, inputs) */
-  --bg-surface-3: #26262c; /* superfície mais elevada (dropdowns) */
+  --bg-app: #0f1117; /* fundo global */
+  --bg-sidebar: #13151c; /* sidebar escura */
+  --bg-surface: #1a1d27; /* cards, modais, painéis */
+  --bg-surface-2: #22252f; /* superfície elevada (hover, inputs) */
+  --bg-surface-3: #2a2d37; /* superfície mais elevada (dropdowns) */
 
   /* --- TEXTO --- */
   --text-primary: #f4f4f5; /* títulos, texto principal */
@@ -17,10 +17,10 @@
   --text-tertiary: #71717a; /* placeholders, metadata */
   --text-disabled: #3f3f46; /* desabilitado */
 
-  /* --- COR PRIMÁRIA (azul dessaturado — estilo Linear) --- */
-  --accent: #5e6ad2; /* ações primárias */
-  --accent-hover: #6b77e5; /* hover */
-  --accent-subtle: rgba(94, 106, 210, 0.12); /* fundo de badge/tag */
+  /* --- COR PRIMÁRIA (laranja — Vértice Digital) --- */
+  --accent: #ff6a00; /* ações primárias */
+  --accent-hover: #e65c00; /* hover */
+  --accent-subtle: rgba(255, 106, 0, 0.1); /* fundo de badge/tag */
   --accent-foreground: #ffffff;
 
   /* --- STATUS --- */

@@ -280,12 +280,12 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
           </Button>
 
           <Button
+            variant="secondary"
             size="sm"
             onClick={onRegisterContact}
             title="Registrar Contato"
-            className="bg-blue-600 text-white hover:bg-blue-700"
           >
-            <Phone className="w-4 h-4" />
+            <Phone size={16} style={{ color: 'var(--success)' }} />
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 25/04/2026
-Versão: v2.25.0
+Última atualização: 26/04/2026
+Versão: v2.25.1
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -18,6 +18,11 @@ Versão: v2.25.0
 - Notificações locais PWA (operacional)
 - QR Code PIX nos PDFs + Copia e Cola + envio WhatsApp
 - Assinatura digital (empresa + cliente, canvas + digitada)
+
+## Design System
+- Design System v2.25.1: botão "Registrar Contato" → variante secondary + ícone Phone verde (var(--success))
+- Variante 'ia' adicionada no Button.tsx (roxo #a855f7 / hover #9333ea)
+- Tokens atualizados: accent (#ff6a00 laranja), bg-app/sidebar/surface/surface-2/surface-3 ajustados
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada
