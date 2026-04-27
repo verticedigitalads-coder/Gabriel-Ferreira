@@ -350,14 +350,14 @@ export function Orcamentos() {
                   });
                 }}
               >
-                <QrCode className="w-4 h-4 text-green-500" />
+                <QrCode className="w-4 h-4 text-[var(--success)]" />
               </Button>
             )}
             <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)}>
               <Edit className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)}>
-              <Trash2 className="w-4 h-4 text-red-500" />
+              <Trash2 className="w-4 h-4 text-[var(--danger)]" />
             </Button>
             {!orc.assinaturaCliente ? (
               <Button
@@ -372,7 +372,7 @@ export function Orcamentos() {
                 <PenTool className="w-4 h-4 text-amber-500" />
               </Button>
             ) : (
-              <span className="flex items-center gap-1 text-xs text-green-600 px-2" title="Orçamento assinado">
+              <span className="flex items-center gap-1 text-xs text-[var(--success)] px-2" title="Orçamento assinado">
                 <PenTool className="w-3 h-3" />
                 Assinado
               </span>
@@ -1001,7 +1001,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
                   size="sm"
                   onClick={() => removeItem(item.id)}
                 >
-                  <Trash2 className="w-4 h-4 text-red-500" />
+                  <Trash2 className="w-4 h-4 text-[var(--danger)]" />
                 </Button>
               </div>
               <div className="flex items-center gap-2 pl-8">
@@ -1068,7 +1068,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         {/* 🔥 MÃO DE OBRA (AQUI) */}
         <div className="flex justify-between text-sm">
           <span className="text-[var(--text-secondary)]">Mão de obra:</span>
-          <span className="font-medium text-blue-600">
+          <span className="font-medium text-[var(--accent)]">
             {formatCurrency(maoDeObra)}
           </span>
         </div>
@@ -1132,7 +1132,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         {/* Total */}
         <div className="flex justify-between text-lg font-bold border-t border-[var(--border)] pt-2">
           <span>Total:</span>
-          <span className="text-green-600">{formatCurrency(total)}</span>
+          <span className="text-[var(--success)]">{formatCurrency(total)}</span>
         </div>
       </div>
 

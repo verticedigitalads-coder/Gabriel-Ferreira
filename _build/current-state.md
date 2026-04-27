@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
 Última atualização: 27/04/2026
-Versão: v2.26.2
+Versão: v2.26.1
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)

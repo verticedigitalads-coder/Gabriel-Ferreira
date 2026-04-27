@@ -211,7 +211,7 @@ export function IAAssistente() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-red-500">
             <p className="text-xs text-[var(--text-tertiary)] uppercase">Críticos</p>
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-2xl font-bold" style={{ color: 'var(--danger)' }}>
               {batchAnalysis.criticos.length}
             </p>
           </Card>
@@ -225,14 +225,14 @@ export function IAAssistente() {
 
           <Card className="p-4 border-l-4 border-l-yellow-500">
             <p className="text-xs text-[var(--text-tertiary)] uppercase">Média Prioridade</p>
-            <p className="text-2xl font-bold text-yellow-600">
+            <p className="text-2xl font-bold" style={{ color: 'var(--warning)' }}>
               {batchAnalysis.mediaPrioridade.length}
             </p>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-green-500">
             <p className="text-xs text-[var(--text-tertiary)] uppercase">Baixa Prioridade</p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold" style={{ color: 'var(--success)' }}>
               {batchAnalysis.baixaPrioridade.length}
             </p>
           </Card>
@@ -414,13 +414,7 @@ export function IAAssistente() {
                 </p>
 
                 {variacaoProb !== null && (
-                  <p className={`font-medium ${
-                    variacaoProb > 0
-                      ? 'text-green-600'
-                      : variacaoProb < 0
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                  }`}>
+                  <p className="font-medium" style={{ color: variacaoProb > 0 ? 'var(--success)' : variacaoProb < 0 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     {variacaoProb > 0 && '▲'}
                     {variacaoProb < 0 && '▼'}
                     {variacaoProb === 0 && '→'}
@@ -444,7 +438,7 @@ export function IAAssistente() {
 
           {/* ALERTA DE CONFLITO */}
           {conflitoEstrategico && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">
+            <div className="p-3 border rounded-md text-xs" style={{ background: 'var(--danger-subtle)', borderColor: 'var(--danger)', color: 'var(--danger)' }}>
               ⚠ Inconsistência estratégica detectada: 
               Probabilidade alta com temperatura fria.
             </div>
@@ -593,8 +587,8 @@ export function IAAssistente() {
 
       {/* 🔷 MENSAGEM WHATSAPP */}
       {analysis.mensagemSugeridaWhatsApp && (
-        <div className="bg-green-50 p-4 rounded-lg border">
-          <p className="font-semibold text-green-800 mb-2">
+        <div className="p-4 rounded-lg border" style={{ background: 'var(--success-subtle)' }}>
+          <p className="font-semibold mb-2" style={{ color: 'var(--success)' }}>
             💬 Mensagem WhatsApp
           </p>
 
@@ -635,7 +629,7 @@ export function IAAssistente() {
         </p>
 
         {analysis.nivelDeUrgencia >= 3 && (
-          <p className="text-sm text-red-600 mt-1">
+          <p className="text-sm mt-1" style={{ color: 'var(--danger)' }}>
             ⚠ Será criada uma tarefa automática de follow-up.
           </p>
         )}
