@@ -25,15 +25,15 @@ const statusOptions = [
 ];
 
 const statusColors: Record<NotaStatus, string> = {
-  pendente: 'bg-yellow-100 text-yellow-700',
-  emitida: 'bg-green-100 text-green-700',
-  cancelada: 'bg-red-100 text-red-700',
+  pendente: 'bg-[var(--warning-subtle)] text-[var(--warning)]',
+  emitida: 'bg-[var(--success-subtle)] text-[var(--success)]',
+  cancelada: 'bg-[var(--danger-subtle)] text-[var(--danger)]',
 };
 
 const statusIcons: Record<NotaStatus, React.ReactNode> = {
-  pendente: <AlertCircle className="w-5 h-5 text-yellow-500" />,
-  emitida: <CheckCircle className="w-5 h-5 text-green-500" />,
-  cancelada: <XCircle className="w-5 h-5 text-red-500" />,
+  pendente: <AlertCircle className="w-5 h-5 text-[var(--warning)]" />,
+  emitida: <CheckCircle className="w-5 h-5 text-[var(--success)]" />,
+  cancelada: <XCircle className="w-5 h-5 text-[var(--danger)]" />,
 };
 
 export function Notas() {
@@ -94,11 +94,11 @@ export function Notas() {
         <div className="flex gap-6 text-sm">
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-tertiary)]">Pendentes:</span>
-            <span className="font-semibold text-yellow-600">{stats.pendentes}</span>
+            <span className="font-semibold text-[var(--warning)]">{stats.pendentes}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-tertiary)]">Emitidas:</span>
-            <span className="font-semibold text-green-600">{stats.emitidas}</span>
+            <span className="font-semibold text-[var(--success)]">{stats.emitidas}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-tertiary)]">Valor Total Emitido:</span>
@@ -108,12 +108,12 @@ export function Notas() {
       </div>
 
       {/* Info Banner */}
-      <div className="mx-6 mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+      <div className="mx-6 mt-6 p-4 bg-[var(--info-subtle)] border border-[var(--border)] rounded-md">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-[var(--info)] flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-blue-800">Preparado para integração futura</p>
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="text-sm font-medium text-[var(--info)]">Preparado para integração futura</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Este módulo está preparado para futura integração com APIs de emissão de notas fiscais municipais.
               Por enquanto, funciona como controle interno.
             </p>
@@ -125,8 +125,8 @@ export function Notas() {
       <div className="flex-1 overflow-y-auto p-6">
         {sortedNotas.length === 0 ? (
           <div className="text-center py-12">
-            <FileCheck className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Nenhuma nota registrada</p>
+            <FileCheck className="w-12 h-12 text-[var(--text-disabled)] mx-auto mb-4" />
+            <p className="text-[var(--text-secondary)]">Nenhuma nota registrada</p>
             <Button
               variant="primary"
               className="mt-4"
@@ -143,20 +143,20 @@ export function Notas() {
                   {statusIcons[nota.status]}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-sm font-semibold text-gray-900">
+                      <span className="font-mono text-sm font-semibold text-[var(--text-primary)]">
                         Nota #{nota.numero}
                       </span>
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[nota.status]}`}>
                         {statusOptions.find(s => s.value === nota.status)?.label}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-[var(--text-secondary)]">
                       {nota.leadId && <span>{getLeadName(nota.leadId)} • </span>}
                       {format(parseISO(nota.data), "dd/MM/yyyy", { locale: ptBR })}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">{formatCurrency(nota.valor)}</p>
+                    <p className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(nota.valor)}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(nota)}>

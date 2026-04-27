@@ -47,26 +47,26 @@ export function AuthPage() {
         <div className="bg-white p-10 rounded-2xl shadow-xl w-[380px]">
 
           <div className="flex items-center justify-center mb-6">
-            <Sparkles className="text-blue-600 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-800">
+            <Sparkles className="text-[var(--accent)] mr-2" />
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               Acessar Plataforma
             </h2>
           </div>
 
-          <p className="text-sm text-gray-500 text-center mb-6">
+          <p className="text-sm text-[var(--text-secondary)] text-center mb-6">
             Entre com sua conta Google para acessar seu workspace.
           </p>
 
           <button
             onClick={handleLogin}
-            className="w-full bg-blue-600 hover:bg-blue-700 
-                       transition-all duration-200 
+            className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)]
+                       transition-all duration-200
                        text-white py-3 rounded-lg font-medium shadow-md"
           >
             Entrar com Google
           </button>
 
-          <p className="text-xs text-gray-400 text-center mt-6">
+          <p className="text-xs text-[var(--text-tertiary)] text-center mt-6">
             Seus dados são protegidos e sincronizados com segurança.
           </p>
         </div>

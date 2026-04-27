@@ -71,12 +71,12 @@ export function Central() {
 
         <Card className="shadow-sm rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-3">
-            <Target className="w-5 h-5 text-blue-600" />
+            <Target className="w-5 h-5 text-[var(--accent)]" />
             <h2 className="font-semibold text-[var(--text-primary)]">
               Execução Hoje
             </h2>
           </div>
-          <p className="text-3xl font-bold text-blue-600">
+          <p className="text-3xl font-bold text-[var(--accent)]">
             {executionScoreTotal}%
           </p>
           <p className="text-xs text-[var(--text-secondary)] mt-1">

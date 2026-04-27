@@ -71,7 +71,7 @@ export function LeadsList() {
             <Button
               variant="secondary"
               onClick={() => setShowAIModal(true)}
-              className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+              className="gap-2 border-[var(--ia-subtle)] text-[var(--ia)] hover:bg-[var(--ia-subtle)]"
             >
               <Sparkles className="w-4 h-4" />
               Criar com IA
@@ -232,7 +232,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
             </h3>
 
             {jaAnalisado && (
-              <span className="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+              <span className="text-xs font-medium text-[var(--ia)] bg-[var(--ia-subtle)] px-2 py-1 rounded-full">
                 IA Analisado
               </span>
             )}

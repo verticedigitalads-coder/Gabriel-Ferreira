@@ -190,7 +190,7 @@ export function IAAssistente() {
       {/* HEADER */}
       <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)] flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-purple-600" />
+          <Sparkles className="w-6 h-6 text-[var(--ia)]" />
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">IA Assistente</h1>
             <p className="text-sm text-[var(--text-secondary)]">
@@ -241,7 +241,7 @@ export function IAAssistente() {
         {/* CARD EXPLICATIVO */}
         <Card className="p-4 border-[var(--border)]">
           <div className="flex items-start gap-3">
-            <Brain className="w-5 h-5 text-purple-600 mt-0.5" />
+            <Brain className="w-5 h-5 text-[var(--ia)] mt-0.5" />
             <div>
               <p className="text-sm font-medium text-[var(--text-primary)]">
                 Como funciona a Análise Estratégica da IA
@@ -370,7 +370,7 @@ export function IAAssistente() {
                 </h3>
 
                 {iaAnalises.length > 0 && (
-                  <span className="text-xs font-medium bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                  <span className="text-xs font-medium bg-[var(--ia-subtle)] text-[var(--ia)] px-2 py-1 rounded-full">
                     🧠 Estratégia Ativa
                   </span>
                 )}
@@ -402,8 +402,8 @@ export function IAAssistente() {
 
           {/* EVOLUÇÃO ESTRATÉGICA */}
           {ultima && (
-            <div className="p-3 bg-purple-50 border border-purple-200 rounded-md space-y-2">
-              <p className="text-xs font-semibold text-purple-800">
+            <div className="p-3 bg-[var(--ia-subtle)] border border-[var(--ia-subtle)] rounded-md space-y-2">
+              <p className="text-xs font-semibold text-[var(--ia)]">
                 📊 Evolução Estratégica
               </p>
 
@@ -455,7 +455,7 @@ export function IAAssistente() {
             <Button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full bg-[var(--ia)] hover:opacity-90 text-white"
             >
               {isAnalyzing ? 'Analisando...' : 'Analisar Lead'}
             </Button>

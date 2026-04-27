@@ -88,7 +88,7 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
           </p>
         )}
         {isCritical && (
-          <span className="inline-block text-[9px] bg-red-700 text-white px-1 rounded mt-1">
+          <span className="inline-block text-[9px] bg-[var(--danger)] text-white px-1 rounded mt-1">
             CRÍTICA
           </span>
         )}

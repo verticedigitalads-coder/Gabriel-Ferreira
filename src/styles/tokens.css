@@ -11,6 +11,9 @@
   --bg-surface-2: #22252f; /* superfície elevada (hover, inputs) */
   --bg-surface-3: #2a2d37; /* superfície mais elevada (dropdowns) */
 
+  /* --- INPUTS --- */
+  --bg-input: var(--bg-surface-2); /* campos de formulário */
+
   /* --- TEXTO --- */
   --text-primary: #f4f4f5; /* títulos, texto principal */
   --text-secondary: #a1a1aa; /* labels, subtítulos */
