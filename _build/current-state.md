@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 26/04/2026
-Versão: v2.25.1
+Última atualização: 27/04/2026
+Versão: v2.26.0
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -23,6 +23,7 @@ Versão: v2.25.1
 - Design System v2.25.1: botão "Registrar Contato" → variante secondary + ícone Phone verde (var(--success))
 - Variante 'ia' adicionada no Button.tsx (roxo #a855f7 / hover #9333ea)
 - Tokens atualizados: accent (#ff6a00 laranja), bg-app/sidebar/surface/surface-2/surface-3 ajustados
+- Design System v2.26.0: tokens --ia + --ia-subtle adicionados; --border-accent corrigido para laranja; status badges de Recibos/Orçamentos/Financeiro/Operacional migrados para CSS vars; Settings reestruturada (4 tabs: Empresa, Documentos, Pagamentos, Dados); calendários DnD com inline styles; cores Tailwind hardcoded eliminadas em todos os módulos
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada

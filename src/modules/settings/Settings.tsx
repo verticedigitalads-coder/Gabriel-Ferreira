@@ -1,4 +1,4 @@
-import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, QrCode, PenTool } from 'lucide-react';
+import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, QrCode, PenTool, CreditCard } from 'lucide-react';
 import { SignaturePad } from '@/components/ui/SignaturePad';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
@@ -7,13 +7,13 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, TextArea } from '@/components/ui/Input';
 
-type Tab = 'empresa' | 'documentos' | 'backup' | 'demo';
+type Tab = 'empresa' | 'documentos' | 'pagamentos' | 'dados';
 
 const tabs: { id: Tab; label: string; icon: any }[] = [
-  { id: 'empresa', label: 'Empresa', icon: Building2 },
+  { id: 'empresa',    label: 'Empresa',    icon: Building2 },
   { id: 'documentos', label: 'Documentos', icon: FileText },
-  { id: 'backup', label: 'Backup e Dados', icon: Download },
-  { id: 'demo', label: 'Ambiente Demo', icon: Database },
+  { id: 'pagamentos', label: 'Pagamentos', icon: CreditCard },
+  { id: 'dados',      label: 'Dados',      icon: Database },
 ];
 
 export function Settings() {
@@ -54,6 +54,7 @@ export function Settings() {
   const [tipoChavePix, setTipoChavePix] = useState('');
   const [nomeRecebedorPix, setNomeRecebedorPix] = useState('');
   const [cidadePix, setCidadePix] = useState('');
+  const [savingPagamentos, setSavingPagamentos] = useState(false);
 
   // Popula formulários quando settings carrega
   useEffect(() => {
@@ -125,6 +126,23 @@ export function Settings() {
       addToast({ type: 'error', message: 'Erro ao salvar configurações' });
     } finally {
       setSavingDocs(false);
+    }
+  };
+
+  // ─── Salvar Pagamentos ────────────────────────────────────────
+  const handleSavePagamentos = async () => {
+    setSavingPagamentos(true);
+    try {
+      await updateSettings({
+        metodosPagamento,
+        chavePix,
+        tipoChavePix,
+      } as any);
+      addToast({ type: 'success', message: 'Configurações de pagamento salvas!' });
+    } catch {
+      addToast({ type: 'error', message: 'Erro ao salvar pagamentos' });
+    } finally {
+      setSavingPagamentos(false);
     }
   };
 
@@ -600,45 +618,6 @@ export function Settings() {
               </p>
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
-                Métodos de pagamento exibidos no PDF
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'pix', label: 'PIX' },
-                  { key: 'credito', label: 'Crédito' },
-                  { key: 'debito', label: 'Débito' },
-                  { key: 'dinheiro', label: 'Dinheiro' },
-                  { key: 'transferencia', label: 'Transferência' },
-                  { key: 'boleto', label: 'Boleto' },
-                ].map(m => {
-                  const ativo = metodosPagamento.split(',').includes(m.key);
-                  return (
-                    <button
-                      key={m.key}
-                      type="button"
-                      onClick={() => {
-                        const lista = metodosPagamento.split(',').filter(Boolean);
-                        if (ativo) {
-                          setMetodosPagamento(lista.filter(x => x !== m.key).join(','));
-                        } else {
-                          setMetodosPagamento([...lista, m.key].join(','));
-                        }
-                      }}
-                      className={`px-3 py-1.5 rounded-full text-sm border min-h-[44px] transition-colors ${
-                        ativo
-                          ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
-                          : 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)] border-[var(--border)]'
-                      }`}
-                    >
-                      {m.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-[var(--accent)]" />
@@ -744,8 +723,114 @@ export function Settings() {
         </Card>
       )}
 
-      {/* ── TAB BACKUP ──────────────────────────────────────────── */}
-      {activeTab === 'backup' && (
+      {/* ── TAB PAGAMENTOS ──────────────────────────────────────── */}
+      {activeTab === 'pagamentos' && (
+        <div className="space-y-4">
+
+          {/* Métodos de pagamento exibidos no PDF */}
+          <Card className="p-4 md:p-6 space-y-4">
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">
+              Métodos de Pagamento — PDF
+            </h2>
+            <p className="text-sm text-[var(--text-tertiary)]">
+              Exibidos no rodapé dos PDFs de orçamentos e recibos.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'pix', label: 'PIX' },
+                { key: 'credito', label: 'Crédito' },
+                { key: 'debito', label: 'Débito' },
+                { key: 'dinheiro', label: 'Dinheiro' },
+                { key: 'transferencia', label: 'Transferência' },
+                { key: 'boleto', label: 'Boleto' },
+              ].map(m => {
+                const ativo = metodosPagamento.split(',').includes(m.key);
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    onClick={() => {
+                      const lista = metodosPagamento.split(',').filter(Boolean);
+                      if (ativo) {
+                        setMetodosPagamento(lista.filter(x => x !== m.key).join(','));
+                      } else {
+                        setMetodosPagamento([...lista, m.key].join(','));
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm border min-h-[44px] transition-colors ${
+                      ativo
+                        ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                        : 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)] border-[var(--border)]'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Chave PIX */}
+          <Card className="p-4 md:p-6 space-y-4">
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">
+              Chave PIX
+            </h2>
+            <p className="text-sm text-[var(--text-tertiary)]">
+              Exibida nos documentos para pagamentos via PIX. Deixe em branco para não exibir.
+            </p>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
+                Tipo da chave
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { value: 'cpf_cnpj', label: 'CPF/CNPJ' },
+                    { value: 'telefone', label: 'Telefone' },
+                    { value: 'email',    label: 'E-mail' },
+                    { value: 'aleatoria', label: 'Aleatória' },
+                  ] as const
+                ).map(t => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => setTipoChavePix(t.value)}
+                    className={`px-3 py-1.5 rounded-full text-sm border min-h-[44px] transition-colors ${
+                      tipoChavePix === t.value
+                        ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                        : 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)] border-[var(--border)]'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Input
+              label="Chave PIX"
+              value={chavePix}
+              onChange={e => setChavePix(e.target.value)}
+              placeholder={
+                tipoChavePix === 'cpf_cnpj'  ? '00.000.000/0000-00 ou 000.000.000-00' :
+                tipoChavePix === 'telefone'   ? '+55 (34) 99999-9999' :
+                tipoChavePix === 'email'      ? 'pix@empresa.com.br' :
+                'Chave aleatória UUID'
+              }
+            />
+
+            <div className="pt-2">
+              <Button onClick={handleSavePagamentos} disabled={savingPagamentos}>
+                {savingPagamentos ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ── TAB DADOS ───────────────────────────────────────────── */}
+      {activeTab === 'dados' && (
         <div className="space-y-4">
           <Card className="p-4 md:p-6 space-y-3">
             <div className="flex items-start gap-3">
@@ -782,12 +867,6 @@ export function Settings() {
               Importar CSV
             </Button>
           </Card>
-        </div>
-      )}
-
-      {/* ── TAB DEMO ────────────────────────────────────────────── */}
-      {activeTab === 'demo' && (
-        <div className="space-y-4">
 
           {/* Aviso */}
           <div className="flex items-start gap-3 p-4 rounded-lg border border-[var(--warning)] bg-[var(--bg-surface)]">

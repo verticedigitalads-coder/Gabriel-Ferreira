@@ -13,10 +13,10 @@ import {
 import { ptBR } from 'date-fns/locale';
 import { Pencil, Trash2 } from 'lucide-react';
 
-const prioridadeColor: Record<string, string> = {
-  baixa: 'bg-blue-100 border-blue-400 text-blue-800',
-  media: 'bg-yellow-100 border-yellow-400 text-yellow-800',
-  alta: 'bg-red-100 border-red-400 text-red-800',
+const prioridadeStyle: Record<string, React.CSSProperties> = {
+  baixa: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',    color: 'var(--info)' },
+  media: { background: 'var(--warning-subtle)', borderLeftColor: 'var(--warning)', color: 'var(--warning)' },
+  alta:  { background: 'var(--danger-subtle)',  borderLeftColor: 'var(--danger)',  color: 'var(--danger)' },
 };
 type Props = {
   onDelete: (task: any) => void;
@@ -108,11 +108,8 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
                   <div
                     key={task.id}
                     title={task.titulo}
-                    className={`
-      border-l-4 px-1 rounded text-[10px]
-      ${prioridadeColor[task.prioridade]}
-      ${task.concluido ? 'line-through opacity-50' : ''}
-    `}
+                    className={`border-l-4 px-1 rounded text-[10px] ${task.concluido ? 'line-through opacity-50' : ''}`}
+                    style={prioridadeStyle[task.prioridade] || prioridadeStyle.media}
                   >
                     <div className="flex justify-between items-center gap-1">
                       <span className="truncate">{task.titulo}</span>

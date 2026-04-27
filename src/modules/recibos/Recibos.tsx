@@ -24,9 +24,9 @@ import {
 import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
 
 const statusColors: Record<ReciboStatus, string> = {
-  pendente: 'bg-yellow-100 text-yellow-700',
-  emitido: 'bg-green-100 text-green-700',
-  cancelado: 'bg-red-100 text-red-700',
+  pendente:  'bg-[var(--warning-subtle)] text-[var(--warning)]',
+  emitido:   'bg-[var(--success-subtle)] text-[var(--success)]',
+  cancelado: 'bg-[var(--bg-surface-2)]  text-[var(--text-disabled)]',
 };
 
 const statusLabel: Record<ReciboStatus, string> = {
@@ -200,9 +200,22 @@ export function Recibos() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: 'var(--bg-surface-2)' }}
+                      style={{
+                        background:
+                          r.status === 'emitido'   ? 'var(--success-subtle)' :
+                          r.status === 'cancelado' ? 'var(--bg-surface-3)' :
+                                                     'var(--warning-subtle)',
+                      }}
                     >
-                      <FileText className="w-5 h-5 text-[var(--text-secondary)]" />
+                      <FileText
+                        className="w-5 h-5"
+                        style={{
+                          color:
+                            r.status === 'emitido'   ? 'var(--success)' :
+                            r.status === 'cancelado' ? 'var(--text-disabled)' :
+                                                       'var(--warning)',
+                        }}
+                      />
                     </div>
 
                     <div className="min-w-0">

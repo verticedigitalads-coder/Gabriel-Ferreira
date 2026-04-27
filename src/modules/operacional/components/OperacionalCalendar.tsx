@@ -12,17 +12,17 @@ import { Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react';
 
 import { calculateOperationalUrgency } from '@/domain/operacional/calculateOperationalUrgency';
 
-const prioridadeColor: Record<string, string> = {
-  baixa: 'bg-blue-50 border-blue-400 text-blue-700',
-  media: 'bg-yellow-50 border-yellow-500 text-yellow-700',
-  alta: 'bg-red-50 border-red-500 text-red-700',
+const prioridadeStyle: Record<string, React.CSSProperties> = {
+  baixa: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',    color: 'var(--info)' },
+  media: { background: 'var(--warning-subtle)', borderLeftColor: 'var(--warning)', color: 'var(--warning)' },
+  alta:  { background: 'var(--danger-subtle)',  borderLeftColor: 'var(--danger)',  color: 'var(--danger)' },
 };
 
-const statusColor: Record<string, string> = {
-  pendente: 'bg-gray-50 border-gray-400 text-gray-700',
-  em_producao: 'bg-yellow-50 border-yellow-500 text-yellow-700',
-  pronto: 'bg-green-50 border-green-500 text-green-700',
-  instalado: 'bg-blue-50 border-blue-500 text-blue-700',
+const statusStyle: Record<string, React.CSSProperties> = {
+  pendente:    { background: 'var(--bg-surface-3)',   borderLeftColor: 'var(--text-disabled)', color: 'var(--text-secondary)' },
+  em_producao: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',          color: 'var(--info)' },
+  pronto:      { background: 'var(--success-subtle)', borderLeftColor: 'var(--success)',       color: 'var(--success)' },
+  instalado:   { background: 'var(--ia-subtle)',      borderLeftColor: 'var(--ia)',            color: 'var(--ia)' },
 };
 
 type FilterMode = 'all' | 'critical' | 'urgent' | 'delayed';
@@ -63,15 +63,12 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`
-        w-full max-w-full border-l-4 p-3 rounded-lg text-xs
-        transition-all duration-200
-        hover:shadow-md
-        ${statusColor[task.status] || prioridadeColor[task.prioridade]}
-        ${task.concluido ? 'opacity-60' : ''}
-        ${isCritical ? 'ring-2 ring-red-600' : ''}
-      `}
+      className={`w-full max-w-full border-l-4 p-3 rounded-lg text-xs transition-all duration-200 hover:shadow-md ${task.concluido ? 'opacity-60' : ''}`}
+      style={{
+        ...style,
+        ...(statusStyle[task.status] || prioridadeStyle[task.prioridade] || prioridadeStyle.media),
+        ...(isCritical ? { outline: '2px solid var(--danger)', outlineOffset: '1px' } : {}),
+      }}
     >
       {/* Área arrastável */}
       <div

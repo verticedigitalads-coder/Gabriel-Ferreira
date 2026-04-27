@@ -260,17 +260,24 @@ export function Financeiro() {
     return leads.find((l) => l.id === leadId)?.nome ?? null;
   };
 
+  const tipoConfig: Record<TransactionType, { icon: React.ReactNode; color: string; bg: string }> = {
+    receita:               { icon: <ArrowUpCircle className="w-4 h-4" />,   color: 'var(--success)', bg: 'var(--success-subtle)' },
+    despesa:               { icon: <ArrowDownCircle className="w-4 h-4" />, color: 'var(--danger)',  bg: 'var(--danger-subtle)' },
+    comissao:              { icon: <Percent className="w-4 h-4" />,         color: 'var(--warning)', bg: 'var(--warning-subtle)' },
+    pagamento_funcionario: { icon: <Users className="w-4 h-4" />,           color: 'var(--info)',    bg: 'var(--info-subtle)' },
+  };
+
   const getTypeIcon = (tipo: TransactionType) => {
-    switch (tipo) {
-      case 'receita':
-        return <ArrowUpCircle className="w-5 h-5 shrink-0" style={{ color: 'var(--success)' }} />;
-      case 'despesa':
-        return <ArrowDownCircle className="w-5 h-5 shrink-0" style={{ color: 'var(--danger)' }} />;
-      case 'comissao':
-        return <Percent className="w-5 h-5 shrink-0" style={{ color: 'var(--warning)' }} />;
-      case 'pagamento_funcionario':
-        return <Users className="w-5 h-5 shrink-0" style={{ color: 'var(--info)' }} />;
-    }
+    const cfg = tipoConfig[tipo];
+    if (!cfg) return null;
+    return (
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+        style={{ background: cfg.bg, color: cfg.color }}
+      >
+        {cfg.icon}
+      </div>
+    );
   };
 
   const handleConfirmPago = async () => {
@@ -432,7 +439,7 @@ export function Financeiro() {
               return (
                 <Card key={t.id} className="p-4" hoverable>
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5">{getTypeIcon(t.tipo)}</div>
+                    {getTypeIcon(t.tipo)}
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -470,13 +477,13 @@ export function Financeiro() {
 
                     <div className="flex items-center gap-2 shrink-0">
                       <p
-                        className="text-base font-bold"
+                        className="text-base font-bold tabular-nums"
                         style={{
                           color: t.tipo === 'receita' ? 'var(--success)' : 'var(--danger)',
+                          letterSpacing: '-0.3px',
                         }}
                       >
-                        {t.tipo === 'receita' ? '+' : '-'}
-                        {formatCurrency(t.valor)}
+                        {t.tipo === 'receita' ? '+' : '−'}{formatCurrency(t.valor)}
                       </p>
 
                       <div className="flex gap-1">

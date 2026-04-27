@@ -54,10 +54,10 @@ const statusOptions = [
 ];
 
 const statusColors: Record<OrcamentoStatus, string> = {
-  rascunho: 'bg-gray-100 text-gray-700',
-  enviado: 'bg-blue-100 text-blue-700',
-  aprovado: 'bg-green-100 text-green-700',
-  recusado: 'bg-red-100 text-red-700',
+  rascunho: 'bg-[var(--bg-surface-2)]   text-[var(--text-secondary)]',
+  enviado:  'bg-[var(--info-subtle)]    text-[var(--info)]',
+  aprovado: 'bg-[var(--success-subtle)] text-[var(--success)]',
+  recusado: 'bg-[var(--danger-subtle)]  text-[var(--danger)]',
 };
 
 export function Orcamentos() {
@@ -477,18 +477,28 @@ export function Orcamentos() {
 
       {/* Barra de seleção agrupada */}
       {modoSelecao && selecionados.size > 0 && (
-        <div className="border-t border-[var(--border)] bg-[var(--bg-surface)] p-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-[var(--text-secondary)]">
-              {selecionados.size} orçamento{selecionados.size !== 1 ? 's' : ''} selecionado{selecionados.size !== 1 ? 's' : ''}
+        <div
+          className="border-t p-4 flex items-center justify-between gap-3"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg-surface)' }}
+        >
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+            >
+              {selecionados.size}
             </span>
-            <span className="text-lg font-bold text-[var(--text-primary)]">
-              Total: {formatCurrency(totalSelecionado)}
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              selecionado{selecionados.size !== 1 ? 's' : ''}
+            </span>
+            <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+              {formatCurrency(totalSelecionado)}
             </span>
           </div>
-          <Button onClick={handleGerarPDFAgrupado} className="gap-2">
+          <Button onClick={handleGerarPDFAgrupado} className="gap-2 shrink-0">
             <Download className="w-4 h-4" />
-            Gerar PDF Agrupado
+            <span className="hidden sm:inline">Gerar PDF Agrupado</span>
+            <span className="sm:hidden">PDF</span>
           </Button>
         </div>
       )}

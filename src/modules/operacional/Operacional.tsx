@@ -50,11 +50,11 @@ export function Operacional() {
   const tarefasHojeConcluidas = tarefasHoje.filter((t) => t.concluido);
   const tarefasSemana = tasks.filter((t) => t.data >= hoje);
 
-  const statusConfig: Record<string, { label: string; cls: string }> = {
-    pendente:    { label: 'Pendente',    cls: 'bg-[var(--bg-surface-3)] text-[var(--text-secondary)]' },
-    em_producao: { label: 'Em produção', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
-    pronto:      { label: 'Pronto',      cls: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' },
-    instalado:   { label: 'Instalado',   cls: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
+  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    pendente:    { label: 'Pendente',    color: 'var(--text-secondary)', bg: 'var(--bg-surface-3)' },
+    em_producao: { label: 'Em produção', color: 'var(--info)',           bg: 'var(--info-subtle)' },
+    pronto:      { label: 'Pronto',      color: 'var(--success)',        bg: 'var(--success-subtle)' },
+    instalado:   { label: 'Instalado',   color: 'var(--ia)',             bg: 'var(--ia-subtle)' },
   };
 
   const confirmEdit = async () => {
@@ -242,11 +242,12 @@ export function Operacional() {
                   <button
                     key={s}
                     onClick={() => updateTask(task.id, { status: s })}
-                    className={`text-xs px-2 py-1.5 md:py-0.5 rounded-full border transition-colors
-                      ${(task.status || 'pendente') === s
-                        ? statusConfig[s].cls + ' border-transparent font-semibold'
-                        : 'border-[var(--border)] text-[var(--text-tertiary)] hover:border-[var(--accent)]'
-                      }`}
+                    className="text-xs px-2 py-1.5 md:py-0.5 rounded-full border transition-colors font-medium min-h-[32px]"
+                    style={
+                      (task.status || 'pendente') === s
+                        ? { background: statusConfig[s].bg, color: statusConfig[s].color, borderColor: 'transparent', fontWeight: 600 }
+                        : { background: 'transparent', color: 'var(--text-tertiary)', borderColor: 'var(--border)' }
+                    }
                   >
                     {statusConfig[s].label}
                   </button>
@@ -321,7 +322,13 @@ export function Operacional() {
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[task.status || 'pendente']?.cls || ''}`}>
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-medium"
+                style={{
+                  background: statusConfig[task.status || 'pendente']?.bg,
+                  color:      statusConfig[task.status || 'pendente']?.color,
+                }}
+              >
                 {statusConfig[task.status || 'pendente']?.label}
               </span>
             </div>
