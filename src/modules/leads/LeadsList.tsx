@@ -84,61 +84,92 @@ export function LeadsList() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="min-w-0 w-full sm:min-w-[200px] sm:flex-1 sm:max-w-md">
-            <div className="relative">
+        <div className="space-y-2">
+          {/* Linha 1: busca + status + limpar */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
               <input
                 type="text"
                 placeholder="Buscar por nome, telefone ou serviço..."
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[40px]"
               />
             </div>
+
+            <Select
+              value={filters.status}
+              onChange={e => setFilter({ status: e.target.value as any })}
+              options={[
+                { value: 'all', label: 'Status' },
+                { value: 'novo', label: 'Novo' },
+                { value: 'atendimento', label: 'Atendimento' },
+                { value: 'orcado', label: 'Orçado' },
+                { value: 'fechado', label: 'Fechado' },
+                { value: 'perdido', label: 'Perdido' },
+              ]}
+            />
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} title="Limpar filtros">
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
-          <Select
-            value={filters.status}
-            onChange={e => setFilter({ status: e.target.value as any })}
-            options={[
-              { value: 'all', label: 'Todos Status' },
-              { value: 'novo', label: 'Novo' },
-              { value: 'atendimento', label: 'Em Atendimento' },
-              { value: 'orcado', label: 'Orçado' },
-              { value: 'fechado', label: 'Fechado' },
-              { value: 'perdido', label: 'Perdido' },
-            ]}
-          />
+          {/* Linha 2: filtros extras — sempre visíveis em sm+ */}
+          <div className="hidden sm:flex items-center gap-2 flex-wrap">
+            <Select
+              value={filters.temperatura}
+              onChange={e => setFilter({ temperatura: e.target.value as any })}
+              options={[
+                { value: 'all', label: 'Temperatura' },
+                { value: 'quente', label: '🔥 Quente' },
+                { value: 'morno', label: '☀️ Morno' },
+                { value: 'frio', label: '❄️ Frio' },
+              ]}
+            />
 
-          <Select
-            value={filters.temperatura}
-            onChange={e => setFilter({ temperatura: e.target.value as any })}
-            options={[
-              { value: 'all', label: 'Todas Temperaturas' },
-              { value: 'quente', label: '🔥 Quente' },
-              { value: 'morno', label: '☀️ Morno' },
-              { value: 'frio', label: '❄️ Frio' },
-            ]}
-          />
+            <Select
+              value={filters.prioridadeLevel}
+              onChange={e => setFilter({ prioridadeLevel: e.target.value as any })}
+              options={[
+                { value: 'all', label: 'Prioridade' },
+                { value: 'critico', label: '🔴 Crítico' },
+                { value: 'alto', label: '🟠 Alto' },
+                { value: 'medio', label: '🟡 Médio' },
+                { value: 'baixo', label: '🟢 Baixo' },
+              ]}
+            />
+          </div>
 
-          <Select
-            value={filters.prioridadeLevel}
-            onChange={e => setFilter({ prioridadeLevel: e.target.value as any })}
-            options={[
-              { value: 'all', label: 'Todas Prioridades' },
-              { value: 'critico', label: '🔴 Crítico' },
-              { value: 'alto', label: '🟠 Alto' },
-              { value: 'medio', label: '🟡 Médio' },
-              { value: 'baixo', label: '🟢 Baixo' },
-            ]}
-          />
+          {/* Mobile: filtros extras aparecem quando já tem filtro ativo */}
+          {(filters.temperatura !== 'all' || filters.prioridadeLevel !== 'all') && (
+            <div className="flex sm:hidden items-center gap-2 flex-wrap">
+              <Select
+                value={filters.temperatura}
+                onChange={e => setFilter({ temperatura: e.target.value as any })}
+                options={[
+                  { value: 'all', label: 'Temperatura' },
+                  { value: 'quente', label: '🔥 Quente' },
+                  { value: 'morno', label: '☀️ Morno' },
+                  { value: 'frio', label: '❄️ Frio' },
+                ]}
+              />
 
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
-              <X className="w-4 h-4" />
-              Limpar
-            </Button>
+              <Select
+                value={filters.prioridadeLevel}
+                onChange={e => setFilter({ prioridadeLevel: e.target.value as any })}
+                options={[
+                  { value: 'all', label: 'Prioridade' },
+                  { value: 'critico', label: '🔴 Crítico' },
+                  { value: 'alto', label: '🟠 Alto' },
+                  { value: 'medio', label: '🟡 Médio' },
+                  { value: 'baixo', label: '🟢 Baixo' },
+                ]}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -147,7 +178,7 @@ export function LeadsList() {
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {filteredLeads.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-slate-500">Nenhum lead encontrado</p>
+            <p className="text-[var(--text-tertiary)]">Nenhum lead encontrado</p>
             <Button className="mt-4" onClick={() => setShowAddModal(true)}>
               Adicionar primeiro lead
             </Button>
@@ -218,16 +249,26 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
 
   return (
     <Card
-      className={`p-4 transition ${
-        isSelected ? 'ring-2 ring-blue-500 border-blue-500' : ''
-      } ${alertaContato ? 'border-red-300 bg-red-50/40' : ''}`}
+      className="p-4 transition"
+      style={{
+        ...(isSelected ? {
+          outline: '2px solid var(--accent)',
+          outlineOffset: '0px',
+          borderColor: 'var(--accent)',
+          boxShadow: '0 0 0 3px var(--accent-subtle)',
+        } : {}),
+        ...(alertaContato ? {
+          borderColor: 'rgba(239, 68, 68, 0.3)',
+          background: 'var(--danger-subtle)',
+        } : {}),
+      }}
       hoverable
       onClick={onClick}
     >
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 overflow-hidden">
-            <h3 className="font-semibold text-slate-900 truncate flex-1 min-w-0">
+            <h3 className="font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
               {lead.nome}
             </h3>
 
@@ -240,7 +281,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
             <PriorityBadge level={lead.prioridadeLevel} />
           </div>
 
-          <p className="text-sm text-slate-500 truncate">
+          <p className="text-sm text-[var(--text-tertiary)] truncate">
             {lead.servico}
           </p>
 
@@ -249,7 +290,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
             <TemperatureBadge temperatura={lead.temperatura} />
 
             {alertaContato && (
-              <span className="text-xs text-red-600 font-medium">
+              <span className="text-xs font-semibold" style={{ color: 'var(--danger)' }}>
                 {diasSemContato}d sem contato
               </span>
             )}

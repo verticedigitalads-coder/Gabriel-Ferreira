@@ -178,6 +178,74 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* ── PAINEL DE EMERGÊNCIA ── */}
+      {(() => {
+        const now = new Date();
+        const criticos = leads.filter(l =>
+          l.prioridadeLevel === 'critico' &&
+          l.status !== 'fechado' &&
+          l.status !== 'perdido' &&
+          l.ultimoContato != null &&
+          differenceInDays(now, parseISO(l.ultimoContato)) >= 5
+        );
+        if (criticos.length === 0) return null;
+        return (
+          <div
+            className="rounded-xl p-4 border-2"
+            style={{
+              background: 'var(--danger-subtle)',
+              borderColor: 'var(--danger)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" style={{ color: 'var(--danger)' }} />
+                <span className="text-sm font-bold" style={{ color: 'var(--danger)' }}>
+                  ATENÇÃO IMEDIATA
+                </span>
+              </div>
+              <span
+                className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--danger)', color: '#fff' }}
+              >
+                {criticos.length}
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {criticos.map(lead => {
+                const dias = differenceInDays(now, parseISO(lead.ultimoContato!));
+                return (
+                  <div
+                    key={lead.id}
+                    onClick={() => {
+                      selectLead(lead.id);
+                      setActiveModule('leads');
+                    }}
+                    className="flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition-colors min-h-[44px]"
+                    style={{ background: 'rgba(239,68,68,0.08)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.14)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                  >
+                    <div className="min-w-0">
+                      <span className="text-sm font-semibold text-[var(--text-primary)]">
+                        {lead.nome}
+                      </span>
+                      <span
+                        className="text-xs font-bold ml-2"
+                        style={{ color: 'var(--danger)' }}
+                      >
+                        {dias}d sem contato
+                      </span>
+                    </div>
+                    <span className="text-xs" style={{ color: 'var(--danger)' }}>›</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Header */}
 
       <div>
@@ -192,7 +260,7 @@ export function Dashboard() {
 
       {/* Saúde do CRM */}
 
-      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
+      <Card className="shadow-sm rounded-xl p-4 md:p-6">
 
         <div className="flex items-center gap-3">
 
@@ -214,13 +282,13 @@ export function Dashboard() {
 
       {/* Receita */}
 
-      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
+      <Card className="shadow-sm rounded-xl p-4 md:p-6">
 
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
           Previsão de Receita
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
 
           <StatCard
             label="Receita Potencial"
@@ -249,7 +317,7 @@ export function Dashboard() {
 
       {/* Estoque crítico */}
 
-      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
+      <Card className="shadow-sm rounded-xl p-4 md:p-6">
 
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Estoque Crítico
@@ -288,13 +356,13 @@ export function Dashboard() {
 
       {/* Indicadores */}
 
-      <Card className="shadow-sm rounded-2xl p-4 md:p-6">
+      <Card className="shadow-sm rounded-xl p-4 md:p-6">
 
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
           Indicadores Estratégicos
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
 
           <StatCard
             label="Score Operacional"
@@ -320,7 +388,7 @@ export function Dashboard() {
 
       {/* Visitas Hoje */}
 
-      <Card className="shadow-sm rounded-2xl">
+      <Card className="shadow-sm rounded-xl">
 
         <div className="p-5 border-b border-[var(--border)]">
           <h2 className="text-base font-semibold text-[var(--text-primary)]">
@@ -375,7 +443,7 @@ export function Dashboard() {
 
       {focusTodayLeads.length > 0 && (
 
-        <Card className="shadow-sm rounded-2xl">
+        <Card className="shadow-sm rounded-xl">
 
           <div className="p-5 border-b border-[var(--border)] flex items-center gap-2">
             <Target className="w-5 h-5 text-[var(--accent)]" />
@@ -433,7 +501,7 @@ export function Dashboard() {
 
       {/* Maiores oportunidades */}
 
-      <Card className="shadow-sm rounded-2xl">
+      <Card className="shadow-sm rounded-xl">
 
         <div className="p-5 border-b border-[var(--border)]">
 
