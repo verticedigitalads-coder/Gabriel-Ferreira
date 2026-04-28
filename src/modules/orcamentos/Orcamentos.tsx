@@ -327,7 +327,7 @@ export function Orcamentos() {
             )}
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)}>
+            <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF">
               <Download className="w-4 h-4" />
             </Button>
             {defaultSettings.chavePix && (leads.find(l => l.id === orc.leadId)?.telefone || orc.clienteTelefone) && (
@@ -353,10 +353,10 @@ export function Orcamentos() {
                 <QrCode className="w-4 h-4 text-[var(--success)]" />
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)}>
+            <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento">
               <Edit className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)}>
+            <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento">
               <Trash2 className="w-4 h-4 text-[var(--danger)]" />
             </Button>
             {!orc.assinaturaCliente ? (

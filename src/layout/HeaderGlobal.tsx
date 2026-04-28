@@ -66,7 +66,7 @@ export function HeaderGlobal() {
 
         {/* Notificações */}
         <button
-          className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors hidden md:block"
+          className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]"
           title={permissionGranted ? `${totalPendente} tarefa(s) pendente(s)` : 'Notificações desativadas'}
         >
           <Bell className="w-5 h-5" />
@@ -81,7 +81,7 @@ export function HeaderGlobal() {
         </button>
 
         {/* Avatar */}
-        <div className="w-8 h-8 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-sm font-semibold">
+        <div className="w-11 h-11 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
           G
         </div>
 

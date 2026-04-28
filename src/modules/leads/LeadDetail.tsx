@@ -351,16 +351,17 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
       {/* Footer Actions */}
       <div className="p-4 border-t border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between">
         <Button
-          variant="danger"
+          variant="ghost"
           size="sm"
           onClick={() => setShowDeleteConfirm(true)}
           className="gap-1"
+          style={{ color: 'var(--danger)' }}
         >
           <Trash2 className="w-4 h-4" />
           Excluir
         </Button>
         <Button
-          variant="secondary"
+          variant="primary"
           onClick={() => setShowEditModal(true)}
           className="gap-1"
         >

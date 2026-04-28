@@ -157,31 +157,36 @@ function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
     return scoreB - scoreA;
   });
 
+  const isEmpty = sortedTasks.length === 0;
+
   return (
     <div
       ref={setNodeRef}
-      className="rounded-xl p-4 border min-h-[160px] overflow-hidden bg-[var(--bg-surface)] border-[var(--border)]"
+      className={`rounded-xl border overflow-hidden border-[var(--border)] ${isEmpty ? 'py-2 px-3 min-h-[48px]' : 'p-4 min-h-[160px] bg-[var(--bg-surface)]'}`}
+      style={isEmpty ? { background: 'transparent' } : undefined}
     >
-      <div className="mb-3">
-        <p className="text-sm font-semibold capitalize">
+      <div className={`flex items-center ${isEmpty ? 'justify-between' : 'flex-col items-start mb-3'}`}>
+        <p className={`text-sm font-semibold capitalize ${isEmpty ? 'text-[var(--text-disabled)]' : 'text-[var(--text-primary)]'}`}>
           <span className="lg:hidden">{DAY_ABBREV[day.label] ?? day.label}</span>
           <span className="hidden lg:block">{day.label}</span>
         </p>
-        <p className="text-xs text-[var(--text-tertiary)]">
+        <p className={`text-xs ${isEmpty ? 'text-[var(--text-disabled)]' : 'text-[var(--text-tertiary)]'}`}>
           {format(day.date, 'dd/MM', { locale: ptBR })}
         </p>
       </div>
 
-      <div className="space-y-3">
-        {sortedTasks.map((task: any) => (
-          <DraggableTask
-            key={task.id}
-            task={task}
-            onDelete={onDelete}
-            onEdit={onEdit}
-          />
-        ))}
-      </div>
+      {!isEmpty && (
+        <div className="space-y-3">
+          {sortedTasks.map((task: any) => (
+            <DraggableTask
+              key={task.id}
+              task={task}
+              onDelete={onDelete}
+              onEdit={onEdit}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

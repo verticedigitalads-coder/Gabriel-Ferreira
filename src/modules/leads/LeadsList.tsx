@@ -91,10 +91,10 @@ export function LeadsList() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
               <input
                 type="text"
-                placeholder="Buscar por nome, telefone ou serviço..."
+                placeholder="Buscar nome, telefone ou serviço..."
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[40px]"
+                className="w-full pl-9 pr-3 py-2 border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[40px] overflow-hidden text-ellipsis"
               />
             </div>
 
