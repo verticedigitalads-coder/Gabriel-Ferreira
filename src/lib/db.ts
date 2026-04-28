@@ -78,8 +78,6 @@ export async function getDB(): Promise<IDBPDatabase<CRMDatabase>> {
 
   dbInstance = await openDB<CRMDatabase>(DB_NAME, DB_VERSION, {
   upgrade(db) {
-    console.log("UPGRADE EXECUTANDO");
-
     try {
 
       if (!db.objectStoreNames.contains('workspaces')) {

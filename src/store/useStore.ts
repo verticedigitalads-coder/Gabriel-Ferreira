@@ -227,7 +227,6 @@ export const useStore = create<StoreState>()(
 
       startRealtime: () => {
         if (realtimeStarted) {
-          console.log('⛔ Realtime já iniciado');
           return;
         }
 
@@ -235,8 +234,6 @@ export const useStore = create<StoreState>()(
         if (!workspaceId) return;
 
         realtimeStarted = true;
-
-        console.log('🚀 Iniciando realtime...');
 
         // ================= LEADS =================
         realtimeChannels.push(supabase
@@ -395,8 +392,6 @@ export const useStore = create<StoreState>()(
               filter: `workspace_id=eq.${workspaceId}`,
             },
             (payload: any) => {
-              console.log('🔥 TRANSACTION REALTIME:', payload);
-
               set((state: any) => {
                 const transactions = state.transactions || [];
 
@@ -452,9 +447,7 @@ export const useStore = create<StoreState>()(
               });
             },
           )
-          .subscribe((status) => {
-            console.log('📡 TRANSACTION STATUS:', status);
-          }));
+          .subscribe());
 
         // ================= CONTAS A RECEBER =================
         realtimeChannels.push(supabase

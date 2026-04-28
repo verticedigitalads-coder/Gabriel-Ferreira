@@ -84,8 +84,6 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
   };
 
   const handleCreateNew = async () => {
-    console.log('ANALYSIS RESULT:', analysis);
-
     if (!analysis) return;
 
     const rawLead = AIService.convertToLead(
