@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
 Última atualização: 28/04/2026
-Versão: v2.27.2
+Versão: v2.27.4
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -31,6 +31,8 @@ Versão: v2.27.2
 - Design System v2.27.0: Bottom navigation mobile (5 abas: Início, Leads, Orçamentos, Agenda, IA), hambúrguer mantido para módulos extras (Kanban, Financeiro, Recibos, Settings)
 - UX v2.27.1 Lote A: flash branco loader corrigido (index.html body+root #0f1117); touch targets header (botão sino + avatar → min 44×44px); placeholder busca leads encurtado + pl-9
 - UX v2.27.2 Lote B: LeadDetail footer — Editar=primary/Excluir=ghost danger (hierarquia correta); Orçamentos — title+aria-label em Download/Editar/Excluir; OperacionalCalendar — dias vazios compactos (48px, fundo transparente, texto disabled)
+- UX v2.27.3 Lote C: H1 duplicados removidos (Dashboard/Leads/Orçamentos/Settings); faixa mobile de alertas no MainLayout (abaixo do header, md:hidden); LeadRow — nome text-base, serviço text-xs disabled, badge inline semântico por nível, telefone tertiary, valor tabular-nums
+- UX v2.27.4 Lote D: Orçamentos mobile — Editar/Excluir/Assinatura ocultos em mobile (hidden sm:flex), PDF+PIX sempre visíveis; Operacional — formulário Nova Tarefa colapsável (toggle com botão "+ Nova Tarefa"); Leads — "Criar com IA" rebaixado para ghost+color ia, texto abreviado em mobile
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada

@@ -320,15 +320,9 @@ export function Settings() {
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-3xl">
 
-      {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
-          Configurações
-        </h1>
-        <p className="text-sm text-[var(--text-tertiary)] mt-1">
-          Painel administrativo do CRM
-        </p>
-      </div>
+      <p className="text-sm text-[var(--text-tertiary)]">
+        Painel administrativo do CRM
+      </p>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-[var(--border)] overflow-x-auto">

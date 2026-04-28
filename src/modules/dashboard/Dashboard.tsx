@@ -246,17 +246,9 @@ export function Dashboard() {
         );
       })()}
 
-      {/* Header */}
-
-      <div>
-        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-          Dashboard Executivo
-        </h1>
-
-        <p className="text-sm text-[var(--text-tertiary)] mt-1">
-          Atualizado em {format(new Date(), "dd 'de' MMMM, HH:mm", { locale: ptBR })}
-        </p>
-      </div>
+      <p className="text-sm text-[var(--text-tertiary)]">
+        Atualizado em {format(new Date(), "dd 'de' MMMM, HH:mm", { locale: ptBR })}
+      </p>
 
       {/* Saúde do CRM */}
 

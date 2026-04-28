@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Menu } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { BottomNav } from './BottomNav';
+import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const stats = useDashboardStats();
 
   const logout = useStore(state => state.logout);
 
@@ -89,6 +91,24 @@ export function MainLayout({ children }: MainLayoutProps) {
 
           </div>
         </div>
+
+        {(stats.tarefasAtrasadas > 0 || stats.tarefasHoje > 0) && (
+          <div
+            className="flex md:hidden items-center gap-3 px-4 py-1.5 border-b text-xs"
+            style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+          >
+            {stats.tarefasAtrasadas > 0 && (
+              <span style={{ color: 'var(--danger)' }}>
+                {stats.tarefasAtrasadas} atrasadas
+              </span>
+            )}
+            {stats.tarefasHoje > 0 && (
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {stats.tarefasHoje} hoje
+              </span>
+            )}
+          </div>
+        )}
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}

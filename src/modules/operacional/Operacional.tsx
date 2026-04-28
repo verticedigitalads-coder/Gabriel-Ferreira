@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle2, Trash2 } from 'lucide-react';
+import { CheckCircle2, Trash2, Plus } from 'lucide-react';
 
 import OperacionalCalendar from './components/OperacionalCalendar';
 import OperacionalMonthCalendar from './components/OperacionalMonthCalendar';
@@ -36,6 +36,7 @@ export function Operacional() {
 
   // 🔥 TOGGLE SEMANA / MÊS
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [showNewTaskForm, setShowNewTaskForm] = useState(false);
 
   const [titulo, setTitulo] = useState('');
   const [data, setData] = useState('');
@@ -97,6 +98,7 @@ export function Operacional() {
     setTitulo('');
     setData('');
     setPrioridade('media');
+    setShowNewTaskForm(false);
   };
 
   const prioridadeColor = (nivel: string) => {
@@ -110,41 +112,59 @@ export function Operacional() {
       <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Painel Operacional</h1>
 
       {/* ================= NOVA TAREFA ================= */}
-      <div className="bg-[var(--bg-surface)] p-4 rounded shadow space-y-3 border border-[var(--border)]">
-        <h2 className="font-semibold text-[var(--text-primary)]">Nova Tarefa</h2>
-
-        <input
-          type="text"
-          placeholder="Título da tarefa"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-h-[44px]"
-        />
-
-        <input
-          type="date"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
-        />
-
-        <select
-          value={prioridade}
-          onChange={(e) => setPrioridade(e.target.value as any)}
-          className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
-        >
-          <option value="baixa">Prioridade Baixa</option>
-          <option value="media">Prioridade Média</option>
-          <option value="alta">Prioridade Alta</option>
-        </select>
-
+      {!showNewTaskForm ? (
         <button
-          onClick={handleAdd}
-          className="bg-[var(--accent)] text-white py-3 md:py-2 w-full rounded hover:bg-[var(--accent-hover)] min-h-[44px]"
+          onClick={() => setShowNewTaskForm(true)}
+          className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] font-medium"
         >
-          Adicionar Tarefa
+          <Plus className="w-4 h-4" />
+          Nova Tarefa
         </button>
-      </div>
+      ) : (
+        <div className="bg-[var(--bg-surface)] p-4 rounded shadow space-y-3 border border-[var(--border)]">
+          <h2 className="font-semibold text-[var(--text-primary)]">Nova Tarefa</h2>
+
+          <input
+            type="text"
+            placeholder="Título da tarefa"
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-h-[44px]"
+          />
+
+          <input
+            type="date"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+          />
+
+          <select
+            value={prioridade}
+            onChange={(e) => setPrioridade(e.target.value as any)}
+            className="border border-[var(--border)] p-2 w-full rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+          >
+            <option value="baixa">Prioridade Baixa</option>
+            <option value="media">Prioridade Média</option>
+            <option value="alta">Prioridade Alta</option>
+          </select>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleAdd}
+              className="flex-1 bg-[var(--accent)] text-white py-3 md:py-2 rounded hover:bg-[var(--accent-hover)] min-h-[44px]"
+            >
+              Adicionar Tarefa
+            </button>
+            <button
+              onClick={() => setShowNewTaskForm(false)}
+              className="px-4 min-h-[44px] rounded border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-surface-2)]"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={showDeleteModal}

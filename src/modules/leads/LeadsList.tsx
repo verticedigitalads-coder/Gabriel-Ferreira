@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Modal, SlidePanel } from '@/components/ui/Modal';
-import { StatusBadge, TemperatureBadge, PriorityBadge } from '@/components/ui/Badge';
+import { StatusBadge, TemperatureBadge } from '@/components/ui/Badge';
 import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
 import { parseISO, differenceInDays } from 'date-fns';
@@ -61,24 +61,24 @@ export function LeadsList() {
       {/* Header */}
       <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-[var(--text-primary)]">Leads</h1>
-            <p className="text-sm text-[var(--text-secondary)]">
-              {filteredLeads.length} de {leads.length} leads
-            </p>
-          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {filteredLeads.length} de {leads.length} leads
+          </p>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button
-              variant="secondary"
+              variant="ghost"
               onClick={() => setShowAIModal(true)}
-              className="gap-2 border-[var(--ia-subtle)] text-[var(--ia)] hover:bg-[var(--ia-subtle)]"
+              className="gap-1.5"
+              style={{ color: 'var(--ia)' }}
             >
               <Sparkles className="w-4 h-4" />
-              Criar com IA
+              <span className="hidden sm:inline">Criar com IA</span>
+              <span className="sm:hidden">IA</span>
             </Button>
-            <Button onClick={() => setShowAddModal(true)} className="gap-2">
+            <Button onClick={() => setShowAddModal(true)} className="gap-1.5">
               <Plus className="w-4 h-4" />
-              Novo Lead
+              <span className="hidden sm:inline">Novo Lead</span>
+              <span className="sm:hidden">Novo</span>
             </Button>
           </div>
         </div>
@@ -268,7 +268,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 overflow-hidden">
-            <h3 className="font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
               {lead.nome}
             </h3>
 
@@ -278,10 +278,26 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
               </span>
             )}
 
-            <PriorityBadge level={lead.prioridadeLevel} />
+            <span
+              className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
+              style={{
+                background: lead.prioridadeLevel === 'critico' ? 'var(--danger-subtle)' :
+                            lead.prioridadeLevel === 'alto'    ? 'var(--warning-subtle)' :
+                            lead.prioridadeLevel === 'medio'   ? 'var(--info-subtle)' :
+                            'var(--bg-surface-3)',
+                color: lead.prioridadeLevel === 'critico' ? 'var(--danger)' :
+                       lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
+                       lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
+                       'var(--text-disabled)',
+              }}
+            >
+              {lead.prioridadeLevel === 'critico' ? '● Crítico' :
+               lead.prioridadeLevel === 'alto'    ? '● Alto' :
+               lead.prioridadeLevel === 'medio'   ? '● Médio' : '● Baixo'}
+            </span>
           </div>
 
-          <p className="text-sm text-[var(--text-tertiary)] truncate">
+          <p className="text-xs text-[var(--text-disabled)] truncate">
             {lead.servico}
           </p>
 
@@ -299,10 +315,10 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
 
         <div className="text-right shrink-0 max-w-[110px]">
           {(lead.valorOrcado ?? 0) > 0
-            ? <p className="text-sm font-semibold text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
+            ? <p className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
             : <p className="text-sm text-[var(--text-tertiary)]">Sem valor</p>
           }
-          <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">
+          <p className="text-xs text-[var(--text-tertiary)] mt-1 truncate">
             {formatPhone(lead.telefone)}
           </p>
         </div>

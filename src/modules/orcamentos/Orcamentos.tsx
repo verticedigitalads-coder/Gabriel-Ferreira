@@ -327,6 +327,7 @@ export function Orcamentos() {
             )}
           </div>
           <div className="flex items-center gap-1">
+            {/* Sempre visíveis: PDF + PIX */}
             <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF">
               <Download className="w-4 h-4" />
             </Button>
@@ -335,6 +336,7 @@ export function Orcamentos() {
                 variant="ghost"
                 size="sm"
                 title="Enviar PIX via WhatsApp"
+                aria-label="Enviar PIX via WhatsApp"
                 onClick={() => {
                   const lead = leads.find(l => l.id === orc.leadId);
                   enviarPixWhatsapp({
@@ -353,30 +355,35 @@ export function Orcamentos() {
                 <QrCode className="w-4 h-4 text-[var(--success)]" />
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento">
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento">
-              <Trash2 className="w-4 h-4 text-[var(--danger)]" />
-            </Button>
-            {!orc.assinaturaCliente ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                title="Coletar assinatura do cliente"
-                onClick={() => {
-                  setSelectedOrcamentoForSign(orc);
-                  setSignatureModalOpen(true);
-                }}
-              >
-                <PenTool className="w-4 h-4 text-amber-500" />
+
+            {/* Desktop: Editar, Excluir, Assinatura */}
+            <div className="hidden sm:flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento">
+                <Edit className="w-4 h-4" />
               </Button>
-            ) : (
-              <span className="flex items-center gap-1 text-xs text-[var(--success)] px-2" title="Orçamento assinado">
-                <PenTool className="w-3 h-3" />
-                Assinado
-              </span>
-            )}
+              <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento">
+                <Trash2 className="w-4 h-4 text-[var(--danger)]" />
+              </Button>
+              {!orc.assinaturaCliente ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  title="Coletar assinatura do cliente"
+                  aria-label="Coletar assinatura do cliente"
+                  onClick={() => {
+                    setSelectedOrcamentoForSign(orc);
+                    setSignatureModalOpen(true);
+                  }}
+                >
+                  <PenTool className="w-4 h-4 text-amber-500" />
+                </Button>
+              ) : (
+                <span className="flex items-center gap-1 text-xs text-[var(--success)] px-2" title="Orçamento assinado">
+                  <PenTool className="w-3 h-3" />
+                  Assinado
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </Card>
@@ -388,12 +395,9 @@ export function Orcamentos() {
       {/* Header */}
       <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Orçamentos</h1>
-            <p className="text-sm text-[var(--text-secondary)]">
-              {orcamentos.length} orçamentos
-            </p>
-          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {orcamentos.length} orçamentos
+          </p>
           <div className="flex items-center gap-2">
             <Button
               variant={modoSelecao ? 'primary' : 'secondary'}
