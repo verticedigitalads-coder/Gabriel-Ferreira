@@ -7,6 +7,7 @@ import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
 import { Menu } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { BottomNav } from './BottomNav';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -55,8 +56,12 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-3 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
 
   <button
-    className="md:hidden mr-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+    className="md:hidden mr-1 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md"
+    style={{ color: 'var(--text-tertiary)' }}
     onClick={() => setSidebarOpen(true)}
+    title="Todos os módulos"
+    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
   >
     <Menu className="w-5 h-5" />
   </button>
@@ -88,6 +93,8 @@ export function MainLayout({ children }: MainLayoutProps) {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
+
+        <BottomNav />
 
       </div>
 

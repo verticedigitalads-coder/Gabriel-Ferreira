@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 27/04/2026
-Versão: v2.26.1
+Última atualização: 28/04/2026
+Versão: v2.27.0
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -28,6 +28,7 @@ Versão: v2.26.1
 - Design System v2.26.2: hardcoded zerado em Notas.tsx (statusColors, statusIcons, stats, info banner, empty state), AuthPage.tsx (blue/gray → accent/text vars), Central.tsx (text-blue-600 × 2 → accent), OperacionalCalendar.tsx (bg-red-700 → danger)
 - Design System v2.26.2 Lote A: LeadRow CSS vars (ring-blue/border-red/slate → accent/danger/text vars via inline style); Dashboard grid 2×2 mobile (Receita + Indicadores); rounded-2xl → rounded-xl em todos os Cards do Dashboard
 - v2.26.3 Lote B: Painel Emergência Dashboard (leads críticos com 5+ dias sem contato, clicável → navega para lead); filtros Leads compactos mobile (busca + status na linha 1, temperatura + prioridade ocultos no mobile exceto quando filtro ativo)
+- Design System v2.27.0: Bottom navigation mobile (5 abas: Início, Leads, Orçamentos, Agenda, IA), hambúrguer mantido para módulos extras (Kanban, Financeiro, Recibos, Settings)
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada
