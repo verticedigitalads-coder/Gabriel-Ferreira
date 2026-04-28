@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase"
 import { formatCotacaoMaterial } from "@/store/formatters"
+import type { CotacaoMaterial } from "@/types"
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createCotacaoMaterialSlice = (set: any, get: any) => ({
 
   cotacoesMateriais: [],
@@ -23,7 +25,7 @@ export const createCotacaoMaterialSlice = (set: any, get: any) => ({
     set({ cotacoesMateriais: (data || []).map(formatCotacaoMaterial) })
   },
 
-  addCotacaoMaterial: async (data: any) => {
+  addCotacaoMaterial: async (data: Partial<CotacaoMaterial>) => {
     const { workspaceId } = get()
     if (!workspaceId) return
 
@@ -60,7 +62,7 @@ export const createCotacaoMaterialSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      cotacoesMateriais: state.cotacoesMateriais.filter((c: any) => c.id !== id),
+      cotacoesMateriais: state.cotacoesMateriais.filter((c: CotacaoMaterial) => c.id !== id),
     }))
   },
 

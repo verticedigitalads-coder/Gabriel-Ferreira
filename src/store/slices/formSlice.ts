@@ -1,3 +1,4 @@
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createFormSlice = (set:any)=>({
 
   leadForm:{

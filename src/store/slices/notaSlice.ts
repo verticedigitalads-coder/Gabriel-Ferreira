@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import { formatNota } from '@/store/formatters'
 import type { Nota } from '@/types'
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createNotaSlice = (set: any, get: any) => ({
 
   notas: [],
@@ -39,13 +40,13 @@ export const createNotaSlice = (set: any, get: any) => ({
     const { notas } = get()
     const now = new Date().toISOString()
     await supabase.from('notas').update({ ...data, updated_at: now }).eq('id', id)
-    set({ notas: notas.map((n: any) => n.id === id ? { ...n, ...data } : n) })
+    set({ notas: notas.map((n: Nota) => n.id === id ? { ...n, ...data } : n) })
   },
 
   deleteNota: async (id: string) => {
     const { notas } = get()
     await supabase.from('notas').delete().eq('id', id)
-    set({ notas: notas.filter((n: any) => n.id !== id) })
+    set({ notas: notas.filter((n: Nota) => n.id !== id) })
   },
 
 })

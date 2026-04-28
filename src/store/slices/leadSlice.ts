@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { formatLead } from '@/store/formatters';
 import type { Lead, LeadStatus } from '@/types';
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createLeadSlice = (_set: any, get: any) => ({
   leads: [],
 
@@ -81,7 +82,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
   updateLead: async (id: string, updates: Partial<Lead>) => {
     const now = new Date().toISOString();
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       updated_at: now,
     };
 
@@ -150,7 +151,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     const now = new Date().toISOString();
 
     // 🔥 1. Atualiza o lead
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       status: 'orcado',
       orcamento_enviado: true,
       data_orcamento: now,

@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase"
 import { formatMaterial } from "@/store/formatters"
+import type { Material } from "@/types"
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createMaterialSlice = (set:any,get:any)=>({
 
   materiais:[],
@@ -18,7 +20,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
 
   },
 
-  addMaterial: async(data:any)=>{
+  addMaterial: async(data:Partial<Material>)=>{
 
     const { workspaceId, materiais } = get()
 
@@ -48,11 +50,11 @@ export const createMaterialSlice = (set:any,get:any)=>({
 
   },
 
-  updateMaterial: async(id:string, data:any)=>{
+  updateMaterial: async(id:string, data:Partial<Material>)=>{
 
     const { materiais } = get()
 
-    const payload: any = {}
+    const payload: Record<string, unknown> = {}
     if(data.nome !== undefined)         payload.nome = data.nome
     if(data.unidade !== undefined)      payload.unidade = data.unidade || null
     if(data.categoria !== undefined)    payload.categoria = data.categoria || null
@@ -71,7 +73,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
     }
 
     set({
-      materiais: materiais.map((m:any)=>
+      materiais: materiais.map((m:Material)=>
         m.id === id ? formatMaterial(updated) : m
       )
     })
@@ -93,7 +95,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
     }
 
     set({
-      materiais: materiais.filter((m:any)=> m.id !== id)
+      materiais: materiais.filter((m:Material)=> m.id !== id)
     })
 
   },
@@ -102,7 +104,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
 
     const { materiais } = get()
 
-    const material = materiais.find((m:any)=> m.id === id)
+    const material = materiais.find((m:Material)=> m.id === id)
     if(!material) return
 
     const novoEstoque = tipo === 'entrada'
@@ -127,7 +129,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
     }
 
     set({
-      materiais: materiais.map((m:any)=>
+      materiais: materiais.map((m:Material)=>
         m.id === id ? formatMaterial(updated) : m
       )
     })
@@ -138,7 +140,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
 
     const { materiais } = get()
 
-    const material = materiais.find((m:any)=>m.id === materialId)
+    const material = materiais.find((m:Material)=>m.id === materialId)
 
     if(!material) return
 
@@ -152,7 +154,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       .eq("id", materialId)
 
     set({
-      materiais: materiais.map((m:any)=>
+      materiais: materiais.map((m:Material)=>
         m.id === materialId
           ? { ...m, estoque: novoEstoque }
           : m

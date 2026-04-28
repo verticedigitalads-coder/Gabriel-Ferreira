@@ -1,9 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import { formatContaReceber } from '@/store/formatters';
+import type { ContaReceber, ContaReceberFormData } from '@/types';
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createContasReceberSlice = (_set: any, get: any) => ({
-  contasReceber: [] as any[],
+  contasReceber: [] as ContaReceber[],
 
   // ================= FETCH =================
   fetchContasReceber: async () => {
@@ -28,7 +30,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
   },
 
   // ================= ADD =================
-  addContaReceber: async (data: any) => {
+  addContaReceber: async (data: ContaReceberFormData) => {
     const { workspaceId } = get();
     if (!workspaceId) {
       console.error('[ContasReceberSlice] workspaceId não encontrado');
@@ -62,7 +64,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
     }
 
     _set((state: any) => {
-      const exists = state.contasReceber.some((c: any) => c.id === inserted.id);
+      const exists = state.contasReceber.some((c: ContaReceber) => c.id === inserted.id);
       if (exists) return state;
       return { contasReceber: [formatContaReceber(inserted), ...state.contasReceber] };
     });
@@ -71,10 +73,10 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
   },
 
   // ================= UPDATE =================
-  updateContaReceber: async (id: string, data: any) => {
+  updateContaReceber: async (id: string, data: Partial<ContaReceberFormData>) => {
     const now = new Date().toISOString();
 
-    const payload: any = { updated_at: now };
+    const payload: Record<string, unknown> = { updated_at: now };
     if (data.descricao !== undefined) payload.descricao = data.descricao;
     if (data.valor !== undefined) payload.valor = data.valor;
     if (data.dataVencimento !== undefined) payload.data_vencimento = data.dataVencimento;
@@ -96,7 +98,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
     }
 
     _set((state: any) => ({
-      contasReceber: state.contasReceber.map((c: any) =>
+      contasReceber: state.contasReceber.map((c: ContaReceber) =>
         c.id === id ? formatContaReceber(updated) : c,
       ),
     }));
@@ -114,7 +116,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
     }
 
     _set((state: any) => ({
-      contasReceber: state.contasReceber.filter((c: any) => c.id !== id),
+      contasReceber: state.contasReceber.filter((c: ContaReceber) => c.id !== id),
     }));
   },
 
@@ -123,7 +125,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
     const today = new Date().toISOString().split('T')[0];
     const now = new Date().toISOString();
 
-    const conta = get().contasReceber.find((c: any) => c.id === id);
+    const conta = get().contasReceber.find((c: ContaReceber) => c.id === id);
     if (!conta) {
       console.error('[ContasReceberSlice] Conta não encontrada:', id);
       return;
@@ -142,7 +144,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
     }
 
     _set((state: any) => ({
-      contasReceber: state.contasReceber.map((c: any) =>
+      contasReceber: state.contasReceber.map((c: ContaReceber) =>
         c.id === id ? formatContaReceber(updated) : c,
       ),
     }));

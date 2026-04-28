@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import { formatFornecedor } from '@/store/formatters'
 import type { Fornecedor } from '@/types'
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createFornecedorSlice = (set: any, get: any) => ({
 
   fornecedores: [],
@@ -72,7 +73,7 @@ export const createFornecedorSlice = (set: any, get: any) => ({
 
   updateFornecedor: async (id: string, data: Partial<Fornecedor>) => {
 
-    const payload: any = {}
+    const payload: Record<string, unknown> = {}
 
     if (data.nome !== undefined)              payload.nome = data.nome
     if (data.nomeFantasia !== undefined)      payload.nome_fantasia = data.nomeFantasia

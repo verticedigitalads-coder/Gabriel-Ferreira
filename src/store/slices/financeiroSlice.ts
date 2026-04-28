@@ -1,7 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import { formatTransaction } from '@/store/formatters';
+import type { Transaction } from '@/types';
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createFinanceiroSlice = (set: any, get: any) => ({
   transactions: [],
 
@@ -31,7 +33,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
   },
 
   // ================= ADD =================
-  addTransaction: async (data: any) => {
+  addTransaction: async (data: Partial<Transaction>) => {
     const { workspaceId } = get();
     const now = new Date().toISOString();
 
@@ -42,7 +44,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
     const isDespesa = ['despesa', 'comissao', 'pagamento_funcionario'].includes(data.tipo);
 
-    const transaction: any = {
+    const transaction: Record<string, unknown> = {
       id: uuid(),
       workspace_id: workspaceId,
       descricao: data.descricao,
@@ -73,7 +75,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => {
-      const exists = state.transactions.some((t: any) => t.id === inserted.id);
+      const exists = state.transactions.some((t: Transaction) => t.id === inserted.id);
 
       if (exists) return state;
 
@@ -86,10 +88,10 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
   },
 
   // ================= UPDATE =================
-  updateTransaction: async (id: string, data: any) => {
+  updateTransaction: async (id: string, data: Partial<Transaction>) => {
     const now = new Date().toISOString();
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       updated_at: now,
     };
 
@@ -119,7 +121,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => {
-      const exists = state.transactions.some((t: any) => t.id === id);
+      const exists = state.transactions.some((t: Transaction) => t.id === id);
 
       if (!exists) {
         return {
@@ -128,7 +130,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       }
 
       return {
-        transactions: state.transactions.map((t: any) =>
+        transactions: state.transactions.map((t: Transaction) =>
           t.id === id ? formatTransaction(updated) : t,
         ),
       };
@@ -147,7 +149,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      transactions: state.transactions.filter((t: any) => t.id !== id),
+      transactions: state.transactions.filter((t: Transaction) => t.id !== id),
     }));
   },
 
@@ -174,7 +176,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      transactions: state.transactions.map((t: any) =>
+      transactions: state.transactions.map((t: Transaction) =>
         t.id === id ? formatTransaction(updated) : t,
       ),
     }));

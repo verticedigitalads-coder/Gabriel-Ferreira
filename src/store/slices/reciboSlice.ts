@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import type { Recibo } from '@/types';
 
-function formatRecibo(r: any): Recibo {
+function formatRecibo(r: Record<string, unknown>): Recibo {
   return {
     id: r.id,
     workspaceId: r.workspace_id,
@@ -23,6 +23,7 @@ function formatRecibo(r: any): Recibo {
   };
 }
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createReciboSlice = (set: any, get: any) => ({
   recibos: [] as Recibo[],
 
@@ -92,7 +93,7 @@ export const createReciboSlice = (set: any, get: any) => ({
     const formatted = formatRecibo(inserted);
 
     set((state: any) => {
-      const exists = state.recibos.some((r: any) => r.id === inserted.id);
+      const exists = state.recibos.some((r: Recibo) => r.id === inserted.id);
       if (exists) return state;
       return { recibos: [formatted, ...state.recibos] };
     });
@@ -104,7 +105,7 @@ export const createReciboSlice = (set: any, get: any) => ({
   updateRecibo: async (id: string, data: Partial<Recibo>) => {
     const now = new Date().toISOString();
 
-    const payload: any = { updated_at: now };
+    const payload: Record<string, unknown> = { updated_at: now };
 
     if (data.clienteNome !== undefined) payload.cliente_nome = data.clienteNome;
     if (data.clienteTelefone !== undefined) payload.cliente_telefone = data.clienteTelefone;
@@ -132,7 +133,7 @@ export const createReciboSlice = (set: any, get: any) => ({
     const formatted = formatRecibo(updated);
 
     set((state: any) => ({
-      recibos: state.recibos.map((r: any) => (r.id === id ? formatted : r)),
+      recibos: state.recibos.map((r: Recibo) => (r.id === id ? formatted : r)),
     }));
 
     return formatted;
@@ -148,7 +149,7 @@ export const createReciboSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      recibos: state.recibos.filter((r: any) => r.id !== id),
+      recibos: state.recibos.filter((r: Recibo) => r.id !== id),
     }));
   },
 
@@ -198,7 +199,7 @@ export const createReciboSlice = (set: any, get: any) => ({
     const formatted = formatRecibo(updated);
 
     set((state: any) => ({
-      recibos: state.recibos.map((r: any) => (r.id === id ? formatted : r)),
+      recibos: state.recibos.map((r: Recibo) => (r.id === id ? formatted : r)),
     }));
 
     return formatted;

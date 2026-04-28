@@ -3,11 +3,12 @@ import { v4 as uuid } from 'uuid';
 import { formatOperacionalTask } from '@/store/formatters';
 import type { OperacionalTask } from '@/types';
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createOperacionalSlice = (set: any, get: any) => ({
   operacionalTasks: [],
 
   // ================= ADD =================
-  addOperacionalTask: async (taskData: any) => {
+  addOperacionalTask: async (taskData: Partial<OperacionalTask>) => {
     const { workspaceId } = get();
     const now = new Date().toISOString();
 
@@ -38,7 +39,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
     // ✅ atualização imediata (UX)
     set((state: any) => {
-      const exists = state.operacionalTasks.some((t: any) => t.id === data.id);
+      const exists = state.operacionalTasks.some((t: OperacionalTask) => t.id === data.id);
 
       if (exists) return state;
 
@@ -64,7 +65,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
     set((state: any) => ({
       operacionalTasks: state.operacionalTasks.filter(
-        (t: any) => t.id !== taskId,
+        (t: OperacionalTask) => t.id !== taskId,
       ),
     }));
   },
@@ -76,7 +77,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
   ) => {
     const now = new Date().toISOString();
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       updated_at: now,
     };
 
@@ -102,7 +103,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      operacionalTasks: state.operacionalTasks.map((t: any) =>
+      operacionalTasks: state.operacionalTasks.map((t: OperacionalTask) =>
         t.id === taskId ? formatOperacionalTask(data) : t,
       ),
     }));

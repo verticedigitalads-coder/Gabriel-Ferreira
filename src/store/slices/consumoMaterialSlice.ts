@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase"
 import { formatConsumoMaterial } from "@/store/formatters"
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createConsumoMaterialSlice = (set:any,get:any)=>({
 
   consumoMateriais:[],

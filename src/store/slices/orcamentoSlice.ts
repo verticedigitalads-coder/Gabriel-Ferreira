@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
-import type { Orcamento } from '@/types';
+import type { Orcamento, OrcamentoItem } from '@/types';
 import { calcularOrcamento } from '@/domain/orcamento/calcularOrcamento';
 import { formatOrcamento } from '@/store/formatters';
 
-function normalizarItens(itens: any[]) {
-  return itens.map((item: any) => {
+function normalizarItens(itens: OrcamentoItem[]) {
+  return itens.map((item: OrcamentoItem) => {
     const quantidade = Number(item.quantidade) || 1;
     const valorUnitario = Number(item.valorUnitario) || 0;
 
@@ -18,6 +18,7 @@ function normalizarItens(itens: any[]) {
   });
 }
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createOrcamentoSlice = (set: any, get: any) => ({
   orcamentos: [],
 
@@ -84,7 +85,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => {
-      const exists = state.orcamentos.some((o: any) => o.id === inserted.id);
+      const exists = state.orcamentos.some((o: Orcamento) => o.id === inserted.id);
 
       if (exists) return state;
 
@@ -106,7 +107,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      orcamentos: state.orcamentos.filter((o: any) => o.id !== id),
+      orcamentos: state.orcamentos.filter((o: Orcamento) => o.id !== id),
     }));
   },
 
@@ -114,7 +115,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
   updateOrcamento: async (id: string, data: Partial<Orcamento>) => {
     const now = new Date().toISOString();
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       updated_at: now,
     };
 
@@ -167,7 +168,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => {
-      const exists = state.orcamentos.some((o: any) => o.id === id);
+      const exists = state.orcamentos.some((o: Orcamento) => o.id === id);
 
       if (!exists) {
         return {
@@ -176,7 +177,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       }
 
       return {
-        orcamentos: state.orcamentos.map((o: any) =>
+        orcamentos: state.orcamentos.map((o: Orcamento) =>
           o.id === id ? formatOrcamento(updated) : o,
         ),
       };
@@ -201,7 +202,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     }
 
     set((state: any) => ({
-      orcamentos: state.orcamentos.map((o: any) =>
+      orcamentos: state.orcamentos.map((o: Orcamento) =>
         o.id === orcamentoId
           ? { ...o, assinaturaCliente: assinatura, dataAssinatura: new Date().toISOString() }
           : o,

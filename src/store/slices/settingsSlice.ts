@@ -78,6 +78,7 @@ const SNAKE_TO_CAMEL: Record<string, keyof WorkspaceSettings> = Object.fromEntri
   Object.entries(CAMEL_TO_SNAKE).map(([camel, snake]) => [snake, camel as keyof WorkspaceSettings]),
 );
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createSettingsSlice = (set: any, get: any) => ({
   settings: { ...DEFAULT_SETTINGS } as WorkspaceSettings,
 
@@ -103,9 +104,9 @@ export const createSettingsSlice = (set: any, get: any) => ({
 
       const val = row.value;
       if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao') {
-        (merged as any)[camelKey] = Number(val) || DEFAULT_SETTINGS[camelKey];
+        (merged as any)[camelKey] = Number(val) || DEFAULT_SETTINGS[camelKey]; // TODO: tipar quando migrar store
       } else {
-        (merged as any)[camelKey] = val ?? '';
+        (merged as any)[camelKey] = val ?? ''; // TODO: tipar quando migrar store
       }
     }
 
@@ -138,9 +139,9 @@ export const createSettingsSlice = (set: any, get: any) => ({
       set((state: any) => {
         const updated = { ...state.settings };
         if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao') {
-          (updated as any)[camelKey] = Number(value) || DEFAULT_SETTINGS[camelKey];
+          (updated as any)[camelKey] = Number(value) || DEFAULT_SETTINGS[camelKey]; // TODO: tipar quando migrar store
         } else {
-          (updated as any)[camelKey] = value;
+          (updated as any)[camelKey] = value; // TODO: tipar quando migrar store
         }
         return { settings: updated };
       });

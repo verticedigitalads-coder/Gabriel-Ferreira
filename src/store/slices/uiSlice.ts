@@ -1,10 +1,12 @@
 import { v4 as uuid } from 'uuid'
+import type { ToastMessage } from '@/types'
 
+// TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createUISlice = (set: any) => ({
 
   activeModule: 'dashboard',
   selectedLeadId: null,
-  toasts: [],
+  toasts: [] as ToastMessage[],
   workspaceId: null,
 
   // ================= MODULE =================
@@ -24,7 +26,7 @@ export const createUISlice = (set: any) => ({
 
   // ================= TOAST =================
 
-  addToast: (toast: any) => {
+  addToast: (toast: Omit<ToastMessage, 'id'>) => {
 
     const id = uuid()
 
@@ -36,7 +38,7 @@ export const createUISlice = (set: any) => ({
 
   removeToast: (id: string) =>
     set((state: any) => ({
-      toasts: state.toasts.filter((t: any) => t.id !== id)
+      toasts: state.toasts.filter((t: ToastMessage) => t.id !== id)
     }))
 
 })
