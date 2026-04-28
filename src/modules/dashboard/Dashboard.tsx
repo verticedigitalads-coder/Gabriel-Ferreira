@@ -85,17 +85,17 @@ export function Dashboard() {
   const getCRMHealth = () => {
 
     if (stats.tarefasCriticas > 5 || stats.scoreOperacional > 150) {
-      return { status: 'CRÍTICO', color: 'text-[var(--danger)]' };
+      return { status: 'CRÍTICO', color: 'var(--danger)', bg: 'var(--danger-subtle)', border: 'var(--danger)' };
     }
 
     if (
       stats.tarefasCriticas > 2 ||
       stats.receitaProvavel < stats.metaMensal * 0.5
     ) {
-      return { status: 'ATENÇÃO', color: 'text-[var(--warning)]' };
+      return { status: 'ATENÇÃO', color: 'var(--warning)', bg: 'var(--warning-subtle)', border: 'var(--warning)' };
     }
 
-    return { status: 'SAUDÁVEL', color: 'text-[var(--success)]' };
+    return { status: 'SAUDÁVEL', color: 'var(--success)', bg: 'var(--success-subtle)', border: 'var(--success)' };
 
   };
 
@@ -252,25 +252,23 @@ export function Dashboard() {
 
       {/* Saúde do CRM */}
 
-      <Card className="shadow-sm rounded-xl p-4 md:p-6">
-
-        <div className="flex items-center gap-3">
-
-          <ShieldCheck className="w-6 h-6 text-[var(--accent)]" />
-
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-              Saúde do CRM
-            </h2>
-
-            <p className={`text-sm font-medium ${crmHealth.color}`}>
-              Status atual: {crmHealth.status}
-            </p>
-
-          </div>
+      <div
+        className="flex items-center justify-between rounded-lg px-4 py-2"
+        style={{ background: crmHealth.bg, border: `1px solid ${crmHealth.border}` }}
+      >
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4" style={{ color: crmHealth.color }} />
+          <span className="text-sm font-semibold" style={{ color: crmHealth.color }}>
+            Saúde do CRM
+          </span>
         </div>
-
-      </Card>
+        <span
+          className="text-xs font-bold px-2 py-0.5 rounded-full"
+          style={{ background: crmHealth.border, color: '#fff' }}
+        >
+          {crmHealth.status}
+        </span>
+      </div>
 
       {/* Receita */}
 
@@ -359,6 +357,7 @@ export function Dashboard() {
           <StatCard
             label="Score Operacional"
             value={stats.scoreOperacional}
+            suffix="/100"
             icon={<Activity className="w-5 h-5 text-[var(--accent)]" />}
           />
 
@@ -371,6 +370,7 @@ export function Dashboard() {
           <StatCard
             label="Tarefas Críticas"
             value={stats.tarefasCriticas}
+            valueStyle={{ color: stats.tarefasCriticas > 0 ? 'var(--danger)' : 'var(--success)' }}
             icon={<AlertTriangle className="w-5 h-5 text-[var(--danger)]" />}
           />
 

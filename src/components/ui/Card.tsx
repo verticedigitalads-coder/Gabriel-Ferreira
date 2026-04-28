@@ -31,6 +31,8 @@ export function Card({ children, className, onClick, hoverable, style }: CardPro
 interface StatCardProps {
   label: string;
   value: string | number;
+  suffix?: ReactNode;
+  valueStyle?: CSSProperties;
   icon?: ReactNode;
   trend?: { value: number; isPositive: boolean };
   color?: 'default' | 'red' | 'yellow' | 'green' | 'blue';
@@ -38,7 +40,7 @@ interface StatCardProps {
   active?: boolean;
 }
 
-export function StatCard({ label, value, icon, trend, color = 'default', onClick, active }: StatCardProps) {
+export function StatCard({ label, value, suffix, valueStyle, icon, trend, color = 'default', onClick, active }: StatCardProps) {
   const colorStyles = {
     default: '',
     red: 'border-l-4 border-l-red-600',
@@ -62,7 +64,10 @@ export function StatCard({ label, value, icon, trend, color = 'default', onClick
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-[var(--text-primary)]">{value}</p>
+          <div className="mt-1 flex items-baseline gap-0.5">
+            <p className="text-2xl font-bold text-[var(--text-primary)]" style={valueStyle}>{value}</p>
+            {suffix && <span className="text-sm font-normal" style={{ color: 'var(--text-tertiary)' }}>{suffix}</span>}
+          </div>
           {trend && (
             <p className={cn('mt-1 text-xs font-semibold', trend.isPositive ? 'text-[var(--success)]' : 'text-[var(--danger)]')}>
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%

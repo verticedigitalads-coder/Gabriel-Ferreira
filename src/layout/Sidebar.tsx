@@ -113,7 +113,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   <nav className="flex-1 overflow-y-auto py-6 space-y-8">
     {sections.map(section => (
       <div key={section.title}>
-        <p className="px-6 text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.08em] mb-3">
+        <p
+          className="px-6 font-semibold uppercase mb-3"
+          style={{ fontSize: '10px', letterSpacing: '0.05em', color: 'var(--text-tertiary)', opacity: 0.7 }}
+        >
           {section.title}
         </p>
 
@@ -127,11 +130,17 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                 <button
                   onClick={() => setActiveModule(item.id)}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm font-medium transition-all duration-150',
-                    isActive
-                      ? 'bg-[var(--bg-surface-2)] text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
+                    'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm transition-all duration-150',
+                    !isActive && 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
                   )}
+                  style={isActive ? {
+                    background: 'var(--accent-subtle)',
+                    borderLeft: '3px solid var(--accent)',
+                    color: 'var(--accent)',
+                    fontWeight: 600,
+                  } : {
+                    borderLeft: '3px solid transparent',
+                  }}
                 >
                   <Icon className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] opacity-80 shrink-0" />
                   <span className="tracking-tight">{item.label}</span>
@@ -145,7 +154,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
 
     {isAdmin && (
       <div>
-        <p className="px-6 text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.08em] mb-3">
+        <p
+          className="px-6 font-semibold uppercase mb-3"
+          style={{ fontSize: '10px', letterSpacing: '0.05em', color: 'var(--text-tertiary)', opacity: 0.7 }}
+        >
           Admin
         </p>
         <ul className="space-y-0.5 px-3">
@@ -153,11 +165,17 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             <button
               onClick={() => setActiveModule('admin')}
               className={cn(
-                'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm font-medium transition-all duration-150',
-                activeModule === 'admin'
-                  ? 'bg-[var(--bg-surface-2)] text-[var(--text-primary)]'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
+                'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm transition-all duration-150',
+                activeModule !== 'admin' && 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
               )}
+              style={activeModule === 'admin' ? {
+                background: 'var(--accent-subtle)',
+                borderLeft: '3px solid var(--accent)',
+                color: 'var(--accent)',
+                fontWeight: 600,
+              } : {
+                borderLeft: '3px solid transparent',
+              }}
             >
               <Building2 className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] opacity-80 shrink-0" />
               <span className="tracking-tight">Empresas</span>

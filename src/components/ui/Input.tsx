@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={cn(
             // Dark surface input style
-            'w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm',
+            'w-full px-3 py-2 border border-[var(--border-strong)] rounded-md text-sm',
             'bg-[var(--bg-surface-2)] text-[var(--text-primary)]',
             'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--border-strong)]',
             'placeholder:text-[var(--text-tertiary)]',
@@ -56,7 +56,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           ref={ref}
           className={cn(
             // Dark surface textarea style
-            'w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm',
+            'w-full px-3 py-2 border border-[var(--border-strong)] rounded-md text-sm',
             'bg-[var(--bg-surface-2)] text-[var(--text-primary)]',
             'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--border-strong)]',
             'placeholder:text-[var(--text-tertiary)] resize-none',
@@ -91,7 +91,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            'w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm',
+            'w-full px-3 py-2 border border-[var(--border-strong)] rounded-md text-sm',
             'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--border-strong)]',
             'bg-[var(--bg-surface-2)] text-[var(--text-primary)] cursor-pointer',
             className

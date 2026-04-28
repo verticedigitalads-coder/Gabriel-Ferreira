@@ -80,10 +80,6 @@ export function HeaderGlobal() {
           )}
         </button>
 
-        {/* Avatar */}
-        <div className="w-11 h-11 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
-          G
-        </div>
 
       </div>
     </header>

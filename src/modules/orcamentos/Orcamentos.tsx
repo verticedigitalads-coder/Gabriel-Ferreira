@@ -291,8 +291,8 @@ export function Orcamentos() {
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-mono text-sm font-semibold text-[var(--text-primary)]">
-                {orc.numero}
+              <span className="text-sm font-semibold text-[var(--text-primary)]">
+                {getLeadName(orc)}
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[orc.status as OrcamentoStatus]}`}
@@ -300,13 +300,10 @@ export function Orcamentos() {
                 {statusOptions.find((s) => s.value === orc.status)?.label}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
+            <div className="flex items-center gap-4 text-xs text-[var(--text-disabled)]">
+              <span className="font-mono">{orc.numero}</span>
               <span className="flex items-center gap-1">
-                <User className="w-4 h-4" />
-                {getLeadName(orc)}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-3 h-3" />
                 {orc.createdAt
                   ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', { locale: ptBR })
                   : '-'}

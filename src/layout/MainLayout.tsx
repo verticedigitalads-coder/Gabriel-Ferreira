@@ -4,8 +4,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { HeaderGlobal } from './HeaderGlobal';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
-import { Button } from '@/components/ui/Button';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { BottomNav } from './BottomNav';
 import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
@@ -16,6 +15,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const stats = useDashboardStats();
 
   const logout = useStore(state => state.logout);
@@ -62,6 +62,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     style={{ color: 'var(--text-tertiary)' }}
     onClick={() => setSidebarOpen(true)}
     title="Todos os módulos"
+    aria-label="Todos os módulos"
     onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
   >
@@ -70,25 +71,54 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   <HeaderGlobal />
 
-          <div className="flex items-center gap-2 md:gap-4">
-
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-medium text-[var(--text-primary)]">
-                {userName || userEmail?.split('@')[0] || 'Usuário'}
-              </p>
-              <p className="text-xs text-[var(--text-tertiary)]">
-                {userEmail}
-              </p>
-            </div>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleLogout}
+          {/* Avatar dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 min-h-[44px] px-2 rounded-md transition-colors"
+              style={{ color: 'var(--text-secondary)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-2)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              Sair
-            </Button>
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                style={{ background: 'var(--accent)', color: '#fff' }}
+              >
+                {(userName || userEmail || 'U').charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden md:block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                {userName || userEmail?.split('@')[0] || 'Usuário'}
+              </span>
+            </button>
 
+            {showUserMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div
+                  className="absolute right-0 top-full mt-1 w-56 rounded-lg shadow-lg border z-50 py-2"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                >
+                  <div className="px-3 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {userName || userEmail?.split('@')[0] || 'Usuário'}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {userEmail}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 text-sm min-h-[44px] flex items-center gap-2 transition-colors"
+                    style={{ color: 'var(--danger)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--danger-subtle)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sair
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
