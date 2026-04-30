@@ -109,7 +109,6 @@ export function Operacional() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 md:space-y-8 max-w-6xl mx-auto">
-      <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Painel Operacional</h1>
 
       {/* ================= NOVA TAREFA ================= */}
       {!showNewTaskForm ? (

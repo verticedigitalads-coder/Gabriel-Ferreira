@@ -98,21 +98,23 @@ export function LeadsList() {
               />
             </div>
 
-            <Select
-              value={filters.status}
-              onChange={e => setFilter({ status: e.target.value as any })}
-              options={[
-                { value: 'all', label: 'Status' },
-                { value: 'novo', label: 'Novo' },
-                { value: 'atendimento', label: 'Atendimento' },
-                { value: 'orcado', label: 'Orçado' },
-                { value: 'fechado', label: 'Fechado' },
-                { value: 'perdido', label: 'Perdido' },
-              ]}
-            />
+            <div className="shrink-0 w-[140px] sm:w-[160px]">
+              <Select
+                value={filters.status}
+                onChange={e => setFilter({ status: e.target.value as any })}
+                options={[
+                  { value: 'all', label: 'Status' },
+                  { value: 'novo', label: 'Novo' },
+                  { value: 'atendimento', label: 'Atendimento' },
+                  { value: 'orcado', label: 'Orçado' },
+                  { value: 'fechado', label: 'Fechado' },
+                  { value: 'perdido', label: 'Perdido' },
+                ]}
+              />
+            </div>
 
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} title="Limpar filtros">
+              <Button variant="ghost" size="sm" onClick={clearFilters} title="Limpar filtros" className="shrink-0">
                 <X className="w-4 h-4" />
               </Button>
             )}
@@ -265,7 +267,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
       hoverable
       onClick={onClick}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 overflow-hidden">
             <h3 className="text-base font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
@@ -288,7 +290,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
                 color: lead.prioridadeLevel === 'critico' ? 'var(--danger)' :
                        lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
                        lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
-                       'var(--text-disabled)',
+                       'var(--text-secondary)',
               }}
             >
               {lead.prioridadeLevel === 'critico' ? '● Crítico' :
@@ -313,37 +315,39 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
           </div>
         </div>
 
-        <div className="text-right shrink-0 max-w-[110px]">
-          {(lead.valorOrcado ?? 0) > 0
-            ? <p className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
-            : <p className="text-sm text-[var(--text-tertiary)]">Sem valor</p>
-          }
-          <p className="text-xs text-[var(--text-tertiary)] mt-1 truncate">
-            {formatPhone(lead.telefone)}
-          </p>
-        </div>
+        <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+          <div className="text-right max-w-[110px]">
+            {(lead.valorOrcado ?? 0) > 0
+              ? <p className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
+              : <p className="text-sm text-[var(--text-tertiary)]">Sem valor</p>
+            }
+            <p className="text-xs text-[var(--text-tertiary)] mt-1 truncate">
+              {formatPhone(lead.telefone)}
+            </p>
+          </div>
 
-        <div
-          className="flex items-center gap-2"
-          onClick={e => e.stopPropagation()}
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onWhatsApp}
-            title="Abrir WhatsApp"
+          <div
+            className="flex items-center gap-2"
+            onClick={e => e.stopPropagation()}
           >
-            <MessageCircle className="w-4 h-4 text-green-600" />
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onWhatsApp}
+              title="Abrir WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4 text-green-600" />
+            </Button>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onRegisterContact}
-            title="Registrar Contato"
-          >
-            <Phone size={16} style={{ color: 'var(--success)' }} />
-          </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onRegisterContact}
+              title="Registrar Contato"
+            >
+              <Phone size={16} style={{ color: 'var(--success)' }} />
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

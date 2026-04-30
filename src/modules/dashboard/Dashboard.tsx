@@ -364,6 +364,7 @@ export function Dashboard() {
           <StatCard
             label="Score Comercial"
             value={stats.scoreComercial}
+            suffix=" pts"
             icon={<Briefcase className="w-5 h-5 text-[var(--accent)]" />}
           />
 

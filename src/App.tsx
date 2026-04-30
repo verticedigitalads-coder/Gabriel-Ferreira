@@ -65,10 +65,13 @@ const AdminEmpresas = lazy(() =>
 
 function LoadingFallback() {
   return (
-    <div className="flex items-center justify-center h-full">
+    <div className="flex items-center justify-center h-full" style={{ background: '#0f1117' }}>
       <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-500">Carregando...</p>
+        <div
+          className="w-8 h-8 rounded-full animate-spin"
+          style={{ border: '2px solid rgba(255,106,0,0.2)', borderTopColor: '#ff6a00' }}
+        />
+        <p className="text-sm" style={{ color: '#a0a0b0' }}>Carregando...</p>
       </div>
     </div>
   );
@@ -182,14 +185,17 @@ export function App() {
   // ⏳ Loading interno do CRM
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="flex items-center justify-center h-screen" style={{ background: '#0f1117' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{ border: '4px solid rgba(255,106,0,0.2)', borderTopColor: '#ff6a00' }}
+          />
           <div className="text-center">
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold" style={{ color: '#e0e0e8' }}>
               Vértice Digital
             </h1>
-            <p className="text-sm text-gray-500 mt-1">Carregando dados...</p>
+            <p className="text-sm mt-1" style={{ color: '#a0a0b0' }}>Carregando dados...</p>
           </div>
         </div>
       </div>

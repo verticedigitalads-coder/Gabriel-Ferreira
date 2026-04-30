@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 28/04/2026
-Versão: v2.27.6
+Última atualização: 29/04/2026
+Versão: v2.27.8
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -35,6 +35,8 @@ Versão: v2.27.6
 - UX v2.27.4 Lote D: Orçamentos mobile — Editar/Excluir/Assinatura ocultos em mobile (hidden sm:flex), PDF+PIX sempre visíveis; Operacional — formulário Nova Tarefa colapsável (toggle com botão "+ Nova Tarefa"); Leads — "Criar com IA" rebaixado para ghost+color ia, texto abreviado em mobile
 - UX v2.27.5 Lote E: Sidebar — item ativo com faixa accent (borderLeft 3px + accent-subtle bg + fontWeight 600) e section headers 10px/0.7 opacity; Dashboard — card Saúde CRM → faixa fina (~40px) com cor dinâmica por status (SAUDÁVEL/ATENÇÃO/CRÍTICO); Header — botão Sair e email removidos do header; avatar vira dropdown (nome + email + Sair) com overlay para fechar; avatar estático hardcoded removido do HeaderGlobal; Input/TextArea/Select — borda border-strong para melhor contraste visual
 - UX v2.27.6 Lote F (final auditoria UX Cowork): StatCard — props suffix+valueStyle adicionadas (sem quebrar usos existentes); Dashboard Indicadores — Score Operacional com "/100", Tarefas Críticas com cor semântica (danger/success); Orçamentos — hierarquia invertida nas linhas: nome do cliente como título principal, numero ORC como texto secundário mono discreto; Settings grid já era cols-1/md:cols-2 (sem mudança necessária); botão menu mobile — aria-label adicionado
+- Hotfix v2.27.7: LeadsList — Select de status envolto em wrapper shrink-0 w-[140px] (busca não colapsa mais); LeadRow — container flex-col/sm:flex-row responsivo (nome visível em 375px, valor+botões na linha 2 mobile); App.tsx — LoadingFallback e loader "Carregando dados..." migrados para fundo #0f1117 + spinner laranja (sem flash branco)
+- Hotfix v2.27.8: Operacional — H1 "Painel Operacional" removido (duplicado com header); LeadRow badge "● Baixo" — color migrado de --text-disabled para --text-secondary (contraste WCAG AA); Dashboard Score Comercial — suffix " pts" adicionado (contexto de escala)
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada
