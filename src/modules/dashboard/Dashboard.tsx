@@ -288,6 +288,7 @@ export function Dashboard() {
           <StatCard
             label="Receita Provável"
             value={formatCurrency(stats.receitaProvavel)}
+            delta={<span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Meta: {formatCurrency(stats.metaMensal)}</span>}
           />
 
           <StatCard
@@ -366,6 +367,7 @@ export function Dashboard() {
             value={stats.scoreComercial}
             suffix=" pts"
             icon={<Briefcase className="w-5 h-5 text-[var(--accent)]" />}
+            delta={<span className="text-xs font-semibold" style={{ color: 'var(--success)' }}>{stats.fechados} fechados</span>}
           />
 
           <StatCard
@@ -373,6 +375,9 @@ export function Dashboard() {
             value={stats.tarefasCriticas}
             valueStyle={{ color: stats.tarefasCriticas > 0 ? 'var(--danger)' : 'var(--success)' }}
             icon={<AlertTriangle className="w-5 h-5 text-[var(--danger)]" />}
+            delta={stats.tarefasAtrasadas > 0
+              ? <span className="text-xs font-semibold" style={{ color: 'var(--warning)' }}>{stats.tarefasAtrasadas} atrasadas</span>
+              : undefined}
           />
 
         </div>
@@ -440,51 +445,72 @@ export function Dashboard() {
 
           <div className="p-5 border-b border-[var(--border)] flex items-center gap-2">
             <Target className="w-5 h-5 text-[var(--accent)]" />
-
             <h2 className="text-base font-semibold text-[var(--text-primary)]">
               Foco Hoje
             </h2>
-
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+            >
+              {focusTodayLeads.length}
+            </span>
           </div>
 
           <div className="divide-y divide-[var(--border)]">
 
-            {focusTodayLeads.map(lead => (
+            {focusTodayLeads.map(lead => {
+              const diasSem = lead.ultimoContato
+                ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
+                : null;
+              return (
+                <div
+                  key={lead.id}
+                  onClick={() => {
+                    selectLead(lead.id);
+                    setActiveModule('leads');
+                  }}
+                  className="flex items-center justify-between p-4 hover:bg-[var(--bg-surface-2)] cursor-pointer transition-colors min-h-[44px]"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="font-medium text-[var(--text-primary)] truncate">
+                        {lead.nome}
+                      </p>
+                      {lead.temperatura && (
+                        <span
+                          className="shrink-0"
+                          style={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: '50%',
+                            display: 'inline-block',
+                            background:
+                              lead.temperatura === 'quente' ? 'var(--danger)'  :
+                              lead.temperatura === 'morno'  ? 'var(--warning)' :
+                              'var(--info)',
+                          }}
+                        />
+                      )}
+                      {diasSem !== null && diasSem >= 5 && (
+                        <span className="text-[10px] font-bold shrink-0" style={{ color: 'var(--danger)' }}>
+                          {diasSem}d
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[var(--text-tertiary)] truncate">
+                      {lead.servico}
+                    </p>
+                  </div>
 
-              <div
-                key={lead.id}
-                onClick={() => {
-                  selectLead(lead.id);
-                  setActiveModule('leads');
-                }}
-                className="flex items-center justify-between p-4 hover:bg-[var(--bg-surface-2)] cursor-pointer transition-colors"
-              >
-
-                <div>
-
-                  <p className="font-medium text-[var(--text-primary)]">
-                    {lead.nome}
-                  </p>
-
-                  <p className="text-xs text-[var(--text-tertiary)]">
-                    {lead.servico}
-                  </p>
-
+                  <div className="text-right shrink-0 ml-3">
+                    <PriorityBadge level={lead.prioridadeLevel} />
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                      {lead.valorOrcado > 0 ? formatCurrency(lead.valorOrcado) : 'Sem valor'}
+                    </p>
+                  </div>
                 </div>
-
-                <div className="text-right">
-
-                  <PriorityBadge level={lead.prioridadeLevel} />
-
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                    {lead.valorOrcado > 0 ? formatCurrency(lead.valorOrcado) : 'Sem valor'}
-                  </p>
-
-                </div>
-
-              </div>
-
-            ))}
+              );
+            })}
 
           </div>
 

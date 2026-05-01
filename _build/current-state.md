@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
 Última atualização: 29/04/2026
-Versão: v2.27.8
+Versão: v2.28.0
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -37,6 +37,8 @@ Versão: v2.27.8
 - UX v2.27.6 Lote F (final auditoria UX Cowork): StatCard — props suffix+valueStyle adicionadas (sem quebrar usos existentes); Dashboard Indicadores — Score Operacional com "/100", Tarefas Críticas com cor semântica (danger/success); Orçamentos — hierarquia invertida nas linhas: nome do cliente como título principal, numero ORC como texto secundário mono discreto; Settings grid já era cols-1/md:cols-2 (sem mudança necessária); botão menu mobile — aria-label adicionado
 - Hotfix v2.27.7: LeadsList — Select de status envolto em wrapper shrink-0 w-[140px] (busca não colapsa mais); LeadRow — container flex-col/sm:flex-row responsivo (nome visível em 375px, valor+botões na linha 2 mobile); App.tsx — LoadingFallback e loader "Carregando dados..." migrados para fundo #0f1117 + spinner laranja (sem flash branco)
 - Hotfix v2.27.8: Operacional — H1 "Painel Operacional" removido (duplicado com header); LeadRow badge "● Baixo" — color migrado de --text-disabled para --text-secondary (contraste WCAG AA); Dashboard Score Comercial — suffix " pts" adicionado (contexto de escala)
+- UX v2.27.9: LeadRow — TempDot (dot 8px colorido por temperatura: danger/warning/info) substituiu TemperatureBadge; badge "✦ IA" (var(--ia)/var(--ia-subtle), 10px, rounded) substituiu "IA Analisado" rounded-full
+- UX v2.28.0: Dashboard — Foco Hoje aprimorado (counter badge no header, TempDot 7px + alerta "Xd" por lead, min-h-44px); StatCard prop delta? ReactNode adicionada (Card.tsx); deltas em Receita Provável (Meta: R$X), Score Comercial (N fechados), Tarefas Críticas (N atrasadas)
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada

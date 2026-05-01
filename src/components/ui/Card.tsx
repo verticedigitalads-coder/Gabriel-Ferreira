@@ -35,12 +35,13 @@ interface StatCardProps {
   valueStyle?: CSSProperties;
   icon?: ReactNode;
   trend?: { value: number; isPositive: boolean };
+  delta?: ReactNode;
   color?: 'default' | 'red' | 'yellow' | 'green' | 'blue';
   onClick?: () => void;
   active?: boolean;
 }
 
-export function StatCard({ label, value, suffix, valueStyle, icon, trend, color = 'default', onClick, active }: StatCardProps) {
+export function StatCard({ label, value, suffix, valueStyle, icon, trend, delta, color = 'default', onClick, active }: StatCardProps) {
   const colorStyles = {
     default: '',
     red: 'border-l-4 border-l-red-600',
@@ -73,6 +74,7 @@ export function StatCard({ label, value, suffix, valueStyle, icon, trend, color 
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
             </p>
           )}
+          {delta && <div className="mt-1">{delta}</div>}
         </div>
         {icon && (
           <div className="p-2 bg-[var(--bg-surface-2)] rounded-md">{icon}</div>

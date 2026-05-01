@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Modal, SlidePanel } from '@/components/ui/Modal';
-import { StatusBadge, TemperatureBadge } from '@/components/ui/Badge';
+import { StatusBadge } from '@/components/ui/Badge';
 import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
 import { parseISO, differenceInDays } from 'date-fns';
@@ -275,8 +275,11 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
             </h3>
 
             {jaAnalisado && (
-              <span className="text-xs font-medium text-[var(--ia)] bg-[var(--ia-subtle)] px-2 py-1 rounded-full">
-                IA Analisado
+              <span
+                className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                style={{ background: 'var(--ia-subtle)', color: 'var(--ia)' }}
+              >
+                ✦ IA
               </span>
             )}
 
@@ -305,7 +308,26 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
 
           <div className="flex items-center gap-2 mt-2">
             <StatusBadge status={lead.status} />
-            <TemperatureBadge temperatura={lead.temperatura} />
+
+            {lead.temperatura && (
+              <span
+                title={
+                  lead.temperatura === 'quente' ? 'Quente' :
+                  lead.temperatura === 'morno'  ? 'Morno'  : 'Frio'
+                }
+                className="shrink-0"
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  display: 'inline-block',
+                  background:
+                    lead.temperatura === 'quente' ? 'var(--danger)'  :
+                    lead.temperatura === 'morno'  ? 'var(--warning)' :
+                    'var(--info)',
+                }}
+              />
+            )}
 
             {alertaContato && (
               <span className="text-xs font-semibold" style={{ color: 'var(--danger)' }}>
