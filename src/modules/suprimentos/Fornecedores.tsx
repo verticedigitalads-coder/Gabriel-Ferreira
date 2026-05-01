@@ -7,6 +7,7 @@ import { Input, TextArea, Select } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { Fornecedor, FornecedorCategoria, FornecedorStatus } from '@/types'
+import { formatPhone } from '@/utils/formatters'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,14 +51,6 @@ function formatCnpj(digits: string): string {
   if (d.length <= 8)  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`
   if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`
   return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
-}
-
-function formatPhone(digits: string): string {
-  const d = digits.slice(0, 11)
-  if (d.length <= 2)  return d
-  if (d.length <= 7)  return `(${d.slice(0,2)}) ${d.slice(2)}`
-  if (d.length <= 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
-  return d
 }
 
 interface ReceitaWSResult {

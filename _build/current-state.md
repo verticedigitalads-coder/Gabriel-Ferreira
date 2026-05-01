@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 29/04/2026
-Versão: v2.28.0
+Última atualização: 30/04/2026
+Versão: v2.28.1
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -64,6 +64,9 @@ Versão: v2.28.0
 1. Design System / UX (segunda-feira)
 2. Migração backend para VPS
 3. WhatsApp / Evolution API (Fases 12-15)
+
+## Pendências Manuais
+- Deletar nota órfã id:58118722 na tabela `notas` (dado de teste, workspace Vértice Digital) — fazer via Supabase Dashboard
 
 ## Dívida Técnica Conhecida
 - Bundle ~884KB

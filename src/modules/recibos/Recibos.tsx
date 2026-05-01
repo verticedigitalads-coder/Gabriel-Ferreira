@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/utils/formatters';
+import { formatDateBR } from '@/utils/date';
 import { apiFetch } from '@/lib/apiFetch';
 import { useDefaultSettings } from '@/hooks/useDefaultSettings';
 import type { Recibo, ReciboStatus } from '@/types';
@@ -141,12 +142,6 @@ export function Recibos() {
     setCancelTargetId(null);
   };
 
-  const formatDate = (d: string | null) => {
-    if (!d) return '—';
-    const [y, m, day] = d.split('T')[0].split('-');
-    return `${day}/${m}/${y}`;
-  };
-
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -241,8 +236,8 @@ export function Recibos() {
                         <CalendarDays className="w-3 h-3 text-[var(--text-tertiary)]" />
                         <span className="text-xs text-[var(--text-tertiary)]">
                           {r.dataEmissao
-                            ? formatDate(r.dataEmissao)
-                            : formatDate(r.createdAt)}
+                            ? formatDateBR(r.dataEmissao || '')
+                            : formatDateBR(r.createdAt || '')}
                         </span>
                       </div>
                     </div>

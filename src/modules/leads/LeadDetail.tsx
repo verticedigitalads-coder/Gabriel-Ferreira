@@ -1,4 +1,4 @@
-import { formatPhone } from '@/utils/formatters';
+import { formatPhone, formatCurrency } from '@/utils/formatters';
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { useLeadActions } from '@/hooks/useLeadActions';
@@ -69,14 +69,6 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const diasSemContato = lead.ultimoContato
     ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
     : null;
-
-  const formatCurrency = (value?: number | null) => {
-    if (!value) return 'R$ 0,00';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
 
   const handleDelete = async () => {
     await deleteLead(lead.id);
@@ -282,7 +274,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               <span className="text-xs font-medium">Valor Orçado</span>
             </div>
             <p className="text-lg font-bold text-[var(--text-primary)]">
-              {formatCurrency(lead.valorOrcado)}
+              {formatCurrency(lead.valorOrcado ?? 0)}
             </p>
             {lead.orcamentoEnviado && (
               <span className="text-xs text-[var(--success)]">

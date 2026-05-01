@@ -11,8 +11,6 @@ import { pixPayload } from './utils/pixPayload.js';
 
 dotenv.config({ path: './.env' });
 
-console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
-
 // ===== Sanitização de HTML =====
 function escapeHtml(str) {
   if (!str) return '';
@@ -151,8 +149,6 @@ app.post('/api/gerar-orcamento', async (req, res) => {
   try {
     const dados = req.body;
 
-    console.log('[Orcamento] Gerando PDF | lead_id:', dados.lead_id || 'N/A');
-
     /* ==========================================
     📄 CARREGAR TEMPLATE HTML
     ========================================== */
@@ -160,8 +156,6 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     const template_version = dados.template_version || 'v1';
     const templateFile = template_version === 'v2' ? 'orcamento-v2.html' : 'orcamento.html';
     const templatePath = path.resolve(process.cwd(), 'templates', templateFile);
-
-    console.log('📄 Caminho completo:', templatePath);
 
     if (!fs.existsSync(templatePath)) {
       console.error('[Server] Template não encontrado');
@@ -251,9 +245,6 @@ app.post('/api/gerar-orcamento', async (req, res) => {
     }
 
     const itensHTML = itensLinhas + maoDeObraItemHTML;
-
-    console.log('📁 Assets path:', assetsPath);
-    console.log('📁 Existe?', fs.existsSync(assetsPath));
 
     /* ==========================================
 🔢 GERAR NÚMERO SEQUENCIAL (PADRÃO ERP)
@@ -498,8 +489,6 @@ app.post('/api/gerar-orcamento', async (req, res) => {
       html = html.replace('{{logo_bg}}', logoBgPath);
     }
 
-    console.log('LOGO:', logoPath);
-    console.log('LOGO BG:', logoBgPath);
     /* ==========================================
     🧠 GERAR PDF (PUPPETEER)
     ========================================== */
@@ -1023,8 +1012,6 @@ app.post('/api/gerar-recibo', async (req, res) => {
   try {
     const dados = req.body;
 
-    console.log('[Recibo] Gerando PDF | lead_id:', dados.lead_id || 'N/A');
-
     /* ==========================================
     📄 CARREGAR TEMPLATE HTML
     ========================================== */
@@ -1037,8 +1024,6 @@ app.post('/api/gerar-recibo', async (req, res) => {
       'templates',
       templateFile,
     );
-
-    console.log('📄 [Recibo] Caminho do template:', templatePath);
 
     if (!fs.existsSync(templatePath)) {
       console.error('[Recibo] Template não encontrado');
@@ -1343,8 +1328,6 @@ app.post('/api/admin/criar-empresa', async (req, res) => {
       console.error('[Admin] Erro ao vincular membro:', memberError.message);
       return res.status(500).json({ error: 'Erro ao vincular usuário ao workspace: ' + memberError.message });
     }
-
-    console.log(`[Admin] Empresa criada | ws: ${workspace.id}`);
 
     return res.json({
       workspace_id: workspace.id,

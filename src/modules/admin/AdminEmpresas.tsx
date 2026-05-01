@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Building2, Plus, RefreshCw, Info } from 'lucide-react';
 import { apiFetch } from '@/lib/apiFetch';
+import { formatDateBR } from '@/utils/date';
 
 interface Workspace {
   id: string;
@@ -121,11 +122,6 @@ export function AdminEmpresas() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const formatDate = (iso: string) => {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('pt-BR');
   };
 
   return (
@@ -278,7 +274,7 @@ export function AdminEmpresas() {
                     {SEGMENT_LABELS[ws.segment] ?? ws.segment}
                   </span>
                   <span className="text-xs text-[var(--text-tertiary)]">
-                    {formatDate(ws.created_at)}
+                    {formatDateBR(ws.created_at || '')}
                   </span>
                 </div>
               </div>
