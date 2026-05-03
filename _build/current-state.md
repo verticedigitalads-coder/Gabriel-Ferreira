@@ -39,6 +39,7 @@ Versão: v2.28.1
 - Hotfix v2.27.8: Operacional — H1 "Painel Operacional" removido (duplicado com header); LeadRow badge "● Baixo" — color migrado de --text-disabled para --text-secondary (contraste WCAG AA); Dashboard Score Comercial — suffix " pts" adicionado (contexto de escala)
 - UX v2.27.9: LeadRow — TempDot (dot 8px colorido por temperatura: danger/warning/info) substituiu TemperatureBadge; badge "✦ IA" (var(--ia)/var(--ia-subtle), 10px, rounded) substituiu "IA Analisado" rounded-full
 - UX v2.28.0: Dashboard — Foco Hoje aprimorado (counter badge no header, TempDot 7px + alerta "Xd" por lead, min-h-44px); StatCard prop delta? ReactNode adicionada (Card.tsx); deltas em Receita Provável (Meta: R$X), Score Comercial (N fechados), Tarefas Críticas (N atrasadas)
+- Fix v2.28.1: Badge.tsx — variant `info` corrigida (--info-subtle/--info azul, era accent laranja); variant `ia` adicionada (--ia-subtle/--ia roxo); StatusBadge `novo` → info, `atendimento` → ia (era bg-purple-100 hardcoded); PriorityBadge bullet ● adicionado, text-[10px] font-semibold
 
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada

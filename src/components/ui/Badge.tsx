@@ -3,7 +3,7 @@ import type { LeadStatus, LeadTemperature, PriorityLevel } from '@/types';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'ia';
   className?: string;
 }
 
@@ -13,7 +13,8 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
     success: 'bg-[var(--success-subtle)] text-[var(--success)]',
     warning: 'bg-[var(--warning-subtle)] text-[var(--warning)]',
     danger: 'bg-[var(--danger-subtle)] text-[var(--danger)]',
-    info: 'bg-[var(--accent-subtle)] text-[var(--accent)]',
+    info: 'bg-[var(--info-subtle)] text-[var(--info)]',
+    ia: 'bg-[var(--ia-subtle)] text-[var(--ia)]',
   };
 
   return (
@@ -32,8 +33,8 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
 
 export function StatusBadge({ status }: { status: LeadStatus }) {
   const config: Record<LeadStatus, { label: string; className: string }> = {
-    novo: { label: 'Novo', className: 'bg-[var(--accent-subtle)] text-[var(--accent)]' },
-    atendimento: { label: 'Em Atendimento', className: 'bg-purple-100 text-purple-700' },
+    novo: { label: 'Novo', className: 'bg-[var(--info-subtle)] text-[var(--info)]' },
+    atendimento: { label: 'Em Atendimento', className: 'bg-[var(--ia-subtle)] text-[var(--ia)]' },
     orcado: { label: 'Orçado', className: 'bg-[var(--warning-subtle)] text-[var(--warning)]' },
     fechado: { label: 'Fechado', className: 'bg-[var(--success-subtle)] text-[var(--success)]' },
     perdido: { label: 'Perdido', className: 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)]' },
@@ -80,11 +81,11 @@ export function PriorityBadge({ level, score }: { level?: PriorityLevel; score?:
   return (
     <span
       className={cn(
-        'inline-flex items-center text-[11px] font-medium uppercase tracking-wide',
+        'inline-flex items-center text-[10px] font-semibold uppercase tracking-wide',
         className
       )}
     >
-      {label}
+      ● {label}
       {score !== undefined && (
         <span className="ml-1 opacity-80">({score})</span>
       )}
