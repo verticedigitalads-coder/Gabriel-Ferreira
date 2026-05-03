@@ -925,37 +925,56 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   return (
     <>
     <form onSubmit={handleSubmit} className="p-6 space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        <Select
-          label="Lead/Cliente *"
-          value={leadId}
-          onChange={(e) => setLeadId(e.target.value)}
-          options={[
-            { value: '', label: 'Selecione um lead' },
-            ...activeLeads.map((l: any) => ({
-              value: l.id,
-              label: `${l.nome} - ${l.servico}`,
-            })),
-          ]}
-        />
-        <Select
-          label="Status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as OrcamentoStatus)}
-          options={statusOptions}
-        />
+      <div className="space-y-3">
+        <span className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">
+          CLIENTE
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Select
+            label="Lead/Cliente *"
+            value={leadId}
+            onChange={(e) => setLeadId(e.target.value)}
+            options={[
+              { value: '', label: 'Selecione um lead' },
+              ...activeLeads.map((l: any) => ({
+                value: l.id,
+                label: `${l.nome} - ${l.servico}`,
+              })),
+            ]}
+          />
+          <Select
+            label="Status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as OrcamentoStatus)}
+            options={statusOptions}
+          />
+        </div>
       </div>
 
       {/* Itens */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium text-gray-700">Itens</label>
-          <Button type="button" variant="secondary" size="sm" onClick={addItem}>
-            <Plus className="w-4 h-4 mr-1" />
-            Adicionar Item
+      <div className="border border-[var(--border)] rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+          <span className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">
+            ITENS
+          </span>
+          <Button type="button" variant="ghost" size="sm" onClick={addItem} className="gap-1">
+            <Plus className="w-4 h-4" />
+            Adicionar
           </Button>
         </div>
-        <div className="space-y-2">
+
+        {/* Header da tabela — visível apenas em desktop */}
+        {itens.length > 0 && (
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[var(--text-disabled)] border-b border-[var(--border)]">
+            <span className="flex-1">DESCRIÇÃO</span>
+            <span className="w-20 text-center">QTD</span>
+            <span className="w-28 text-center">UNIT</span>
+            <span className="w-24 text-right">TOTAL</span>
+            <span className="w-8"></span>
+          </div>
+        )}
+
+        <div className="space-y-2 p-2">
           {itens.map((item, index) => (
             <div
               key={item.id}
@@ -1075,21 +1094,38 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         </div>
 
         {/* Multiplicador */}
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-[var(--text-secondary)]">Multiplicador:</span>
-          <Input
-            type="number"
-            step="0.1"
-            value={multiplicador}
-            onChange={(e) => setMultiplicador(Number(e.target.value))}
-            className="w-32 text-right py-2 bg-[var(--bg-app)] text-[var(--text-primary)] border-[var(--border)]"
-          />
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-[var(--text-secondary)]">Multiplicador</span>
+          <div className="flex items-center gap-2">
+            {[
+              { label: 'Sem', value: 1 },
+              { label: '+10%', value: 1.1 },
+              { label: '+15%', value: 1.15 },
+              { label: '+20%', value: 1.2 },
+            ].map(opt => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => setMultiplicador(opt.value)}
+                className="px-3 py-1.5 rounded-full text-xs font-semibold border min-h-[36px] transition-colors"
+                style={{
+                  background: multiplicador === opt.value ? 'var(--accent)' : 'var(--bg-surface-2)',
+                  color: multiplicador === opt.value ? '#fff' : 'var(--text-secondary)',
+                  borderColor: multiplicador === opt.value ? 'var(--accent)' : 'var(--border)',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+            <Input
+              type="number"
+              step="0.1"
+              value={multiplicador}
+              onChange={(e) => setMultiplicador(Number(e.target.value))}
+              className="w-20 text-right text-sm"
+            />
+          </div>
         </div>
-
-        {/* Dica */}
-        <p className="text-xs text-[var(--text-tertiary)] text-right">
-          Ex: 2.5 = 250% do valor
-        </p>
 
         {/* Comissão planejadora */}
         <div className="flex justify-between items-center">
@@ -1131,9 +1167,11 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         </div>
 
         {/* Total */}
-        <div className="flex justify-between text-lg font-bold border-t border-[var(--border)] pt-2">
-          <span>Total:</span>
-          <span className="text-[var(--success)]">{formatCurrency(total)}</span>
+        <div className="flex justify-between items-center border-t border-[var(--border)] pt-3">
+          <span className="text-base font-bold text-[var(--text-primary)]">TOTAL</span>
+          <span className="text-xl font-bold" style={{ color: 'var(--accent)' }}>
+            {formatCurrency(total)}
+          </span>
         </div>
       </div>
 
@@ -1154,16 +1192,27 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         placeholder="Ex: Instalação no mesmo dia. Não incluso serviço de pedreiro..."
       />
 
-      <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="secondary" onClick={onClose}>
-          Cancelar
+      <div className="flex gap-3 pt-4 border-t border-[var(--border)]">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            if (!orcamento) {
+              setStatus('rascunho');
+            }
+            onClose();
+          }}
+          className="flex-1 min-h-[48px] text-sm"
+        >
+          {orcamento ? 'Cancelar' : 'Salvar Rascunho'}
         </Button>
         <Button
           type="submit"
           variant="primary"
           disabled={!leadId || itens.length === 0}
+          className="flex-1 min-h-[48px] text-sm"
         >
-          {orcamento ? 'Salvar' : 'Criar Orçamento'}
+          {orcamento ? 'Salvar' : 'Enviar'}
         </Button>
       </div>
     </form>
