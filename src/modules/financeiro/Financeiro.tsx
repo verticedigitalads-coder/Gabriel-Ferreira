@@ -424,6 +424,50 @@ export function Financeiro() {
 
       {/* ── Lista ── */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        {/* Resultado do Mês */}
+        {(() => {
+          const receitasMes = filteredTransactions
+            .filter(t => t.tipo === 'receita')
+            .reduce((sum, t) => sum + (t.valor || 0), 0);
+          const despesasMes = filteredTransactions
+            .filter(t => t.tipo !== 'receita')
+            .reduce((sum, t) => sum + (t.valor || 0), 0);
+          const resultado = receitasMes - despesasMes;
+          const positivo = resultado >= 0;
+          return (
+            <div
+              className="flex items-center justify-between rounded-xl px-5 py-4 mb-4"
+              style={{
+                background: positivo ? 'var(--success-subtle)' : 'var(--danger-subtle)',
+                border: `1px solid ${positivo ? 'var(--success)' : 'var(--danger)'}`,
+              }}
+            >
+              <div>
+                <span
+                  className="text-xs font-bold uppercase tracking-wide"
+                  style={{ color: positivo ? 'var(--success)' : 'var(--danger)' }}
+                >
+                  Resultado do Mês
+                </span>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    Receitas: {formatCurrency(receitasMes)}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    Despesas: {formatCurrency(despesasMes)}
+                  </span>
+                </div>
+              </div>
+              <span
+                className="text-xl font-bold tabular-nums"
+                style={{ color: positivo ? 'var(--success)' : 'var(--danger)' }}
+              >
+                {positivo ? '+' : '−'}{formatCurrency(Math.abs(resultado))}
+              </span>
+            </div>
+          );
+        })()}
+
         {filteredTransactions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
             <DollarSign className="w-10 h-10" style={{ color: 'var(--text-tertiary)' }} />

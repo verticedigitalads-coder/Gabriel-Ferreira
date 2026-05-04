@@ -120,59 +120,63 @@ export function LeadsList() {
             )}
           </div>
 
-          {/* Linha 2: filtros extras — sempre visíveis em sm+ */}
-          <div className="hidden sm:flex items-center gap-2 flex-wrap">
-            <Select
-              value={filters.temperatura}
-              onChange={e => setFilter({ temperatura: e.target.value as any })}
-              options={[
-                { value: 'all', label: 'Temperatura' },
-                { value: 'quente', label: '🔥 Quente' },
-                { value: 'morno', label: '☀️ Morno' },
-                { value: 'frio', label: '❄️ Frio' },
-              ]}
-            />
+          {/* Linha 2: temperatura + prioridade como chips com scroll */}
+          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {([
+              { value: 'all',    label: 'Temperatura', emoji: '' },
+              { value: 'quente', label: 'Quente',      emoji: '🔥' },
+              { value: 'morno',  label: 'Morno',       emoji: '☀️' },
+              { value: 'frio',   label: 'Frio',        emoji: '❄️' },
+            ] as const).map(opt => {
+              const isActive = filters.temperatura === opt.value;
+              return (
+                <button
+                  key={`temp-${opt.value}`}
+                  type="button"
+                  onClick={() => setFilter({ temperatura: opt.value })}
+                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors min-h-[32px] whitespace-nowrap"
+                  style={{
+                    background: isActive && opt.value !== 'all'
+                      ? (opt.value === 'quente' ? 'var(--danger-subtle)' : opt.value === 'morno' ? 'var(--warning-subtle)' : 'var(--info-subtle)')
+                      : isActive ? 'var(--accent-subtle)' : 'transparent',
+                    color: isActive && opt.value !== 'all'
+                      ? (opt.value === 'quente' ? 'var(--danger)' : opt.value === 'morno' ? 'var(--warning)' : 'var(--info)')
+                      : isActive ? 'var(--accent)' : 'var(--text-tertiary)',
+                    borderColor: isActive ? 'transparent' : 'var(--border)',
+                  }}
+                >
+                  {opt.emoji ? `${opt.emoji} ${opt.label}` : opt.label}
+                </button>
+              );
+            })}
 
-            <Select
-              value={filters.prioridadeLevel}
-              onChange={e => setFilter({ prioridadeLevel: e.target.value as any })}
-              options={[
-                { value: 'all', label: 'Prioridade' },
-                { value: 'critico', label: '🔴 Crítico' },
-                { value: 'alto', label: '🟠 Alto' },
-                { value: 'medio', label: '🟡 Médio' },
-                { value: 'baixo', label: '🟢 Baixo' },
-              ]}
-            />
+            <div className="w-px shrink-0 self-stretch" style={{ background: 'var(--border)' }} />
+
+            {([
+              { value: 'all',     label: 'Prioridade'  },
+              { value: 'critico', label: '🔴 Crítico'  },
+              { value: 'alto',    label: '🟠 Alto'     },
+              { value: 'medio',   label: '🟡 Médio'    },
+              { value: 'baixo',   label: '🟢 Baixo'    },
+            ] as const).map(opt => {
+              const isActive = filters.prioridadeLevel === opt.value;
+              return (
+                <button
+                  key={`prio-${opt.value}`}
+                  type="button"
+                  onClick={() => setFilter({ prioridadeLevel: opt.value })}
+                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors min-h-[32px] whitespace-nowrap"
+                  style={{
+                    background: isActive && opt.value !== 'all' ? 'var(--accent-subtle)' : 'transparent',
+                    color: isActive ? 'var(--accent)' : 'var(--text-tertiary)',
+                    borderColor: isActive ? 'var(--accent)' : 'var(--border)',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
-
-          {/* Mobile: filtros extras aparecem quando já tem filtro ativo */}
-          {(filters.temperatura !== 'all' || filters.prioridadeLevel !== 'all') && (
-            <div className="flex sm:hidden items-center gap-2 flex-wrap">
-              <Select
-                value={filters.temperatura}
-                onChange={e => setFilter({ temperatura: e.target.value as any })}
-                options={[
-                  { value: 'all', label: 'Temperatura' },
-                  { value: 'quente', label: '🔥 Quente' },
-                  { value: 'morno', label: '☀️ Morno' },
-                  { value: 'frio', label: '❄️ Frio' },
-                ]}
-              />
-
-              <Select
-                value={filters.prioridadeLevel}
-                onChange={e => setFilter({ prioridadeLevel: e.target.value as any })}
-                options={[
-                  { value: 'all', label: 'Prioridade' },
-                  { value: 'critico', label: '🔴 Crítico' },
-                  { value: 'alto', label: '🟠 Alto' },
-                  { value: 'medio', label: '🟡 Médio' },
-                  { value: 'baixo', label: '🟢 Baixo' },
-                ]}
-              />
-            </div>
-          )}
         </div>
       </div>
 
@@ -251,8 +255,14 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
 
   return (
     <Card
-      className="p-4 transition"
+      className="p-4 transition overflow-hidden"
       style={{
+        borderTop: `3px solid ${
+          lead.prioridadeLevel === 'critico' ? 'var(--danger)' :
+          lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
+          lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
+          'var(--bg-surface-3)'
+        }`,
         ...(isSelected ? {
           outline: '2px solid var(--accent)',
           outlineOffset: '0px',
@@ -284,7 +294,7 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
             )}
 
             <span
-              className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
+              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[99px] shrink-0"
               style={{
                 background: lead.prioridadeLevel === 'critico' ? 'var(--danger-subtle)' :
                             lead.prioridadeLevel === 'alto'    ? 'var(--warning-subtle)' :
@@ -294,11 +304,17 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
                        lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
                        lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
                        'var(--text-secondary)',
+                border: `1px solid ${
+                  lead.prioridadeLevel === 'critico' ? 'rgba(248,113,113,0.2)' :
+                  lead.prioridadeLevel === 'alto'    ? 'rgba(245,158,11,0.2)' :
+                  lead.prioridadeLevel === 'medio'   ? 'rgba(96,165,250,0.2)' :
+                  'var(--border)'
+                }`,
               }}
             >
-              {lead.prioridadeLevel === 'critico' ? '● Crítico' :
-               lead.prioridadeLevel === 'alto'    ? '● Alto' :
-               lead.prioridadeLevel === 'medio'   ? '● Médio' : '● Baixo'}
+              {lead.prioridadeLevel === 'critico' ? 'Crítico' :
+               lead.prioridadeLevel === 'alto'    ? 'Alto' :
+               lead.prioridadeLevel === 'medio'   ? 'Médio' : 'Baixo'}
             </span>
           </div>
 
@@ -311,22 +327,21 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
 
             {lead.temperatura && (
               <span
-                title={
-                  lead.temperatura === 'quente' ? 'Quente' :
-                  lead.temperatura === 'morno'  ? 'Morno'  : 'Frio'
-                }
-                className="shrink-0"
+                className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full"
                 style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  display: 'inline-block',
                   background:
+                    lead.temperatura === 'quente' ? 'var(--danger-subtle)'  :
+                    lead.temperatura === 'morno'  ? 'var(--warning-subtle)' :
+                    'var(--info-subtle)',
+                  color:
                     lead.temperatura === 'quente' ? 'var(--danger)'  :
                     lead.temperatura === 'morno'  ? 'var(--warning)' :
                     'var(--info)',
                 }}
-              />
+              >
+                {lead.temperatura === 'quente' ? '🔥 Quente' :
+                 lead.temperatura === 'morno'  ? '☀️ Morno' : '❄️ Frio'}
+              </span>
             )}
 
             {alertaContato && (

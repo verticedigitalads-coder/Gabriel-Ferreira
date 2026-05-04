@@ -25,7 +25,7 @@ export function BottomNav() {
       style={{
         background: 'var(--bg-sidebar)',
         borderColor: 'var(--border)',
-        height: 64,
+        height: 72,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         flexShrink: 0,
       }}
@@ -37,16 +37,16 @@ export function BottomNav() {
             key={id}
             onClick={() => setActiveModule(id)}
             className="flex flex-col items-center justify-center gap-1 flex-1 transition-colors min-h-[44px] border-none bg-transparent cursor-pointer relative"
-            style={{ color: isActive ? 'var(--accent)' : 'var(--text-disabled)' }}
+            style={{ color: isActive ? 'var(--accent)' : '#52525b' }}
           >
             <Icon size={20} />
-            <span className="text-[9px] font-semibold tracking-tight leading-none">
+            <span className="text-[11px] font-semibold leading-none">
               {label}
             </span>
             {isActive && (
               <div
-                className="absolute bottom-1.5 rounded-full"
-                style={{ width: 4, height: 4, background: 'var(--accent)' }}
+                className="absolute top-1 rounded-full"
+                style={{ width: 16, height: 3, background: 'var(--accent)' }}
               />
             )}
           </button>
