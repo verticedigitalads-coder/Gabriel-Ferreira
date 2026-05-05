@@ -74,6 +74,13 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const activeModule = useStore(state => state.activeModule);
   const setActiveModule = useStore((state: any) => state.setActiveModule);
   const isAdmin = useIsAdmin();
+  const leads = useStore(state => state.leads);
+  const tarefasCriticas = leads.filter(l =>
+    l.prioridadeLevel === 'critico' && l.status !== 'fechado' && l.status !== 'perdido'
+  ).length;
+  const leadsAtivos = leads.filter(l =>
+    l.status !== 'fechado' && l.status !== 'perdido'
+  ).length;
 
   return (
     <aside
@@ -144,6 +151,22 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                 >
                   <Icon className="w-[var(--sidebar-icon-size)] h-[var(--sidebar-icon-size)] opacity-80 shrink-0" />
                   <span className="tracking-tight">{item.label}</span>
+                  {item.id === 'dashboard' && tarefasCriticas > 0 && (
+                    <span
+                      className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'var(--danger-subtle)', color: 'var(--danger)' }}
+                    >
+                      {tarefasCriticas}
+                    </span>
+                  )}
+                  {item.id === 'leads' && leadsAtivos > 0 && (
+                    <span
+                      className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'var(--bg-surface-3)', color: 'var(--text-tertiary)' }}
+                    >
+                      {leadsAtivos}
+                    </span>
+                  )}
                 </button>
               </li>
             );

@@ -184,10 +184,32 @@ export function LeadsList() {
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {filteredLeads.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-[var(--text-tertiary)]">Nenhum lead encontrado</p>
-            <Button className="mt-4" onClick={() => setShowAddModal(true)}>
-              Adicionar primeiro lead
-            </Button>
+            {hasActiveFilters ? (
+              <>
+                <div className="text-3xl mb-3 opacity-30">🔍</div>
+                <p className="text-sm text-[var(--text-tertiary)] mb-1">
+                  Nenhum lead encontrado com esses filtros
+                </p>
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="mt-3 gap-1">
+                  <X className="w-4 h-4" />
+                  Limpar filtros
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="text-3xl mb-3 opacity-30">👥</div>
+                <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">
+                  Nenhum lead cadastrado
+                </p>
+                <p className="text-xs text-[var(--text-tertiary)] mb-4">
+                  Adicione seu primeiro lead para começar
+                </p>
+                <Button onClick={() => setShowAddModal(true)} className="gap-1">
+                  <Plus className="w-4 h-4" />
+                  Novo Lead
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-3">

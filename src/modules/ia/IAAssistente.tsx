@@ -207,6 +207,34 @@ export function IAAssistente() {
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
+        {/* ONBOARDING — visível enquanto nenhum lead foi analisado */}
+        {!leads.some(l => l.historico?.some(h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS)) && (
+          <Card className="p-5 border" style={{ borderColor: 'var(--ia)', background: 'var(--ia-subtle)' }}>
+            <div className="flex items-start gap-3">
+              <span className="text-2xl leading-none">✦</span>
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+                  Bem-vindo ao IA Assistente
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                  Analise seus leads automaticamente para identificar oportunidades, riscos e ações recomendadas. Selecione um lead abaixo e clique em "Analisar" para começar.
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: 'var(--success-subtle)', color: 'var(--success)' }}>
+                    Oportunidades
+                  </span>
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: 'var(--warning-subtle)', color: 'var(--warning)' }}>
+                    Riscos
+                  </span>
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: 'var(--info-subtle)', color: 'var(--info)' }}>
+                    Ações recomendadas
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* CARDS PRIORIDADE */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-red-500">

@@ -176,10 +176,12 @@ export function Recibos() {
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {sortedRecibos.length === 0 ? (
           <div className="text-center py-12">
-            <Receipt className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-4" />
-            <p className="text-[var(--text-secondary)]">Nenhum recibo encontrado.</p>
-            <p className="text-sm text-[var(--text-tertiary)] mt-1">
-              Recibos são gerados automaticamente ao aprovar um orçamento.
+            <div className="text-3xl mb-3 opacity-30">🧾</div>
+            <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">
+              Nenhum recibo ainda
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)]">
+              Recibos são gerados automaticamente ao aprovar um orçamento
             </p>
           </div>
         ) : (

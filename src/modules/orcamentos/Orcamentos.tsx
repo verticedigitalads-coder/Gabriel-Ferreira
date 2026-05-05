@@ -325,8 +325,9 @@ export function Orcamentos() {
           </div>
           <div className="flex items-center gap-1">
             {/* Sempre visíveis: PDF + PIX */}
-            <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF">
+            <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF" className="gap-1">
               <Download className="w-4 h-4" />
+              <span className="sm:hidden text-[10px]">PDF</span>
             </Button>
             {defaultSettings.chavePix && (leads.find(l => l.id === orc.leadId)?.telefone || orc.clienteTelefone) && (
               <Button
@@ -334,6 +335,7 @@ export function Orcamentos() {
                 size="sm"
                 title="Enviar PIX via WhatsApp"
                 aria-label="Enviar PIX via WhatsApp"
+                className="gap-1"
                 onClick={() => {
                   const lead = leads.find(l => l.id === orc.leadId);
                   enviarPixWhatsapp({
@@ -350,6 +352,7 @@ export function Orcamentos() {
                 }}
               >
                 <QrCode className="w-4 h-4 text-[var(--success)]" />
+                <span className="sm:hidden text-[10px]">PIX</span>
               </Button>
             )}
 
@@ -432,14 +435,16 @@ export function Orcamentos() {
       <div className="flex-1 overflow-y-auto p-6">
         {sortedOrcamentos.length === 0 ? (
           <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-4" />
-            <p className="text-[var(--text-secondary)]">Nenhum orçamento criado</p>
-            <Button
-              variant="primary"
-              className="mt-4"
-              onClick={() => setShowModal(true)}
-            >
-              Criar primeiro orçamento
+            <div className="text-3xl mb-3 opacity-30">📄</div>
+            <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">
+              Nenhum orçamento criado
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)] mb-4">
+              Crie seu primeiro orçamento para um lead
+            </p>
+            <Button onClick={() => setShowModal(true)} className="gap-1">
+              <Plus className="w-4 h-4" />
+              Novo Orçamento
             </Button>
           </div>
         ) : !modoSelecao ? (

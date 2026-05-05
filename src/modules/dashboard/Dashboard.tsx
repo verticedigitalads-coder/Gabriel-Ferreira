@@ -310,7 +310,7 @@ export function Dashboard() {
 
       <Card className="shadow-sm rounded-xl p-4 md:p-6">
 
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+        <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-3">
           Estoque Crítico
         </h2>
 
@@ -389,7 +389,7 @@ export function Dashboard() {
       <Card className="shadow-sm rounded-xl">
 
         <div className="p-5 border-b border-[var(--border)]">
-          <h2 className="text-base font-semibold text-[var(--text-primary)]">
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
             Visitas Hoje
           </h2>
         </div>
@@ -524,7 +524,7 @@ export function Dashboard() {
 
         <div className="p-5 border-b border-[var(--border)]">
 
-          <h2 className="text-base font-semibold text-[var(--text-primary)]">
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
             Maiores Oportunidades
           </h2>
 
