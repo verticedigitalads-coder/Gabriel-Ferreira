@@ -19,7 +19,6 @@ export function MainLayout({ children }: MainLayoutProps) {
   const stats = useDashboardStats();
 
   const logout = useStore(state => state.logout);
-  const activeModule = useStore(state => state.activeModule);
 
   const { setupNotifications } = useNotifications();
 
@@ -121,25 +120,6 @@ export function MainLayout({ children }: MainLayoutProps) {
               </>
             )}
           </div>
-        </div>
-
-        {/* Sub-header mobile — nome do módulo */}
-        <div
-          className="flex md:hidden items-center px-4 py-2 border-b"
-          style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border)' }}
-        >
-          <span className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-            {activeModule === 'dashboard'     ? 'Dashboard' :
-             activeModule === 'leads'         ? 'Leads' :
-             activeModule === 'orcamentos'    ? 'Orçamentos' :
-             activeModule === 'operacional'   ? 'Operacional' :
-             activeModule === 'financeiro'    ? 'Financeiro' :
-             activeModule === 'recibos'       ? 'Recibos' :
-             activeModule === 'ia'            ? 'IA Assistente' :
-             activeModule === 'kanban'        ? 'Kanban' :
-             activeModule === 'configuracoes' ? 'Configurações' :
-             activeModule}
-          </span>
         </div>
 
         {(stats.tarefasAtrasadas > 0 || stats.tarefasHoje > 0) && (

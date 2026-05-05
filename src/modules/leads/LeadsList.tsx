@@ -279,20 +279,25 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
     <Card
       className="p-4 transition overflow-hidden"
       style={{
-        borderTop: `3px solid ${
+        borderTopWidth: '3px',
+        borderTopStyle: 'solid',
+        borderTopColor:
           lead.prioridadeLevel === 'critico' ? 'var(--danger)' :
           lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
           lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
-          'var(--bg-surface-3)'
-        }`,
+          'var(--bg-surface-3)',
         ...(isSelected ? {
           outline: '2px solid var(--accent)',
           outlineOffset: '0px',
-          borderColor: 'var(--accent)',
+          borderRightColor: 'var(--accent)',
+          borderBottomColor: 'var(--accent)',
+          borderLeftColor: 'var(--accent)',
           boxShadow: '0 0 0 3px var(--accent-subtle)',
         } : {}),
         ...(alertaContato ? {
-          borderColor: 'rgba(239, 68, 68, 0.3)',
+          borderRightColor: 'rgba(239, 68, 68, 0.3)',
+          borderBottomColor: 'rgba(239, 68, 68, 0.3)',
+          borderLeftColor: 'rgba(239, 68, 68, 0.3)',
           background: 'var(--danger-subtle)',
         } : {}),
       }}
