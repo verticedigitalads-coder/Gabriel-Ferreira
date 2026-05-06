@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 05/05/2026
-Versão: v2.28.7
+Última atualização: 06/05/2026
+Versão: v2.28.9
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -40,6 +40,8 @@ Versão: v2.28.7
 - UX v2.27.9: LeadRow — TempDot (dot 8px colorido por temperatura: danger/warning/info) substituiu TemperatureBadge; badge "✦ IA" (var(--ia)/var(--ia-subtle), 10px, rounded) substituiu "IA Analisado" rounded-full
 - UX v2.28.0: Dashboard — Foco Hoje aprimorado (counter badge no header, TempDot 7px + alerta "Xd" por lead, min-h-44px); StatCard prop delta? ReactNode adicionada (Card.tsx); deltas em Receita Provável (Meta: R$X), Score Comercial (N fechados), Tarefas Críticas (N atrasadas)
 - Fix v2.28.1: Badge.tsx — variant `info` corrigida (--info-subtle/--info azul, era accent laranja); variant `ia` adicionada (--ia-subtle/--ia roxo); StatusBadge `novo` → info, `atendimento` → ia (era bg-purple-100 hardcoded); PriorityBadge bullet ● adicionado, text-[10px] font-semibold
+- Rebrand v2.28.9: AuthPage substituída por landing page SaaS VRTX (nav sticky, hero com mockup do dashboard, 6 feature cards, 3 steps, 3 depoimentos, CTA com botão Google + trust row, footer); fluxo OAuth `supabase.auth.signInWithOAuth` preservado intacto; CSS prefixado `lp-*` para isolar do design system interno
+- Rebrand v2.28.8: favicon.ico adicionado ao index.html; title/description/apple-mobile-web-app-title → "VRTX CRM"; vite.config.ts PWA manifest name/short_name atualizados; Sidebar logo "CRM"→"VX", texto "CRM Pro"→"VRTX"
 - Fix v2.28.7: LeadRow borderTop preservado — usa borderTopWidth/Style/Color separados + borderRight/Bottom/LeftColor para isSelected/alertaContato (borderColor shorthand não sobrescreve mais); sub-header mobile removido do MainLayout (redundante com HeaderGlobal); HeaderGlobal h1 text-sm→text-base + truncate, data hidden sm:block→truncate (visível mobile)
 - UX v2.28.6: Orçamentos — botões PDF e PIX ganham label "PDF"/"PIX" visível apenas em mobile (sm:hidden, gap-1); IAAssistente — card onboarding (ia-subtle, border ia) exibido enquanto nenhum lead foi analisado, some após primeira análise
 - UX v2.28.5: Empty states diferenciados — Leads (filtro ativo→🔍+limpar / vazio→👥+CTA), Orcamentos (📄+CTA), Recibos (🧾+contexto); Dashboard hierarquia h2 — Estoque Crítico/Visitas Hoje/Maiores Oportunidades rebaixados para text-sm uppercase secondary; Sidebar — badge danger (leads críticos) no Dashboard, badge count neutro (leads ativos) no Leads

@@ -101,12 +101,12 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   <div className="flex items-center gap-4">
 
     <div className="w-10 h-10 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white font-semibold text-sm shadow-lg">
-      CRM
+      VX
     </div>
 
     <div className="leading-tight">
       <h1 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-        CRM Pro
+        VRTX
       </h1>
       <p className="text-xs text-[var(--text-tertiary)] font-medium">
         Gestão Comercial Inteligente

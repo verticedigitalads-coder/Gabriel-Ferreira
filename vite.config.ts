@@ -19,8 +19,8 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({      registerType: "autoUpdate",
       manifest: {
-        name: "Vértice Digital CRM Inteligente",
-        short_name: "Vértice CRM",
+        name: "VRTX CRM — Inteligência Comercial",
+        short_name: "VRTX CRM",
         description: "Sistema Inteligente de Gestão Comercial",
         theme_color: "#0F172A",
         background_color: "#0F172A",
