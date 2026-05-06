@@ -405,6 +405,13 @@ app.post('/api/gerar-orcamento', async (req, res) => {
            </div>`
         : '';
 
+      const obsHtml = dados.observacoes
+        ? `<div style="margin-top:12px;padding:12px 16px;background:#f8f8f8;border-radius:6px;border-left:4px solid ${cor_primaria};">
+             <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Observações</div>
+             <div style="font-size:11px;color:#444;line-height:1.5;white-space:pre-wrap;">${escapeHtml(dados.observacoes)}</div>
+           </div>`
+        : '';
+
       const qrCodePixHtml = await gerarQrCodePixHtml({
         chavePix: dados.chave_pix || '',
         nomeRecebedor: dados.nome_recebedor_pix || empresa_nome || 'EMPRESA',
@@ -429,6 +436,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
         .replace('{{totais_html}}', totaisHtml)
         .replace('{{secao_metodos_pagamento}}', secaoMetodos)
         .replace('{{secao_condicoes}}', secaoCondicoes)
+        .replace(/{{observacoes_bloco}}/g, obsHtml)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
 
