@@ -25,6 +25,22 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+// Helper: converte URL de imagem externa para base64 (evita falhas de carregamento no Puppeteer VPS)
+async function urlToBase64(url) {
+  if (!url || url.startsWith('data:')) return url;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return '';
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const contentType = response.headers.get('content-type') || 'image/png';
+    return `data:${contentType};base64,${base64}`;
+  } catch (err) {
+    console.error('[PDF] Erro ao converter logo para base64:', err.message);
+    return '';
+  }
+}
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -373,7 +389,8 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
       const empresa_telefone = dados.empresa_telefone || '';
       const empresa_endereco = dados.empresa_endereco || '';
       const empresa_cnpj = dados.empresa_cnpj || '';
-      const empresa_logo_url = dados.empresa_logo_url || '';
+      const empresa_logo_url_raw = dados.empresa_logo_url || '';
+      const empresa_logo_url = await urlToBase64(empresa_logo_url_raw);
       const texto_apresentacao = dados.texto_apresentacao || '';
       const condicoes_contrato = dados.condicoes_contrato || '';
       const metodos_pagamento = dados.metodos_pagamento || '';
@@ -778,8 +795,9 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
 
       const corPrimaria = cor_primaria || '#ff6a00';
-      const logoHtmlAgrupado = empresa_logo_url
-        ? `<img src="${empresa_logo_url}" style="width: 180px; margin-bottom: 8px;" />`
+      const logoUrlAgrupado = await urlToBase64(empresa_logo_url || '');
+      const logoHtmlAgrupado = logoUrlAgrupado
+        ? `<img src="${logoUrlAgrupado}" style="width: 180px; margin-bottom: 8px;" />`
         : '';
 
       // Seção apresentação (aparece uma vez, antes dos orçamentos)
@@ -1189,7 +1207,9 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
 
     // 🔥 IMAGENS DINÂMICAS
     if (templateVersion === 'v2') {
-      const logoUrl = dados.empresa_logo_url || logoPath;
+      const logoUrl = dados.empresa_logo_url
+        ? await urlToBase64(dados.empresa_logo_url)
+        : logoPath;
       const logoHtml = logoUrl ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />` : '';
       const logoBgUrl = dados.empresa_logo_bg_url || logoBgPath;
 
