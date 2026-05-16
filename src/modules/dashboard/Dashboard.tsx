@@ -358,7 +358,7 @@ export function Dashboard() {
           <StatCard
             label="Score Operacional"
             value={stats.scoreOperacional}
-            suffix="/100"
+            suffix=" pts"
             icon={<Activity className="w-5 h-5 text-[var(--accent)]" />}
           />
 

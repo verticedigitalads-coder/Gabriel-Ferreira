@@ -1,7 +1,5 @@
 import type { Lead } from '@/types';
 
-const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-
 interface OpenAIStrategicResponse {
   ajusteMensagem?: string;
   ajusteEstrategia?: string;
@@ -32,11 +30,6 @@ export async function refineLeadStrategyWithAI(
   lead: Lead,
   baseAnalysis: any,
 ): Promise<OpenAIStrategicResponse | null> {
-  if (!API_KEY) {
-    console.warn('OpenAI API key não configurada');
-    return null;
-  }
-
   const diasSemContato = calcularDiasSemContato(lead);
   const historicoRecente = formatarHistoricoRecente(lead);
 
@@ -91,7 +84,6 @@ Se tudo estiver adequado, retorne {}.
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${API_KEY}`,
     },
     body: JSON.stringify({
       model: 'gpt-4o-mini',

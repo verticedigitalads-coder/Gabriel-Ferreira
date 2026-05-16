@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 06/05/2026
-Versão: v2.28.9
+Última atualização: 16/05/2026
+Versão: v2.29.1
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -49,6 +49,8 @@ Versão: v2.28.9
 - UX v2.28.3: BottomNav — labels 9px→11px, height 64→72, ícone inativo #52525b, pill accent 16×3px no topo do item ativo; LeadRow — borderTop 3px colorida por prioridade, TempDot→pill emoji (🔥/☀️/❄️), PriorityBadge sem bullet, pill com border sutil rounded-[99px]; MainLayout — sub-bar mobile com nome do módulo abaixo do header
 - UX v2.28.2: OrcamentoForm alinhado com design system — Multiplicador com pills atalho (Sem/+10%/+15%/+20%) + input customizado; seção ITENS com wrapper bordado, header uppercase e sub-header tabular (DESCRIÇÃO/QTD/UNIT/TOTAL, hidden mobile); label "CLIENTE" uppercase acima dos selects, grid responsive cols-1/sm:cols-2; TOTAL em accent laranja text-xl; botões finais full-width flex-1 min-h-[48px] com "Salvar Rascunho"/"Enviar" no modo criação
 
+- Fix v2.29.1: Score Operacional — suffix corrigido de "/100" → " pts" (escala é penalidade ilimitada, não 0-100); IAAssistente — data `dataIdealFollowUp` formatada com `toLocaleString('pt-BR')` em vez de ISO bruto; botão "Analisar Lead" — wrapper `position:relative; z-index:10` adicionado para garantir clicabilidade
+
 ## Fixes e Auditorias
 - RLS Supabase: 14 tabelas, 1 policy filtrada cada
 - Auditoria Codex: 6/6 bugs corrigidos
@@ -58,6 +60,7 @@ Versão: v2.28.9
 - Idempotência básica (orcamentos + recibos)
 - PDFs compactos (seções vazias colapsam)
 - Fix: try/catch com fallback na busca sequencial do orçamento (server.js) — PDF gerado mesmo com Supabase inacessível
+- Segurança v2.29.0 — hardening pré-VPS aplicado: (1) `VITE_OPENAI_API_KEY` removida do frontend (chave deixou de ir no bundle JS público); env backend renomeada para `OPENAI_API_KEY`; (2) rotas `/api/admin/*` protegidas por `requireAuth` (Supabase JWT via Bearer) + `requireAdmin` (whitelist `ADMIN_USER_IDS` env, fail-closed); (3) CORS manual substituído pelo pacote `cors` com whitelist via `CORS_ALLOWED_ORIGINS` (default localhost+Vercel); (4) `helmet` adicionado (CSP/COEP off por conta dos PDFs inline); (5) `express-rate-limit` adicionado — globalLimiter 100 req/min, strictLimiter 10 req/min em `/api/chat`, `/api/gerar-orcamento`, `/api/gerar-orcamento-agrupado`, `/api/gerar-recibo`, `/api/admin/criar-empresa`; (6) `express.json({ limit: '10mb' })` + `urlencoded` com mesmo limit
 
 ## Clientes Ativos
 - FL Art Metal (metalúrgica) — ativo, usando diariamente

@@ -7,6 +7,9 @@ import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import QRCode from 'qrcode';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { pixPayload } from './utils/pixPayload.js';
 
 dotenv.config({ path: './.env' });
@@ -61,20 +64,92 @@ async function gerarQrCodePixHtml({ chavePix, nomeRecebedor, cidadeRecebedor, va
 }
 
 /* ==========================================
-🌐 CORS (PRODUÇÃO — RENDER + VERCEL)
+🌐 CORS (whitelist via env)
 ========================================== */
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS
+  || 'http://localhost:5173,http://localhost:3000,https://vertice-digital-crm.vercel.app')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('CORS bloqueado: ' + origin));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+}));
+
+/* ==========================================
+🛡️ HELMET (security headers)
+========================================== */
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+/* ==========================================
+⏱️ RATE LIMIT
+========================================== */
+
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas requisições. Tente novamente em 1 minuto.' },
 });
+app.use(globalLimiter);
+
+const strictLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Limite de requisições excedido.' },
+});
+
+/* ==========================================
+🔐 AUTH MIDDLEWARES (admin whitelist)
+========================================== */
+
+const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const requireAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token não fornecido' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !user) return res.status(401).json({ error: 'Token inválido' });
+    req.user = user;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Erro de autenticação' });
+  }
+};
+
+const requireAdmin = (req, res, next) => {
+  if (!req.user?.id || !ADMIN_USER_IDS.includes(req.user.id)) {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  next();
+};
 
 app.get('/', (_req, res) => res.sendStatus(200));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 /* ==========================================
 📁 SERVIR IMAGENS (LOGOS / ASSETS)
@@ -86,13 +161,13 @@ app.use('/assets', express.static(assetsPath));
 🔥 ROTA OPENAI
 ========================================== */
 
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', strictLimiter, async (req, res) => {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.VITE_OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify(req.body),
     });
@@ -145,7 +220,7 @@ app.get('/api/cnpj/:cnpj', async (req, res) => {
 🧾 GERAR ORÇAMENTO PDF (TEMPLATE REAL)
 ========================================== */
 
-app.post('/api/gerar-orcamento', async (req, res) => {
+app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
   try {
     const dados = req.body;
 
@@ -569,7 +644,7 @@ app.post('/api/gerar-orcamento', async (req, res) => {
 📄 GERAR PDF AGRUPADO (múltiplos orçamentos)
 ========================================== */
 
-app.post('/api/gerar-orcamento-agrupado', async (req, res) => {
+app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
   try {
     const {
       orcamentos,
@@ -1016,7 +1091,7 @@ function dataExtenso(dataStr) {
 🧾 GERAR RECIBO PDF (TEMPLATE REAL)
 ========================================== */
 
-app.post('/api/gerar-recibo', async (req, res) => {
+app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
   try {
     const dados = req.body;
 
@@ -1257,7 +1332,7 @@ function getSupabaseAdmin() {
 🏢 GET /api/admin/workspaces — Lista todas as empresas
 ========================================== */
 
-app.get('/api/admin/workspaces', async (_req, res) => {
+app.get('/api/admin/workspaces', requireAuth, requireAdmin, async (_req, res) => {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const { data, error } = await supabaseAdmin
@@ -1278,7 +1353,7 @@ app.get('/api/admin/workspaces', async (_req, res) => {
 🏢 POST /api/admin/criar-empresa — Cria workspace + usuário + vínculo
 ========================================== */
 
-app.post('/api/admin/criar-empresa', async (req, res) => {
+app.post('/api/admin/criar-empresa', requireAuth, requireAdmin, strictLimiter, async (req, res) => {
   const { nome, segment, email, senha } = req.body ?? {};
 
   if (!nome || !nome.trim()) {

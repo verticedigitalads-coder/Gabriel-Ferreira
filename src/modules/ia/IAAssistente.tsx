@@ -473,7 +473,7 @@ export function IAAssistente() {
           )}
 
           {/* BOTÃO */}
-          <div className="pt-3 border-t">
+          <div className="pt-3 border-t" style={{ position: 'relative', zIndex: 10 }}>
             <Button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
@@ -652,7 +652,15 @@ export function IAAssistente() {
         <p className="text-sm">
           Data ideal de follow-up:
           <span className="font-bold ml-2">
-            {analysis.dataIdealFollowUp}
+            {analysis.dataIdealFollowUp
+              ? new Date(analysis.dataIdealFollowUp).toLocaleString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : '—'}
           </span>
         </p>
 
