@@ -126,9 +126,16 @@ type StoreState = {
   whatsappConversations: any[];
   whatsappMessages: any[];
   selectedConversation: string | null;
+  whatsappInstanceName: string | null;
+  connectionStatus: string | null;
+  sendingMessage: boolean;
   fetchConversations: () => Promise<void>;
   fetchMessages: (remoteJid: string) => Promise<void>;
   setSelectedConversation: (remoteJid: string | null) => void;
+  fetchWhatsappInstance: () => Promise<void>;
+  fetchConnectionStatus: () => Promise<void>;
+  sendMessage: (text: string) => Promise<void>;
+  deleteConversation: (remoteJid: string) => Promise<void>;
 };
 
 export const useStore = create<StoreState>()(
@@ -624,6 +631,9 @@ export const useStore = create<StoreState>()(
           whatsappConversations: [],
           whatsappMessages: [],
           selectedConversation: null,
+          whatsappInstanceName: null,
+          connectionStatus: null,
+          sendingMessage: false,
           selectedLeadId: null,
           activeModule: 'dashboard',
         });

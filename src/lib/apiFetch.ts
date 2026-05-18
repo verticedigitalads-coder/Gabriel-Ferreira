@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 async function warmBackend(): Promise<void> {
@@ -18,6 +20,15 @@ export async function apiFetch(
 ): Promise<Response> {
   const url = `${API_URL}${path}`;
 
+  let authHeader: Record<string, string> = {};
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) authHeader = { Authorization: `Bearer ${token}` };
+  } catch {
+    // Sessão indisponível — segue sem token (rotas sem auth ignoram o header)
+  }
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(url, {
@@ -25,6 +36,7 @@ export async function apiFetch(
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
+          ...authHeader,
           ...options.headers,
         },
       });

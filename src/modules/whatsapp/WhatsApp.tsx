@@ -7,13 +7,19 @@ import {
   Mic,
   Video as VideoIcon,
   FileText,
+  Send,
+  MoreVertical,
+  Trash2,
 } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useStore } from '@/store/useStore';
 import { formatPhone } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { WhatsappConversation, WhatsappMessage } from '@/types';
+
+const CONNECTED_STATES = ['open', 'connected'];
 
 const isGroup = (jid: string) => jid.endsWith('@g.us');
 
@@ -105,17 +111,41 @@ export function WhatsApp() {
   const selectedConversation = useStore((s) => s.selectedConversation);
   const fetchConversations = useStore((s) => s.fetchConversations);
   const setSelectedConversation = useStore((s) => s.setSelectedConversation);
+  const whatsappInstanceName = useStore((s) => s.whatsappInstanceName);
+  const connectionStatus = useStore((s) => s.connectionStatus);
+  const sendingMessage = useStore((s) => s.sendingMessage);
+  const fetchWhatsappInstance = useStore((s) => s.fetchWhatsappInstance);
+  const fetchConnectionStatus = useStore((s) => s.fetchConnectionStatus);
+  const sendMessage = useStore((s) => s.sendMessage);
+  const deleteConversation = useStore((s) => s.deleteConversation);
 
   const [search, setSearch] = useState('');
+  const [draft, setDraft] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchConversations();
-  }, [fetchConversations]);
+    fetchWhatsappInstance();
+  }, [fetchConversations, fetchWhatsappInstance]);
+
+  useEffect(() => {
+    if (whatsappInstanceName) fetchConnectionStatus();
+  }, [whatsappInstanceName, fetchConnectionStatus]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleSend = () => {
+    const text = draft.trim();
+    if (!text || sendingMessage) return;
+    sendMessage(text);
+    setDraft('');
+  };
+
+  const connected = !!connectionStatus && CONNECTED_STATES.includes(connectionStatus);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -267,7 +297,7 @@ export function WhatsApp() {
               >
                 {displayName(active).charAt(0).toUpperCase()}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div
                   className="text-sm font-semibold truncate"
                   style={{ color: 'var(--text-primary)' }}
@@ -281,6 +311,67 @@ export function WhatsApp() {
                   {jidToPhone(active.remoteJid)}
                 </div>
               </div>
+
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-[var(--radius-md)]"
+                  style={{ color: 'var(--text-secondary)' }}
+                  aria-label="Mais ações"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+
+                {menuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setMenuOpen(false)}
+                    />
+                    <div
+                      className="absolute right-0 mt-1 z-50 w-56 rounded-[var(--radius-md)] overflow-hidden"
+                      style={{
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border)',
+                        boxShadow: 'var(--shadow-lg)',
+                      }}
+                    >
+                      <div
+                        className="flex items-center gap-2 px-4 py-3 text-xs"
+                        style={{
+                          color: 'var(--text-secondary)',
+                          borderBottom: '1px solid var(--border)',
+                        }}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{
+                            background: connected
+                              ? 'var(--success)'
+                              : 'var(--danger)',
+                          }}
+                        />
+                        {connected
+                          ? 'Conectado'
+                          : `Desconectado${
+                              connectionStatus ? ` (${connectionStatus})` : ''
+                            }`}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setConfirmClear(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left min-h-[44px]"
+                        style={{ color: 'var(--danger)' }}
+                      >
+                        <Trash2 className="w-4 h-4 shrink-0" />
+                        Limpar conversa
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div
@@ -291,6 +382,42 @@ export function WhatsApp() {
                 <MessageBubble key={m.id} msg={m} />
               ))}
               <div ref={bottomRef} />
+            </div>
+
+            <div
+              className="shrink-0 flex items-end gap-2 p-3 border-t"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                rows={1}
+                placeholder="Digite uma mensagem..."
+                className="flex-1 resize-none px-3 py-2 rounded-[var(--radius-md)] text-sm min-h-[44px] max-h-32 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                style={{
+                  background: 'var(--bg-surface-2)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
+              />
+              <button
+                onClick={handleSend}
+                disabled={sendingMessage || !draft.trim()}
+                className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] disabled:opacity-50 transition-opacity"
+                style={{
+                  background: 'var(--accent)',
+                  color: 'var(--accent-foreground)',
+                }}
+                aria-label="Enviar mensagem"
+              >
+                <Send className="w-5 h-5" />
+              </button>
             </div>
           </>
         ) : (
@@ -308,6 +435,18 @@ export function WhatsApp() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmClear}
+        title="Limpar conversa"
+        description="Isso vai apagar todas as mensagens desta conversa. Esta ação não pode ser desfeita."
+        confirmText="Limpar"
+        onConfirm={() => {
+          if (selectedConversation) deleteConversation(selectedConversation);
+          setConfirmClear(false);
+        }}
+        onCancel={() => setConfirmClear(false)}
+      />
     </div>
   );
 }

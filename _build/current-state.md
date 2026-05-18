@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
 Última atualização: 18/05/2026
-Versão: v2.31.0
+Versão: v2.32.0
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -80,13 +80,14 @@ Versão: v2.31.0
 - Mapeamento instance_name → workspace_id via tabela `whatsapp_instances`
 - Fallback: `DEFAULT_WORKSPACE_ID` env se instance não mapeada
 - Evolution API: https://evo.vrtxcrm.com.br
+- Fase 12.5 concluída (v2.32.0): WhatsApp funcional — `apiFetch` agora anexa `Authorization: Bearer <jwt>` via `supabase.auth.getSession()` (cache local; conserta gap latente do `/api/admin/*`, não-quebra rotas sem auth); 4 rotas proxy Evolution em server.js após `/webhook/evolution` (`POST /api/whatsapp/send-text|send-media`, `GET /api/whatsapp/status/:inst`, `POST /api/whatsapp/logout/:inst`, todas `requireAuth` + globalLimiter, helper `evolutionConfig` valida envs); slice ganhou `whatsappInstanceName`/`connectionStatus`/`sendingMessage` + `fetchWhatsappInstance` (lê `whatsapp_instances` por workspace), `fetchConnectionStatus`, `sendMessage` (sem insert otimista — chega via webhook→realtime), `deleteConversation` (delete Supabase + update local, RLS); UI: footer fixo com textarea (Enter envia / Shift+Enter quebra) + botão Send, menu ⋮ com status (bolinha success/danger) e "Limpar conversa" (ConfirmDialog). ENV backend necessária: `EVOLUTION_API_URL=https://evo.vrtxcrm.com.br`, `EVOLUTION_API_KEY=<key>` (adicionar manual no .env do VPS)
 - Auditoria UX WhatsApp v2.31.1: 3 fixes — `color:'#fff'` (×2 avatares) → `var(--accent-foreground)`; `focus:ring-2` → `focus:ring-2 focus:ring-[var(--accent)]` no input de busca; zero CSS hardcoded restante
 - Fase 12 Passo 6 concluída: módulo WhatsApp (somente leitura) no frontend — `createWhatsappSlice` (fetchConversations agrupa por remote_jid no cliente, fetchMessages, setSelectedConversation), `formatWhatsappMessage` em formatters.ts, tipos `WhatsappMessage`/`WhatsappConversation`; página split-panel `src/modules/whatsapp/WhatsApp.tsx` (lista 30% + chat 70% desktop / fullscreen mobile com voltar, busca, bolhas por from_me, tipos não-texto com ícone+label, auto-scroll); canal realtime `realtime-whatsapp-messages` (INSERT) em useStore.startRealtime() append-only; item "WhatsApp" na sidebar (seção Comercial, ícone MessageCircle); rota `whatsapp` no ModuleRouter. BottomNav inalterada (5 itens, máximo)
 
 ## Próximas Prioridades
-1. Fase 13: refinos UI WhatsApp (envio de mensagens — depende de Fases 14-15)
+1. Adicionar `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` no `.env` do backend (VPS) — bloqueia envio em produção
 2. Migração backend para VPS
-3. Fases 14-15 Evolution API (envio de mensagens, templates)
+3. Fases 14-15 Evolution API (envio de mídia na UI, templates)
 
 ## Pendências Manuais
 - Deletar nota órfã id:58118722 na tabela `notas` (dado de teste, workspace Vértice Digital) — fazer via Supabase Dashboard

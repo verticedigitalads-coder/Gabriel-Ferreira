@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { apiFetch } from '@/lib/apiFetch'
 import { formatWhatsappMessage } from '@/store/formatters'
 import type { WhatsappConversation, WhatsappMessage } from '@/types'
 
@@ -11,12 +12,17 @@ const toConversation = (m: WhatsappMessage): WhatsappConversation => ({
   lastTimestamp: m.timestamp,
 })
 
+const jidToNumber = (jid: string): string => jid.split('@')[0]
+
 // TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createWhatsappSlice = (set: any, get: any) => ({
 
   whatsappConversations: [],
   whatsappMessages: [],
   selectedConversation: null,
+  whatsappInstanceName: null,
+  connectionStatus: null,
+  sendingMessage: false,
 
   fetchConversations: async () => {
     const { workspaceId } = get()
@@ -72,6 +78,101 @@ export const createWhatsappSlice = (set: any, get: any) => ({
     } else {
       set({ whatsappMessages: [] })
     }
+  },
+
+  fetchWhatsappInstance: async () => {
+    const { workspaceId } = get()
+    if (!workspaceId) return
+
+    const { data, error } = await supabase
+      .from('whatsapp_instances')
+      .select('instance_name')
+      .eq('workspace_id', workspaceId)
+      .limit(1)
+
+    if (error) {
+      console.error('[WhatsappSlice] Erro ao buscar instância:', error)
+      return
+    }
+
+    set({ whatsappInstanceName: data?.[0]?.instance_name ?? null })
+  },
+
+  fetchConnectionStatus: async () => {
+    const { whatsappInstanceName } = get()
+    if (!whatsappInstanceName) return
+
+    try {
+      const res = await apiFetch(
+        `/api/whatsapp/status/${encodeURIComponent(whatsappInstanceName)}`,
+      )
+      if (!res.ok) {
+        set({ connectionStatus: 'unknown' })
+        return
+      }
+      const data = await res.json()
+      set({
+        connectionStatus:
+          data?.instance?.state ?? data?.state ?? 'unknown',
+      })
+    } catch {
+      set({ connectionStatus: 'unknown' })
+    }
+  },
+
+  sendMessage: async (text: string) => {
+    const { selectedConversation, whatsappInstanceName } = get()
+    const body = text.trim()
+    if (!body || !selectedConversation || !whatsappInstanceName) return
+
+    set({ sendingMessage: true })
+    try {
+      const res = await apiFetch('/api/whatsapp/send-text', {
+        method: 'POST',
+        body: JSON.stringify({
+          instanceName: whatsappInstanceName,
+          number: jidToNumber(selectedConversation),
+          text: body,
+        }),
+      })
+      if (!res.ok) {
+        get().addToast({ type: 'error', message: 'Erro ao enviar mensagem' })
+      }
+    } catch {
+      get().addToast({ type: 'error', message: 'Erro ao enviar mensagem' })
+    } finally {
+      set({ sendingMessage: false })
+    }
+  },
+
+  deleteConversation: async (remoteJid: string) => {
+    const { workspaceId } = get()
+    if (!workspaceId) return
+
+    const { error } = await supabase
+      .from('whatsapp_messages')
+      .delete()
+      .eq('workspace_id', workspaceId)
+      .eq('remote_jid', remoteJid)
+
+    if (error) {
+      console.error('[WhatsappSlice] Erro ao limpar conversa:', error)
+      get().addToast({ type: 'error', message: 'Erro ao limpar conversa' })
+      return
+    }
+
+    set((state: any) => {
+      const isSelected = state.selectedConversation === remoteJid
+      return {
+        whatsappConversations: state.whatsappConversations.filter(
+          (c: WhatsappConversation) => c.remoteJid !== remoteJid,
+        ),
+        selectedConversation: isSelected ? null : state.selectedConversation,
+        whatsappMessages: isSelected ? [] : state.whatsappMessages,
+      }
+    })
+
+    get().addToast({ type: 'success', message: 'Conversa limpa' })
   },
 
 })

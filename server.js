@@ -1527,6 +1527,98 @@ app.post('/webhook/evolution', async (req, res) => {
 });
 
 /* ==========================================
+📤 EVOLUTION API — PROXY ROUTES
+========================================== */
+
+function evolutionConfig(res) {
+  const url = process.env.EVOLUTION_API_URL;
+  const key = process.env.EVOLUTION_API_KEY;
+  if (!url || !key) {
+    res.status(500).json({ error: 'Evolution API não configurada no servidor' });
+    return null;
+  }
+  return { url, key };
+}
+
+// Enviar mensagem de texto
+app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
+  const cfg = evolutionConfig(res);
+  if (!cfg) return;
+  try {
+    const { instanceName, number, text } = req.body ?? {};
+    if (!instanceName || !number || !text) {
+      return res.status(400).json({ error: 'instanceName, number e text são obrigatórios' });
+    }
+    const response = await fetch(`${cfg.url}/message/sendText/${instanceName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+      body: JSON.stringify({ number, text }),
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    console.error('[WhatsApp Send] Error:', err);
+    return res.status(500).json({ error: 'Erro ao enviar mensagem' });
+  }
+});
+
+// Enviar mídia (imagem, documento, áudio, vídeo)
+app.post('/api/whatsapp/send-media', requireAuth, async (req, res) => {
+  const cfg = evolutionConfig(res);
+  if (!cfg) return;
+  try {
+    const { instanceName, number, mediatype, caption, media } = req.body ?? {};
+    if (!instanceName || !number || !mediatype || !media) {
+      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+    }
+    const response = await fetch(`${cfg.url}/message/sendMedia/${instanceName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+      body: JSON.stringify({ number, mediatype, caption, media }),
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    console.error('[WhatsApp Media] Error:', err);
+    return res.status(500).json({ error: 'Erro ao enviar mídia' });
+  }
+});
+
+// Status da instância
+app.get('/api/whatsapp/status/:instanceName', requireAuth, async (req, res) => {
+  const cfg = evolutionConfig(res);
+  if (!cfg) return;
+  try {
+    const response = await fetch(
+      `${cfg.url}/instance/connectionState/${req.params.instanceName}`,
+      { headers: { apikey: cfg.key } },
+    );
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    console.error('[WhatsApp Status] Error:', err);
+    return res.status(500).json({ error: 'Erro ao verificar status' });
+  }
+});
+
+// Desconectar instância (logout)
+app.post('/api/whatsapp/logout/:instanceName', requireAuth, async (req, res) => {
+  const cfg = evolutionConfig(res);
+  if (!cfg) return;
+  try {
+    const response = await fetch(
+      `${cfg.url}/instance/logout/${req.params.instanceName}`,
+      { method: 'DELETE', headers: { apikey: cfg.key } },
+    );
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    console.error('[WhatsApp Logout] Error:', err);
+    return res.status(500).json({ error: 'Erro ao desconectar' });
+  }
+});
+
+/* ==========================================
 🚀 START SERVER
 ========================================== */
 
