@@ -62,6 +62,11 @@ const AdminEmpresas = lazy(() =>
     default: m.AdminEmpresas,
   })),
 );
+const WhatsApp = lazy(() =>
+  import('@/modules/whatsapp/WhatsApp').then((m) => ({
+    default: m.WhatsApp,
+  })),
+);
 
 function LoadingFallback() {
   return (
@@ -98,6 +103,7 @@ function ModuleRouter() {
       {activeModule === 'fornecedores' && <Fornecedores />}
       {activeModule === 'comparador' && <ComparadorPrecos />}
       {activeModule === 'estoque' && <Estoque />}
+      {activeModule === 'whatsapp' && <WhatsApp />}
       {activeModule === 'admin' && <AdminEmpresas />}
     </Suspense>
   );

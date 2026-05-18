@@ -490,3 +490,39 @@ export interface Recibo {
   createdAt: string;
   updatedAt: string;
 }
+
+// =========================
+// WHATSAPP
+// =========================
+
+export type WhatsappMessageType =
+  | 'text'
+  | 'image'
+  | 'audio'
+  | 'video'
+  | 'document'
+  | string;
+
+export interface WhatsappMessage {
+  id: string;
+  workspaceId: string;
+  instanceName: string | null;
+  remoteJid: string;
+  contactName: string | null;
+  messageId: string | null;
+  fromMe: boolean;
+  messageType: WhatsappMessageType;
+  content: string | null;
+  timestamp: string | null;
+  rawData: any | null;
+  createdAt: string | null;
+}
+
+export interface WhatsappConversation {
+  remoteJid: string;
+  contactName: string | null;
+  lastContent: string | null;
+  lastFromMe: boolean;
+  lastMessageType: WhatsappMessageType;
+  lastTimestamp: string | null;
+}

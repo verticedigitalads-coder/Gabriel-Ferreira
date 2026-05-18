@@ -13,6 +13,7 @@ import {
   Settings as SettingsIcon,
   CalendarDays,
   Receipt,
+  MessageCircle,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -35,6 +36,7 @@ const sections: { title: string; items: MenuItem[] }[] = [
     title: 'Comercial',
     items: [
       { id: 'leads', label: 'Leads', icon: Users },
+      { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
       { id: 'orcamentos', label: 'Orçamentos', icon: FileText },
       { id: 'recibos', label: 'Recibos', icon: Receipt },
       { id: 'financeiro', label: 'Financeiro', icon: DollarSign },

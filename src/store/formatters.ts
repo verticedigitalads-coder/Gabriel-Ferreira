@@ -185,3 +185,18 @@ export const formatOrcamento = (raw: any) => ({
   createdAt: raw.created_at,
   updatedAt: raw.updated_at,
 })
+
+export const formatWhatsappMessage = (raw: any) => ({
+  id: raw.id,
+  workspaceId: raw.workspace_id,
+  instanceName: raw.instance_name ?? null,
+  remoteJid: raw.remote_jid,
+  contactName: raw.contact_name ?? null,
+  messageId: raw.message_id ?? null,
+  fromMe: raw.from_me ?? false,
+  messageType: raw.message_type || 'text',
+  content: raw.content ?? null,
+  timestamp: raw.timestamp ?? null,
+  rawData: raw.raw_data ?? null,
+  createdAt: raw.created_at ?? null,
+})

@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 17/05/2026
-Versão: v2.30.0
+Última atualização: 18/05/2026
+Versão: v2.31.0
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -80,9 +80,10 @@ Versão: v2.30.0
 - Mapeamento instance_name → workspace_id via tabela `whatsapp_instances`
 - Fallback: `DEFAULT_WORKSPACE_ID` env se instance não mapeada
 - Evolution API: https://evo.vrtxcrm.com.br
+- Fase 12 Passo 6 concluída: módulo WhatsApp (somente leitura) no frontend — `createWhatsappSlice` (fetchConversations agrupa por remote_jid no cliente, fetchMessages, setSelectedConversation), `formatWhatsappMessage` em formatters.ts, tipos `WhatsappMessage`/`WhatsappConversation`; página split-panel `src/modules/whatsapp/WhatsApp.tsx` (lista 30% + chat 70% desktop / fullscreen mobile com voltar, busca, bolhas por from_me, tipos não-texto com ícone+label, auto-scroll); canal realtime `realtime-whatsapp-messages` (INSERT) em useStore.startRealtime() append-only; item "WhatsApp" na sidebar (seção Comercial, ícone MessageCircle); rota `whatsapp` no ModuleRouter. BottomNav inalterada (5 itens, máximo)
 
 ## Próximas Prioridades
-1. Fase 13: UI de conversas WhatsApp no frontend
+1. Fase 13: refinos UI WhatsApp (envio de mensagens — depende de Fases 14-15)
 2. Migração backend para VPS
 3. Fases 14-15 Evolution API (envio de mensagens, templates)
 

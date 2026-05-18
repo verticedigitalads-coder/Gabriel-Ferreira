@@ -18,7 +18,8 @@ import { createFormSlice } from './slices/formSlice';
 import { createContasReceberSlice } from './slices/contasReceberSlice';
 import { createReciboSlice } from './slices/reciboSlice';
 import { createSettingsSlice, type WorkspaceSettings } from './slices/settingsSlice';
-import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor, formatOrcamento } from './formatters';
+import { createWhatsappSlice } from './slices/whatsappSlice';
+import { formatLead, formatOperacionalTask, formatTransaction, formatContaReceber, formatFornecedor, formatOrcamento, formatWhatsappMessage } from './formatters';
 let realtimeStarted = false;
 let realtimeChannels: ReturnType<typeof supabase.channel>[] = [];
 
@@ -121,6 +122,13 @@ type StoreState = {
   fetchSettings: (workspaceId: string) => Promise<void>;
   updateSetting: (key: string, value: string) => Promise<void>;
   updateSettings: (partial: Partial<WorkspaceSettings>) => Promise<void>;
+
+  whatsappConversations: any[];
+  whatsappMessages: any[];
+  selectedConversation: string | null;
+  fetchConversations: () => Promise<void>;
+  fetchMessages: (remoteJid: string) => Promise<void>;
+  setSelectedConversation: (remoteJid: string | null) => void;
 };
 
 export const useStore = create<StoreState>()(
@@ -160,6 +168,7 @@ export const useStore = create<StoreState>()(
       ...(createContasReceberSlice as any)(set, get),
       ...(createReciboSlice as any)(set, get),
       ...(createSettingsSlice as any)(set, get),
+      ...(createWhatsappSlice as any)(set, get),
 
       // ================= INITIALIZE =================
 
@@ -524,6 +533,53 @@ export const useStore = create<StoreState>()(
             },
           )
           .subscribe());
+
+        // ================= WHATSAPP =================
+        realtimeChannels.push(supabase
+          .channel('realtime-whatsapp-messages')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'whatsapp_messages',
+              filter: `workspace_id=eq.${workspaceId}`,
+            },
+            (payload: any) => {
+              if (!payload?.new) return;
+              const msg = formatWhatsappMessage(payload.new);
+
+              set((state: any) => {
+                const messages = state.whatsappMessages || [];
+                const conversations = state.whatsappConversations || [];
+
+                const nextMessages =
+                  state.selectedConversation === msg.remoteJid &&
+                  !messages.some((m: any) => m.id === msg.id)
+                    ? [...messages, msg]
+                    : messages;
+
+                const convEntry = {
+                  remoteJid: msg.remoteJid,
+                  contactName: msg.contactName,
+                  lastContent: msg.content,
+                  lastFromMe: msg.fromMe,
+                  lastMessageType: msg.messageType,
+                  lastTimestamp: msg.timestamp,
+                };
+
+                const rest = conversations.filter(
+                  (c: any) => c.remoteJid !== msg.remoteJid,
+                );
+
+                return {
+                  whatsappMessages: nextMessages,
+                  whatsappConversations: [convEntry, ...rest],
+                };
+              });
+            },
+          )
+          .subscribe());
       },
 
       // ================= WORKSPACE =================
@@ -565,6 +621,9 @@ export const useStore = create<StoreState>()(
           notas: [],
           operacionalTasks: [],
           contasReceber: [],
+          whatsappConversations: [],
+          whatsappMessages: [],
+          selectedConversation: null,
           selectedLeadId: null,
           activeModule: 'dashboard',
         });
