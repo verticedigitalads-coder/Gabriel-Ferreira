@@ -80,6 +80,7 @@ Versão: v2.31.0
 - Mapeamento instance_name → workspace_id via tabela `whatsapp_instances`
 - Fallback: `DEFAULT_WORKSPACE_ID` env se instance não mapeada
 - Evolution API: https://evo.vrtxcrm.com.br
+- Auditoria UX WhatsApp v2.31.1: 3 fixes — `color:'#fff'` (×2 avatares) → `var(--accent-foreground)`; `focus:ring-2` → `focus:ring-2 focus:ring-[var(--accent)]` no input de busca; zero CSS hardcoded restante
 - Fase 12 Passo 6 concluída: módulo WhatsApp (somente leitura) no frontend — `createWhatsappSlice` (fetchConversations agrupa por remote_jid no cliente, fetchMessages, setSelectedConversation), `formatWhatsappMessage` em formatters.ts, tipos `WhatsappMessage`/`WhatsappConversation`; página split-panel `src/modules/whatsapp/WhatsApp.tsx` (lista 30% + chat 70% desktop / fullscreen mobile com voltar, busca, bolhas por from_me, tipos não-texto com ícone+label, auto-scroll); canal realtime `realtime-whatsapp-messages` (INSERT) em useStore.startRealtime() append-only; item "WhatsApp" na sidebar (seção Comercial, ícone MessageCircle); rota `whatsapp` no ModuleRouter. BottomNav inalterada (5 itens, máximo)
 
 ## Próximas Prioridades

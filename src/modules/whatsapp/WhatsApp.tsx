@@ -163,7 +163,7 @@ export function WhatsApp() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar conversa..."
-              className="w-full pl-9 pr-3 rounded-[var(--radius-md)] text-sm min-h-[44px] focus:outline-none focus:ring-2"
+              className="w-full pl-9 pr-3 rounded-[var(--radius-md)] text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               style={{
                 background: 'var(--bg-surface-2)',
                 border: '1px solid var(--border)',
@@ -206,7 +206,7 @@ export function WhatsApp() {
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                    style={{ background: 'var(--accent)', color: '#fff' }}
+                    style={{ background: 'var(--accent)', color: 'var(--accent-foreground)' }}
                   >
                     {name.charAt(0).toUpperCase()}
                   </div>
@@ -263,7 +263,7 @@ export function WhatsApp() {
               </button>
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ background: 'var(--accent)', color: '#fff' }}
+                style={{ background: 'var(--accent)', color: 'var(--accent-foreground)' }}
               >
                 {displayName(active).charAt(0).toUpperCase()}
               </div>
