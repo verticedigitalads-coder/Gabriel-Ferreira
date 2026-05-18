@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 16/05/2026
-Versão: v2.29.2
+Última atualização: 17/05/2026
+Versão: v2.30.0
 
 ## Build
 - TypeScript: 0 erros (backlog zerado em 23/04/2026)
@@ -73,10 +73,18 @@ Versão: v2.29.2
 - Backend: local via ngrok (migração VPS planejada)
 - Supabase: online, RLS 100%
 
+## WhatsApp / Evolution API
+- Fase 12 concluída: webhook `/webhook/evolution` no server.js (POST, recebe `messages.upsert`)
+- `whatsapp_instances` criada no Supabase (FK → workspaces, RLS, `instance_name UNIQUE`)
+- `whatsapp_messages` já existia no Supabase (RLS ativa)
+- Mapeamento instance_name → workspace_id via tabela `whatsapp_instances`
+- Fallback: `DEFAULT_WORKSPACE_ID` env se instance não mapeada
+- Evolution API: https://evo.vrtxcrm.com.br
+
 ## Próximas Prioridades
-1. Design System / UX (segunda-feira)
+1. Fase 13: UI de conversas WhatsApp no frontend
 2. Migração backend para VPS
-3. WhatsApp / Evolution API (Fases 12-15)
+3. Fases 14-15 Evolution API (envio de mensagens, templates)
 
 ## Pendências Manuais
 - Deletar nota órfã id:58118722 na tabela `notas` (dado de teste, workspace Vértice Digital) — fazer via Supabase Dashboard

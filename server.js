@@ -1444,6 +1444,89 @@ app.post('/api/admin/criar-empresa', requireAuth, requireAdmin, strictLimiter, a
 });
 
 /* ==========================================
+📲 WEBHOOK EVOLUTION API (WhatsApp)
+========================================== */
+app.post('/webhook/evolution', async (req, res) => {
+  try {
+    const { event, instance, data } = req.body;
+
+    console.log(`[Evolution Webhook] Event: ${event}, Instance: ${instance}`);
+
+    if (event !== 'messages.upsert') {
+      return res.status(200).json({ status: 'ignored', event });
+    }
+
+    const message = data;
+    if (!message || !message.key) {
+      return res.status(200).json({ status: 'no_message' });
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    const { data: instanceData } = await supabase
+      .from('whatsapp_instances')
+      .select('workspace_id')
+      .eq('instance_name', instance)
+      .single();
+
+    const workspaceId = instanceData?.workspace_id || process.env.DEFAULT_WORKSPACE_ID;
+
+    if (!workspaceId) {
+      console.log('[Evolution Webhook] No workspace mapping for instance:', instance);
+      return res.status(200).json({ status: 'no_workspace' });
+    }
+
+    let content = '';
+    let messageType = 'text';
+
+    if (message.message?.conversation) {
+      content = message.message.conversation;
+    } else if (message.message?.extendedTextMessage?.text) {
+      content = message.message.extendedTextMessage.text;
+    } else if (message.message?.imageMessage) {
+      messageType = 'image';
+      content = message.message.imageMessage.caption || '[Imagem]';
+    } else if (message.message?.audioMessage) {
+      messageType = 'audio';
+      content = '[Áudio]';
+    } else if (message.message?.documentMessage) {
+      messageType = 'document';
+      content = message.message.documentMessage.fileName || '[Documento]';
+    } else if (message.message?.videoMessage) {
+      messageType = 'video';
+      content = '[Vídeo]';
+    }
+
+    const { error } = await supabase
+      .from('whatsapp_messages')
+      .upsert({
+        workspace_id: workspaceId,
+        instance_name: instance,
+        remote_jid: message.key.remoteJid,
+        contact_name: message.pushName || null,
+        message_id: message.key.id,
+        from_me: message.key.fromMe || false,
+        message_type: messageType,
+        content: content,
+        timestamp: message.messageTimestamp
+          ? new Date(message.messageTimestamp * 1000).toISOString()
+          : new Date().toISOString(),
+        raw_data: message,
+      }, { onConflict: 'message_id' });
+
+    if (error) {
+      console.error('[Evolution Webhook] Supabase error:', error);
+      return res.status(500).json({ status: 'error', error: error.message });
+    }
+
+    return res.status(200).json({ status: 'saved' });
+  } catch (err) {
+    console.error('[Evolution Webhook] Error:', err);
+    return res.status(500).json({ status: 'error' });
+  }
+});
+
+/* ==========================================
 🚀 START SERVER
 ========================================== */
 
