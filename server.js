@@ -1549,10 +1549,30 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
     if (!instanceName || !number || !text) {
       return res.status(400).json({ error: 'instanceName, number e text são obrigatórios' });
     }
+
+    if (String(number).includes('@g.us')) {
+      return res.status(400).json({
+        error: 'Envio para grupos não disponível',
+        groupNotSupported: true,
+      });
+    }
+
+    if (String(number).includes('@lid')) {
+      return res.status(400).json({
+        error: 'Este contato usa ID interno (LID). Informe o número real com DDI/DDD.',
+        lidDetected: true,
+      });
+    }
+
+    const sendNumber = String(number).split('@')[0].replace(/\D/g, '');
+    if (!sendNumber) {
+      return res.status(400).json({ error: 'Número inválido' });
+    }
+
     const response = await fetch(`${cfg.url}/message/sendText/${instanceName}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', apikey: cfg.key },
-      body: JSON.stringify({ number, text }),
+      body: JSON.stringify({ number: sendNumber, text }),
     });
     const data = await response.json();
     return res.status(response.status).json(data);

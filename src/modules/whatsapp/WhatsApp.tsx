@@ -22,6 +22,7 @@ import type { WhatsappConversation, WhatsappMessage } from '@/types';
 const CONNECTED_STATES = ['open', 'connected'];
 
 const isGroup = (jid: string) => jid.endsWith('@g.us');
+const isLid = (jid: string) => jid.endsWith('@lid');
 
 function jidToPhone(jid: string): string {
   const local = jid.split('@')[0];
@@ -123,6 +124,7 @@ export function WhatsApp() {
   const [draft, setDraft] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [manualNumberByJid, setManualNumberByJid] = useState<Record<string, string>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -137,13 +139,6 @@ export function WhatsApp() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const handleSend = () => {
-    const text = draft.trim();
-    if (!text || sendingMessage) return;
-    sendMessage(text);
-    setDraft('');
-  };
 
   const connected = !!connectionStatus && CONNECTED_STATES.includes(connectionStatus);
 
@@ -162,6 +157,26 @@ export function WhatsApp() {
   );
 
   const hasSelection = !!selectedConversation;
+
+  const activeIsGroup = active ? isGroup(active.remoteJid) : false;
+  const activeIsLid = active ? isLid(active.remoteJid) : false;
+  const manualNumber = active ? (manualNumberByJid[active.remoteJid] ?? '') : '';
+  const lidNumberValid = manualNumber.replace(/\D/g, '').length >= 10;
+  const canSend =
+    !!active &&
+    !activeIsGroup &&
+    (!activeIsLid || lidNumberValid) &&
+    !!draft.trim() &&
+    !sendingMessage;
+
+  const handleSend = () => {
+    const text = draft.trim();
+    if (!text || sendingMessage || !active) return;
+    if (activeIsGroup) return;
+    if (activeIsLid && !lidNumberValid) return;
+    sendMessage(text, activeIsLid ? manualNumber.replace(/\D/g, '') : undefined);
+    setDraft('');
+  };
 
   return (
     <div className="h-full flex flex-col md:flex-row">
@@ -384,6 +399,51 @@ export function WhatsApp() {
               <div ref={bottomRef} />
             </div>
 
+            {activeIsGroup && (
+              <div
+                className="shrink-0 px-4 py-3 text-xs"
+                style={{
+                  background: 'var(--warning-subtle)',
+                  color: 'var(--warning)',
+                  borderTop: '1px solid var(--border)',
+                }}
+              >
+                Envio para grupos não disponível nesta fase.
+              </div>
+            )}
+
+            {activeIsLid && !activeIsGroup && (
+              <div
+                className="shrink-0 flex flex-col gap-2 px-4 py-3"
+                style={{
+                  background: 'var(--info-subtle)',
+                  borderTop: '1px solid var(--border)',
+                }}
+              >
+                <span className="text-xs" style={{ color: 'var(--info)' }}>
+                  Este contato usa ID interno. Digite o número com DDI+DDD para enviar.
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="Ex: 5511987654321"
+                  value={manualNumber}
+                  onChange={(e) =>
+                    setManualNumberByJid((m) => ({
+                      ...m,
+                      [active!.remoteJid]: e.target.value,
+                    }))
+                  }
+                  className="px-3 rounded-[var(--radius-md)] text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  style={{
+                    background: 'var(--bg-surface-2)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+              </div>
+            )}
+
             <div
               className="shrink-0 flex items-end gap-2 p-3 border-t"
               style={{ borderColor: 'var(--border)' }}
@@ -398,8 +458,11 @@ export function WhatsApp() {
                   }
                 }}
                 rows={1}
-                placeholder="Digite uma mensagem..."
-                className="flex-1 resize-none px-3 py-2 rounded-[var(--radius-md)] text-sm min-h-[44px] max-h-32 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                disabled={activeIsGroup}
+                placeholder={
+                  activeIsGroup ? 'Envio desabilitado' : 'Digite uma mensagem...'
+                }
+                className="flex-1 resize-none px-3 py-2 rounded-[var(--radius-md)] text-sm min-h-[44px] max-h-32 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] disabled:opacity-50"
                 style={{
                   background: 'var(--bg-surface-2)',
                   border: '1px solid var(--border)',
@@ -408,7 +471,7 @@ export function WhatsApp() {
               />
               <button
                 onClick={handleSend}
-                disabled={sendingMessage || !draft.trim()}
+                disabled={!canSend}
                 className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] disabled:opacity-50 transition-opacity"
                 style={{
                   background: 'var(--accent)',

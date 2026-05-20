@@ -121,7 +121,7 @@ export const createWhatsappSlice = (set: any, get: any) => ({
     }
   },
 
-  sendMessage: async (text: string) => {
+  sendMessage: async (text: string, overrideNumber?: string) => {
     const { selectedConversation, whatsappInstanceName } = get()
     const body = text.trim()
     if (!body || !selectedConversation) return
@@ -133,18 +133,28 @@ export const createWhatsappSlice = (set: any, get: any) => ({
       return
     }
 
+    if (selectedConversation.includes('@g.us')) {
+      get().addToast({ type: 'error', message: 'Envio para grupos não disponível' })
+      return
+    }
+
+    if (selectedConversation.includes('@lid') && !overrideNumber?.trim()) {
+      get().addToast({
+        type: 'error',
+        message: 'Informe o número de telefone para este contato (LID).',
+      })
+      return
+    }
+
+    const numberToSend = overrideNumber?.trim() || selectedConversation
+
     set({ sendingMessage: true })
     try {
-      const number = jidToNumber(selectedConversation)
-      if (!number) {
-        get().addToast({ type: 'error', message: 'Número de destino inválido' })
-        return
-      }
       const res = await apiFetch('/api/whatsapp/send-text', {
         method: 'POST',
         body: JSON.stringify({
           instanceName: whatsappInstanceName,
-          number,
+          number: numberToSend,
           text: body,
         }),
       })

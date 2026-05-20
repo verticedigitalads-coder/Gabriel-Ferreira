@@ -134,7 +134,7 @@ type StoreState = {
   setSelectedConversation: (remoteJid: string | null) => void;
   fetchWhatsappInstance: () => Promise<void>;
   fetchConnectionStatus: () => Promise<void>;
-  sendMessage: (text: string) => Promise<void>;
+  sendMessage: (text: string, overrideNumber?: string) => Promise<void>;
   deleteConversation: (remoteJid: string) => Promise<void>;
 };
 
