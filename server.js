@@ -1497,12 +1497,64 @@ app.post('/webhook/evolution', async (req, res) => {
       content = '[Vídeo]';
     }
 
+    let remoteJid = message.key.remoteJid;
+
+    if (remoteJid && remoteJid.includes('@lid')) {
+      try {
+        const byLidRes = await fetch(
+          `${process.env.EVOLUTION_API_URL}/chat/findContacts/${instance}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: process.env.EVOLUTION_API_KEY,
+            },
+            body: JSON.stringify({ where: { remoteJid } }),
+          },
+        );
+        const byLid = await byLidRes.json().catch(() => null);
+        const fromLid = Array.isArray(byLid)
+          ? byLid.find((c) => c?.remoteJid?.endsWith?.('@s.whatsapp.net'))
+          : null;
+
+        let resolved = fromLid?.remoteJid || null;
+
+        if (!resolved && message.pushName) {
+          const byNameRes = await fetch(
+            `${process.env.EVOLUTION_API_URL}/chat/findContacts/${instance}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                apikey: process.env.EVOLUTION_API_KEY,
+              },
+              body: JSON.stringify({ where: { pushName: message.pushName } }),
+            },
+          );
+          const byName = await byNameRes.json().catch(() => null);
+          const fromName = Array.isArray(byName)
+            ? byName.find((c) => c?.remoteJid?.endsWith?.('@s.whatsapp.net'))
+            : null;
+          resolved = fromName?.remoteJid || null;
+        }
+
+        if (resolved) {
+          console.log(`[Evolution Webhook] LID ${remoteJid} resolved to ${resolved}`);
+          remoteJid = resolved;
+        } else {
+          console.log(`[Evolution Webhook] LID ${remoteJid} not resolved — keeping original`);
+        }
+      } catch (err) {
+        console.error('[Evolution Webhook] Error resolving LID:', err);
+      }
+    }
+
     const { error } = await supabase
       .from('whatsapp_messages')
       .upsert({
         workspace_id: workspaceId,
         instance_name: instance,
-        remote_jid: message.key.remoteJid,
+        remote_jid: remoteJid,
         contact_name: message.pushName || null,
         message_id: message.key.id,
         from_me: message.key.fromMe || false,
@@ -1575,6 +1627,38 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
       body: JSON.stringify({ number: sendNumber, text }),
     });
     const data = await response.json();
+
+    if (response.ok && data?.key?.id && data?.key?.remoteJid) {
+      try {
+        const admin = getSupabaseAdmin();
+        const { data: inst } = await admin
+          .from('whatsapp_instances')
+          .select('workspace_id')
+          .eq('instance_name', instanceName)
+          .single();
+
+        if (inst?.workspace_id) {
+          await admin.from('whatsapp_messages').upsert(
+            {
+              workspace_id: inst.workspace_id,
+              instance_name: instanceName,
+              remote_jid: data.key.remoteJid,
+              contact_name: null,
+              message_id: data.key.id,
+              from_me: true,
+              message_type: 'text',
+              content: text,
+              timestamp: new Date().toISOString(),
+              raw_data: data,
+            },
+            { onConflict: 'message_id' },
+          );
+        }
+      } catch (err) {
+        console.error('[WhatsApp Send] persist error:', err);
+      }
+    }
+
     return res.status(response.status).json(data);
   } catch (err) {
     console.error('[WhatsApp Send] Error:', err);
