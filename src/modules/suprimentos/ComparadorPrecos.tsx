@@ -105,8 +105,10 @@ export default function ComparadorPrecos() {
   async function handleSalvar() {
     if (!fMaterialId || !fFornecedorId || !fValor || !fData) return
     setSalvando(true)
+    const materialNome = materiais.find((m: any) => m.id === fMaterialId)?.nome ?? null
     await addCotacao({
       materialId:      fMaterialId,
+      material:        materialNome,
       fornecedorId:    fFornecedorId,
       quantidade:      fQuantidade ? Number(fQuantidade) : 1,
       valor:           Number(fValor),

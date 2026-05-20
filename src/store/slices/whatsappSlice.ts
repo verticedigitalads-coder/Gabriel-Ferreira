@@ -12,7 +12,8 @@ const toConversation = (m: WhatsappMessage): WhatsappConversation => ({
   lastTimestamp: m.timestamp,
 })
 
-const jidToNumber = (jid: string): string => jid.split('@')[0]
+const jidToNumber = (jid: string): string =>
+  (jid.split('@')[0] || '').replace(/\D/g, '')
 
 // TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createWhatsappSlice = (set: any, get: any) => ({
@@ -123,22 +124,40 @@ export const createWhatsappSlice = (set: any, get: any) => ({
   sendMessage: async (text: string) => {
     const { selectedConversation, whatsappInstanceName } = get()
     const body = text.trim()
-    if (!body || !selectedConversation || !whatsappInstanceName) return
+    if (!body || !selectedConversation) return
+    if (!whatsappInstanceName) {
+      get().addToast({
+        type: 'error',
+        message: 'Instância WhatsApp não configurada para este workspace',
+      })
+      return
+    }
 
     set({ sendingMessage: true })
     try {
+      const number = jidToNumber(selectedConversation)
+      if (!number) {
+        get().addToast({ type: 'error', message: 'Número de destino inválido' })
+        return
+      }
       const res = await apiFetch('/api/whatsapp/send-text', {
         method: 'POST',
         body: JSON.stringify({
           instanceName: whatsappInstanceName,
-          number: jidToNumber(selectedConversation),
+          number,
           text: body,
         }),
       })
       if (!res.ok) {
-        get().addToast({ type: 'error', message: 'Erro ao enviar mensagem' })
+        const errBody = await res.text().catch(() => '')
+        console.error('[Whatsapp send-text]', res.status, errBody)
+        get().addToast({
+          type: 'error',
+          message: `Erro ao enviar (${res.status})`,
+        })
       }
-    } catch {
+    } catch (err) {
+      console.error('[Whatsapp send-text] exception', err)
       get().addToast({ type: 'error', message: 'Erro ao enviar mensagem' })
     } finally {
       set({ sendingMessage: false })

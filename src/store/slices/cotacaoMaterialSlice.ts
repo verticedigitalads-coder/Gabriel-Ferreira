@@ -40,10 +40,15 @@ export const createCotacaoMaterialSlice = (set: any, get: any) => ({
         valor: data.valor,
         forma_pagamento: data.formaPagamento ?? null,
         data: data.data,
+        created_at: new Date().toISOString(),
       }])
 
     if (error) {
       console.error('[CotacaoMaterialSlice] Erro ao criar cotação:', error)
+      get().addToast?.({
+        type: 'error',
+        message: `Erro ao salvar cotação: ${error.message}`,
+      })
       return
     }
 
