@@ -1722,6 +1722,37 @@ app.post('/api/whatsapp/logout/:instanceName', requireAuth, async (req, res) => 
   }
 });
 
+// Listar contatos da instância (resolve número real)
+app.get('/api/whatsapp/contacts/:instanceName', requireAuth, async (req, res) => {
+  const cfg = evolutionConfig(res);
+  if (!cfg) return;
+  try {
+    const response = await fetch(
+      `${cfg.url}/chat/findContacts/${req.params.instanceName}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+        body: JSON.stringify({ where: {} }),
+      },
+    );
+    const contacts = await response.json();
+    const mapped = Array.isArray(contacts)
+      ? contacts
+          .filter((c) => c?.remoteJid?.includes?.('@s.whatsapp.net'))
+          .map((c) => ({
+            pushName: c.pushName || '',
+            remoteJid: c.remoteJid,
+            number: c.remoteJid.replace('@s.whatsapp.net', ''),
+            profilePicUrl: c.profilePicUrl || null,
+          }))
+      : [];
+    return res.json(mapped);
+  } catch (err) {
+    console.error('[WhatsApp Contacts] Error:', err);
+    return res.status(500).json({ error: 'Erro ao buscar contatos' });
+  }
+});
+
 /* ==========================================
 🚀 START SERVER
 ========================================== */

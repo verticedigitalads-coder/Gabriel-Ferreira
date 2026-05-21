@@ -64,9 +64,25 @@ function displayName(c: { contactName: string | null; remoteJid: string }): stri
   return c.contactName?.trim() || jidToPhone(c.remoteJid);
 }
 
+function getQuotedText(msg: WhatsappMessage): string | null {
+  const ctx =
+    msg.rawData?.message?.extendedTextMessage?.contextInfo ??
+    msg.rawData?.message?.imageMessage?.contextInfo ??
+    null;
+  const q = ctx?.quotedMessage;
+  if (!q) return null;
+  return (
+    q.conversation ||
+    q.extendedTextMessage?.text ||
+    q.imageMessage?.caption ||
+    null
+  );
+}
+
 function MessageBubble({ msg }: { msg: WhatsappMessage }) {
   const meta = TYPE_META[msg.messageType];
   const mine = msg.fromMe;
+  const quotedText = getQuotedText(msg);
 
   return (
     <div className={cn('flex w-full', mine ? 'justify-end' : 'justify-start')}>
@@ -77,6 +93,19 @@ function MessageBubble({ msg }: { msg: WhatsappMessage }) {
           border: '1px solid var(--border)',
         }}
       >
+        {quotedText && (
+          <div
+            className="text-xs mb-1 px-2 py-1 truncate"
+            style={{
+              borderLeft: '3px solid var(--accent)',
+              borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+              background: 'var(--bg-surface-2)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {quotedText.length > 80 ? quotedText.slice(0, 80) + '…' : quotedText}
+          </div>
+        )}
         {meta ? (
           <div
             className="flex items-center gap-2 text-sm"
@@ -119,6 +148,8 @@ export function WhatsApp() {
   const fetchConnectionStatus = useStore((s) => s.fetchConnectionStatus);
   const sendMessage = useStore((s) => s.sendMessage);
   const deleteConversation = useStore((s) => s.deleteConversation);
+  const whatsappContacts = useStore((s) => s.whatsappContacts);
+  const fetchContacts = useStore((s) => s.fetchContacts);
 
   const [search, setSearch] = useState('');
   const [draft, setDraft] = useState('');
@@ -133,8 +164,11 @@ export function WhatsApp() {
   }, [fetchConversations, fetchWhatsappInstance]);
 
   useEffect(() => {
-    if (whatsappInstanceName) fetchConnectionStatus();
-  }, [whatsappInstanceName, fetchConnectionStatus]);
+    if (whatsappInstanceName) {
+      fetchConnectionStatus();
+      fetchContacts();
+    }
+  }, [whatsappInstanceName, fetchConnectionStatus, fetchContacts]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -162,12 +196,26 @@ export function WhatsApp() {
   const activeIsLid = active ? isLid(active.remoteJid) : false;
   const manualNumber = active ? (manualNumberByJid[active.remoteJid] ?? '') : '';
   const lidNumberValid = manualNumber.replace(/\D/g, '').length >= 10;
+  const resolvedNumber = active?.contactName
+    ? whatsappContacts[active.contactName.trim().toLowerCase()] ?? null
+    : null;
   const canSend =
     !!active &&
     !activeIsGroup &&
     (!activeIsLid || lidNumberValid) &&
     !!draft.trim() &&
     !sendingMessage;
+
+  useEffect(() => {
+    if (
+      active &&
+      activeIsLid &&
+      resolvedNumber &&
+      !manualNumberByJid[active.remoteJid]
+    ) {
+      setManualNumberByJid((m) => ({ ...m, [active.remoteJid]: resolvedNumber }));
+    }
+  }, [active, activeIsLid, resolvedNumber, manualNumberByJid]);
 
   const handleSend = () => {
     const text = draft.trim();
@@ -323,7 +371,11 @@ export function WhatsApp() {
                   className="text-xs truncate"
                   style={{ color: 'var(--text-tertiary)' }}
                 >
-                  {jidToPhone(active.remoteJid)}
+                  {activeIsLid
+                    ? resolvedNumber
+                      ? formatPhone(resolvedNumber)
+                      : 'Número não identificado'
+                    : jidToPhone(active.remoteJid)}
                 </div>
               </div>
 

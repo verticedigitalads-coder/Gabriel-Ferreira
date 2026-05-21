@@ -24,6 +24,7 @@ export const createWhatsappSlice = (set: any, get: any) => ({
   whatsappInstanceName: null,
   connectionStatus: null,
   sendingMessage: false,
+  whatsappContacts: {} as Record<string, string>,
 
   fetchConversations: async () => {
     const { workspaceId } = get()
@@ -118,6 +119,26 @@ export const createWhatsappSlice = (set: any, get: any) => ({
       })
     } catch {
       set({ connectionStatus: 'unknown' })
+    }
+  },
+
+  fetchContacts: async () => {
+    const { whatsappInstanceName } = get()
+    if (!whatsappInstanceName) return
+    try {
+      const res = await apiFetch(
+        `/api/whatsapp/contacts/${encodeURIComponent(whatsappInstanceName)}`,
+      )
+      if (!res.ok) return
+      const list: Array<{ pushName: string; number: string }> = await res.json()
+      const map: Record<string, string> = {}
+      for (const c of list) {
+        const key = (c.pushName || '').trim().toLowerCase()
+        if (key && !map[key]) map[key] = c.number
+      }
+      set({ whatsappContacts: map })
+    } catch {
+      /* silencioso — recurso opcional */
     }
   },
 

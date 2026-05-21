@@ -136,6 +136,8 @@ type StoreState = {
   fetchConnectionStatus: () => Promise<void>;
   sendMessage: (text: string, overrideNumber?: string) => Promise<void>;
   deleteConversation: (remoteJid: string) => Promise<void>;
+  whatsappContacts: Record<string, string>;
+  fetchContacts: () => Promise<void>;
 };
 
 export const useStore = create<StoreState>()(
