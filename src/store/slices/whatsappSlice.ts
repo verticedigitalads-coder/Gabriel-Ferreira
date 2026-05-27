@@ -177,6 +177,7 @@ export const createWhatsappSlice = (set: any, get: any) => ({
           instanceName: whatsappInstanceName,
           number: numberToSend,
           text: body,
+          originalJid: selectedConversation,
         }),
       })
       if (!res.ok) {

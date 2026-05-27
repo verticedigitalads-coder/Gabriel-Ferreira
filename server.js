@@ -1497,64 +1497,12 @@ app.post('/webhook/evolution', async (req, res) => {
       content = '[Vídeo]';
     }
 
-    let remoteJid = message.key.remoteJid;
-
-    if (remoteJid && remoteJid.includes('@lid')) {
-      try {
-        const byLidRes = await fetch(
-          `${process.env.EVOLUTION_API_URL}/chat/findContacts/${instance}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: process.env.EVOLUTION_API_KEY,
-            },
-            body: JSON.stringify({ where: { remoteJid } }),
-          },
-        );
-        const byLid = await byLidRes.json().catch(() => null);
-        const fromLid = Array.isArray(byLid)
-          ? byLid.find((c) => c?.remoteJid?.endsWith?.('@s.whatsapp.net'))
-          : null;
-
-        let resolved = fromLid?.remoteJid || null;
-
-        if (!resolved && message.pushName) {
-          const byNameRes = await fetch(
-            `${process.env.EVOLUTION_API_URL}/chat/findContacts/${instance}`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                apikey: process.env.EVOLUTION_API_KEY,
-              },
-              body: JSON.stringify({ where: { pushName: message.pushName } }),
-            },
-          );
-          const byName = await byNameRes.json().catch(() => null);
-          const fromName = Array.isArray(byName)
-            ? byName.find((c) => c?.remoteJid?.endsWith?.('@s.whatsapp.net'))
-            : null;
-          resolved = fromName?.remoteJid || null;
-        }
-
-        if (resolved) {
-          console.log(`[Evolution Webhook] LID ${remoteJid} resolved to ${resolved}`);
-          remoteJid = resolved;
-        } else {
-          console.log(`[Evolution Webhook] LID ${remoteJid} not resolved — keeping original`);
-        }
-      } catch (err) {
-        console.error('[Evolution Webhook] Error resolving LID:', err);
-      }
-    }
-
     const { error } = await supabase
       .from('whatsapp_messages')
       .upsert({
         workspace_id: workspaceId,
         instance_name: instance,
-        remote_jid: remoteJid,
+        remote_jid: message.key.remoteJid,
         contact_name: message.pushName || null,
         message_id: message.key.id,
         from_me: message.key.fromMe || false,
@@ -1597,7 +1545,7 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
   const cfg = evolutionConfig(res);
   if (!cfg) return;
   try {
-    const { instanceName, number, text } = req.body ?? {};
+    const { instanceName, number, text, originalJid } = req.body ?? {};
     if (!instanceName || !number || !text) {
       return res.status(400).json({ error: 'instanceName, number e text são obrigatórios' });
     }
@@ -1638,21 +1586,33 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
           .single();
 
         if (inst?.workspace_id) {
+          const persistJid = originalJid || data.key.remoteJid;
           await admin.from('whatsapp_messages').upsert(
             {
               workspace_id: inst.workspace_id,
               instance_name: instanceName,
-              remote_jid: data.key.remoteJid,
+              remote_jid: persistJid,
               contact_name: null,
               message_id: data.key.id,
               from_me: true,
               message_type: 'text',
               content: text,
+              phone_number: sendNumber,
               timestamp: new Date().toISOString(),
               raw_data: data,
             },
             { onConflict: 'message_id' },
           );
+
+          if (originalJid && originalJid.includes('@lid')) {
+            await admin
+              .from('whatsapp_messages')
+              .update({ phone_number: sendNumber })
+              .eq('workspace_id', inst.workspace_id)
+              .eq('remote_jid', originalJid)
+              .is('phone_number', null);
+            console.log(`[WhatsApp] Mapped LID ${originalJid} → ${sendNumber}`);
+          }
         }
       } catch (err) {
         console.error('[WhatsApp Send] persist error:', err);

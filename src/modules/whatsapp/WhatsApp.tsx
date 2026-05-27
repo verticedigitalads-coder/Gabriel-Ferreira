@@ -196,9 +196,11 @@ export function WhatsApp() {
   const activeIsLid = active ? isLid(active.remoteJid) : false;
   const manualNumber = active ? (manualNumberByJid[active.remoteJid] ?? '') : '';
   const lidNumberValid = manualNumber.replace(/\D/g, '').length >= 10;
-  const resolvedNumber = active?.contactName
+  const knownPhoneFromMessages = messages.find((m) => m.phoneNumber)?.phoneNumber ?? null;
+  const contactsLookup = active?.contactName
     ? whatsappContacts[active.contactName.trim().toLowerCase()] ?? null
     : null;
+  const resolvedNumber = knownPhoneFromMessages ?? contactsLookup;
   const canSend =
     !!active &&
     !activeIsGroup &&

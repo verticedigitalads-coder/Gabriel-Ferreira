@@ -515,6 +515,7 @@ export interface WhatsappMessage {
   content: string | null;
   timestamp: string | null;
   rawData: any | null;
+  phoneNumber: string | null;
   createdAt: string | null;
 }
 
