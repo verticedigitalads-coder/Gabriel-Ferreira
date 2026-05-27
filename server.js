@@ -1597,22 +1597,11 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
               from_me: true,
               message_type: 'text',
               content: text,
-              phone_number: sendNumber,
               timestamp: new Date().toISOString(),
               raw_data: data,
             },
             { onConflict: 'message_id' },
           );
-
-          if (originalJid && originalJid.includes('@lid')) {
-            await admin
-              .from('whatsapp_messages')
-              .update({ phone_number: sendNumber })
-              .eq('workspace_id', inst.workspace_id)
-              .eq('remote_jid', originalJid)
-              .is('phone_number', null);
-            console.log(`[WhatsApp] Mapped LID ${originalJid} → ${sendNumber}`);
-          }
         }
       } catch (err) {
         console.error('[WhatsApp Send] persist error:', err);

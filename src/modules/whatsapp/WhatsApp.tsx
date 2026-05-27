@@ -196,28 +196,15 @@ export function WhatsApp() {
   const activeIsLid = active ? isLid(active.remoteJid) : false;
   const manualNumber = active ? (manualNumberByJid[active.remoteJid] ?? '') : '';
   const lidNumberValid = manualNumber.replace(/\D/g, '').length >= 10;
-  const knownPhoneFromMessages = messages.find((m) => m.phoneNumber)?.phoneNumber ?? null;
-  const contactsLookup = active?.contactName
+  const resolvedNumber = active?.contactName
     ? whatsappContacts[active.contactName.trim().toLowerCase()] ?? null
     : null;
-  const resolvedNumber = knownPhoneFromMessages ?? contactsLookup;
   const canSend =
     !!active &&
     !activeIsGroup &&
     (!activeIsLid || lidNumberValid) &&
     !!draft.trim() &&
     !sendingMessage;
-
-  useEffect(() => {
-    if (
-      active &&
-      activeIsLid &&
-      resolvedNumber &&
-      !manualNumberByJid[active.remoteJid]
-    ) {
-      setManualNumberByJid((m) => ({ ...m, [active.remoteJid]: resolvedNumber }));
-    }
-  }, [active, activeIsLid, resolvedNumber, manualNumberByJid]);
 
   const handleSend = () => {
     const text = draft.trim();
