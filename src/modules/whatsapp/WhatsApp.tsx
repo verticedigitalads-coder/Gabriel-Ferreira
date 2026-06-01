@@ -14,6 +14,7 @@ import {
 import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useStore } from '@/store/useStore';
+import { apiFetch } from '@/lib/apiFetch';
 import { formatPhone } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -79,10 +80,130 @@ function getQuotedText(msg: WhatsappMessage): string | null {
   );
 }
 
-function MessageBubble({ msg }: { msg: WhatsappMessage }) {
+function WhatsAppImage({
+  messageId,
+  instanceName,
+  caption,
+}: {
+  messageId: string;
+  instanceName: string;
+  caption?: string;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/whatsapp/media/${instanceName}/${messageId}`);
+        const data = await res.json();
+        if (alive && data?.base64) {
+          setSrc(`data:${data.mimetype || 'image/jpeg'};base64,${data.base64}`);
+        } else if (alive) {
+          setError(true);
+        }
+      } catch {
+        if (alive) setError(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [messageId, instanceName]);
+
+  if (error)
+    return (
+      <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+        📷 Imagem indisponível
+      </span>
+    );
+  if (!src)
+    return (
+      <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+        📷 Carregando…
+      </span>
+    );
+  return (
+    <div>
+      <img
+        src={src}
+        alt="imagem"
+        style={{
+          maxWidth: 280,
+          maxHeight: 300,
+          borderRadius: 'var(--radius-md)',
+          cursor: 'pointer',
+        }}
+        onClick={() => window.open(src, '_blank')}
+      />
+      {caption && (
+        <div className="text-sm mt-1" style={{ color: 'var(--text-primary)' }}>
+          {caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WhatsAppAudio({
+  messageId,
+  instanceName,
+}: {
+  messageId: string;
+  instanceName: string;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/whatsapp/media/${instanceName}/${messageId}`);
+        const data = await res.json();
+        if (alive && data?.base64) {
+          setSrc(`data:${data.mimetype || 'audio/ogg'};base64,${data.base64}`);
+        } else if (alive) {
+          setError(true);
+        }
+      } catch {
+        if (alive) setError(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [messageId, instanceName]);
+
+  if (error)
+    return (
+      <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+        🎵 Áudio indisponível
+      </span>
+    );
+  if (!src)
+    return (
+      <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+        🎵 Carregando…
+      </span>
+    );
+  return <audio controls src={src} style={{ maxWidth: 260, height: 36 }} />;
+}
+
+function MessageBubble({
+  msg,
+  instanceName,
+}: {
+  msg: WhatsappMessage;
+  instanceName: string | null;
+}) {
   const meta = TYPE_META[msg.messageType];
   const mine = msg.fromMe;
   const quotedText = getQuotedText(msg);
+  const canMedia = !!msg.messageId && !!instanceName;
+  const captionText =
+    msg.content && msg.content.trim() !== '[Imagem]' ? msg.content : undefined;
 
   return (
     <div className={cn('flex w-full', mine ? 'justify-end' : 'justify-start')}>
@@ -106,7 +227,18 @@ function MessageBubble({ msg }: { msg: WhatsappMessage }) {
             {quotedText.length > 80 ? quotedText.slice(0, 80) + '…' : quotedText}
           </div>
         )}
-        {meta ? (
+        {msg.messageType === 'image' && canMedia ? (
+          <WhatsAppImage
+            messageId={msg.messageId as string}
+            instanceName={instanceName as string}
+            caption={captionText}
+          />
+        ) : msg.messageType === 'audio' && canMedia ? (
+          <WhatsAppAudio
+            messageId={msg.messageId as string}
+            instanceName={instanceName as string}
+          />
+        ) : meta ? (
           <div
             className="flex items-center gap-2 text-sm"
             style={{ color: 'var(--text-secondary)' }}
@@ -199,12 +331,22 @@ export function WhatsApp() {
   const resolvedNumber = active?.contactName
     ? whatsappContacts[active.contactName.trim().toLowerCase()] ?? null
     : null;
+  // Número salvo PELO USUÁRIO em envio anterior — só desta conversa (remote_jid-scoped).
+  const savedPhone = activeIsLid
+    ? messages.find((m) => m.phoneNumber)?.phoneNumber ?? null
+    : null;
   const canSend =
     !!active &&
     !activeIsGroup &&
     (!activeIsLid || lidNumberValid) &&
     !!draft.trim() &&
     !sendingMessage;
+
+  useEffect(() => {
+    if (active && activeIsLid && savedPhone && !manualNumberByJid[active.remoteJid]) {
+      setManualNumberByJid((m) => ({ ...m, [active.remoteJid]: savedPhone }));
+    }
+  }, [active, activeIsLid, savedPhone, manualNumberByJid]);
 
   const handleSend = () => {
     const text = draft.trim();
@@ -361,9 +503,11 @@ export function WhatsApp() {
                   style={{ color: 'var(--text-tertiary)' }}
                 >
                   {activeIsLid
-                    ? resolvedNumber
-                      ? formatPhone(resolvedNumber)
-                      : 'Número não identificado'
+                    ? savedPhone
+                      ? formatPhone(savedPhone)
+                      : resolvedNumber
+                        ? formatPhone(resolvedNumber)
+                        : 'Número não identificado'
                     : jidToPhone(active.remoteJid)}
                 </div>
               </div>
@@ -435,7 +579,7 @@ export function WhatsApp() {
               style={{ background: 'var(--bg-app)' }}
             >
               {messages.map((m) => (
-                <MessageBubble key={m.id} msg={m} />
+                <MessageBubble key={m.id} msg={m} instanceName={whatsappInstanceName} />
               ))}
               <div ref={bottomRef} />
             </div>

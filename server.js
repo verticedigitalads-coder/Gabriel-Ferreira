@@ -1602,6 +1602,17 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
             },
             { onConflict: 'message_id' },
           );
+
+          // Conversa LID: salva o número digitado pelo usuário em todas as
+          // mensagens dessa conversa (fonte autoritativa = envio manual).
+          if (originalJid && originalJid.includes('@lid')) {
+            await admin
+              .from('whatsapp_messages')
+              .update({ phone_number: sendNumber })
+              .eq('remote_jid', originalJid)
+              .eq('workspace_id', inst.workspace_id);
+            console.log(`[WhatsApp Send] Saved mapping: ${originalJid} → ${sendNumber}`);
+          }
         }
       } catch (err) {
         console.error('[WhatsApp Send] persist error:', err);
@@ -1699,6 +1710,31 @@ app.get('/api/whatsapp/contacts/:instanceName', requireAuth, async (req, res) =>
   } catch (err) {
     console.error('[WhatsApp Contacts] Error:', err);
     return res.status(500).json({ error: 'Erro ao buscar contatos' });
+  }
+});
+
+// Baixar mídia (base64) de uma mensagem
+app.get('/api/whatsapp/media/:instanceName/:messageId', requireAuth, async (req, res) => {
+  const cfg = evolutionConfig(res);
+  if (!cfg) return;
+  try {
+    const { instanceName, messageId } = req.params;
+    const response = await fetch(
+      `${cfg.url}/chat/getBase64FromMediaMessage/${instanceName}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+        body: JSON.stringify({ message: { key: { id: messageId } } }),
+      },
+    );
+    const data = await response.json();
+    if (data?.base64) {
+      return res.json({ base64: data.base64, mimetype: data.mimetype || null });
+    }
+    return res.status(404).json({ error: 'Mídia não encontrada' });
+  } catch (err) {
+    console.error('[WhatsApp Media] Error:', err);
+    return res.status(500).json({ error: 'Erro ao buscar mídia' });
   }
 });
 

@@ -198,5 +198,6 @@ export const formatWhatsappMessage = (raw: any) => ({
   content: raw.content ?? null,
   timestamp: raw.timestamp ?? null,
   rawData: raw.raw_data ?? null,
+  phoneNumber: raw.phone_number ?? null,
   createdAt: raw.created_at ?? null,
 })
