@@ -24,7 +24,8 @@ import { SlidePanel } from '@/components/ui/Modal';
 import { LeadDetail } from '@/modules/leads/LeadDetail';
 import type { Lead, LeadStatus, KanbanColumn } from '@/types';
 import { parseISO, isToday, isBefore } from 'date-fns';
-import { GripVertical, DollarSign, MessageCircle, StickyNote } from 'lucide-react';
+import { GripVertical, DollarSign, MessageCircle, StickyNote, Clock } from 'lucide-react';
+import { daysSinceContact, contactSeverity } from '@/utils/date';
 
 const COLUMNS: { id: LeadStatus; title: string; color: string }[] = [
   { id: 'novo', title: 'Novo', color: 'border-t-blue-500' },
@@ -234,10 +235,19 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
     (isToday(parseISO(lead.proximoContato)) ||
       isBefore(parseISO(lead.proximoContato), new Date()));
 
+  const contactDays = daysSinceContact(lead.ultimoContato);
+  const contactSev = contactSeverity(contactDays);
+  const contactBorderColor =
+    !followUpAtrasado && contactSev === 'warn'
+      ? 'var(--warning)'
+      : !followUpAtrasado && contactSev === 'crit'
+        ? 'var(--danger)'
+        : undefined;
+
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{ ...style, ...(contactBorderColor ? { borderColor: contactBorderColor } : {}) }}
       className={`border rounded-md p-3 cursor-pointer transition-shadow
         ${followUpAtrasado
           ? 'bg-[var(--danger-subtle)] border-[var(--danger)]'
@@ -280,6 +290,30 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
               ⚠ Follow-up atrasado
             </p>
           )}
+
+          {/* Indicador: dias sem contato */}
+          {(() => {
+            const days = daysSinceContact(lead.ultimoContato);
+            const sev = contactSeverity(days);
+            if (sev === 'hidden') return null;
+            const colorMap = {
+              neutral: 'var(--text-tertiary)',
+              warn: 'var(--warning)',
+              crit: 'var(--danger)',
+            } as const;
+            const color = colorMap[sev];
+            return (
+              <div
+                className="flex items-center gap-1 mt-2"
+                style={{ color }}
+              >
+                <Clock style={{ width: 12, height: 12, flexShrink: 0 }} />
+                <span style={{ fontSize: '11.5px', fontWeight: 500 }}>
+                  {days}d sem contato
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Rodapé do card: WhatsApp + Observação */}
           <div className="flex items-center gap-3 mt-2">

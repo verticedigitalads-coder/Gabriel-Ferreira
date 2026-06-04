@@ -15,7 +15,10 @@ import {
   Target,
   Bell,
   X,
+  TrendingUp,
+  ChevronDown,
 } from 'lucide-react';
+import { CrmHealthReasons, type HealthReason } from './CrmHealthReasons';
 
 export function Dashboard() {
 
@@ -30,9 +33,12 @@ export function Dashboard() {
   const tasks = useStore(state => state.operacionalTasks);
   const materiais = useStore(state => state.materiais);
   const contasReceber = useStore(state => state.contasReceber);
+  const orcamentos = useStore(state => state.orcamentos);
 
   const setActiveModule = useStore(state => state.setActiveModule);
   const selectLead = useStore(state => state.selectLead);
+
+  const [healthOpen, setHealthOpen] = useState(false);
 
 
   // ==============================
@@ -100,6 +106,79 @@ export function Dashboard() {
   };
 
   const crmHealth = getCRMHealth();
+
+  // ==============================
+  // 🚨 LEADS CRÍTICOS (compartilhado: Emergência + Saúde)
+  // ==============================
+
+  const criticos = useMemo(() => {
+    const now = new Date();
+    return leads.filter(l =>
+      l.prioridadeLevel === 'critico' &&
+      l.status !== 'fechado' &&
+      l.status !== 'perdido' &&
+      l.ultimoContato != null &&
+      differenceInDays(now, parseISO(l.ultimoContato)) >= 5
+    );
+  }, [leads]);
+
+  // ==============================
+  // 💊 REASONS DA SAÚDE DO CRM
+  // ==============================
+
+  const healthReasons = useMemo<HealthReason[]>(() => {
+    const r: HealthReason[] = [];
+
+    if (criticos.length > 0) {
+      r.push({
+        icon: 'leads',
+        label: `${criticos.length} lead(s) crítico(s) sem contato há 5+ dias`,
+        severity: criticos.length > 2 ? 'crit' : 'warn',
+        actionLabel: 'Ver leads',
+        onAction: () => setActiveModule('leads'),
+      });
+    }
+
+    const contasAtrasadas = contasReceber.filter(c => c.status === 'atrasado');
+    if (contasAtrasadas.length > 0) {
+      r.push({
+        icon: 'financeiro',
+        label: `${contasAtrasadas.length} conta(s) a receber atrasada(s)`,
+        severity: 'crit',
+        actionLabel: 'Ver financeiro',
+        onAction: () => setActiveModule('financeiro'),
+      });
+    }
+
+    const now = new Date();
+    const orcVencidos = orcamentos.filter(
+      o =>
+        o.status === 'enviado' &&
+        o.validadeEmDias > 0 &&
+        differenceInDays(now, parseISO(o.createdAt)) > o.validadeEmDias,
+    );
+    if (orcVencidos.length > 0) {
+      r.push({
+        icon: 'orcamentos',
+        label: `${orcVencidos.length} orçamento(s) vencido(s) sem resposta`,
+        severity: 'warn',
+        actionLabel: 'Ver orçamentos',
+        onAction: () => setActiveModule('orcamentos'),
+      });
+    }
+
+    if (stats.receitaProvavel < stats.metaMensal * 0.5 && stats.metaMensal > 0) {
+      r.push({
+        icon: 'meta',
+        label: 'Receita provável abaixo de 50% da meta',
+        severity: 'warn',
+        actionLabel: 'Ver dashboard',
+        onAction: () => {},
+      });
+    }
+
+    return r.slice(0, 4);
+  }, [criticos, contasReceber, orcamentos, stats, setActiveModule]);
 
   // ==============================
   // 🎯 FOCO HOJE
@@ -181,13 +260,6 @@ export function Dashboard() {
       {/* ── PAINEL DE EMERGÊNCIA ── */}
       {(() => {
         const now = new Date();
-        const criticos = leads.filter(l =>
-          l.prioridadeLevel === 'critico' &&
-          l.status !== 'fechado' &&
-          l.status !== 'perdido' &&
-          l.ultimoContato != null &&
-          differenceInDays(now, parseISO(l.ultimoContato)) >= 5
-        );
         if (criticos.length === 0) return null;
         return (
           <div
@@ -250,24 +322,54 @@ export function Dashboard() {
         Atualizado em {format(new Date(), "dd 'de' MMMM, HH:mm", { locale: ptBR })}
       </p>
 
-      {/* Saúde do CRM */}
+      {/* Saúde do CRM — expandível */}
 
-      <div
-        className="flex items-center justify-between rounded-lg px-4 py-2"
-        style={{ background: crmHealth.bg, border: `1px solid ${crmHealth.border}` }}
-      >
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4" style={{ color: crmHealth.color }} />
-          <span className="text-sm font-semibold" style={{ color: crmHealth.color }}>
-            Saúde do CRM
-          </span>
-        </div>
-        <span
-          className="text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{ background: crmHealth.border, color: '#fff' }}
+      <div>
+        <div
+          role="button"
+          aria-expanded={healthOpen}
+          onClick={() => setHealthOpen(v => !v)}
+          className="flex items-center justify-between rounded-lg px-4 py-2 cursor-pointer select-none"
+          style={{ background: crmHealth.bg, border: `1px solid ${crmHealth.border}` }}
         >
-          {crmHealth.status}
-        </span>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4" style={{ color: crmHealth.color }} />
+            <span className="text-sm font-semibold" style={{ color: crmHealth.color }}>
+              Saúde do CRM
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: crmHealth.border, color: 'var(--accent-foreground)' }}
+            >
+              {crmHealth.status}
+            </span>
+            {healthReasons.length > 0 && (
+              <ChevronDown
+                className="w-4 h-4"
+                style={{
+                  color: crmHealth.color,
+                  transform: healthOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Expansão animada */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: healthOpen && healthReasons.length > 0 ? '1fr' : '0fr',
+            transition: 'grid-template-rows 0.25s ease',
+          }}
+        >
+          <div style={{ overflow: 'hidden' }}>
+            <CrmHealthReasons reasons={healthReasons} />
+          </div>
+        </div>
       </div>
 
       {/* Receita */}
@@ -278,31 +380,69 @@ export function Dashboard() {
           Previsão de Receita
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        {stats.receitaPotencial === 0 && stats.receitaProvavel === 0 && stats.receitaConservadora === 0 ? (
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div
+              className="flex items-center justify-center rounded-xl"
+              style={{ width: 56, height: 56, background: 'var(--accent-subtle)' }}
+            >
+              <TrendingUp className="w-6 h-6" style={{ color: 'var(--accent)' }} />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Sem projeções ainda
+              </p>
+              <p className="text-xs" style={{ color: 'var(--text-tertiary)', maxWidth: 280 }}>
+                Adicione valor e data de fechamento nos leads quentes para gerar previsões de receita.
+              </p>
+            </div>
+            <button
+              onClick={() => setActiveModule('leads')}
+              className="text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+              style={{
+                background: 'var(--accent-subtle)',
+                color: 'var(--accent)',
+                border: '1px dashed var(--border-hover)',
+                minHeight: 36,
+              }}
+            >
+              Ver leads quentes
+            </button>
+            <div className="w-full pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+              <StatCard
+                label="Receita Prevista (Contas)"
+                value={formatCurrency(receitaPrevistaMes)}
+                color="green"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
 
-          <StatCard
-            label="Receita Potencial"
-            value={formatCurrency(stats.receitaPotencial)}
-          />
+            <StatCard
+              label="Receita Potencial"
+              value={formatCurrency(stats.receitaPotencial)}
+            />
 
-          <StatCard
-            label="Receita Provável"
-            value={formatCurrency(stats.receitaProvavel)}
-            delta={<span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Meta: {formatCurrency(stats.metaMensal)}</span>}
-          />
+            <StatCard
+              label="Receita Provável"
+              value={formatCurrency(stats.receitaProvavel)}
+              delta={<span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Meta: {formatCurrency(stats.metaMensal)}</span>}
+            />
 
-          <StatCard
-            label="Receita Conservadora"
-            value={formatCurrency(stats.receitaConservadora)}
-          />
+            <StatCard
+              label="Receita Conservadora"
+              value={formatCurrency(stats.receitaConservadora)}
+            />
 
-          <StatCard
-            label="Receita Prevista (Contas)"
-            value={formatCurrency(receitaPrevistaMes)}
-            color="green"
-          />
+            <StatCard
+              label="Receita Prevista (Contas)"
+              value={formatCurrency(receitaPrevistaMes)}
+              color="green"
+            />
 
-        </div>
+          </div>
+        )}
 
       </Card>
 

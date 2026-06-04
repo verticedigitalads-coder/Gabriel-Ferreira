@@ -1,17 +1,13 @@
 import { useStore } from '@/store/useStore';
-import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
 import { useDefaultSettings } from '@/hooks/useDefaultSettings';
-import { useNotifications } from '@/hooks/useNotifications';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Bell, Building2, AlertCircle, Calendar } from 'lucide-react';
+import { Building2 } from 'lucide-react';
+import { NotificationsDropdown } from './NotificationsDropdown';
 
 export function HeaderGlobal() {
   const activeModule = useStore(state => state.activeModule);
-  const stats = useDashboardStats();
   const { empresaNome } = useDefaultSettings();
-  const { permissionGranted, tarefasHoje, tarefasAtrasadas } = useNotifications();
-  const totalPendente = tarefasHoje + tarefasAtrasadas;
 
   const moduleNames: Record<string, string> = {
     dashboard: 'Dashboard Executivo',
@@ -46,40 +42,16 @@ export function HeaderGlobal() {
       </div>
 
       {/* DIREITA */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center" style={{ gap: 10 }}>
 
-        {/* Indicadores rápidos */}
-        <div className="hidden md:flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] bg-[var(--danger-subtle)] text-[var(--danger)]">
-            <AlertCircle className="w-3 h-3" /> {stats.tarefasAtrasadas} atrasadas
-          </span>
-          <span className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-sm)] bg-[var(--accent-subtle)] text-[var(--accent)]">
-            <Calendar className="w-3 h-3" /> {stats.tarefasHoje} hoje
-          </span>
-        </div>
-
-        {/* Empresa (Multiempresa futuro) */}
+        {/* Empresa (workspace selector) */}
         <div className="hidden md:flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)]">
           <Building2 className="w-4 h-4" />
           {empresaNome || 'Empresa'}
         </div>
 
         {/* Notificações */}
-        <button
-          className="relative text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]"
-          title={permissionGranted ? `${totalPendente} tarefa(s) pendente(s)` : 'Notificações desativadas'}
-        >
-          <Bell className="w-5 h-5" />
-          {totalPendente > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center bg-[var(--danger)] text-white text-[10px] font-bold rounded-full px-1">
-              {totalPendente > 9 ? '9+' : totalPendente}
-            </span>
-          )}
-          {!permissionGranted && totalPendente === 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--warning)] rounded-full" />
-          )}
-        </button>
-
+        <NotificationsDropdown />
 
       </div>
     </header>
