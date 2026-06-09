@@ -339,10 +339,12 @@ export function WhatsApp() {
     !sendingMessage;
 
   useEffect(() => {
-    if (active && activeIsLid && !manualNumberByJid[active.remoteJid] && resolvedNumber) {
-      setManualNumberByJid((m) => ({ ...m, [active.remoteJid]: resolvedNumber }));
+    if (active && activeIsLid && resolvedNumber) {
+      setManualNumberByJid((m) =>
+        m[active.remoteJid] ? m : { ...m, [active.remoteJid]: resolvedNumber }
+      );
     }
-  }, [active, activeIsLid, resolvedNumber, manualNumberByJid]);
+  }, [active, activeIsLid, resolvedNumber]);
 
   const handleSend = () => {
     const text = draft.trim();
