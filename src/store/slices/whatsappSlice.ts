@@ -131,10 +131,16 @@ export const createWhatsappSlice = (set: any, get: any) => ({
       )
       if (!res.ok) return
       const list: Array<{ pushName: string; number: string }> = await res.json()
+      const counts: Record<string, number> = {}
       const map: Record<string, string> = {}
       for (const c of list) {
         const key = (c.pushName || '').trim().toLowerCase()
-        if (key && !map[key]) map[key] = c.number
+        if (!key) continue
+        counts[key] = (counts[key] || 0) + 1
+        if (!map[key]) map[key] = c.number
+      }
+      for (const key of Object.keys(counts)) {
+        if (counts[key] > 1) delete map[key]
       }
       set({ whatsappContacts: map })
     } catch {

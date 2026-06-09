@@ -331,10 +331,6 @@ export function WhatsApp() {
   const resolvedNumber = active?.contactName
     ? whatsappContacts[active.contactName.trim().toLowerCase()] ?? null
     : null;
-  // Número salvo PELO USUÁRIO em envio anterior — só desta conversa (remote_jid-scoped).
-  const savedPhone = activeIsLid
-    ? messages.find((m) => m.phoneNumber)?.phoneNumber ?? null
-    : null;
   const canSend =
     !!active &&
     !activeIsGroup &&
@@ -343,10 +339,10 @@ export function WhatsApp() {
     !sendingMessage;
 
   useEffect(() => {
-    if (active && activeIsLid && savedPhone && !manualNumberByJid[active.remoteJid]) {
-      setManualNumberByJid((m) => ({ ...m, [active.remoteJid]: savedPhone }));
+    if (active && activeIsLid && !manualNumberByJid[active.remoteJid] && resolvedNumber) {
+      setManualNumberByJid((m) => ({ ...m, [active.remoteJid]: resolvedNumber }));
     }
-  }, [active, activeIsLid, savedPhone, manualNumberByJid]);
+  }, [active, activeIsLid, resolvedNumber, manualNumberByJid]);
 
   const handleSend = () => {
     const text = draft.trim();
@@ -503,11 +499,9 @@ export function WhatsApp() {
                   style={{ color: 'var(--text-tertiary)' }}
                 >
                   {activeIsLid
-                    ? savedPhone
-                      ? formatPhone(savedPhone)
-                      : resolvedNumber
-                        ? formatPhone(resolvedNumber)
-                        : 'Número não identificado'
+                    ? resolvedNumber
+                      ? formatPhone(resolvedNumber)
+                      : 'Número não identificado'
                     : jidToPhone(active.remoteJid)}
                 </div>
               </div>

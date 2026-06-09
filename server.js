@@ -1603,16 +1603,6 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
             { onConflict: 'message_id' },
           );
 
-          // Conversa LID: salva o número digitado pelo usuário em todas as
-          // mensagens dessa conversa (fonte autoritativa = envio manual).
-          if (originalJid && originalJid.includes('@lid')) {
-            await admin
-              .from('whatsapp_messages')
-              .update({ phone_number: sendNumber })
-              .eq('remote_jid', originalJid)
-              .eq('workspace_id', inst.workspace_id);
-            console.log(`[WhatsApp Send] Saved mapping: ${originalJid} → ${sendNumber}`);
-          }
         }
       } catch (err) {
         console.error('[WhatsApp Send] persist error:', err);
