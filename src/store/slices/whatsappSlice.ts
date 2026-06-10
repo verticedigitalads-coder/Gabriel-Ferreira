@@ -12,9 +12,6 @@ const toConversation = (m: WhatsappMessage): WhatsappConversation => ({
   lastTimestamp: m.timestamp,
 })
 
-const jidToNumber = (jid: string): string =>
-  (jid.split('@')[0] || '').replace(/\D/g, '')
-
 // TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createWhatsappSlice = (set: any, get: any) => ({
 

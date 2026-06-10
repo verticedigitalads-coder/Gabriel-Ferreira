@@ -208,7 +208,7 @@ export function IAAssistente() {
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
         {/* ONBOARDING — visível enquanto nenhum lead foi analisado */}
-        {!leads.some(l => l.historico?.some(h => h.tipo === HISTORICO_TIPO.IA_ANALYSIS)) && (
+        {!leads.some(l => l.historico?.some((h: HistoricoEntry) => h.tipo === HISTORICO_TIPO.IA_ANALYSIS)) && (
           <Card className="p-5 border" style={{ borderColor: 'var(--ia)', background: 'var(--ia-subtle)' }}>
             <div className="flex items-start gap-3">
               <span className="text-2xl leading-none">✦</span>

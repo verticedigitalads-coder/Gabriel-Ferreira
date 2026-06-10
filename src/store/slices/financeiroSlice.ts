@@ -42,7 +42,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       return;
     }
 
-    const isDespesa = ['despesa', 'comissao', 'pagamento_funcionario'].includes(data.tipo);
+    const isDespesa = !!data.tipo && ['despesa', 'comissao', 'pagamento_funcionario'].includes(data.tipo);
 
     const transaction: Record<string, unknown> = {
       id: uuid(),

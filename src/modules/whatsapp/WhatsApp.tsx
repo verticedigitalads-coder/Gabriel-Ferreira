@@ -288,6 +288,7 @@ export function WhatsApp() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [manualNumberByJid, setManualNumberByJid] = useState<Record<string, string>>({});
+  const [suggestedJids, setSuggestedJids] = useState<Record<string, boolean>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -331,6 +332,7 @@ export function WhatsApp() {
   const resolvedNumber = active?.contactName
     ? whatsappContacts[active.contactName.trim().toLowerCase()] ?? null
     : null;
+  const isSuggested = !!active && !!suggestedJids[active.remoteJid] && !!manualNumber;
   const canSend =
     !!active &&
     !activeIsGroup &&
@@ -340,9 +342,11 @@ export function WhatsApp() {
 
   useEffect(() => {
     if (active && activeIsLid && resolvedNumber) {
-      setManualNumberByJid((m) =>
-        m[active.remoteJid] ? m : { ...m, [active.remoteJid]: resolvedNumber }
-      );
+      setManualNumberByJid((m) => {
+        if (m[active.remoteJid]) return m;
+        setSuggestedJids((s) => ({ ...s, [active.remoteJid]: true }));
+        return { ...m, [active.remoteJid]: resolvedNumber };
+      });
     }
   }, [active, activeIsLid, resolvedNumber]);
 
@@ -601,27 +605,70 @@ export function WhatsApp() {
                   borderTop: '1px solid var(--border)',
                 }}
               >
-                <span className="text-xs" style={{ color: 'var(--info)' }}>
-                  Este contato usa ID interno. Digite o número com DDI+DDD para enviar.
-                </span>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="Ex: 5511987654321"
-                  value={manualNumber}
-                  onChange={(e) =>
-                    setManualNumberByJid((m) => ({
-                      ...m,
-                      [active!.remoteJid]: e.target.value,
-                    }))
-                  }
-                  className="px-3 rounded-[var(--radius-md)] text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-                  style={{
-                    background: 'var(--bg-surface-2)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs" style={{ color: 'var(--info)' }}>
+                    {isSuggested
+                      ? 'Número sugerido a partir dos seus contatos. Confira antes de enviar.'
+                      : 'Este contato usa ID interno. Digite o número com DDI+DDD para enviar.'}
+                  </span>
+                  {isSuggested && (
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[var(--radius-sm)] shrink-0"
+                      style={{
+                        background: 'var(--info)',
+                        color: 'var(--accent-foreground)',
+                      }}
+                    >
+                      sugerido
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="Ex: 5511987654321"
+                    value={manualNumber}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setManualNumberByJid((m) => ({
+                        ...m,
+                        [active!.remoteJid]: v,
+                      }));
+                      setSuggestedJids((s) => ({ ...s, [active!.remoteJid]: false }));
+                    }}
+                    className="flex-1 px-3 rounded-[var(--radius-md)] text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    style={{
+                      background: 'var(--bg-surface-2)',
+                      border: isSuggested
+                        ? '1px solid var(--info)'
+                        : '1px solid var(--border)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                  {isSuggested && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualNumberByJid((m) => ({
+                          ...m,
+                          [active!.remoteJid]: '',
+                        }));
+                        setSuggestedJids((s) => ({ ...s, [active!.remoteJid]: false }));
+                      }}
+                      className="flex items-center justify-center gap-1 min-h-[44px] px-3 rounded-[var(--radius-md)] text-xs shrink-0"
+                      style={{
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-secondary)',
+                      }}
+                      aria-label="Limpar número sugerido"
+                    >
+                      <Trash2 className="w-4 h-4 shrink-0" />
+                      Limpar
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 

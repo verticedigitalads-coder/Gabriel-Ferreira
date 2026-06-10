@@ -1,8 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
-import type { Recibo } from '@/types';
+import type { Recibo, ReciboStatus } from '@/types';
 
-function formatRecibo(r: Record<string, unknown>): Recibo {
+const VALID_RECIBO_STATUS: ReciboStatus[] = ['pendente', 'emitido', 'cancelado'];
+
+function formatRecibo(r: any): Recibo {
   return {
     id: r.id,
     workspaceId: r.workspace_id,
@@ -13,10 +15,10 @@ function formatRecibo(r: Record<string, unknown>): Recibo {
     clienteTelefone: r.cliente_telefone ?? null,
     clienteEndereco: r.cliente_endereco ?? null,
     descricao: r.descricao,
-    itens: r.itens ?? [],
+    itens: Array.isArray(r.itens) ? r.itens : [],
     valorTotal: Number(r.valor_total) || 0,
     dataEmissao: r.data_emissao ?? null,
-    status: r.status,
+    status: VALID_RECIBO_STATUS.includes(r.status) ? r.status : 'pendente',
     observacoes: r.observacoes ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,

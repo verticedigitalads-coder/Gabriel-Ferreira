@@ -12,7 +12,6 @@ import { Input, TextArea, Select } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   FileText,
-  Receipt,
   CheckCircle2,
   Download,
   Edit,
