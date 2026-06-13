@@ -60,7 +60,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[ContasReceberSlice] Erro ao criar conta:', error);
-      get().addToast?.({
+      get().addToast({
         type: 'error',
         message: `Erro ao salvar: ${error.message}`,
       });
@@ -98,7 +98,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[ContasReceberSlice] Erro ao atualizar conta:', error);
-      get().addToast?.({
+      get().addToast({
         type: 'error',
         message: `Erro ao atualizar: ${error.message}`,
       });

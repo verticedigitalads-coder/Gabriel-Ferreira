@@ -261,6 +261,11 @@ export function ContasReceber() {
                           </span>
                         )}
                       </div>
+                      {conta.observacao && (
+                        <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
+                          {conta.observacao}
+                        </p>
+                      )}
                       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-0.5 flex-wrap">
                         {leadNome && <span>{leadNome}</span>}
                         {leadNome && <span>•</span>}
@@ -416,9 +421,11 @@ function ContaReceberForm({
     };
 
     if (isEditing) {
-      await updateContaReceber(initialData.id, payload);
+      const result = await updateContaReceber(initialData.id, payload);
+      if (!result) return;
     } else {
-      await addContaReceber(payload);
+      const result = await addContaReceber(payload);
+      if (!result) return;
     }
     onClose();
   };

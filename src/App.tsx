@@ -10,6 +10,7 @@ import { useEffect, Suspense, lazy, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { MainLayout } from '@/layout/MainLayout';
 import { AuthPage } from '@/modules/auth/AuthPage';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load modules for code splitting
 const Dashboard = lazy(() =>
@@ -211,7 +212,9 @@ export function App() {
   // ✅ Sistema carregado
   return (
     <MainLayout>
-      <ModuleRouter />
+      <ErrorBoundary>
+        <ModuleRouter />
+      </ErrorBoundary>
     </MainLayout>
   );
 }
