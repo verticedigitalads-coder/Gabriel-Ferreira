@@ -512,10 +512,14 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         txid: numeroFormatado,
       });
 
+      const logoBgUrlOrc = dados.empresa_logo_bg_url
+        ? await urlToBase64(dados.empresa_logo_bg_url)
+        : logoBgPath;
+
       html = html
         .replace(/{{cor_primaria}}/g, cor_primaria)
         .replace('{{logo_html}}', logoHtml)
-        .replace('{{logo_bg}}', logoBgPath)
+        .replace('{{logo_bg}}', logoBgUrlOrc)
         .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
         .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
         .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
@@ -676,6 +680,7 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       empresa_cnpj,
       empresa_endereco,
       empresa_logo_url,
+      empresa_logo_bg_url,
       texto_apresentacao,
       condicoes_contrato,
       metodos_pagamento,
@@ -799,6 +804,9 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       const logoHtmlAgrupado = logoUrlAgrupado
         ? `<img src="${logoUrlAgrupado}" style="width: 180px; margin-bottom: 8px;" />`
         : '';
+      const logoBgUrlAgrupado = empresa_logo_bg_url
+        ? await urlToBase64(empresa_logo_bg_url)
+        : logoBgPath;
 
       // Seção apresentação (aparece uma vez, antes dos orçamentos)
       const secaoApresentacaoAgrp = texto_apresentacao
@@ -913,7 +921,7 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
   <style>${v2Estilos.replace(/{{cor_primaria}}/g, corPrimaria)}</style>
 </head>
 <body>
-  <div class="watermark"><img src="${logoBgPath}" style="width: 100%" /></div>
+  <div class="watermark"><img src="${logoBgUrlAgrupado}" style="width: 100%" /></div>
   <div class="container">
     <div class="top-bar" style="background: ${corPrimaria};"></div>
     <div class="empresa-header">
