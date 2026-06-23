@@ -55,7 +55,8 @@ const sections: { title: string; items: MenuItem[] }[] = [
   title: 'Suprimentos',
   items: [
     { id: 'fornecedores', label: 'Fornecedores', icon: Users },
-    { id: 'comparador', label: 'Comparador de Preços', icon: DollarSign },
+    // OCULTO PRA LANÇAMENTO — reativar quando cliente pedir:
+    // { id: 'comparador', label: 'Comparador de Preços', icon: DollarSign },
     { id: 'estoque', label: 'Estoque', icon: FileText },
   ],
 },

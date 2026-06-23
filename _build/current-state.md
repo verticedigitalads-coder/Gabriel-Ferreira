@@ -111,6 +111,9 @@ Versão: v2.34.0
 ## Pendências Manuais
 - Deletar nota órfã id:58118722 na tabela `notas` (dado de teste, workspace Vértice Digital) — fazer via Supabase Dashboard
 
+## Módulos Ocultos (código intacto, sem entrada de menu)
+- **Comparador de Preços** (`src/modules/suprimentos/ComparadorPrecos.tsx`): item comentado em `Sidebar.tsx:59`. Import lazy em `App.tsx` e entrada no `ModuleRouter` mantidos. Reativar: descomentar a linha em Sidebar.tsx.
+
 ## Dívida Técnica Conhecida
 - Bundle ~884KB
 - Offline/IndexedDB não implementado

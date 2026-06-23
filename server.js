@@ -1211,7 +1211,9 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
         ? await urlToBase64(dados.empresa_logo_url)
         : logoPath;
       const logoHtml = logoUrl ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />` : '';
-      const logoBgUrl = dados.empresa_logo_bg_url || logoBgPath;
+      const logoBgUrl = dados.empresa_logo_bg_url
+        ? await urlToBase64(dados.empresa_logo_bg_url)
+        : logoBgPath;
 
       html = html
         .replace(/{{cor_primaria}}/g, dados.cor_primaria || '#ff6a00')
