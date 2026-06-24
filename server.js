@@ -512,9 +512,24 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         txid: numeroFormatado,
       });
 
-      const logoBgUrlOrc = dados.empresa_logo_bg_url
-        ? await urlToBase64(dados.empresa_logo_bg_url)
-        : logoBgPath;
+      console.log('[PDF][logo_header] valor recebido:', JSON.stringify(dados.empresa_logo_url) ?? 'AUSENTE');
+      console.log('[PDF][logo_bg] valor recebido:', JSON.stringify(dados.empresa_logo_bg_url) ?? 'AUSENTE');
+
+      let logoBgUrlOrc = logoBgPath;
+      if (dados.empresa_logo_bg_url) {
+        try {
+          const converted = await urlToBase64(dados.empresa_logo_bg_url);
+          if (converted) {
+            logoBgUrlOrc = converted;
+          } else {
+            console.error('[PDF][logo_bg] urlToBase64 retornou vazio — resposta HTTP não-ok ou body vazio. URL:', dados.empresa_logo_bg_url);
+          }
+        } catch (err) {
+          console.error('[PDF][logo_bg] FALHA ao converter, caindo no fallback FL:', err?.message, err?.code);
+        }
+      } else {
+        console.warn('[PDF][logo_bg] campo ausente ou vazio — usando fallback estático (FL Art Metal)');
+      }
 
       html = html
         .replace(/{{cor_primaria}}/g, cor_primaria)
