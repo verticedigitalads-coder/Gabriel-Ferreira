@@ -84,7 +84,7 @@ Versão: v2.34.0
 
 ## Infraestrutura
 - Frontend: Vercel (vertice-digital-crm.vercel.app)
-- Backend: local via ngrok (migração VPS planejada)
+- Backend: produção na VPS Hetzner (178.104.236.222), `/opt/crm-backend`, gerenciado via PM2 (processo `crm-backend`), Nginx reverse proxy 80→3001, API pública `https://api.vrtxcrm.com.br`. Deploy: SSH na VPS → `git pull origin main && pm2 restart crm-backend`. Dev local continua em `localhost:3001` (ngrok não é mais necessário)
 - Supabase: online, RLS 100%
 
 ## WhatsApp / Evolution API
@@ -104,9 +104,11 @@ Versão: v2.34.0
 - UX v2.33.1: Kanban — indicador "Xd sem contato" no rodapé de cada card. `daysSinceContact` + `contactSeverity` adicionados em `src/utils/date.ts`; `SortableLeadCard` em `Kanban.tsx` exibe ícone Clock 12px + texto 11.5px com cor semântica (≤1d: oculto, 2-4d: --text-tertiary, 5-6d: --warning, ≥7d: --danger) + borda colorida no card via inline style (--warning/--danger, só quando não há followUpAtrasado sobreposto)
 
 ## Próximas Prioridades
-1. Adicionar `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` no `.env` do backend (VPS) — bloqueia envio em produção
-2. Migração backend para VPS
-3. Fases 14-15 Evolution API (envio de mídia na UI, templates)
+1. Adicionar `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` no `.env` do backend (VPS) — confirmar se já configurado pós-migração
+2. Fases 14-15 Evolution API (envio de mídia na UI, templates)
+
+## Concluído (infraestrutura)
+- ✅ Migração backend para VPS Hetzner (178.104.236.222) — PM2 (`crm-backend`) + Nginx reverse proxy, API pública `https://api.vrtxcrm.com.br` (supera decisão anterior "backend local via ngrok")
 
 ## Pendências Manuais
 - Deletar nota órfã id:58118722 na tabela `notas` (dado de teste, workspace Vértice Digital) — fazer via Supabase Dashboard

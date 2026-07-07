@@ -7,7 +7,7 @@
 - Persistência: Supabase (PostgreSQL + Realtime + RLS multi-tenant)
 - PDF: Puppeteer + templates HTML (v1 legado + v2 profissional)
 - PWA: vite-plugin-pwa + Workbox
-- Deploy: Frontend Vercel | Backend local via ngrok (migração VPS planejada)
+- Deploy: Frontend Vercel | Backend produção: VPS Hetzner (178.104.236.222), `/opt/crm-backend`, PM2 (processo `crm-backend`) + Nginx reverse proxy (80→3001) → `https://api.vrtxcrm.com.br`. Deploy: SSH na VPS → `git pull origin main && pm2 restart crm-backend`. Dev local: `localhost:3001` (ngrok não é mais necessário)
 - Ambiente: Windows 10, Node.js 22
 
 ## Arquitetura
