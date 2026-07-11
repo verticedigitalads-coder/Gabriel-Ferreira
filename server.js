@@ -42,6 +42,7 @@ async function urlToBase64(url) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -58,11 +59,27 @@ const logoBgBase64 = fs.readFileSync(path.join(assetsPath, 'logo_bg.png'), {
 const logoPath = `data:image/png;base64,${logoBase64}`;
 const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
 
-async function gerarQrCodePixHtml({ chavePix, nomeRecebedor, cidadeRecebedor, valor, txid }) {
+async function gerarQrCodePixHtml({
+  chavePix,
+  nomeRecebedor,
+  cidadeRecebedor,
+  valor,
+  txid,
+}) {
   if (!chavePix) return '';
   try {
-    const payload = pixPayload({ chavePix, nomeRecebedor, cidadeRecebedor, valor: valor || null, txid: txid || '***' });
-    const qrDataUrl = await QRCode.toDataURL(payload, { width: 180, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } });
+    const payload = pixPayload({
+      chavePix,
+      nomeRecebedor,
+      cidadeRecebedor,
+      valor: valor || null,
+      txid: txid || '***',
+    });
+    const qrDataUrl = await QRCode.toDataURL(payload, {
+      width: 180,
+      margin: 1,
+      color: { dark: '#000000', light: '#FFFFFF' },
+    });
     return `
       <div style="text-align: center; margin-top: 20px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; page-break-inside: avoid;">
         <img src="${qrDataUrl}" alt="QR Code PIX" style="width: 150px; height: 150px; margin: 0 auto; display: block;" />
@@ -83,30 +100,40 @@ async function gerarQrCodePixHtml({ chavePix, nomeRecebedor, cidadeRecebedor, va
 🌐 CORS (whitelist via env)
 ========================================== */
 
-const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS
-  || 'http://localhost:5173,http://localhost:3000,https://vertice-digital-crm.vercel.app')
+const allowedOrigins = (
+  process.env.CORS_ALLOWED_ORIGINS ||
+  'http://localhost:5173,http://localhost:3000,https://vertice-digital-crm.vercel.app'
+)
   .split(',')
-  .map(s => s.trim())
+  .map((s) => s.trim())
   .filter(Boolean);
 
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    return cb(new Error('CORS bloqueado: ' + origin));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
-}));
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error('CORS bloqueado: ' + origin));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'ngrok-skip-browser-warning',
+    ],
+  }),
+);
 
 /* ==========================================
 🛡️ HELMET (security headers)
 ========================================== */
 
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }),
+);
 
 /* ==========================================
 ⏱️ RATE LIMIT
@@ -135,7 +162,7 @@ const strictLimiter = rateLimit({
 
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '')
   .split(',')
-  .map(s => s.trim())
+  .map((s) => s.trim())
   .filter(Boolean);
 
 const requireAuth = async (req, res, next) => {
@@ -146,8 +173,12 @@ const requireAuth = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-    if (error || !user) return res.status(401).json({ error: 'Token inválido' });
+    const {
+      data: { user },
+      error,
+    } = await supabaseAdmin.auth.getUser(token);
+    if (error || !user)
+      return res.status(401).json({ error: 'Token inválido' });
     req.user = user;
     next();
   } catch (err) {
@@ -210,7 +241,7 @@ app.get('/api/cnpj/:cnpj', async (req, res) => {
 
     const response = await fetch(
       `https://www.receitaws.com.br/v1/cnpj/${cnpjLimpo}`,
-      { signal: controller.signal }
+      { signal: controller.signal },
     );
 
     clearTimeout(timeout);
@@ -245,7 +276,8 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
     ========================================== */
 
     const template_version = dados.template_version || 'v1';
-    const templateFile = template_version === 'v2' ? 'orcamento-v2.html' : 'orcamento.html';
+    const templateFile =
+      template_version === 'v2' ? 'orcamento-v2.html' : 'orcamento.html';
     const templatePath = path.resolve(process.cwd(), 'templates', templateFile);
 
     if (!fs.existsSync(templatePath)) {
@@ -285,7 +317,8 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         const nome = (item.descricao || '').trim().toLowerCase();
         const valor = parseFloat(item.valorTotal || 0);
         if (!nome || nome === 'item') return false;
-        const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
+        const isMaoDeObra =
+          nome.includes('mão de obra') || nome.includes('mao de obra');
         if (valor === 0 && !isMaoDeObra) return false;
         return true;
       })
@@ -369,7 +402,10 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
     } catch (error) {
       const fallbackNumber = Date.now().toString().slice(-6);
       console.error('[PDF] Falha ao buscar sequencial:', error.message);
-      console.warn('[PDF] Usando número sequencial de fallback:', fallbackNumber);
+      console.warn(
+        '[PDF] Usando número sequencial de fallback:',
+        fallbackNumber,
+      );
       sequencial = parseInt(fallbackNumber, 10);
     }
 
@@ -411,10 +447,14 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         : '';
 
       // Seção atividades (divider embutido)
-      const atividadesHtml = (dados.itens || []).map(item => {
-        const ambiente = item.ambiente ? ` (${escapeHtml(item.ambiente)})` : '';
-        return `<div class="atividade-item"><strong>${escapeHtml(item.descricao)}${ambiente}</strong></div>`;
-      }).join('');
+      const atividadesHtml = (dados.itens || [])
+        .map((item) => {
+          const ambiente = item.ambiente
+            ? ` (${escapeHtml(item.ambiente)})`
+            : '';
+          return `<div class="atividade-item"><strong>${escapeHtml(item.descricao)}${ambiente}</strong></div>`;
+        })
+        .join('');
 
       const secaoAtividades = atividadesHtml
         ? `<div class="divider"></div>
@@ -433,7 +473,8 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
           if (valor === 0) return false;
           return true;
         })
-        .map(item => `
+        .map(
+          (item) => `
         <div class="preco-grupo">
           <div class="preco-grupo-header">${escapeHtml(item.descricao) || 'Item'}</div>
           <div class="preco-grupo-body">
@@ -441,7 +482,9 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
             <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
           </div>
         </div>
-      `).join('');
+      `,
+        )
+        .join('');
 
       // Mão de obra
       let maoDeObraBloco = '';
@@ -468,12 +511,21 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
 
       // Métodos de pagamento
       const metodosLabels = {
-        pix: 'PIX', credito: 'Crédito', debito: 'Débito',
-        dinheiro: 'Dinheiro', transferencia: 'Transferência', boleto: 'Boleto',
+        pix: 'PIX',
+        credito: 'Crédito',
+        debito: 'Débito',
+        dinheiro: 'Dinheiro',
+        transferencia: 'Transferência',
+        boleto: 'Boleto',
       };
-      const metodosBadges = (metodos_pagamento || '').split(',').filter(Boolean).map(m =>
-        `<span class="metodo-badge">${escapeHtml(metodosLabels[m.trim()] || m.trim())}</span>`
-      ).join('');
+      const metodosBadges = (metodos_pagamento || '')
+        .split(',')
+        .filter(Boolean)
+        .map(
+          (m) =>
+            `<span class="metodo-badge">${escapeHtml(metodosLabels[m.trim()] || m.trim())}</span>`,
+        )
+        .join('');
 
       const secaoMetodos = metodosBadges
         ? `<div class="divider"></div>
@@ -484,10 +536,17 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         : '';
 
       // Condições de contrato
-      const condicoesItems = (condicoes_contrato || '').split('\n').filter(l => l.trim()).map(l => {
-        const texto = l.replace(/\{\{validade\}\}/g, String(dados.validade || 7));
-        return `<li>${escapeHtml(texto)}</li>`;
-      }).join('');
+      const condicoesItems = (condicoes_contrato || '')
+        .split('\n')
+        .filter((l) => l.trim())
+        .map((l) => {
+          const texto = l.replace(
+            /\{\{validade\}\}/g,
+            String(dados.validade || 7),
+          );
+          return `<li>${escapeHtml(texto)}</li>`;
+        })
+        .join('');
 
       const secaoCondicoes = condicoesItems
         ? `<div class="divider"></div>
@@ -512,8 +571,14 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         txid: numeroFormatado,
       });
 
-      console.log('[PDF][logo_header] valor recebido:', JSON.stringify(dados.empresa_logo_url) ?? 'AUSENTE');
-      console.log('[PDF][logo_bg] valor recebido:', JSON.stringify(dados.empresa_logo_bg_url) ?? 'AUSENTE');
+      console.log(
+        '[PDF][logo_header] valor recebido:',
+        JSON.stringify(dados.empresa_logo_url) ?? 'AUSENTE',
+      );
+      console.log(
+        '[PDF][logo_bg] valor recebido:',
+        JSON.stringify(dados.empresa_logo_bg_url) ?? 'AUSENTE',
+      );
 
       let logoBgUrlOrc = logoBgPath;
       if (dados.empresa_logo_bg_url) {
@@ -522,13 +587,22 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
           if (converted) {
             logoBgUrlOrc = converted;
           } else {
-            console.error('[PDF][logo_bg] urlToBase64 retornou vazio — resposta HTTP não-ok ou body vazio. URL:', dados.empresa_logo_bg_url);
+            console.error(
+              '[PDF][logo_bg] urlToBase64 retornou vazio — resposta HTTP não-ok ou body vazio. URL:',
+              dados.empresa_logo_bg_url,
+            );
           }
         } catch (err) {
-          console.error('[PDF][logo_bg] FALHA ao converter, caindo no fallback FL:', err?.message, err?.code);
+          console.error(
+            '[PDF][logo_bg] FALHA ao converter, caindo no fallback FL:',
+            err?.message,
+            err?.code,
+          );
         }
       } else {
-        console.warn('[PDF][logo_bg] campo ausente ou vazio — usando fallback estático (FL Art Metal)');
+        console.warn(
+          '[PDF][logo_bg] campo ausente ou vazio — usando fallback estático (FL Art Metal)',
+        );
       }
 
       html = html
@@ -539,7 +613,10 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
         .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
         .replace(/{{empresa_telefone}}/g, escapeHtml(empresa_telefone) || '')
-        .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome) || 'Cliente')
+        .replace(
+          /{{cliente_nome}}/g,
+          escapeHtml(dados.cliente_nome) || 'Cliente',
+        )
         .replace(/{{orcamento_id}}/g, numeroFormatado)
         .replace('{{secao_apresentacao}}', secaoApresentacao)
         .replace('{{secao_atividades}}', secaoAtividades)
@@ -568,7 +645,8 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
     } else {
       const qrCodePixHtmlV1 = await gerarQrCodePixHtml({
         chavePix: dados.chave_pix || '',
-        nomeRecebedor: dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
+        nomeRecebedor:
+          dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
         cidadeRecebedor: dados.cidade_pix || 'UBERABA',
         valor: total,
         txid: numeroFormatado,
@@ -576,8 +654,14 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
 
       html = html
         .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome))
-        .replace(/{{cliente_telefone}}/g, escapeHtml(dados.cliente_telefone) || '-')
-        .replace(/{{cliente_endereco}}/g, escapeHtml(dados.cliente_endereco) || '-')
+        .replace(
+          /{{cliente_telefone}}/g,
+          escapeHtml(dados.cliente_telefone) || '-',
+        )
+        .replace(
+          /{{cliente_endereco}}/g,
+          escapeHtml(dados.cliente_endereco) || '-',
+        )
         .replace(/{{orcamento_id}}/g, numeroFormatado)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
         .replace(/{{itens}}/g, itensHTML)
@@ -717,50 +801,57 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
 
     let totalGeral = 0;
 
-    const blocos = orcamentos.map((orc, index) => {
-      const itensLinhas = (orc.itens || [])
-        .filter((item) => {
-          const nome = (item.descricao || '').trim().toLowerCase();
-          const valor = parseFloat(item.valorTotal || 0);
-          if (!nome || nome === 'item') return false;
-          const isMaoDeObra = nome.includes('mão de obra') || nome.includes('mao de obra');
-          if (valor === 0 && !isMaoDeObra) return false;
-          return true;
-        })
-        .map((item) => `
+    const blocos = orcamentos
+      .map((orc, index) => {
+        const itensLinhas = (orc.itens || [])
+          .filter((item) => {
+            const nome = (item.descricao || '').trim().toLowerCase();
+            const valor = parseFloat(item.valorTotal || 0);
+            if (!nome || nome === 'item') return false;
+            const isMaoDeObra =
+              nome.includes('mão de obra') || nome.includes('mao de obra');
+            if (valor === 0 && !isMaoDeObra) return false;
+            return true;
+          })
+          .map(
+            (item) => `
         <tr>
           <td>${escapeHtml(item.descricao) || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
           <td class="right">R$ ${formatar(item.valorUnitario)}</td>
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
         </tr>
-      `).join('');
+      `,
+          )
+          .join('');
 
-      const subtotal = Number(orc.subtotal) || 0;
-      const multiplicador = Number(orc.multiplicador) || 1;
-      const total = Number(orc.total) || 0;
+        const subtotal = Number(orc.subtotal) || 0;
+        const multiplicador = Number(orc.multiplicador) || 1;
+        const total = Number(orc.total) || 0;
 
-      totalGeral += total;
+        totalGeral += total;
 
-      let maoDeObraHTML = '';
-      if (multiplicador > 1) {
-        const valor = subtotal * (multiplicador - 1);
-        maoDeObraHTML = `
+        let maoDeObraHTML = '';
+        if (multiplicador > 1) {
+          const valor = subtotal * (multiplicador - 1);
+          maoDeObraHTML = `
           <tr class="mao-de-obra">
             <td>Mão de obra especializada</td>
             <td class="right">1</td>
             <td class="right">R$ ${formatar(valor)}</td>
             <td class="right">R$ ${formatar(valor)}</td>
           </tr>`;
-      }
+        }
 
-      const pageBreak = index > 0 ? 'page-break-before: always;' : '';
+        const pageBreak = index > 0 ? 'page-break-before: always;' : '';
 
-      const titulo = escapeHtml(
-        orc.ambiente || (orc.observacoes ? orc.observacoes.substring(0, 40) : null) || `Orçamento ${index + 1}`
-      );
+        const titulo = escapeHtml(
+          orc.ambiente ||
+            (orc.observacoes ? orc.observacoes.substring(0, 40) : null) ||
+            `Orçamento ${index + 1}`,
+        );
 
-      return `
+        return `
         <div style="${pageBreak}">
           <h2 style="color: ${cor_primaria || '#ff6a00'}; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid ${cor_primaria || '#ff6a00'}; padding-bottom: 6px;">
             ${titulo} — ${orc.numero || ''}
@@ -795,21 +886,29 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
-    const totalGeralHTML = mostrar_total_geral !== false ? `
+    const totalGeralHTML =
+      mostrar_total_geral !== false
+        ? `
       <div style="page-break-inside: avoid; margin-top: 40px;">
         <div class="total-box" style="background: linear-gradient(135deg, #222, #444);">
           <div class="total-label">TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</div>
           <div class="total-value">R$ ${formatar(totalGeral)}</div>
         </div>
       </div>
-    ` : '';
+    `
+        : '';
 
     let htmlFinal;
 
     if (template_version === 'v2') {
-      const v2TemplatePath = path.resolve(process.cwd(), 'templates', 'orcamento-v2.html');
+      const v2TemplatePath = path.resolve(
+        process.cwd(),
+        'templates',
+        'orcamento-v2.html',
+      );
       const v2Base = fs.readFileSync(v2TemplatePath, 'utf-8');
       const v2StyleMatch = v2Base.match(/<style>([\s\S]*?)<\/style>/);
       const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
@@ -834,23 +933,29 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
 
       // Blocos de orçamento no estilo v2
       let totalGeralV2 = 0;
-      const blocosV2 = orcamentos.map((orc, index) => {
-        const pageBreak = index > 0 ? 'class="page-break"' : '';
-        const titulo = escapeHtml(orc.ambiente || orc.observacoes?.substring(0, 40) || `Orçamento ${index + 1}`);
-        const subtotalOrc = Number(orc.subtotal) || 0;
-        const multiplicadorOrc = Number(orc.multiplicador) || 1;
-        const totalOrc = Number(orc.total) || 0;
-        totalGeralV2 += totalOrc;
+      const blocosV2 = orcamentos
+        .map((orc, index) => {
+          const pageBreak = index > 0 ? 'class="page-break"' : '';
+          const titulo = escapeHtml(
+            orc.ambiente ||
+              orc.observacoes?.substring(0, 40) ||
+              `Orçamento ${index + 1}`,
+          );
+          const subtotalOrc = Number(orc.subtotal) || 0;
+          const multiplicadorOrc = Number(orc.multiplicador) || 1;
+          const totalOrc = Number(orc.total) || 0;
+          totalGeralV2 += totalOrc;
 
-        const precosOrc = (orc.itens || [])
-          .filter((item) => {
-            const nome = (item.descricao || '').trim().toLowerCase();
-            const valor = parseFloat(item.valorTotal || 0);
-            if (!nome || nome === 'item') return false;
-            if (valor === 0) return false;
-            return true;
-          })
-          .map(item => `
+          const precosOrc = (orc.itens || [])
+            .filter((item) => {
+              const nome = (item.descricao || '').trim().toLowerCase();
+              const valor = parseFloat(item.valorTotal || 0);
+              if (!nome || nome === 'item') return false;
+              if (valor === 0) return false;
+              return true;
+            })
+            .map(
+              (item) => `
           <div class="preco-grupo">
             <div class="preco-grupo-header">${escapeHtml(item.descricao) || 'Item'}</div>
             <div class="preco-grupo-body">
@@ -858,12 +963,14 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
               <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
             </div>
           </div>
-        `).join('');
+        `,
+            )
+            .join('');
 
-        let maoDeObraBlocoOrc = '';
-        if (multiplicadorOrc > 1) {
-          const valorMdO = subtotalOrc * (multiplicadorOrc - 1);
-          maoDeObraBlocoOrc = `
+          let maoDeObraBlocoOrc = '';
+          if (multiplicadorOrc > 1) {
+            const valorMdO = subtotalOrc * (multiplicadorOrc - 1);
+            maoDeObraBlocoOrc = `
             <div class="preco-grupo mao-de-obra">
               <div class="preco-grupo-header">Mão de obra especializada</div>
               <div class="preco-grupo-body">
@@ -872,16 +979,16 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
               </div>
             </div>
           `;
-        }
+          }
 
-        const descontoOrc = Number(orc.desconto) || 0;
-        const totaisOrc = `
+          const descontoOrc = Number(orc.desconto) || 0;
+          const totaisOrc = `
           <div class="total-row"><span>Subtotal</span><span>R$ ${formatar(subtotalOrc)}</span></div>
           ${descontoOrc > 0 ? `<div class="total-row"><span>Desconto</span><span>- R$ ${formatar(descontoOrc)}</span></div>` : ''}
           <div class="total-row final"><span>Total</span><span>R$ ${formatar(totalOrc)}</span></div>
         `;
 
-        return `
+          return `
           <div ${pageBreak}>
             <div class="secao">
               <div class="secao-titulo" style="color: ${corPrimaria}; border-bottom: 2px solid ${corPrimaria}; padding-bottom: 6px;">
@@ -896,10 +1003,13 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
             <div class="divider"></div>
           </div>
         `;
-      }).join('');
+        })
+        .join('');
 
       // Total geral
-      const totalGeralBlocoV2 = mostrar_total_geral !== false ? `
+      const totalGeralBlocoV2 =
+        mostrar_total_geral !== false
+          ? `
         <div class="secao" style="page-break-inside: avoid;">
           <div style="display: flex; justify-content: space-between; align-items: center; background: #222; color: #fff; padding: 16px 20px; border-radius: 8px; font-size: 20px; font-weight: 700;">
             <span>TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</span>
@@ -907,24 +1017,36 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
           </div>
         </div>
         <div class="divider"></div>
-      ` : '';
+      `
+          : '';
 
       // Métodos de pagamento
       const metodosLabelsAgrp = {
-        pix: 'PIX', credito: 'Crédito', debito: 'Débito',
-        dinheiro: 'Dinheiro', transferencia: 'Transferência', boleto: 'Boleto',
+        pix: 'PIX',
+        credito: 'Crédito',
+        debito: 'Débito',
+        dinheiro: 'Dinheiro',
+        transferencia: 'Transferência',
+        boleto: 'Boleto',
       };
-      const metodosBadgesAgrp = (metodos_pagamento || '').split(',').filter(Boolean).map(m =>
-        `<span class="metodo-badge">${escapeHtml(metodosLabelsAgrp[m.trim()] || m.trim())}</span>`
-      ).join('');
+      const metodosBadgesAgrp = (metodos_pagamento || '')
+        .split(',')
+        .filter(Boolean)
+        .map(
+          (m) =>
+            `<span class="metodo-badge">${escapeHtml(metodosLabelsAgrp[m.trim()] || m.trim())}</span>`,
+        )
+        .join('');
       const secaoMetodosAgrp = metodosBadgesAgrp
         ? `<div class="secao"><div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div><div class="metodos-container">${metodosBadgesAgrp}</div></div><div class="divider"></div>`
         : '';
 
       // Condições
-      const condicoesItemsAgrp = (condicoes_contrato || '').split('\n').filter(l => l.trim()).map(l =>
-        `<li>${escapeHtml(l)}</li>`
-      ).join('');
+      const condicoesItemsAgrp = (condicoes_contrato || '')
+        .split('\n')
+        .filter((l) => l.trim())
+        .map((l) => `<li>${escapeHtml(l)}</li>`)
+        .join('');
       const secaoCondicoesAgrp = condicoesItemsAgrp
         ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
         : '';
@@ -961,7 +1083,11 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
 </body>
 </html>`;
     } else {
-      const templatePath = path.resolve(process.cwd(), 'templates', 'orcamento.html');
+      const templatePath = path.resolve(
+        process.cwd(),
+        'templates',
+        'orcamento.html',
+      );
       const baseHtml = fs.readFileSync(templatePath, 'utf-8');
 
       const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
@@ -1017,7 +1143,12 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
 
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
     });
 
     const page = await browser.newPage();
@@ -1030,10 +1161,15 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
 
     await page.evaluate(async () => {
       const imgs = Array.from(document.images);
-      await Promise.all(imgs.map((img) => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
-      }));
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }),
+      );
     });
 
     const pdf = await page.pdf({ format: 'A4', printBackground: true });
@@ -1053,17 +1189,50 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
 
 function valorPorExtenso(valor) {
   const unidades = [
-    '', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove',
-    'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis',
-    'dezessete', 'dezoito', 'dezenove',
+    '',
+    'um',
+    'dois',
+    'três',
+    'quatro',
+    'cinco',
+    'seis',
+    'sete',
+    'oito',
+    'nove',
+    'dez',
+    'onze',
+    'doze',
+    'treze',
+    'quatorze',
+    'quinze',
+    'dezesseis',
+    'dezessete',
+    'dezoito',
+    'dezenove',
   ];
   const dezenas = [
-    '', '', 'vinte', 'trinta', 'quarenta', 'cinquenta',
-    'sessenta', 'setenta', 'oitenta', 'noventa',
+    '',
+    '',
+    'vinte',
+    'trinta',
+    'quarenta',
+    'cinquenta',
+    'sessenta',
+    'setenta',
+    'oitenta',
+    'noventa',
   ];
   const centenas = [
-    '', 'cem', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos',
-    'seiscentos', 'setecentos', 'oitocentos', 'novecentos',
+    '',
+    'cem',
+    'duzentos',
+    'trezentos',
+    'quatrocentos',
+    'quinhentos',
+    'seiscentos',
+    'setecentos',
+    'oitocentos',
+    'novecentos',
   ];
 
   function grupo(n) {
@@ -1109,8 +1278,18 @@ function valorPorExtenso(valor) {
 
 function dataExtenso(dataStr) {
   const meses = [
-    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
   ];
 
   let d;
@@ -1141,13 +1320,10 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
     ========================================== */
 
     const templateVersion = dados.template_version || 'v1';
-    const templateFile = templateVersion === 'v2' ? 'recibo-v2.html' : 'recibo.html';
+    const templateFile =
+      templateVersion === 'v2' ? 'recibo-v2.html' : 'recibo.html';
 
-    const templatePath = path.resolve(
-      process.cwd(),
-      'templates',
-      templateFile,
-    );
+    const templatePath = path.resolve(process.cwd(), 'templates', templateFile);
 
     if (!fs.existsSync(templatePath)) {
       console.error('[Recibo] Template não encontrado');
@@ -1212,8 +1388,14 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
       .replace(/{{numero_recibo}}/g, dados.numero_recibo || 'RECIBO')
       .replace(/{{data_emissao}}/g, dataEmissaoFormatada)
       .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome) || 'Cliente')
-      .replace(/{{cliente_telefone}}/g, escapeHtml(dados.cliente_telefone) || '-')
-      .replace(/{{cliente_endereco}}/g, escapeHtml(dados.cliente_endereco) || '-')
+      .replace(
+        /{{cliente_telefone}}/g,
+        escapeHtml(dados.cliente_telefone) || '-',
+      )
+      .replace(
+        /{{cliente_endereco}}/g,
+        escapeHtml(dados.cliente_endereco) || '-',
+      )
       .replace(/{{valor_total}}/g, formatar(dados.valor_total))
       .replace(/{{valor_por_extenso}}/g, valorPorExtenso(dados.valor_total))
       .replace(/{{itens}}/g, itensLinhas)
@@ -1222,7 +1404,8 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
 
     const qrCodePixHtmlRecibo = await gerarQrCodePixHtml({
       chavePix: dados.chave_pix || '',
-      nomeRecebedor: dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
+      nomeRecebedor:
+        dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
       cidadeRecebedor: dados.cidade_pix || 'UBERABA',
       valor: dados.valor_total,
       txid: dados.numero_recibo || 'RECIBO',
@@ -1233,7 +1416,9 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
       const logoUrl = dados.empresa_logo_url
         ? await urlToBase64(dados.empresa_logo_url)
         : logoPath;
-      const logoHtml = logoUrl ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />` : '';
+      const logoHtml = logoUrl
+        ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />`
+        : '';
       const logoBgUrl = dados.empresa_logo_bg_url
         ? await urlToBase64(dados.empresa_logo_bg_url)
         : logoBgPath;
@@ -1244,8 +1429,14 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
         .replace(/{{logo_bg}}/g, logoBgUrl)
         .replace(/{{empresa_nome}}/g, escapeHtml(dados.empresa_nome) || '')
         .replace(/{{empresa_cnpj}}/g, escapeHtml(dados.empresa_cnpj) || '')
-        .replace(/{{empresa_endereco}}/g, escapeHtml(dados.empresa_endereco) || '')
-        .replace(/{{empresa_telefone}}/g, escapeHtml(dados.empresa_telefone) || '')
+        .replace(
+          /{{empresa_endereco}}/g,
+          escapeHtml(dados.empresa_endereco) || '',
+        )
+        .replace(
+          /{{empresa_telefone}}/g,
+          escapeHtml(dados.empresa_telefone) || '',
+        )
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
 
       // ===== ASSINATURAS DIGITAIS RECIBO (v2) =====
@@ -1369,7 +1560,7 @@ function getSupabaseAdmin() {
   return createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+    { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }
 
@@ -1377,96 +1568,117 @@ function getSupabaseAdmin() {
 🏢 GET /api/admin/workspaces — Lista todas as empresas
 ========================================== */
 
-app.get('/api/admin/workspaces', requireAuth, requireAdmin, async (_req, res) => {
-  try {
-    const supabaseAdmin = getSupabaseAdmin();
-    const { data, error } = await supabaseAdmin
-      .from('workspaces')
-      .select('id, nome, segment, created_at')
-      .order('created_at', { ascending: false });
+app.get(
+  '/api/admin/workspaces',
+  requireAuth,
+  requireAdmin,
+  async (_req, res) => {
+    try {
+      const supabaseAdmin = getSupabaseAdmin();
+      const { data, error } = await supabaseAdmin
+        .from('workspaces')
+        .select('id, nome, segment, created_at')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    return res.json(data ?? []);
-  } catch (error) {
-    console.error('[Admin] Erro ao listar workspaces:', error.message);
-    return res.status(500).json({ error: error.message });
-  }
-});
+      return res.json(data ?? []);
+    } catch (error) {
+      console.error('[Admin] Erro ao listar workspaces:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  },
+);
 
 /* ==========================================
 🏢 POST /api/admin/criar-empresa — Cria workspace + usuário + vínculo
 ========================================== */
 
-app.post('/api/admin/criar-empresa', requireAuth, requireAdmin, strictLimiter, async (req, res) => {
-  const { nome, segment, email, senha } = req.body ?? {};
+app.post(
+  '/api/admin/criar-empresa',
+  requireAuth,
+  requireAdmin,
+  strictLimiter,
+  async (req, res) => {
+    const { nome, segment, email, senha } = req.body ?? {};
 
-  if (!nome || !nome.trim()) {
-    return res.status(400).json({ error: 'Nome da empresa é obrigatório' });
-  }
-  if (!email || !email.trim()) {
-    return res.status(400).json({ error: 'Email do usuário é obrigatório' });
-  }
-  if (!senha || senha.length < 6) {
-    return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres' });
-  }
-
-  try {
-    const supabaseAdmin = getSupabaseAdmin();
-
-    // 1. Criar workspace
-    const { data: workspace, error: wsError } = await supabaseAdmin
-      .from('workspaces')
-      .insert({ nome: nome.trim(), segment: segment || 'metalurgica' })
-      .select()
-      .single();
-
-    if (wsError) {
-      console.error('[Admin] Erro ao criar workspace:', wsError.message);
-      return res.status(500).json({ error: 'Erro ao criar workspace: ' + wsError.message });
+    if (!nome || !nome.trim()) {
+      return res.status(400).json({ error: 'Nome da empresa é obrigatório' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Email do usuário é obrigatório' });
+    }
+    if (!senha || senha.length < 6) {
+      return res
+        .status(400)
+        .json({ error: 'Senha deve ter no mínimo 6 caracteres' });
     }
 
-    // 2. Criar usuário via admin API
-    const { data: userResult, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email: email.trim(),
-      password: senha,
-      email_confirm: true,
-    });
+    try {
+      const supabaseAdmin = getSupabaseAdmin();
 
-    if (userError) {
-      console.error('[Admin] Erro ao criar usuário:', userError.message);
-      // Limpar workspace criado
-      await supabaseAdmin.from('workspaces').delete().eq('id', workspace.id);
-      const alreadyExists =
-        userError.message.includes('already registered') ||
-        userError.status === 422;
-      return res.status(alreadyExists ? 409 : 500).json({
-        error: alreadyExists ? 'Email já cadastrado no sistema' : 'Erro ao criar usuário: ' + userError.message,
+      // 1. Criar workspace
+      const { data: workspace, error: wsError } = await supabaseAdmin
+        .from('workspaces')
+        .insert({ nome: nome.trim(), segment: segment || 'metalurgica' })
+        .select()
+        .single();
+
+      if (wsError) {
+        console.error('[Admin] Erro ao criar workspace:', wsError.message);
+        return res
+          .status(500)
+          .json({ error: 'Erro ao criar workspace: ' + wsError.message });
+      }
+
+      // 2. Criar usuário via admin API
+      const { data: userResult, error: userError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: email.trim(),
+          password: senha,
+          email_confirm: true,
+        });
+
+      if (userError) {
+        console.error('[Admin] Erro ao criar usuário:', userError.message);
+        // Limpar workspace criado
+        await supabaseAdmin.from('workspaces').delete().eq('id', workspace.id);
+        const alreadyExists =
+          userError.message.includes('already registered') ||
+          userError.status === 422;
+        return res.status(alreadyExists ? 409 : 500).json({
+          error: alreadyExists
+            ? 'Email já cadastrado no sistema'
+            : 'Erro ao criar usuário: ' + userError.message,
+        });
+      }
+
+      const userId = userResult.user.id;
+
+      // 3. Vincular usuário ao workspace como owner
+      const { error: memberError } = await supabaseAdmin
+        .from('workspace_members')
+        .insert({ workspace_id: workspace.id, user_id: userId, role: 'owner' });
+
+      if (memberError) {
+        console.error('[Admin] Erro ao vincular membro:', memberError.message);
+        return res.status(500).json({
+          error:
+            'Erro ao vincular usuário ao workspace: ' + memberError.message,
+        });
+      }
+
+      return res.json({
+        workspace_id: workspace.id,
+        user_id: userId,
+        email: email.trim(),
       });
+    } catch (error) {
+      console.error('[Admin] Erro inesperado:', error.message);
+      return res.status(500).json({ error: error.message });
     }
-
-    const userId = userResult.user.id;
-
-    // 3. Vincular usuário ao workspace como owner
-    const { error: memberError } = await supabaseAdmin
-      .from('workspace_members')
-      .insert({ workspace_id: workspace.id, user_id: userId, role: 'owner' });
-
-    if (memberError) {
-      console.error('[Admin] Erro ao vincular membro:', memberError.message);
-      return res.status(500).json({ error: 'Erro ao vincular usuário ao workspace: ' + memberError.message });
-    }
-
-    return res.json({
-      workspace_id: workspace.id,
-      user_id: userId,
-      email: email.trim(),
-    });
-  } catch (error) {
-    console.error('[Admin] Erro inesperado:', error.message);
-    return res.status(500).json({ error: error.message });
-  }
-});
+  },
+);
 
 /* ==========================================
 📲 WEBHOOK EVOLUTION API (WhatsApp)
@@ -1494,10 +1706,14 @@ app.post('/webhook/evolution', async (req, res) => {
       .eq('instance_name', instance)
       .single();
 
-    const workspaceId = instanceData?.workspace_id || process.env.DEFAULT_WORKSPACE_ID;
+    const workspaceId =
+      instanceData?.workspace_id || process.env.DEFAULT_WORKSPACE_ID;
 
     if (!workspaceId) {
-      console.log('[Evolution Webhook] No workspace mapping for instance:', instance);
+      console.log(
+        '[Evolution Webhook] No workspace mapping for instance:',
+        instance,
+      );
       return res.status(200).json({ status: 'no_workspace' });
     }
 
@@ -1522,9 +1738,8 @@ app.post('/webhook/evolution', async (req, res) => {
       content = '[Vídeo]';
     }
 
-    const { error } = await supabase
-      .from('whatsapp_messages')
-      .upsert({
+    const { error } = await supabase.from('whatsapp_messages').upsert(
+      {
         workspace_id: workspaceId,
         instance_name: instance,
         remote_jid: message.key.remoteJid,
@@ -1537,7 +1752,9 @@ app.post('/webhook/evolution', async (req, res) => {
           ? new Date(message.messageTimestamp * 1000).toISOString()
           : new Date().toISOString(),
         raw_data: message,
-      }, { onConflict: 'message_id' });
+      },
+      { onConflict: 'message_id' },
+    );
 
     if (error) {
       console.error('[Evolution Webhook] Supabase error:', error);
@@ -1559,7 +1776,9 @@ function evolutionConfig(res) {
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
   if (!url || !key) {
-    res.status(500).json({ error: 'Evolution API não configurada no servidor' });
+    res
+      .status(500)
+      .json({ error: 'Evolution API não configurada no servidor' });
     return null;
   }
   return { url, key };
@@ -1572,7 +1791,9 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
   try {
     const { instanceName, number, text, originalJid } = req.body ?? {};
     if (!instanceName || !number || !text) {
-      return res.status(400).json({ error: 'instanceName, number e text são obrigatórios' });
+      return res
+        .status(400)
+        .json({ error: 'instanceName, number e text são obrigatórios' });
     }
 
     if (String(number).includes('@g.us')) {
@@ -1584,7 +1805,8 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
 
     if (String(number).includes('@lid')) {
       return res.status(400).json({
-        error: 'Este contato usa ID interno (LID). Informe o número real com DDI/DDD.',
+        error:
+          'Este contato usa ID interno (LID). Informe o número real com DDI/DDD.',
         lidDetected: true,
       });
     }
@@ -1594,11 +1816,14 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Número inválido' });
     }
 
-    const response = await fetch(`${cfg.url}/message/sendText/${instanceName}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: cfg.key },
-      body: JSON.stringify({ number: sendNumber, text }),
-    });
+    const response = await fetch(
+      `${cfg.url}/message/sendText/${instanceName}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+        body: JSON.stringify({ number: sendNumber, text }),
+      },
+    );
     const data = await response.json();
 
     if (response.ok && data?.key?.id && data?.key?.remoteJid) {
@@ -1627,7 +1852,6 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
             },
             { onConflict: 'message_id' },
           );
-
         }
       } catch (err) {
         console.error('[WhatsApp Send] persist error:', err);
@@ -1650,11 +1874,14 @@ app.post('/api/whatsapp/send-media', requireAuth, async (req, res) => {
     if (!instanceName || !number || !mediatype || !media) {
       return res.status(400).json({ error: 'Campos obrigatórios faltando' });
     }
-    const response = await fetch(`${cfg.url}/message/sendMedia/${instanceName}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: cfg.key },
-      body: JSON.stringify({ number, mediatype, caption, media }),
-    });
+    const response = await fetch(
+      `${cfg.url}/message/sendMedia/${instanceName}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+        body: JSON.stringify({ number, mediatype, caption, media }),
+      },
+    );
     const data = await response.json();
     return res.status(response.status).json(data);
   } catch (err) {
@@ -1681,77 +1908,92 @@ app.get('/api/whatsapp/status/:instanceName', requireAuth, async (req, res) => {
 });
 
 // Desconectar instância (logout)
-app.post('/api/whatsapp/logout/:instanceName', requireAuth, async (req, res) => {
-  const cfg = evolutionConfig(res);
-  if (!cfg) return;
-  try {
-    const response = await fetch(
-      `${cfg.url}/instance/logout/${req.params.instanceName}`,
-      { method: 'DELETE', headers: { apikey: cfg.key } },
-    );
-    const data = await response.json();
-    return res.status(response.status).json(data);
-  } catch (err) {
-    console.error('[WhatsApp Logout] Error:', err);
-    return res.status(500).json({ error: 'Erro ao desconectar' });
-  }
-});
+app.post(
+  '/api/whatsapp/logout/:instanceName',
+  requireAuth,
+  async (req, res) => {
+    const cfg = evolutionConfig(res);
+    if (!cfg) return;
+    try {
+      const response = await fetch(
+        `${cfg.url}/instance/logout/${req.params.instanceName}`,
+        { method: 'DELETE', headers: { apikey: cfg.key } },
+      );
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    } catch (err) {
+      console.error('[WhatsApp Logout] Error:', err);
+      return res.status(500).json({ error: 'Erro ao desconectar' });
+    }
+  },
+);
 
 // Listar contatos da instância (resolve número real)
-app.get('/api/whatsapp/contacts/:instanceName', requireAuth, async (req, res) => {
-  const cfg = evolutionConfig(res);
-  if (!cfg) return;
-  try {
-    const response = await fetch(
-      `${cfg.url}/chat/findContacts/${req.params.instanceName}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: cfg.key },
-        body: JSON.stringify({ where: {} }),
-      },
-    );
-    const contacts = await response.json();
-    const mapped = Array.isArray(contacts)
-      ? contacts
-          .filter((c) => c?.remoteJid?.includes?.('@s.whatsapp.net'))
-          .map((c) => ({
-            pushName: c.pushName || '',
-            remoteJid: c.remoteJid,
-            number: c.remoteJid.replace('@s.whatsapp.net', ''),
-            profilePicUrl: c.profilePicUrl || null,
-          }))
-      : [];
-    return res.json(mapped);
-  } catch (err) {
-    console.error('[WhatsApp Contacts] Error:', err);
-    return res.status(500).json({ error: 'Erro ao buscar contatos' });
-  }
-});
+app.get(
+  '/api/whatsapp/contacts/:instanceName',
+  requireAuth,
+  async (req, res) => {
+    const cfg = evolutionConfig(res);
+    if (!cfg) return;
+    try {
+      const response = await fetch(
+        `${cfg.url}/chat/findContacts/${req.params.instanceName}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+          body: JSON.stringify({ where: {} }),
+        },
+      );
+      const contacts = await response.json();
+      const mapped = Array.isArray(contacts)
+        ? contacts
+            .filter((c) => c?.remoteJid?.includes?.('@s.whatsapp.net'))
+            .map((c) => ({
+              pushName: c.pushName || '',
+              remoteJid: c.remoteJid,
+              number: c.remoteJid.replace('@s.whatsapp.net', ''),
+              profilePicUrl: c.profilePicUrl || null,
+            }))
+        : [];
+      return res.json(mapped);
+    } catch (err) {
+      console.error('[WhatsApp Contacts] Error:', err);
+      return res.status(500).json({ error: 'Erro ao buscar contatos' });
+    }
+  },
+);
 
 // Baixar mídia (base64) de uma mensagem
-app.get('/api/whatsapp/media/:instanceName/:messageId', requireAuth, async (req, res) => {
-  const cfg = evolutionConfig(res);
-  if (!cfg) return;
-  try {
-    const { instanceName, messageId } = req.params;
-    const response = await fetch(
-      `${cfg.url}/chat/getBase64FromMediaMessage/${instanceName}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: cfg.key },
-        body: JSON.stringify({ message: { key: { id: messageId } } }),
-      },
-    );
-    const data = await response.json();
-    if (data?.base64) {
-      return res.json({ base64: data.base64, mimetype: data.mimetype || null });
+app.get(
+  '/api/whatsapp/media/:instanceName/:messageId',
+  requireAuth,
+  async (req, res) => {
+    const cfg = evolutionConfig(res);
+    if (!cfg) return;
+    try {
+      const { instanceName, messageId } = req.params;
+      const response = await fetch(
+        `${cfg.url}/chat/getBase64FromMediaMessage/${instanceName}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: cfg.key },
+          body: JSON.stringify({ message: { key: { id: messageId } } }),
+        },
+      );
+      const data = await response.json();
+      if (data?.base64) {
+        return res.json({
+          base64: data.base64,
+          mimetype: data.mimetype || null,
+        });
+      }
+      return res.status(404).json({ error: 'Mídia não encontrada' });
+    } catch (err) {
+      console.error('[WhatsApp Media] Error:', err);
+      return res.status(500).json({ error: 'Erro ao buscar mídia' });
     }
-    return res.status(404).json({ error: 'Mídia não encontrada' });
-  } catch (err) {
-    console.error('[WhatsApp Media] Error:', err);
-    return res.status(500).json({ error: 'Erro ao buscar mídia' });
-  }
-});
+  },
+);
 
 /* ==========================================
 🚀 START SERVER
