@@ -41,6 +41,36 @@ async function urlToBase64(url) {
   }
 }
 
+// Resolve a logo/marca d'água configurada no workspace. Ausente ou falha no
+// download → retorna '' (NUNCA cai num fallback estático de outro cliente).
+async function resolveWorkspaceLogo(rawUrl, logLabel, noun) {
+  if (!rawUrl) {
+    console.warn(`[PDF][${logLabel}] campo ausente ou vazio — renderizando sem ${noun}`);
+    return '';
+  }
+  const converted = await urlToBase64(rawUrl);
+  if (!converted) {
+    console.error(
+      `[PDF][${logLabel}] urlToBase64 retornou vazio — resposta HTTP não-ok ou body vazio. URL:`,
+      rawUrl,
+    );
+  }
+  return converted;
+}
+
+// Aplica {{placeholder}} usado como src de <img> num template carregado de
+// arquivo. Se o valor vier vazio, remove a tag <img> inteira em vez de deixar
+// src="" (evita ícone de imagem quebrada) — sem tocar no arquivo .html.
+function injectLogoImg(html, placeholder, base64Value) {
+  if (base64Value) {
+    return html.replace(new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g'), base64Value);
+  }
+  return html.replace(
+    new RegExp(`<img[^>]*src="\\{\\{${placeholder}\\}\\}"[^>]*>`, 'g'),
+    '',
+  );
+}
+
 const app = express();
 app.set('trust proxy', 1);
 const __filename = fileURLToPath(import.meta.url);
@@ -425,8 +455,7 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
       const empresa_telefone = dados.empresa_telefone || '';
       const empresa_endereco = dados.empresa_endereco || '';
       const empresa_cnpj = dados.empresa_cnpj || '';
-      const empresa_logo_url_raw = dados.empresa_logo_url || '';
-      const empresa_logo_url = await urlToBase64(empresa_logo_url_raw);
+      const empresa_logo_url = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
       const texto_apresentacao = dados.texto_apresentacao || '';
       const condicoes_contrato = dados.condicoes_contrato || '';
       const metodos_pagamento = dados.metodos_pagamento || '';
@@ -580,35 +609,11 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         JSON.stringify(dados.empresa_logo_bg_url) ?? 'AUSENTE',
       );
 
-      let logoBgUrlOrc = logoBgPath;
-      if (dados.empresa_logo_bg_url) {
-        try {
-          const converted = await urlToBase64(dados.empresa_logo_bg_url);
-          if (converted) {
-            logoBgUrlOrc = converted;
-          } else {
-            console.error(
-              '[PDF][logo_bg] urlToBase64 retornou vazio — resposta HTTP não-ok ou body vazio. URL:',
-              dados.empresa_logo_bg_url,
-            );
-          }
-        } catch (err) {
-          console.error(
-            '[PDF][logo_bg] FALHA ao converter, caindo no fallback FL:',
-            err?.message,
-            err?.code,
-          );
-        }
-      } else {
-        console.warn(
-          '[PDF][logo_bg] campo ausente ou vazio — usando fallback estático (FL Art Metal)',
-        );
-      }
+      const logoBgUrlOrc = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
 
       html = html
         .replace(/{{cor_primaria}}/g, cor_primaria)
         .replace('{{logo_html}}', logoHtml)
-        .replace('{{logo_bg}}', logoBgUrlOrc)
         .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
         .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
         .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
@@ -627,6 +632,8 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         .replace(/{{observacoes_bloco}}/g, obsHtml)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
+
+      html = injectLogoImg(html, 'logo_bg', logoBgUrlOrc);
 
       // ===== ASSINATURAS DIGITAIS (v2) =====
       const assinaturaEmpresaHtmlV2 = dados.assinatura_empresa
@@ -687,9 +694,11 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV1)
         .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV1);
 
-      // 🔥 IMAGENS DINÂMICAS
-      html = html.replace('{{logo}}', logoPath);
-      html = html.replace('{{logo_bg}}', logoBgPath);
+      // 🔥 IMAGENS DINÂMICAS (workspace, sem fallback estático)
+      const logoUrlV1 = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
+      const logoBgUrlV1 = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
+      html = injectLogoImg(html, 'logo', logoUrlV1);
+      html = injectLogoImg(html, 'logo_bg', logoBgUrlV1);
     }
 
     /* ==========================================
@@ -914,13 +923,14 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
 
       const corPrimaria = cor_primaria || '#ff6a00';
-      const logoUrlAgrupado = await urlToBase64(empresa_logo_url || '');
+      const logoUrlAgrupado = await resolveWorkspaceLogo(empresa_logo_url, 'logo_header', 'logo');
       const logoHtmlAgrupado = logoUrlAgrupado
         ? `<img src="${logoUrlAgrupado}" style="width: 180px; margin-bottom: 8px;" />`
         : '';
-      const logoBgUrlAgrupado = empresa_logo_bg_url
-        ? await urlToBase64(empresa_logo_bg_url)
-        : logoBgPath;
+      const logoBgUrlAgrupado = await resolveWorkspaceLogo(empresa_logo_bg_url, 'logo_bg', "marca d'água");
+      const watermarkHtmlAgrupadoV2 = logoBgUrlAgrupado
+        ? `<div class="watermark"><img src="${logoBgUrlAgrupado}" style="width: 100%" /></div>`
+        : '';
 
       // Seção apresentação (aparece uma vez, antes dos orçamentos)
       const secaoApresentacaoAgrp = texto_apresentacao
@@ -1058,7 +1068,7 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
   <style>${v2Estilos.replace(/{{cor_primaria}}/g, corPrimaria)}</style>
 </head>
 <body>
-  <div class="watermark"><img src="${logoBgUrlAgrupado}" style="width: 100%" /></div>
+  ${watermarkHtmlAgrupadoV2}
   <div class="container">
     <div class="top-bar" style="background: ${corPrimaria};"></div>
     <div class="empresa-header">
@@ -1093,6 +1103,15 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
       const estilos = styleMatch ? styleMatch[1] : '';
 
+      const logoUrlAgrupadoV1 = await resolveWorkspaceLogo(empresa_logo_url, 'logo_header', 'logo');
+      const logoBgUrlAgrupadoV1 = await resolveWorkspaceLogo(empresa_logo_bg_url, 'logo_bg', "marca d'água");
+      const watermarkHtmlAgrupadoV1 = logoBgUrlAgrupadoV1
+        ? `<div class="watermark"><img src="${logoBgUrlAgrupadoV1}" style="width: 100%" /></div>`
+        : '';
+      const logoHtmlAgrupadoV1 = logoUrlAgrupadoV1
+        ? `<img src="${logoUrlAgrupadoV1}" style="width: 220px; margin-bottom: 6px" />`
+        : '';
+
       htmlFinal = `<!doctype html>
 <html>
 <head>
@@ -1100,12 +1119,10 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
   <style>${estilos}</style>
 </head>
 <body>
-  <div class="watermark">
-    <img src="${logoBgPath}" style="width: 100%" />
-  </div>
+  ${watermarkHtmlAgrupadoV1}
   <div class="container">
     <div style="text-align: center; margin-bottom: 10px">
-      <img src="${logoPath}" style="width: 220px; margin-bottom: 6px" />
+      ${logoHtmlAgrupadoV1}
     </div>
     <div class="contact-bar">
       📞 ${contatoTelefone} &nbsp;&nbsp; | &nbsp;&nbsp; ✉ ${contatoEmail}
@@ -1413,20 +1430,16 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
 
     // 🔥 IMAGENS DINÂMICAS
     if (templateVersion === 'v2') {
-      const logoUrl = dados.empresa_logo_url
-        ? await urlToBase64(dados.empresa_logo_url)
-        : logoPath;
+      const logoUrl = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
       const logoHtml = logoUrl
         ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />`
         : '';
-      const logoBgUrl = dados.empresa_logo_bg_url
-        ? await urlToBase64(dados.empresa_logo_bg_url)
-        : logoBgPath;
+      const logoBgUrl = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
 
+      html = injectLogoImg(html, 'logo_bg', logoBgUrl);
       html = html
         .replace(/{{cor_primaria}}/g, dados.cor_primaria || '#ff6a00')
         .replace(/{{logo_html}}/g, logoHtml)
-        .replace(/{{logo_bg}}/g, logoBgUrl)
         .replace(/{{empresa_nome}}/g, escapeHtml(dados.empresa_nome) || '')
         .replace(/{{empresa_cnpj}}/g, escapeHtml(dados.empresa_cnpj) || '')
         .replace(
@@ -1448,8 +1461,10 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
         .replace('{{ASSINATURA_CLIENTE}}', '')
         .replace('{{DATA_ASSINATURA}}', '');
     } else {
-      html = html.replace('{{logo}}', logoPath);
-      html = html.replace('{{logo_bg}}', logoBgPath);
+      const logoUrlReciboV1 = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
+      const logoBgUrlReciboV1 = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
+      html = injectLogoImg(html, 'logo', logoUrlReciboV1);
+      html = injectLogoImg(html, 'logo_bg', logoBgUrlReciboV1);
       html = html.replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
 
       // ===== ASSINATURAS DIGITAIS RECIBO (v1) =====
