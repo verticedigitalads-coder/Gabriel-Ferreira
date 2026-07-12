@@ -1,13 +1,11 @@
 import { useStore } from '@/store/useStore';
-import { useDefaultSettings } from '@/hooks/useDefaultSettings';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Building2 } from 'lucide-react';
 import { NotificationsDropdown } from './NotificationsDropdown';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 export function HeaderGlobal() {
   const activeModule = useStore(state => state.activeModule);
-  const { empresaNome } = useDefaultSettings();
 
   const moduleNames: Record<string, string> = {
     dashboard: 'Dashboard Executivo',
@@ -45,10 +43,7 @@ export function HeaderGlobal() {
       <div className="flex items-center" style={{ gap: 10 }}>
 
         {/* Empresa (workspace selector) */}
-        <div className="hidden md:flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)]">
-          <Building2 className="w-4 h-4" />
-          {empresaNome || 'Empresa'}
-        </div>
+        <WorkspaceSwitcher />
 
         {/* Notificações */}
         <NotificationsDropdown />
