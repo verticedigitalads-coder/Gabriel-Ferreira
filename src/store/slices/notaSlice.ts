@@ -37,15 +37,15 @@ export const createNotaSlice = (set: any, get: any) => ({
   },
 
   updateNota: async (id: string, data: Partial<Nota>) => {
-    const { notas } = get()
+    const { notas, workspaceId } = get()
     const now = new Date().toISOString()
-    await supabase.from('notas').update({ ...data, updated_at: now }).eq('id', id)
+    await supabase.from('notas').update({ ...data, updated_at: now }).eq('id', id).eq('workspace_id', workspaceId)
     set({ notas: notas.map((n: Nota) => n.id === id ? { ...n, ...data } : n) })
   },
 
   deleteNota: async (id: string) => {
-    const { notas } = get()
-    await supabase.from('notas').delete().eq('id', id)
+    const { notas, workspaceId } = get()
+    await supabase.from('notas').delete().eq('id', id).eq('workspace_id', workspaceId)
     set({ notas: notas.filter((n: Nota) => n.id !== id) })
   },
 

@@ -93,6 +93,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
       .from('contas_receber')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
@@ -116,7 +117,11 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
 
   // ================= DELETE =================
   deleteContaReceber: async (id: string) => {
-    const { error } = await supabase.from('contas_receber').delete().eq('id', id);
+    const { error } = await supabase
+      .from('contas_receber')
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[ContasReceberSlice] Erro ao deletar conta:', error);
@@ -143,6 +148,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
       .from('contas_receber')
       .update({ status: 'recebido', data_recebimento: today, updated_at: now })
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 

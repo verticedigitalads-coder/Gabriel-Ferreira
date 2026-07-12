@@ -107,6 +107,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       .from('leads')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
@@ -127,7 +128,8 @@ export const createLeadSlice = (_set: any, get: any) => ({
         status,
         updated_at: now,
       })
-      .eq('id', leadId);
+      .eq('id', leadId)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[LeadSlice] Erro ao atualizar status:', error);
@@ -138,7 +140,11 @@ export const createLeadSlice = (_set: any, get: any) => ({
   // ================= DELETE LEAD =================
 
   deleteLead: async (id: string) => {
-    const { error } = await supabase.from('leads').delete().eq('id', id);
+    const { error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[LeadSlice] Erro ao deletar lead:', error);
@@ -164,6 +170,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       .from('leads')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
@@ -206,6 +213,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
         updated_at: now,
       })
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 

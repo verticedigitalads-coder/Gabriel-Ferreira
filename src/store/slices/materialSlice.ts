@@ -64,6 +64,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       .from("materiais")
       .update(payload)
       .eq("id", id)
+      .eq("workspace_id", get().workspaceId)
       .select()
       .single()
 
@@ -88,6 +89,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       .from("materiais")
       .delete()
       .eq("id", id)
+      .eq("workspace_id", get().workspaceId)
 
     if(error){
       console.error('[MaterialSlice] Erro ao excluir:', error)
@@ -120,6 +122,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       .from("materiais")
       .update({ estoque: novoEstoque })
       .eq("id", id)
+      .eq("workspace_id", get().workspaceId)
       .select()
       .single()
 
@@ -152,6 +155,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
         estoque: novoEstoque
       })
       .eq("id", materialId)
+      .eq("workspace_id", get().workspaceId)
 
     set({
       materiais: materiais.map((m:Material)=>

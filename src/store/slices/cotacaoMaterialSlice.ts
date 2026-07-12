@@ -60,6 +60,7 @@ export const createCotacaoMaterialSlice = (set: any, get: any) => ({
       .from('cotacoes_materiais')
       .delete()
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
 
     if (error) {
       console.error('[CotacaoMaterialSlice] Erro ao deletar cotação:', error)

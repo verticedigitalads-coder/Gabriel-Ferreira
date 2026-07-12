@@ -99,7 +99,11 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
   // ================= DELETE =================
   deleteOrcamento: async (id: string) => {
-    const { error } = await supabase.from('orcamentos').delete().eq('id', id);
+    const { error } = await supabase
+      .from('orcamentos')
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[OrcamentoSlice] Erro ao deletar orçamento:', error);
@@ -159,6 +163,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       .from('orcamentos')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
@@ -194,7 +199,8 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
         assinatura_cliente: assinatura,
         data_assinatura: new Date().toISOString(),
       })
-      .eq('id', orcamentoId);
+      .eq('id', orcamentoId)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[OrcamentoSlice] Erro ao salvar assinatura:', error);

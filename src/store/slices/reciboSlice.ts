@@ -124,6 +124,7 @@ export const createReciboSlice = (set: any, get: any) => ({
       .from('recibos')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
@@ -143,7 +144,11 @@ export const createReciboSlice = (set: any, get: any) => ({
 
   // ================= DELETE =================
   deleteRecibo: async (id: string) => {
-    const { error } = await supabase.from('recibos').delete().eq('id', id);
+    const { error } = await supabase
+      .from('recibos')
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[ReciboSlice] Erro ao deletar recibo:', error);
@@ -157,13 +162,15 @@ export const createReciboSlice = (set: any, get: any) => ({
 
   // ================= EMITIR =================
   emitirRecibo: async (id: string) => {
+    const { workspaceId } = get();
     const ano = new Date().getFullYear();
     const prefixo = `REC-${ano}-`;
 
-    // Buscar último recibo do ano para gerar número sequencial
+    // Buscar último recibo do ano (deste workspace) para gerar número sequencial
     const { data: ultimosRecibos } = await supabase
       .from('recibos')
       .select('numero_recibo')
+      .eq('workspace_id', workspaceId)
       .like('numero_recibo', `${prefixo}%`)
       .order('numero_recibo', { ascending: false })
       .limit(1);
@@ -190,6 +197,7 @@ export const createReciboSlice = (set: any, get: any) => ({
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
       .select()
       .single();
 

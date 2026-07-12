@@ -56,7 +56,8 @@ export const createOperacionalSlice = (set: any, get: any) => ({
     const { error } = await supabase
       .from('operacional_tasks')
       .delete()
-      .eq('id', taskId);
+      .eq('id', taskId)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[OperacionalSlice] Erro ao deletar tarefa:', error);
@@ -94,6 +95,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       .from('operacional_tasks')
       .update(payload)
       .eq('id', taskId)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 

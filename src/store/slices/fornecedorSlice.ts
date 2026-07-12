@@ -95,6 +95,7 @@ export const createFornecedorSlice = (set: any, get: any) => ({
       .from('fornecedores')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single()
 
@@ -120,6 +121,7 @@ export const createFornecedorSlice = (set: any, get: any) => ({
       .from('fornecedores')
       .delete()
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
 
     if (error) {
       console.error('[FornecedorSlice] Erro ao deletar fornecedor:', error)

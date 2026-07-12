@@ -112,6 +112,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
       .from('transactions')
       .update(payload)
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
@@ -141,7 +142,11 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
   // ================= DELETE =================
   deleteTransaction: async (id: string) => {
-    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id)
+      .eq('workspace_id', get().workspaceId);
 
     if (error) {
       console.error('[FinanceiroSlice] Erro ao deletar transação:', error);
@@ -167,6 +172,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
         updated_at: now,
       })
       .eq('id', id)
+      .eq('workspace_id', get().workspaceId)
       .select()
       .single();
 
