@@ -1,4 +1,5 @@
 import type { Lead } from '@/types';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface OpenAIStrategicResponse {
   ajusteMensagem?: string;
@@ -80,11 +81,8 @@ Responda SOMENTE em JSON válido:
 Se tudo estiver adequado, retorne {}.
 `;
 
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
+  const response = await apiFetch('/api/chat', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: [

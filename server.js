@@ -380,7 +380,7 @@ app.use('/assets', express.static(assetsPath));
 🔥 ROTA OPENAI
 ========================================== */
 
-app.post('/api/chat', strictLimiter, async (req, res) => {
+app.post('/api/chat', requireAuth, strictLimiter, async (req, res) => {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -1791,7 +1791,16 @@ app.post(
 /* ==========================================
 📲 WEBHOOK EVOLUTION API (WhatsApp)
 ========================================== */
-app.post('/webhook/evolution', async (req, res) => {
+
+// Rota antiga sem secret — descontinuada (evita aceitar POST forjado)
+app.post('/webhook/evolution', (_req, res) => {
+  res.status(410).json({ error: 'Rota descontinuada. Atualize a URL do webhook.' });
+});
+
+app.post('/webhook/evolution/:secret', async (req, res) => {
+  if (req.params.secret !== process.env.WEBHOOK_SECRET) {
+    return res.status(401).json({ error: 'Não autorizado' });
+  }
   try {
     const { event, instance, data } = req.body;
 
