@@ -1331,7 +1331,8 @@ function valorPorExtenso(valor) {
     const c = Math.floor(n / 100);
     const resto = n % 100;
     if (n === 100) return 'cem';
-    return centenas[c] + (resto > 0 ? ' e ' + grupo(resto) : '');
+    const centena = c === 1 && resto > 0 ? 'cento' : centenas[c];
+    return centena + (resto > 0 ? ' e ' + grupo(resto) : '');
   }
 
   const n = Math.round(Number(valor || 0) * 100);
