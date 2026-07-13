@@ -1499,14 +1499,20 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
       .replace(/{{observacoes_bloco}}/g, obsHtml)
       .replace(/{{data_extenso}}/g, dataExtenso(dados.data_emissao));
 
-    const qrCodePixHtmlRecibo = await gerarQrCodePixHtml({
-      chavePix: dados.chave_pix || '',
-      nomeRecebedor:
-        dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
-      cidadeRecebedor: dados.cidade_pix || 'UBERABA',
-      valor: dados.valor_total,
-      txid: dados.numero_recibo || 'RECIBO',
-    });
+    // Recibo v2: PIX é opcional (default desmarcado no frontend) — v1 (legado)
+    // sempre inclui, comportamento intocado.
+    const incluirPixRecibo =
+      templateVersion === 'v2' ? dados.incluir_pix === true : true;
+    const qrCodePixHtmlRecibo = incluirPixRecibo
+      ? await gerarQrCodePixHtml({
+          chavePix: dados.chave_pix || '',
+          nomeRecebedor:
+            dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
+          cidadeRecebedor: dados.cidade_pix || 'UBERABA',
+          valor: dados.valor_total,
+          txid: dados.numero_recibo || 'RECIBO',
+        })
+      : '';
 
     // 🔥 IMAGENS DINÂMICAS
     if (templateVersion === 'v2') {

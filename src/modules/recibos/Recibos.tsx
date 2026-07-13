@@ -50,6 +50,7 @@ export function Recibos() {
   const [editingRecibo, setEditingRecibo] = useState<Recibo | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
+  const [incluirPixPorRecibo, setIncluirPixPorRecibo] = useState<Record<string, boolean>>({});
 
   const sortedRecibos = useMemo(
     () =>
@@ -106,6 +107,7 @@ export function Recibos() {
           chave_pix: defaultSettings.chavePix || '',
           nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
           cidade_pix: defaultSettings.cidadePix || '',
+          incluir_pix: !!incluirPixPorRecibo[recibo.id],
           assinatura_empresa: defaultSettings.assinaturaEmpresa || null,
         }),
       });
@@ -264,6 +266,27 @@ export function Recibos() {
                         <CheckCircle2 className="w-4 h-4" />
                         <span className="hidden sm:inline">Emitir</span>
                       </Button>
+                    )}
+
+                    {/* Incluir QR PIX no PDF — só emitido e com chave PIX configurada */}
+                    {r.status === 'emitido' && defaultSettings.chavePix && (
+                      <label
+                        className="flex items-center gap-1 min-h-[44px] px-1 cursor-pointer select-none"
+                        title="Incluir QR Code PIX no recibo"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!incluirPixPorRecibo[r.id]}
+                          onChange={(e) =>
+                            setIncluirPixPorRecibo((prev) => ({
+                              ...prev,
+                              [r.id]: e.target.checked,
+                            }))
+                          }
+                          style={{ cursor: 'pointer', accentColor: 'var(--accent)', width: 16, height: 16 }}
+                        />
+                        <span className="text-xs text-[var(--text-tertiary)] hidden sm:inline">PIX no PDF</span>
+                      </label>
                     )}
 
                     {/* PDF — só emitido */}
