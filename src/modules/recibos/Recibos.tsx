@@ -101,6 +101,8 @@ export function Recibos() {
           empresa_logo_url: defaultSettings.empresaLogoUrl,
           empresa_logo_bg_url: defaultSettings.empresaLogoBgUrl,
           cor_primaria: defaultSettings.corPrimaria || '#ff6a00',
+          cor_destaque: defaultSettings.corDestaque || '',
+          empresa_instagram: defaultSettings.empresaInstagram || '',
           chave_pix: defaultSettings.chavePix || '',
           nome_recebedor_pix: defaultSettings.nomeRecebedorPix || '',
           cidade_pix: defaultSettings.cidadePix || '',

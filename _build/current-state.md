@@ -1,13 +1,22 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 11/07/2026
-Versão: v2.34.3
+Última atualização: 12/07/2026
+Versão: v2.35.0
 
 ## Build
 - TypeScript: 0 erros (tsc --noEmit, 09/06/2026)
 - Build vite: limpo (✓ 6.53s; só aviso pré-existente de bundle >500KB)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
+
+## Últimas Mudanças
+- **Feature v2.35.0 (PDF v3 — redesign orçamento + recibo, cor por workspace):** reescrita visual dos templates **v2** de orçamento e recibo seguindo direção aprovada (header em card colorido, itens como **cards numerados**, resumo em tabela, caixa de total em evidência com **valor por extenso**), 100% derivado das settings do workspace, **sem migration** (novas keys key-value). **v1 (legado) intocado.**
+  - **Novo token `cor_destaque`** (key `cor_destaque` em `workspace_settings`) + **novo campo `empresa_instagram`** (rodapé). Frontend: `settingsSlice.ts` (interface/defaults/mapa), `useDefaultSettings.ts`, `Settings.tsx` (aba Empresa: input Instagram + color-picker de destaque clonado do principal, com presets e botão "Usar cor principal", + preview com círculo numerado), 3 payloads (`Orcamentos.tsx` ×2, `Recibos.tsx` ×1). **Fallback:** `cor_destaque` vazia → usa a cor principal (helper `resolveCorDestaque` no backend — nunca quebra).
+  - **Backend `server.js`:** helper `resolveCorDestaque` + helpers de template v3 reutilizados pelas 3 rotas (`fmtBRL`, `separarItens`, `maoDeObraItem`, `itemCardHtml`, `resumoTabelaHtml`, `caixaTotalHtml`, `observacoesHtml`, `footerContatoHtml`). Rotas v2 reescritas: `gerar-orcamento`, `gerar-orcamento-agrupado` (**full v3** por orçamento: cards+resumo+total, page-break por bloco), `gerar-recibo` (header alinhado à família, `th` em `cor_destaque`, valor por extenso repetido abaixo do total). `valorPorExtenso`/`dataExtenso` reutilizados. PIX, logos e marca d'água (v2.34.2) **intocados**.
+  - **Itens de valor 0** deixam de ser descartados/exibidos como R$ 0,00 → migram para a seção **Observações** (orçamento e recibo v2). No recibo, `itens`/`obs` ficaram **version-aware** (v1 mantém todos os itens).
+  - **Templates reescritos:** `templates/orcamento-v2.html` (o `<style>` é reaproveitado inline pela rota agrupada) e `templates/recibo-v2.html`.
+  - **Verificação:** `node --check server.js` ok; `tsc --noEmit` 0 erros; 9/9 PDFs gerados HTTP 200 + inspeção visual (rasterização): 3 cenários de workspace (completo navy+laranja / só-principal verde monocromático / vazio → default laranja sem logo/marca), agrupado (2 orçamentos), recibo (extenso + obs migrada + PIX), e **regressão v1 legado confirmada intacta** (ainda mostra itens R$ 0,00 e o layout antigo).
+  - **Pendência de deploy (ordem backend→frontend):** VPS `git pull && pm2 restart crm-backend` (server.js + templates) **antes** do frontend (Vercel). Campos novos são opcionais com default seguro (backward-compatible).
 
 ## Features Implementadas
 - Financeiro com status (pendente/pago/vencido/a_vencer)

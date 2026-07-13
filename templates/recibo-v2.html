@@ -10,7 +10,7 @@
       font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
       color: #222;
       background: #fff;
-      line-height: 1.6;
+      line-height: 1.55;
       position: relative;
     }
 
@@ -26,240 +26,151 @@
       filter: grayscale(100%);
     }
 
-    .container {
-      position: relative;
-      z-index: 2;
-      padding: 0;
+    .container { position: relative; z-index: 2; padding: 0 0 8px; }
+
+    /* HEADER v3 */
+    .header-v3 {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
+      padding: 20px 24px 0;
     }
 
-    .top-bar {
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 130px;
+    }
+
+    .header-logo img { max-width: 160px; max-height: 96px; width: auto; height: auto; }
+
+    .empresa-card {
+      flex: 1;
       background: {{cor_primaria}};
-      height: 35px;
-      width: 100%;
+      color: #fff;
+      border-radius: 10px;
+      padding: 14px 18px;
     }
 
-    .empresa-header {
-      text-align: center;
-      padding: 16px 32px 8px;
-    }
-
-    .empresa-header img {
-      width: 180px;
-      margin-bottom: 8px;
-    }
-
-    .empresa-nome {
-      font-size: 20px;
-      font-weight: 700;
-      color: #222;
-    }
-
-    .empresa-dados {
-      font-size: 13px;
-      color: #666;
-      line-height: 1.6;
-    }
-
-    .divider {
-      height: 1px;
-      background: #e5e5e5;
-      margin: 6px 24px;
-    }
-
-    .doc-title {
-      text-align: center;
-      padding: 12px 32px;
-    }
-
-    .doc-title h1 {
-      font-size: 26px;
-      font-weight: 700;
-      color: #222;
+    .empresa-card .doc-title {
+      font-size: 21px;
+      font-weight: 800;
       letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
-    .doc-title .rec-numero {
-      font-size: 14px;
-      color: #888;
-      font-weight: 600;
-      margin-top: 4px;
-    }
+    .empresa-card .emp-nome { font-size: 15px; font-weight: 700; margin-top: 6px; }
+    .empresa-card .emp-dados { font-size: 11px; opacity: 0.92; line-height: 1.5; margin-top: 2px; }
 
-    .doc-title .rec-data {
-      font-size: 13px;
-      color: #666;
-      margin-top: 2px;
-    }
+    .meta-bar { display: flex; flex-wrap: wrap; gap: 22px; padding: 12px 24px 6px; }
+    .meta-bar .meta-item .mk { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; display: block; }
+    .meta-bar .meta-item .mv { font-size: 13px; font-weight: 600; color: #222; }
 
-    .secao {
-      padding: 10px 24px;
-    }
+    .divider { height: 1px; background: #e5e5e5; margin: 6px 24px; }
 
-    /* CLIENT */
+    .secao { padding: 10px 24px; }
 
+    /* CLIENTE */
     .client-box {
       background: #f5f5f5;
       border-left: 6px solid {{cor_primaria}};
       padding: 14px 18px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
 
-    .client-title {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 5px;
-    }
-
-    .client-name {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .client-info {
-      font-size: 14px;
-      line-height: 1.6;
-    }
+    .client-title { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .client-name { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .client-info { font-size: 14px; line-height: 1.6; }
 
     /* DECLARAÇÃO */
-
     .declaracao {
-      background: #fff7ed;
-      border: 1px solid {{cor_primaria}};
+      background: #f8f8f8;
+      border-left: 4px solid {{cor_destaque}};
       border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 15px;
+      padding: 12px 16px;
+      font-size: 14px;
       line-height: 1.7;
       color: #333;
     }
 
     /* TABELA */
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
 
     th {
-      background: #f6f6f6;
+      background: {{cor_destaque}};
+      color: #fff;
       text-align: left;
-      padding: 12px;
-      font-size: 12px;
+      padding: 9px 10px;
+      font-size: 11px;
       text-transform: uppercase;
-      border-bottom: 2px solid #e5e5e5;
-      letter-spacing: 0.5px;
-      color: #444;
+      letter-spacing: 0.4px;
     }
 
-    td {
-      padding: 10px;
-      font-size: 14px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .right {
-      text-align: right;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #fafafa;
-    }
+    td { padding: 8px 10px; font-size: 13px; border-bottom: 1px solid #eee; color: #333; }
+    .right { text-align: right; }
+    tbody tr:nth-child(even) { background: #fafafa; }
 
     /* TOTAL */
-
-    .totals {
-      width: 340px;
-      margin-left: auto;
-    }
+    .totals { width: 360px; margin-left: auto; }
 
     .total-box {
       background: {{cor_primaria}};
-      color: white;
-      padding: 10px;
+      color: #fff;
+      padding: 14px 16px;
       border-radius: 10px;
       text-align: center;
       box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
     }
 
-    .total-label {
-      font-size: 14px;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-    }
-
-    .total-value {
-      font-size: 26px;
-      font-weight: 700;
-    }
+    .total-label { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.92; margin-bottom: 4px; }
+    .total-value { font-size: 26px; font-weight: 800; }
+    .total-extenso { font-size: 11px; font-style: italic; margin-top: 6px; opacity: 0.95; }
 
     /* OBSERVAÇÕES */
-
-    .conditions {
-      background: #fafafa;
-      padding: 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      line-height: 1.8;
-      border: 1px solid #eee;
+    .obs-box {
+      background: #f8f8f8;
+      border-left: 4px solid {{cor_primaria}};
+      border-radius: 6px;
+      padding: 12px 16px;
     }
 
-    .conditions-title {
+    .obs-box .obs-title {
+      font-size: 10px;
       font-weight: 600;
-      margin-bottom: 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
     }
+
+    .obs-box .obs-body { font-size: 12px; color: #444; line-height: 1.6; white-space: pre-wrap; }
 
     /* ASSINATURA */
-
-    .assinatura {
-      margin-top: 16px;
-      display: flex;
-      justify-content: space-between;
-      gap: 40px;
-    }
-
-    .assinatura-bloco {
-      flex: 1;
-      text-align: center;
-    }
-
-    .assinatura-linha {
-      border-top: 1.5px solid #444;
-      margin-bottom: 8px;
-    }
-
-    .assinatura-label {
-      font-size: 13px;
-      color: #555;
-    }
+    .assinatura { margin-top: 14px; display: flex; justify-content: space-between; gap: 40px; }
+    .assinatura-bloco { flex: 1; text-align: center; }
+    .assinatura-linha { border-top: 1.5px solid #444; margin-bottom: 8px; }
+    .assinatura-label { font-size: 13px; color: #555; }
 
     /* FOOTER */
-
-    .footer {
+    .footer-v3 {
       text-align: center;
-      padding: 10px 24px;
-      font-size: 13px;
-      color: #888;
+      padding: 12px 24px;
+      font-size: 12px;
+      color: #666;
       border-top: 1px solid #e5e5e5;
-      margin-top: 8px;
+      margin-top: 12px;
     }
 
-    table,
-    .client-box {
-      page-break-inside: avoid;
-    }
+    .footer-v3 .contato { font-weight: 600; color: #333; }
+    .footer-v3 .data-local { font-size: 11px; color: #888; margin-top: 4px; }
 
-    .bottom-block {
-      page-break-inside: avoid;
-    }
+    table, .client-box, .bottom-block, .total-box { page-break-inside: avoid; }
 
     @media print {
       body { font-size: 11px; }
-      .empresa-header { padding: 16px 24px 10px; }
-      .top-bar { height: 35px; }
-      td { padding: 8px 10px; font-size: 11px; }
-      th { padding: 8px 10px; font-size: 10px; }
+      td { padding: 7px 10px; font-size: 11px; }
+      th { padding: 7px 10px; font-size: 10px; }
       .total-value { font-size: 20px; }
     }
   </style>
@@ -270,24 +181,23 @@
   </div>
 
   <div class="container">
-    <div class="top-bar"></div>
-
-    <div class="empresa-header">
-      {{logo_html}}
-      <div class="empresa-nome">{{empresa_nome}}</div>
-      <div class="empresa-dados">
-        {{empresa_cnpj}}<br/>
-        {{empresa_endereco}}<br/>
-        {{empresa_telefone}}
+    <!-- HEADER -->
+    <div class="header-v3">
+      <div class="header-logo">{{logo_html}}</div>
+      <div class="empresa-card">
+        <div class="doc-title">Recibo</div>
+        <div class="emp-nome">{{empresa_nome}}</div>
+        <div class="emp-dados">
+          {{empresa_cnpj}}<br/>
+          {{empresa_endereco}}<br/>
+          {{empresa_telefone}}
+        </div>
       </div>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="doc-title">
-      <h1>Recibo de Prestação de Serviços</h1>
-      <div class="rec-numero">{{numero_recibo}}</div>
-      <div class="rec-data">Emitido em {{data_emissao}}</div>
+    <div class="meta-bar">
+      <div class="meta-item"><span class="mk">Nº</span><span class="mv">{{numero_recibo}}</span></div>
+      <div class="meta-item"><span class="mk">Emitido em</span><span class="mv">{{data_emissao}}</span></div>
     </div>
 
     <div class="divider"></div>
@@ -331,8 +241,9 @@
       <div class="secao">
         <div class="totals">
           <div class="total-box">
-            <div class="total-label">VALOR TOTAL RECEBIDO</div>
+            <div class="total-label">Valor total recebido</div>
             <div class="total-value">R$ {{valor_total}}</div>
+            <div class="total-extenso">{{valor_por_extenso}}</div>
           </div>
         </div>
       </div>
@@ -358,9 +269,9 @@
       </div>
     </div>
 
-    <div class="footer">
-      {{data_extenso}}<br/>
-      Agradecemos pela confiança em nossos serviços.
+    <div class="footer-v3">
+      {{footer_contato}}
+      <div class="data-local">{{data_extenso}} — Agradecemos pela confiança em nossos serviços.</div>
     </div>
   </div>
 </body>

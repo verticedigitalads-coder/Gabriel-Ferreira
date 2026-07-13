@@ -39,7 +39,9 @@ export function Settings() {
   const [empresaCnpj, setEmpresaCnpj] = useState('');
   const [empresaLogoUrl, setEmpresaLogoUrl] = useState('');
   const [empresaLogoBgUrl, setEmpresaLogoBgUrl] = useState('');
+  const [empresaInstagram, setEmpresaInstagram] = useState('');
   const [corPrimaria, setCorPrimaria] = useState('#ff6a00');
+  const [corDestaque, setCorDestaque] = useState('');
 
   // ─── Documentos form state ────────────────────────────────
   const [validadePadrao, setValidadePadrao] = useState(15);
@@ -66,7 +68,9 @@ export function Settings() {
     setEmpresaCnpj(settings.empresaCnpj || '');
     setEmpresaLogoUrl(settings.empresaLogoUrl || '');
     setEmpresaLogoBgUrl(settings.empresaLogoBgUrl || '');
+    setEmpresaInstagram(settings.empresaInstagram || '');
     setCorPrimaria(settings.corPrimaria || '#ff6a00');
+    setCorDestaque(settings.corDestaque || '');
     setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
     setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
     setPercentualComissao(settings.percentualComissao ?? 0);
@@ -93,7 +97,9 @@ export function Settings() {
         empresaCnpj,
         empresaLogoUrl,
         empresaLogoBgUrl,
+        empresaInstagram,
         corPrimaria,
+        corDestaque,
       });
       addToast({ type: 'success', message: 'Dados da empresa salvos!' });
     } catch {
@@ -386,6 +392,17 @@ export function Settings() {
               />
             </div>
             <div className="md:col-span-2">
+              <Input
+                label="Instagram / site (opcional)"
+                value={empresaInstagram}
+                onChange={e => setEmpresaInstagram(e.target.value)}
+                placeholder="@suaempresa ou www.site.com.br"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Aparece no rodapé dos PDFs, ao lado do WhatsApp.
+              </p>
+            </div>
+            <div className="md:col-span-2">
               <TextArea
                 label="Endereço"
                 rows={2}
@@ -475,6 +492,71 @@ export function Settings() {
             </div>
 
             <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
+                Cor de destaque (opcional)
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={corDestaque || corPrimaria}
+                  onChange={e => setCorDestaque(e.target.value)}
+                  className="rounded-lg border border-[var(--border)] cursor-pointer p-1 bg-transparent"
+                  style={{ minHeight: '48px', minWidth: '48px', width: '48px', height: '48px' }}
+                />
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={corDestaque}
+                    onChange={e => setCorDestaque(e.target.value)}
+                    placeholder="Vazia = usa a cor principal"
+                    className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] font-mono"
+                  />
+                </div>
+                <div
+                  className="w-20 h-10 rounded-md border border-[var(--border)]"
+                  style={{ backgroundColor: corDestaque || corPrimaria }}
+                />
+              </div>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Usada nos círculos numerados dos itens e nos cabeçalhos de tabela dos PDFs. Se vazia, usa a cor principal.
+              </p>
+              <div className="flex gap-2 mt-2 flex-wrap items-center">
+                {[
+                  { cor: '#E67E22', label: 'Cenoura' },
+                  { cor: '#F39C12', label: 'Âmbar' },
+                  { cor: '#16A085', label: 'Verde-mar' },
+                  { cor: '#C0392B', label: 'Rubi' },
+                  { cor: '#8E44AD', label: 'Ametista' },
+                ].map(p => (
+                  <button
+                    key={p.cor}
+                    type="button"
+                    onClick={() => setCorDestaque(p.cor)}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs border transition-colors ${
+                      corDestaque === p.cor
+                        ? 'border-[var(--accent)] text-[var(--text-primary)]'
+                        : 'border-[var(--border)] text-[var(--text-tertiary)]'
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: p.cor }} />
+                    {p.label}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCorDestaque('')}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs border transition-colors ${
+                    corDestaque === ''
+                      ? 'border-[var(--accent)] text-[var(--text-primary)]'
+                      : 'border-[var(--border)] text-[var(--text-tertiary)]'
+                  }`}
+                >
+                  Usar cor principal
+                </button>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
               <div className="border border-[var(--border)] rounded-lg overflow-hidden" style={{ maxWidth: 280 }}>
                 <div style={{ background: corPrimaria, height: 24 }} />
                 <div className="p-3 text-center">
@@ -483,7 +565,18 @@ export function Settings() {
                 </div>
                 <div className="px-3 pb-2">
                   <div style={{ borderBottom: `2px solid ${corPrimaria}` }} className="mb-2" />
-                  <p className="text-[10px] text-[var(--text-tertiary)]">Orçamento Cliente</p>
+                  <div
+                    className="flex items-center gap-2 px-2 py-1 rounded"
+                    style={{ background: corPrimaria }}
+                  >
+                    <span
+                      className="inline-flex items-center justify-center text-white text-[9px] font-bold rounded-full"
+                      style={{ background: corDestaque || corPrimaria, width: 16, height: 16 }}
+                    >
+                      1
+                    </span>
+                    <span className="text-white text-[10px] font-semibold">Item do orçamento</span>
+                  </div>
                 </div>
                 <div className="px-3 pb-3">
                   <div

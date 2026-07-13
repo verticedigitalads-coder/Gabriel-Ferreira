@@ -25,6 +25,148 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+// Cor de destaque do workspace: usa a configurada, senão cai na cor principal
+// (decisão de produto — nunca quebra por ausência, zero risco de contraste).
+function resolveCorDestaque(corDestaque, corPrimaria) {
+  const d = (corDestaque || '').trim();
+  return d || corPrimaria || '#ff6a00';
+}
+
+// ===== Helpers de template v3 (orçamento simples + agrupado) =====
+const fmtBRL = (v) =>
+  Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+// Separa itens exibíveis (com valor) dos de valor 0 (vão p/ observações).
+// Descarta itens sem nome / placeholder "item".
+function separarItens(itens) {
+  const validos = [];
+  const zerados = [];
+  for (const item of itens || []) {
+    const nome = (item.descricao || '').trim().toLowerCase();
+    if (!nome || nome === 'item') continue;
+    const valor = parseFloat(item.valorTotal || 0);
+    if (valor === 0) zerados.push(item);
+    else validos.push(item);
+  }
+  return { validos, zerados };
+}
+
+// Item de mão de obra sintético quando multiplicador > 1 (ou null).
+function maoDeObraItem(subtotal, multiplicador) {
+  if (!(multiplicador > 1)) return null;
+  const valor = subtotal * (multiplicador - 1);
+  return {
+    descricao: 'Mão de obra especializada',
+    quantidade: 1,
+    valorUnitario: valor,
+    valorTotal: valor,
+  };
+}
+
+// Card numerado de um item (v3). idx é 1-based.
+function itemCardHtml(item, idx) {
+  const qtd = item.quantidade || 1;
+  const ambiente = item.ambiente ? ` &middot; ${escapeHtml(item.ambiente)}` : '';
+  return `
+      <div class="item-card">
+        <div class="item-card-head">
+          <span class="item-num">${idx}</span>
+          <span class="item-name">${escapeHtml(item.descricao) || 'Item'}</span>
+        </div>
+        <div class="item-body">
+          <div class="item-desc">Qtde. ${qtd} un${ambiente}</div>
+          <div class="item-values">
+            <div class="item-val"><span class="lbl">Valor unitário</span><span class="amt">R$ ${fmtBRL(item.valorUnitario)}</span></div>
+            <div class="item-val total"><span class="lbl">Valor total</span><span class="amt">R$ ${fmtBRL(item.valorTotal)}</span></div>
+          </div>
+        </div>
+      </div>`;
+}
+
+// Tabela-resumo compacta (v3): itens + desconto opcional + TOTAL GERAL.
+function resumoTabelaHtml(itensParaExibir, descontoNum, total) {
+  if (!itensParaExibir.length) return '';
+  const linhas = itensParaExibir
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapeHtml(item.descricao) || 'Item'}</td>
+          <td class="right">${item.quantidade || 1}</td>
+          <td class="right">R$ ${fmtBRL(item.valorUnitario)}</td>
+          <td class="right">R$ ${fmtBRL(item.valorTotal)}</td>
+        </tr>`,
+    )
+    .join('');
+  const descontoRow =
+    descontoNum > 0
+      ? `<tr><td colspan="3" class="right">Desconto</td><td class="right">- R$ ${fmtBRL(descontoNum)}</td></tr>`
+      : '';
+  return `
+    <div class="secao resumo no-break">
+      <div class="secao-titulo"><span class="icon">🧾</span> Resumo do orçamento</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th class="right">Qtd</th>
+            <th class="right">Unit.</th>
+            <th class="right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${linhas}
+          ${descontoRow}
+          <tr class="total-geral"><td colspan="3">TOTAL GERAL</td><td class="right">R$ ${fmtBRL(total)}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// Caixa de total em destaque (v3) + valor por extenso.
+function caixaTotalHtml(total, label = 'Valor total do orçamento') {
+  return `
+      <div class="caixa-total">
+        <div class="ct-label">${label}</div>
+        <div class="ct-value">R$ ${fmtBRL(total)}</div>
+        <div class="ct-extenso">${valorPorExtenso(total)}</div>
+      </div>`;
+}
+
+// Bloco de observações (v3) — combina observações do usuário + itens de valor 0.
+function observacoesHtml(observacoesUsuario, zerados) {
+  const partes = [];
+  if (observacoesUsuario && String(observacoesUsuario).trim()) {
+    partes.push(escapeHtml(observacoesUsuario));
+  }
+  const zeroLinhas = (zerados || [])
+    .map((it) => {
+      const ambiente = it.ambiente ? ` (${escapeHtml(it.ambiente)})` : '';
+      return `• ${escapeHtml(it.descricao) || 'Item'}${ambiente} — sem custo`;
+    })
+    .join('\n');
+  if (zeroLinhas) partes.push(zeroLinhas);
+  const corpo = partes.join('\n');
+  if (!corpo) return '';
+  return `
+    <div class="secao no-break">
+      <div class="obs-box">
+        <div class="obs-title">Observações</div>
+        <div class="obs-body">${corpo}</div>
+      </div>
+    </div>`;
+}
+
+// Rodapé de contato (v3): WhatsApp + Instagram/site (só o que existir).
+function footerContatoHtml(empresaTelefone, empresaInstagram) {
+  const partes = [];
+  const tel = (empresaTelefone || '').trim();
+  const insta = (empresaInstagram || '').trim();
+  if (tel) partes.push(`📱 WhatsApp: ${escapeHtml(tel)}`);
+  if (insta) partes.push(`📸 ${escapeHtml(insta)}`);
+  if (!partes.length) return '';
+  return `<div class="contato">${partes.join(' &nbsp;•&nbsp; ')}</div>`;
+}
+
 // Helper: converte URL de imagem externa para base64 (evita falhas de carregamento no Puppeteer VPS)
 async function urlToBase64(url) {
   if (!url || url.startsWith('data:')) return url;
@@ -460,83 +602,36 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
       const condicoes_contrato = dados.condicoes_contrato || '';
       const metodos_pagamento = dados.metodos_pagamento || '';
       const cor_primaria = dados.cor_primaria || '#ff6a00';
+      const cor_destaque = resolveCorDestaque(dados.cor_destaque, cor_primaria);
 
-      // Logo HTML
+      // Logo HTML (header à esquerda)
       const logoHtml = empresa_logo_url
-        ? `<img src="${empresa_logo_url}" style="width: 180px; margin-bottom: 8px;" />`
+        ? `<img src="${empresa_logo_url}" />`
         : '';
 
-      // Seção apresentação (divider embutido — só aparece se há conteúdo)
+      // Seção apresentação (Relatório inicial)
       const secaoApresentacao = texto_apresentacao
-        ? `<div class="divider"></div>
-           <div class="secao">
+        ? `<div class="secao">
              <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
              <div class="texto-apresentacao">${escapeHtml(texto_apresentacao).replace(/\n/g, '<br/>')}</div>
-           </div>`
+           </div>
+           <div class="divider"></div>`
         : '';
 
-      // Seção atividades (divider embutido)
-      const atividadesHtml = (dados.itens || [])
-        .map((item) => {
-          const ambiente = item.ambiente
-            ? ` (${escapeHtml(item.ambiente)})`
-            : '';
-          return `<div class="atividade-item"><strong>${escapeHtml(item.descricao)}${ambiente}</strong></div>`;
-        })
-        .join('');
+      // Itens: separa válidos (viram cards) dos de valor 0 (vão p/ observações)
+      const { validos, zerados } = separarItens(dados.itens);
+      const mdo = maoDeObraItem(subtotal, multiplicador);
+      const itensParaExibir = mdo ? [...validos, mdo] : validos;
 
-      const secaoAtividades = atividadesHtml
-        ? `<div class="divider"></div>
-           <div class="secao">
-             <div class="secao-titulo"><span class="icon">📝</span> Descrição das atividades</div>
-             ${atividadesHtml}
-           </div>`
-        : '';
+      const itensCards =
+        itensParaExibir.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
+        '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
 
-      // Preços (blocos por item)
-      const precosHtml = (dados.itens || [])
-        .filter((item) => {
-          const nome = (item.descricao || '').trim().toLowerCase();
-          const valor = parseFloat(item.valorTotal || 0);
-          if (!nome || nome === 'item') return false;
-          if (valor === 0) return false;
-          return true;
-        })
-        .map(
-          (item) => `
-        <div class="preco-grupo">
-          <div class="preco-grupo-header">${escapeHtml(item.descricao) || 'Item'}</div>
-          <div class="preco-grupo-body">
-            <div class="preco-info">Qtde. ${item.quantidade || 1} un &nbsp;&nbsp; Valor unitário R$ ${formatar(item.valorUnitario)}</div>
-            <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
-          </div>
-        </div>
-      `,
-        )
-        .join('');
-
-      // Mão de obra
-      let maoDeObraBloco = '';
-      if (multiplicador > 1) {
-        const valorMdO = subtotal * (multiplicador - 1);
-        maoDeObraBloco = `
-          <div class="preco-grupo mao-de-obra">
-            <div class="preco-grupo-header">Mão de obra especializada</div>
-            <div class="preco-grupo-body">
-              <div class="preco-info">Qtde. 1 un</div>
-              <div class="preco-valor">R$ ${formatar(valorMdO)}</div>
-            </div>
-          </div>
-        `;
-      }
-
-      // Totais
       const descontoNum = Number(dados.desconto) || 0;
-      const totaisHtml = `
-        <div class="total-row"><span>Subtotal</span><span>R$ ${formatar(subtotal)}</span></div>
-        ${descontoNum > 0 ? `<div class="total-row"><span>Desconto</span><span>- R$ ${formatar(descontoNum)}</span></div>` : ''}
-        <div class="total-row final"><span>Total</span><span>R$ ${formatar(total)}</span></div>
-      `;
+      const resumoTabela = resumoTabelaHtml(itensParaExibir, descontoNum, total);
+      const caixaTotal = caixaTotalHtml(total);
+      const obsHtml = observacoesHtml(dados.observacoes, zerados);
+      const footerContato = footerContatoHtml(empresa_telefone, dados.empresa_instagram);
 
       // Métodos de pagamento
       const metodosLabels = {
@@ -585,13 +680,6 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
            </div>`
         : '';
 
-      const obsHtml = dados.observacoes
-        ? `<div style="margin-top:12px;padding:12px 16px;background:#f8f8f8;border-radius:6px;border-left:4px solid ${cor_primaria};">
-             <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Observações</div>
-             <div style="font-size:11px;color:#444;line-height:1.5;white-space:pre-wrap;">${escapeHtml(dados.observacoes)}</div>
-           </div>`
-        : '';
-
       const qrCodePixHtml = await gerarQrCodePixHtml({
         chavePix: dados.chave_pix || '',
         nomeRecebedor: dados.nome_recebedor_pix || empresa_nome || 'EMPRESA',
@@ -613,6 +701,7 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
 
       html = html
         .replace(/{{cor_primaria}}/g, cor_primaria)
+        .replace(/{{cor_destaque}}/g, cor_destaque)
         .replace('{{logo_html}}', logoHtml)
         .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
         .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
@@ -624,13 +713,14 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         )
         .replace(/{{orcamento_id}}/g, numeroFormatado)
         .replace('{{secao_apresentacao}}', secaoApresentacao)
-        .replace('{{secao_atividades}}', secaoAtividades)
-        .replace('{{precos_blocos}}', precosHtml + maoDeObraBloco)
-        .replace('{{totais_html}}', totaisHtml)
+        .replace('{{itens_cards}}', itensCards)
+        .replace('{{resumo_tabela}}', resumoTabela)
+        .replace('{{caixa_total}}', caixaTotal)
+        .replace(/{{observacoes_bloco}}/g, obsHtml)
         .replace('{{secao_metodos_pagamento}}', secaoMetodos)
         .replace('{{secao_condicoes}}', secaoCondicoes)
-        .replace(/{{observacoes_bloco}}/g, obsHtml)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
+        .replace('{{footer_contato}}', footerContato)
         .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
 
       html = injectLogoImg(html, 'logo_bg', logoBgUrlOrc);
@@ -793,6 +883,8 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       condicoes_contrato,
       metodos_pagamento,
       cor_primaria,
+      cor_destaque,
+      empresa_instagram,
       chave_pix,
       nome_recebedor_pix,
       cidade_pix,
@@ -923,9 +1015,10 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
 
       const corPrimaria = cor_primaria || '#ff6a00';
+      const corDestaque = resolveCorDestaque(cor_destaque, corPrimaria);
       const logoUrlAgrupado = await resolveWorkspaceLogo(empresa_logo_url, 'logo_header', 'logo');
       const logoHtmlAgrupado = logoUrlAgrupado
-        ? `<img src="${logoUrlAgrupado}" style="width: 180px; margin-bottom: 8px;" />`
+        ? `<img src="${logoUrlAgrupado}" />`
         : '';
       const logoBgUrlAgrupado = await resolveWorkspaceLogo(empresa_logo_bg_url, 'logo_bg', "marca d'água");
       const watermarkHtmlAgrupadoV2 = logoBgUrlAgrupado
@@ -941,7 +1034,7 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
            <div class="divider"></div>`
         : '';
 
-      // Blocos de orçamento no estilo v2
+      // Blocos de orçamento no estilo v3 (cards + resumo + caixa de total por orçamento)
       let totalGeralV2 = 0;
       const blocosV2 = orcamentos
         .map((orc, index) => {
@@ -954,74 +1047,43 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
           const subtotalOrc = Number(orc.subtotal) || 0;
           const multiplicadorOrc = Number(orc.multiplicador) || 1;
           const totalOrc = Number(orc.total) || 0;
+          const descontoOrc = Number(orc.desconto) || 0;
           totalGeralV2 += totalOrc;
 
-          const precosOrc = (orc.itens || [])
-            .filter((item) => {
-              const nome = (item.descricao || '').trim().toLowerCase();
-              const valor = parseFloat(item.valorTotal || 0);
-              if (!nome || nome === 'item') return false;
-              if (valor === 0) return false;
-              return true;
-            })
-            .map(
-              (item) => `
-          <div class="preco-grupo">
-            <div class="preco-grupo-header">${escapeHtml(item.descricao) || 'Item'}</div>
-            <div class="preco-grupo-body">
-              <div class="preco-info">Qtde. ${item.quantidade || 1} un &nbsp;&nbsp; Valor unitário R$ ${formatar(item.valorUnitario)}</div>
-              <div class="preco-valor">R$ ${formatar(item.valorTotal)}</div>
-            </div>
-          </div>
-        `,
-            )
-            .join('');
+          const { validos, zerados } = separarItens(orc.itens);
+          const mdoOrc = maoDeObraItem(subtotalOrc, multiplicadorOrc);
+          const itensExibirOrc = mdoOrc ? [...validos, mdoOrc] : validos;
 
-          let maoDeObraBlocoOrc = '';
-          if (multiplicadorOrc > 1) {
-            const valorMdO = subtotalOrc * (multiplicadorOrc - 1);
-            maoDeObraBlocoOrc = `
-            <div class="preco-grupo mao-de-obra">
-              <div class="preco-grupo-header">Mão de obra especializada</div>
-              <div class="preco-grupo-body">
-                <div class="preco-info">Qtde. 1 un</div>
-                <div class="preco-valor">R$ ${formatar(valorMdO)}</div>
-              </div>
-            </div>
-          `;
-          }
-
-          const descontoOrc = Number(orc.desconto) || 0;
-          const totaisOrc = `
-          <div class="total-row"><span>Subtotal</span><span>R$ ${formatar(subtotalOrc)}</span></div>
-          ${descontoOrc > 0 ? `<div class="total-row"><span>Desconto</span><span>- R$ ${formatar(descontoOrc)}</span></div>` : ''}
-          <div class="total-row final"><span>Total</span><span>R$ ${formatar(totalOrc)}</span></div>
-        `;
+          const cardsOrc =
+            itensExibirOrc.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
+            '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
+          const resumoOrc = resumoTabelaHtml(itensExibirOrc, descontoOrc, totalOrc);
+          const caixaOrc = caixaTotalHtml(totalOrc, 'Total deste orçamento');
+          const obsOrc = observacoesHtml(orc.observacoes, zerados);
 
           return `
           <div ${pageBreak}>
             <div class="secao">
-              <div class="secao-titulo" style="color: ${corPrimaria}; border-bottom: 2px solid ${corPrimaria}; padding-bottom: 6px;">
+              <div class="secao-titulo" style="color: ${corPrimaria}; border-bottom: 2px solid ${corDestaque}; padding-bottom: 6px;">
                 ${titulo} — ${orc.numero || ''}
               </div>
             </div>
-            <div class="secao">
-              <div class="secao-titulo"><span class="icon">💰</span> Preços</div>
-              ${precosOrc}${maoDeObraBlocoOrc}
-              <div style="margin-top: 16px; padding-top: 8px;">${totaisOrc}</div>
-            </div>
+            <div class="secao">${cardsOrc}</div>
+            ${resumoOrc}
+            <div class="secao no-break">${caixaOrc}</div>
+            ${obsOrc}
             <div class="divider"></div>
           </div>
         `;
         })
         .join('');
 
-      // Total geral
+      // Total geral (destaque na cor principal)
       const totalGeralBlocoV2 =
         mostrar_total_geral !== false
           ? `
-        <div class="secao" style="page-break-inside: avoid;">
-          <div style="display: flex; justify-content: space-between; align-items: center; background: #222; color: #fff; padding: 16px 20px; border-radius: 8px; font-size: 20px; font-weight: 700;">
+        <div class="secao no-break">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: ${corPrimaria}; color: #fff; padding: 16px 20px; border-radius: 10px; font-size: 20px; font-weight: 800;">
             <span>TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</span>
             <span>R$ ${formatar(totalGeralV2)}</span>
           </div>
@@ -1061,25 +1123,29 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
         ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
         : '';
 
+      const footerContatoAgrp = footerContatoHtml(empresa_telefone, empresa_instagram);
+
       htmlFinal = `<!doctype html>
 <html>
 <head>
   <meta charset="UTF-8" />
-  <style>${v2Estilos.replace(/{{cor_primaria}}/g, corPrimaria)}</style>
+  <style>${v2Estilos.replace(/{{cor_primaria}}/g, corPrimaria).replace(/{{cor_destaque}}/g, corDestaque)}</style>
 </head>
 <body>
   ${watermarkHtmlAgrupadoV2}
   <div class="container">
-    <div class="top-bar" style="background: ${corPrimaria};"></div>
-    <div class="empresa-header">
-      ${logoHtmlAgrupado}
-      <div class="empresa-nome">${escapeHtml(empresa_nome) || ''}</div>
-      <div class="empresa-dados">${escapeHtml(empresa_cnpj) || ''}<br/>${escapeHtml(empresa_endereco) || ''}<br/>${escapeHtml(empresa_telefone) || ''}</div>
+    <div class="header-v3">
+      <div class="header-logo">${logoHtmlAgrupado}</div>
+      <div class="empresa-card">
+        <div class="doc-title">Proposta</div>
+        <div class="emp-nome">${escapeHtml(empresa_nome) || ''}</div>
+        <div class="emp-dados">${escapeHtml(empresa_cnpj) || ''}<br/>${escapeHtml(empresa_endereco) || ''}<br/>${escapeHtml(empresa_telefone) || ''}</div>
+      </div>
     </div>
-    <div class="divider"></div>
-    <div class="titulo-orcamento">
-      <h1>Proposta ${escapeHtml(cliente_nome) || 'Cliente'}</h1>
-      <div class="cliente-sub">${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''}</div>
+    <div class="meta-bar">
+      <div class="meta-item"><span class="mk">Cliente</span><span class="mv">${escapeHtml(cliente_nome) || 'Cliente'}</span></div>
+      <div class="meta-item"><span class="mk">Data</span><span class="mv">${new Date().toLocaleDateString('pt-BR')}</span></div>
+      <div class="meta-item"><span class="mk">Orçamentos</span><span class="mv">${orcamentos.length}</span></div>
     </div>
     <div class="divider"></div>
     ${secaoApresentacaoAgrp}
@@ -1088,7 +1154,10 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
     ${secaoMetodosAgrp}
     ${secaoCondicoesAgrp}
     ${await gerarQrCodePixHtml({ chavePix: chave_pix || '', nomeRecebedor: nome_recebedor_pix || empresa_nome || 'EMPRESA', cidadeRecebedor: cidade_pix || 'UBERABA', valor: totalGeralV2, txid: 'PROPOSTA' })}
-    <div class="footer">Criado em ${new Date().toLocaleDateString('pt-BR')}</div>
+    <div class="footer-v3">
+      ${footerContatoAgrp}
+      <div class="criado">Criado em ${new Date().toLocaleDateString('pt-BR')}</div>
+    </div>
   </div>
 </body>
 </html>`;
@@ -1370,7 +1439,15 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
       dados.itens = [];
     }
 
-    const itensLinhas = dados.itens
+    // v2: itens de valor 0 saem da tabela e vão p/ observações (nunca R$ 0,00).
+    // v1 (legado): mantém TODOS os itens, comportamento intocado.
+    const { validos: itensValidosV2, zerados: itensZeradosV2 } = separarItens(
+      dados.itens,
+    );
+    const itensParaLinhas =
+      templateVersion === 'v2' ? itensValidosV2 : dados.itens;
+
+    const itensLinhas = itensParaLinhas
       .map(
         (item) => `
         <tr>
@@ -1387,12 +1464,15 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
     📝 OBSERVAÇÕES (bloco opcional)
     ========================================== */
 
-    const obsHtml = dados.observacoes
-      ? `<div class="conditions">
+    const obsHtml =
+      templateVersion === 'v2'
+        ? observacoesHtml(dados.observacoes, itensZeradosV2)
+        : dados.observacoes
+          ? `<div class="conditions">
            <div class="conditions-title">Observações</div>
            ${escapeHtml(dados.observacoes)}
          </div>`
-      : '';
+          : '';
 
     /* ==========================================
     🔁 SUBSTITUIÇÕES TEMPLATE
@@ -1431,14 +1511,20 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
     // 🔥 IMAGENS DINÂMICAS
     if (templateVersion === 'v2') {
       const logoUrl = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
-      const logoHtml = logoUrl
-        ? `<img src="${logoUrl}" style="width:180px;margin-bottom:8px;" />`
-        : '';
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" />` : '';
       const logoBgUrl = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
+
+      const corPrimariaRec = dados.cor_primaria || '#ff6a00';
+      const corDestaqueRec = resolveCorDestaque(dados.cor_destaque, corPrimariaRec);
+      const footerContatoRec = footerContatoHtml(
+        dados.empresa_telefone,
+        dados.empresa_instagram,
+      );
 
       html = injectLogoImg(html, 'logo_bg', logoBgUrl);
       html = html
-        .replace(/{{cor_primaria}}/g, dados.cor_primaria || '#ff6a00')
+        .replace(/{{cor_primaria}}/g, corPrimariaRec)
+        .replace(/{{cor_destaque}}/g, corDestaqueRec)
         .replace(/{{logo_html}}/g, logoHtml)
         .replace(/{{empresa_nome}}/g, escapeHtml(dados.empresa_nome) || '')
         .replace(/{{empresa_cnpj}}/g, escapeHtml(dados.empresa_cnpj) || '')
@@ -1450,6 +1536,7 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
           /{{empresa_telefone}}/g,
           escapeHtml(dados.empresa_telefone) || '',
         )
+        .replace('{{footer_contato}}', footerContatoRec)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
 
       // ===== ASSINATURAS DIGITAIS RECIBO (v2) =====
