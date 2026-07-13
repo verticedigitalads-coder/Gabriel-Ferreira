@@ -66,7 +66,9 @@ function maoDeObraItem(subtotal, multiplicador) {
 // Card numerado de um item (v3). idx é 1-based.
 function itemCardHtml(item, idx) {
   const qtd = item.quantidade || 1;
-  const ambiente = item.ambiente ? ` &middot; ${escapeHtml(item.ambiente)}` : '';
+  const ambiente = item.ambiente
+    ? ` &middot; ${escapeHtml(item.ambiente)}`
+    : '';
   return `
       <div class="item-card">
         <div class="item-card-head">
@@ -187,7 +189,9 @@ async function urlToBase64(url) {
 // download → retorna '' (NUNCA cai num fallback estático de outro cliente).
 async function resolveWorkspaceLogo(rawUrl, logLabel, noun) {
   if (!rawUrl) {
-    console.warn(`[PDF][${logLabel}] campo ausente ou vazio — renderizando sem ${noun}`);
+    console.warn(
+      `[PDF][${logLabel}] campo ausente ou vazio — renderizando sem ${noun}`,
+    );
     return '';
   }
   const converted = await urlToBase64(rawUrl);
@@ -205,7 +209,10 @@ async function resolveWorkspaceLogo(rawUrl, logLabel, noun) {
 // src="" (evita ícone de imagem quebrada) — sem tocar no arquivo .html.
 function injectLogoImg(html, placeholder, base64Value) {
   if (base64Value) {
-    return html.replace(new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g'), base64Value);
+    return html.replace(
+      new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g'),
+      base64Value,
+    );
   }
   return html.replace(
     new RegExp(`<img[^>]*src="\\{\\{${placeholder}\\}\\}"[^>]*>`, 'g'),
@@ -439,63 +446,71 @@ app.get('/api/cnpj/:cnpj', async (req, res) => {
 🧾 GERAR ORÇAMENTO PDF (TEMPLATE REAL)
 ========================================== */
 
-app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
-  try {
-    const dados = req.body;
+app.post(
+  '/api/gerar-orcamento',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    try {
+      const dados = req.body;
 
-    /* ==========================================
+      /* ==========================================
     📄 CARREGAR TEMPLATE HTML
     ========================================== */
 
-    const template_version = dados.template_version || 'v1';
-    const templateFile =
-      template_version === 'v2' ? 'orcamento-v2.html' : 'orcamento.html';
-    const templatePath = path.resolve(process.cwd(), 'templates', templateFile);
+      const template_version = dados.template_version || 'v1';
+      const templateFile =
+        template_version === 'v2' ? 'orcamento-v2.html' : 'orcamento.html';
+      const templatePath = path.resolve(
+        process.cwd(),
+        'templates',
+        templateFile,
+      );
 
-    if (!fs.existsSync(templatePath)) {
-      console.error('[Server] Template não encontrado');
-      return res.status(500).json({
-        error: 'Template HTML não encontrado',
-        path: templatePath,
-      });
-    }
+      if (!fs.existsSync(templatePath)) {
+        console.error('[Server] Template não encontrado');
+        return res.status(500).json({
+          error: 'Template HTML não encontrado',
+          path: templatePath,
+        });
+      }
 
-    let html = fs.readFileSync(templatePath, 'utf-8');
+      let html = fs.readFileSync(templatePath, 'utf-8');
 
-    /* ==========================================
+      /* ==========================================
     💰 FORMATADOR BRL
     ========================================== */
 
-    const formatar = (v) =>
-      Number(v || 0).toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-      });
+      const formatar = (v) =>
+        Number(v || 0).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+        });
 
-    /* ==========================================
+      /* ==========================================
     🧱 ITENS
     ========================================== */
 
-    if (!dados) {
-      throw new Error('Dados não recebidos no backend');
-    }
+      if (!dados) {
+        throw new Error('Dados não recebidos no backend');
+      }
 
-    if (!Array.isArray(dados.itens)) {
-      console.warn('⚠️ itens inválidos, corrigindo...');
-      dados.itens = [];
-    }
+      if (!Array.isArray(dados.itens)) {
+        console.warn('⚠️ itens inválidos, corrigindo...');
+        dados.itens = [];
+      }
 
-    const itensLinhas = dados.itens
-      .filter((item) => {
-        const nome = (item.descricao || '').trim().toLowerCase();
-        const valor = parseFloat(item.valorTotal || 0);
-        if (!nome || nome === 'item') return false;
-        const isMaoDeObra =
-          nome.includes('mão de obra') || nome.includes('mao de obra');
-        if (valor === 0 && !isMaoDeObra) return false;
-        return true;
-      })
-      .map(
-        (item) => `
+      const itensLinhas = dados.itens
+        .filter((item) => {
+          const nome = (item.descricao || '').trim().toLowerCase();
+          const valor = parseFloat(item.valorTotal || 0);
+          if (!nome || nome === 'item') return false;
+          const isMaoDeObra =
+            nome.includes('mão de obra') || nome.includes('mao de obra');
+          if (valor === 0 && !isMaoDeObra) return false;
+          return true;
+        })
+        .map(
+          (item) => `
         <tr>
           <td>${escapeHtml(item.descricao)}</td>
           <td class="right">${item.quantidade}</td>
@@ -503,418 +518,452 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
         </tr>
       `,
-      )
-      .join('');
+        )
+        .join('');
 
-    /* ==========================================
+      /* ==========================================
     🖼️ IMAGENS (SUPORTE LOCAL + URL)
     ========================================== */
 
-    // 🔥 recalcular automaticamente se vier null
-    const subtotalCalculado = Array.isArray(dados.itens)
-      ? dados.itens.reduce((acc, item) => acc + Number(item.valorTotal || 0), 0)
-      : 0;
+      // 🔥 recalcular automaticamente se vier null
+      const subtotalCalculado = Array.isArray(dados.itens)
+        ? dados.itens.reduce(
+            (acc, item) => acc + Number(item.valorTotal || 0),
+            0,
+          )
+        : 0;
 
-    const subtotal = Number(dados.subtotal) || subtotalCalculado;
-    const total = Number(dados.total) || subtotal;
+      const subtotal = Number(dados.subtotal) || subtotalCalculado;
+      const total = Number(dados.total) || subtotal;
 
-    const multiplicador = Number(dados.multiplicador) || 1;
-    let maoDeObraItemHTML = '';
-    if (multiplicador > 0 && multiplicador < 1) {
-      const valor = subtotal * multiplicador;
-      maoDeObraItemHTML = `
+      const multiplicador = Number(dados.multiplicador) || 1;
+      let maoDeObraItemHTML = '';
+      if (multiplicador > 0 && multiplicador < 1) {
+        const valor = subtotal * multiplicador;
+        maoDeObraItemHTML = `
         <tr class="mao-de-obra">
           <td>Mão de obra</td>
           <td class="right">1</td>
           <td class="right">R$ ${formatar(valor)}</td>
           <td class="right">R$ ${formatar(valor)}</td>
         </tr>`;
-    } else if (multiplicador > 1) {
-      const valor = subtotal * (multiplicador - 1);
-      maoDeObraItemHTML = `
+      } else if (multiplicador > 1) {
+        const valor = subtotal * (multiplicador - 1);
+        maoDeObraItemHTML = `
         <tr class="mao-de-obra">
           <td>Mão de obra especializada</td>
           <td class="right">1</td>
           <td class="right">R$ ${formatar(valor)}</td>
           <td class="right">R$ ${formatar(valor)}</td>
         </tr>`;
-    }
+      }
 
-    const itensHTML = itensLinhas + maoDeObraItemHTML;
+      const itensHTML = itensLinhas + maoDeObraItemHTML;
 
-    /* ==========================================
+      /* ==========================================
 🔢 GERAR NÚMERO SEQUENCIAL (PADRÃO ERP)
 ========================================== */
 
-    const anoAtual = new Date().getFullYear();
+      const anoAtual = new Date().getFullYear();
 
-    // 🔥 BUSCAR ÚLTIMO ORÇAMENTO DO ANO
-    let sequencial = 1;
+      // 🔥 BUSCAR ÚLTIMO ORÇAMENTO DO ANO
+      let sequencial = 1;
 
-    try {
-      const _respSequencial = await fetch(
-        `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
-        {
-          headers: {
-            apikey: process.env.SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+      try {
+        const _respSequencial = await fetch(
+          `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
+          {
+            headers: {
+              apikey: process.env.SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+            },
           },
-        },
-      );
-      const ultimoNumero = await _respSequencial.json();
+        );
+        const ultimoNumero = await _respSequencial.json();
 
-      if (Array.isArray(ultimoNumero) && ultimoNumero.length > 0) {
-        const ultimo = ultimoNumero[0].numero;
+        if (Array.isArray(ultimoNumero) && ultimoNumero.length > 0) {
+          const ultimo = ultimoNumero[0].numero;
 
-        const partes = ultimo.split('-');
-        const numeroAtual = parseInt(partes[2]);
+          const partes = ultimo.split('-');
+          const numeroAtual = parseInt(partes[2]);
 
-        sequencial = numeroAtual + 1;
+          sequencial = numeroAtual + 1;
+        }
+      } catch (error) {
+        const fallbackNumber = Date.now().toString().slice(-6);
+        console.error('[PDF] Falha ao buscar sequencial:', error.message);
+        console.warn(
+          '[PDF] Usando número sequencial de fallback:',
+          fallbackNumber,
+        );
+        sequencial = parseInt(fallbackNumber, 10);
       }
-    } catch (error) {
-      const fallbackNumber = Date.now().toString().slice(-6);
-      console.error('[PDF] Falha ao buscar sequencial:', error.message);
-      console.warn(
-        '[PDF] Usando número sequencial de fallback:',
-        fallbackNumber,
-      );
-      sequencial = parseInt(fallbackNumber, 10);
-    }
 
-    // 🔥 FORMATA 001, 002, 003...
-    const sequencialFormatado = String(sequencial).padStart(3, '0');
+      // 🔥 FORMATA 001, 002, 003...
+      const sequencialFormatado = String(sequencial).padStart(3, '0');
 
-    const numeroFormatado =
-      dados.numero || `ORC-${anoAtual}-${sequencialFormatado}`;
+      const numeroFormatado =
+        dados.numero || `ORC-${anoAtual}-${sequencialFormatado}`;
 
-    /* ==========================================
+      /* ==========================================
     🔁 SUBSTITUIÇÕES TEMPLATE
     ========================================== */
 
-    if (template_version === 'v2') {
-      // Campos de empresa
-      const empresa_nome = dados.empresa_nome || '';
-      const empresa_telefone = dados.empresa_telefone || '';
-      const empresa_endereco = dados.empresa_endereco || '';
-      const empresa_cnpj = dados.empresa_cnpj || '';
-      const empresa_logo_url = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
-      const texto_apresentacao = dados.texto_apresentacao || '';
-      const condicoes_contrato = dados.condicoes_contrato || '';
-      const metodos_pagamento = dados.metodos_pagamento || '';
-      const cor_primaria = dados.cor_primaria || '#ff6a00';
-      const cor_destaque = resolveCorDestaque(dados.cor_destaque, cor_primaria);
+      if (template_version === 'v2') {
+        // Campos de empresa
+        const empresa_nome = dados.empresa_nome || '';
+        const empresa_telefone = dados.empresa_telefone || '';
+        const empresa_endereco = dados.empresa_endereco || '';
+        const empresa_cnpj = dados.empresa_cnpj || '';
+        const empresa_logo_url = await resolveWorkspaceLogo(
+          dados.empresa_logo_url,
+          'logo_header',
+          'logo',
+        );
+        const texto_apresentacao = dados.texto_apresentacao || '';
+        const condicoes_contrato = dados.condicoes_contrato || '';
+        const metodos_pagamento = dados.metodos_pagamento || '';
+        const cor_primaria = dados.cor_primaria || '#ff6a00';
+        const cor_destaque = resolveCorDestaque(
+          dados.cor_destaque,
+          cor_primaria,
+        );
 
-      // Logo HTML (header à esquerda)
-      const logoHtml = empresa_logo_url
-        ? `<img src="${empresa_logo_url}" />`
-        : '';
+        // Logo HTML (header à esquerda)
+        const logoHtml = empresa_logo_url
+          ? `<img src="${empresa_logo_url}" />`
+          : '';
 
-      // Seção apresentação (Relatório inicial)
-      const secaoApresentacao = texto_apresentacao
-        ? `<div class="secao">
+        // Seção apresentação (Relatório inicial)
+        const secaoApresentacao = texto_apresentacao
+          ? `<div class="secao">
              <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
              <div class="texto-apresentacao">${escapeHtml(texto_apresentacao).replace(/\n/g, '<br/>')}</div>
            </div>
            <div class="divider"></div>`
-        : '';
+          : '';
 
-      // Itens: separa válidos (viram cards) dos de valor 0 (vão p/ observações)
-      const { validos, zerados } = separarItens(dados.itens);
-      const mdo = maoDeObraItem(subtotal, multiplicador);
-      const itensParaExibir = mdo ? [...validos, mdo] : validos;
+        // Itens: separa válidos (viram cards) dos de valor 0 (vão p/ observações)
+        const { validos, zerados } = separarItens(dados.itens);
+        const mdo = maoDeObraItem(subtotal, multiplicador);
+        const itensParaExibir = mdo ? [...validos, mdo] : validos;
 
-      const itensCards =
-        itensParaExibir.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
-        '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
+        const itensCards =
+          itensParaExibir.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
+          '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
 
-      const descontoNum = Number(dados.desconto) || 0;
-      const resumoTabela = resumoTabelaHtml(itensParaExibir, descontoNum, total);
-      const caixaTotal = caixaTotalHtml(total);
-      const obsHtml = observacoesHtml(dados.observacoes, zerados);
-      const footerContato = footerContatoHtml(empresa_telefone, dados.empresa_instagram);
+        const descontoNum = Number(dados.desconto) || 0;
+        const resumoTabela = resumoTabelaHtml(
+          itensParaExibir,
+          descontoNum,
+          total,
+        );
+        const caixaTotal = caixaTotalHtml(total);
+        const obsHtml = observacoesHtml(dados.observacoes, zerados);
+        const footerContato = footerContatoHtml(
+          empresa_telefone,
+          dados.empresa_instagram,
+        );
 
-      // Métodos de pagamento
-      const metodosLabels = {
-        pix: 'PIX',
-        credito: 'Crédito',
-        debito: 'Débito',
-        dinheiro: 'Dinheiro',
-        transferencia: 'Transferência',
-        boleto: 'Boleto',
-      };
-      const metodosBadges = (metodos_pagamento || '')
-        .split(',')
-        .filter(Boolean)
-        .map(
-          (m) =>
-            `<span class="metodo-badge">${escapeHtml(metodosLabels[m.trim()] || m.trim())}</span>`,
-        )
-        .join('');
+        // Métodos de pagamento
+        const metodosLabels = {
+          pix: 'PIX',
+          credito: 'Crédito',
+          debito: 'Débito',
+          dinheiro: 'Dinheiro',
+          transferencia: 'Transferência',
+          boleto: 'Boleto',
+        };
+        const metodosBadges = (metodos_pagamento || '')
+          .split(',')
+          .filter(Boolean)
+          .map(
+            (m) =>
+              `<span class="metodo-badge">${escapeHtml(metodosLabels[m.trim()] || m.trim())}</span>`,
+          )
+          .join('');
 
-      const secaoMetodos = metodosBadges
-        ? `<div class="divider"></div>
+        const secaoMetodos = metodosBadges
+          ? `<div class="divider"></div>
            <div class="secao">
              <div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div>
              <div class="metodos-container">${metodosBadges}</div>
            </div>`
-        : '';
+          : '';
 
-      // Condições de contrato
-      const condicoesItems = (condicoes_contrato || '')
-        .split('\n')
-        .filter((l) => l.trim())
-        .map((l) => {
-          const texto = l
-            .replace(/\{\{validade\}\}/g, String(dados.validade || 7))
-            .replace(/^\s*\d+[\.\)]\s*/, '');
-          return `<li>${escapeHtml(texto)}</li>`;
-        })
-        .join('');
+        // Condições de contrato
+        const condicoesItems = (condicoes_contrato || '')
+          .split('\n')
+          .filter((l) => l.trim())
+          .map((l) => {
+            const texto = l
+              .replace(/\{\{validade\}\}/g, String(dados.validade || 7))
+              .replace(/^\s*\d+[\.\)]\s*/, '');
+            return `<li>${escapeHtml(texto)}</li>`;
+          })
+          .join('');
 
-      const secaoCondicoes = condicoesItems
-        ? `<div class="divider"></div>
+        const secaoCondicoes = condicoesItems
+          ? `<div class="divider"></div>
            <div class="secao">
              <div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div>
              <ol class="condicoes-lista">${condicoesItems}</ol>
            </div>`
-        : '';
+          : '';
 
-      const qrCodePixHtml = await gerarQrCodePixHtml({
-        chavePix: dados.chave_pix || '',
-        nomeRecebedor: dados.nome_recebedor_pix || empresa_nome || 'EMPRESA',
-        cidadeRecebedor: dados.cidade_pix || 'UBERABA',
-        valor: total,
-        txid: numeroFormatado,
-      });
+        const qrCodePixHtml = await gerarQrCodePixHtml({
+          chavePix: dados.chave_pix || '',
+          nomeRecebedor: dados.nome_recebedor_pix || empresa_nome || 'EMPRESA',
+          cidadeRecebedor: dados.cidade_pix || 'UBERABA',
+          valor: total,
+          txid: numeroFormatado,
+        });
 
-      console.log(
-        '[PDF][logo_header] valor recebido:',
-        JSON.stringify(dados.empresa_logo_url) ?? 'AUSENTE',
-      );
-      console.log(
-        '[PDF][logo_bg] valor recebido:',
-        JSON.stringify(dados.empresa_logo_bg_url) ?? 'AUSENTE',
-      );
+        console.log(
+          '[PDF][logo_header] valor recebido:',
+          JSON.stringify(dados.empresa_logo_url) ?? 'AUSENTE',
+        );
+        console.log(
+          '[PDF][logo_bg] valor recebido:',
+          JSON.stringify(dados.empresa_logo_bg_url) ?? 'AUSENTE',
+        );
 
-      const logoBgUrlOrc = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
+        const logoBgUrlOrc = await resolveWorkspaceLogo(
+          dados.empresa_logo_bg_url,
+          'logo_bg',
+          "marca d'água",
+        );
 
-      html = html
-        .replace(/{{cor_primaria}}/g, cor_primaria)
-        .replace(/{{cor_destaque}}/g, cor_destaque)
-        .replace('{{logo_html}}', logoHtml)
-        .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
-        .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
-        .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
-        .replace(/{{empresa_telefone}}/g, escapeHtml(empresa_telefone) || '')
-        .replace(
-          /{{cliente_nome}}/g,
-          escapeHtml(dados.cliente_nome) || 'Cliente',
-        )
-        .replace(/{{orcamento_id}}/g, numeroFormatado)
-        .replace('{{secao_apresentacao}}', secaoApresentacao)
-        .replace('{{itens_cards}}', itensCards)
-        .replace('{{resumo_tabela}}', resumoTabela)
-        .replace('{{caixa_total}}', caixaTotal)
-        .replace(/{{observacoes_bloco}}/g, obsHtml)
-        .replace('{{secao_metodos_pagamento}}', secaoMetodos)
-        .replace('{{secao_condicoes}}', secaoCondicoes)
-        .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
-        .replace('{{footer_contato}}', footerContato)
-        .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
+        html = html
+          .replace(/{{cor_primaria}}/g, cor_primaria)
+          .replace(/{{cor_destaque}}/g, cor_destaque)
+          .replace('{{logo_html}}', logoHtml)
+          .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
+          .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
+          .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
+          .replace(/{{empresa_telefone}}/g, escapeHtml(empresa_telefone) || '')
+          .replace(
+            /{{cliente_nome}}/g,
+            escapeHtml(dados.cliente_nome) || 'Cliente',
+          )
+          .replace(/{{orcamento_id}}/g, numeroFormatado)
+          .replace('{{secao_apresentacao}}', secaoApresentacao)
+          .replace('{{itens_cards}}', itensCards)
+          .replace('{{resumo_tabela}}', resumoTabela)
+          .replace('{{caixa_total}}', caixaTotal)
+          .replace(/{{observacoes_bloco}}/g, obsHtml)
+          .replace('{{secao_metodos_pagamento}}', secaoMetodos)
+          .replace('{{secao_condicoes}}', secaoCondicoes)
+          .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
+          .replace('{{footer_contato}}', footerContato)
+          .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
 
-      html = injectLogoImg(html, 'logo_bg', logoBgUrlOrc);
+        html = injectLogoImg(html, 'logo_bg', logoBgUrlOrc);
 
-      // ===== ASSINATURAS DIGITAIS (v2) =====
-      const assinaturaEmpresaHtmlV2 = dados.assinatura_empresa
-        ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
-        : '';
-      const assinaturaClienteHtmlV2 = dados.assinatura_cliente
-        ? `<img src="${dados.assinatura_cliente}" alt="Assinatura do cliente" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
-        : '';
-      const dataAssinaturaHtmlV2 = dados.data_assinatura
-        ? `<p style="font-size:7px;color:#999;text-align:center;margin-top:2px;">Assinado digitalmente em ${new Date(dados.data_assinatura).toLocaleString('pt-BR')}</p>`
-        : '';
-      html = html
-        .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlV2)
-        .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV2)
-        .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV2);
-    } else {
-      const qrCodePixHtmlV1 = await gerarQrCodePixHtml({
-        chavePix: dados.chave_pix || '',
-        nomeRecebedor:
-          dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
-        cidadeRecebedor: dados.cidade_pix || 'UBERABA',
-        valor: total,
-        txid: numeroFormatado,
-      });
+        // ===== ASSINATURAS DIGITAIS (v2) =====
+        const assinaturaEmpresaHtmlV2 = dados.assinatura_empresa
+          ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+          : '';
+        const assinaturaClienteHtmlV2 = dados.assinatura_cliente
+          ? `<img src="${dados.assinatura_cliente}" alt="Assinatura do cliente" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+          : '';
+        const dataAssinaturaHtmlV2 = dados.data_assinatura
+          ? `<p style="font-size:7px;color:#999;text-align:center;margin-top:2px;">Assinado digitalmente em ${new Date(dados.data_assinatura).toLocaleString('pt-BR')}</p>`
+          : '';
+        html = html
+          .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlV2)
+          .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV2)
+          .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV2);
+      } else {
+        const qrCodePixHtmlV1 = await gerarQrCodePixHtml({
+          chavePix: dados.chave_pix || '',
+          nomeRecebedor:
+            dados.nome_recebedor_pix || dados.empresa_nome || 'EMPRESA',
+          cidadeRecebedor: dados.cidade_pix || 'UBERABA',
+          valor: total,
+          txid: numeroFormatado,
+        });
 
-      html = html
-        .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome))
-        .replace(
-          /{{cliente_telefone}}/g,
-          escapeHtml(dados.cliente_telefone) || '-',
-        )
-        .replace(
-          /{{cliente_endereco}}/g,
-          escapeHtml(dados.cliente_endereco) || '-',
-        )
-        .replace(/{{orcamento_id}}/g, numeroFormatado)
-        .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
-        .replace(/{{itens}}/g, itensHTML)
-        .replace(/{{subtotal}}/g, formatar(subtotal))
-        .replace(/{{desconto}}/g, formatar(dados.desconto))
-        .replace(/{{total}}/g, formatar(total))
-        .replace(/{{observacoes}}/g, escapeHtml(dados.observacoes) || '')
-        .replace(/{{validade}}/g, dados.validade || 7)
-        .replace('{{QR_CODE_PIX}}', qrCodePixHtmlV1);
+        html = html
+          .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome))
+          .replace(
+            /{{cliente_telefone}}/g,
+            escapeHtml(dados.cliente_telefone) || '-',
+          )
+          .replace(
+            /{{cliente_endereco}}/g,
+            escapeHtml(dados.cliente_endereco) || '-',
+          )
+          .replace(/{{orcamento_id}}/g, numeroFormatado)
+          .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
+          .replace(/{{itens}}/g, itensHTML)
+          .replace(/{{subtotal}}/g, formatar(subtotal))
+          .replace(/{{desconto}}/g, formatar(dados.desconto))
+          .replace(/{{total}}/g, formatar(total))
+          .replace(/{{observacoes}}/g, escapeHtml(dados.observacoes) || '')
+          .replace(/{{validade}}/g, dados.validade || 7)
+          .replace('{{QR_CODE_PIX}}', qrCodePixHtmlV1);
 
-      // ===== ASSINATURAS DIGITAIS (v1) =====
-      const assinaturaEmpresaHtmlV1 = dados.assinatura_empresa
-        ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
-        : '';
-      const assinaturaClienteHtmlV1 = dados.assinatura_cliente
-        ? `<img src="${dados.assinatura_cliente}" alt="Assinatura do cliente" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
-        : '';
-      const dataAssinaturaHtmlV1 = dados.data_assinatura
-        ? `<p style="font-size:7px;color:#999;text-align:center;margin-top:2px;">Assinado digitalmente em ${new Date(dados.data_assinatura).toLocaleString('pt-BR')}</p>`
-        : '';
-      html = html
-        .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlV1)
-        .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV1)
-        .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV1);
+        // ===== ASSINATURAS DIGITAIS (v1) =====
+        const assinaturaEmpresaHtmlV1 = dados.assinatura_empresa
+          ? `<img src="${dados.assinatura_empresa}" alt="Assinatura da empresa" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+          : '';
+        const assinaturaClienteHtmlV1 = dados.assinatura_cliente
+          ? `<img src="${dados.assinatura_cliente}" alt="Assinatura do cliente" style="height:50px;width:auto;display:block;margin:0 auto 4px;" />`
+          : '';
+        const dataAssinaturaHtmlV1 = dados.data_assinatura
+          ? `<p style="font-size:7px;color:#999;text-align:center;margin-top:2px;">Assinado digitalmente em ${new Date(dados.data_assinatura).toLocaleString('pt-BR')}</p>`
+          : '';
+        html = html
+          .replace('{{ASSINATURA_EMPRESA}}', assinaturaEmpresaHtmlV1)
+          .replace('{{ASSINATURA_CLIENTE}}', assinaturaClienteHtmlV1)
+          .replace('{{DATA_ASSINATURA}}', dataAssinaturaHtmlV1);
 
-      // 🔥 IMAGENS DINÂMICAS (workspace, sem fallback estático)
-      const logoUrlV1 = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
-      const logoBgUrlV1 = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
-      html = injectLogoImg(html, 'logo', logoUrlV1);
-      html = injectLogoImg(html, 'logo_bg', logoBgUrlV1);
-    }
+        // 🔥 IMAGENS DINÂMICAS (workspace, sem fallback estático)
+        const logoUrlV1 = await resolveWorkspaceLogo(
+          dados.empresa_logo_url,
+          'logo_header',
+          'logo',
+        );
+        const logoBgUrlV1 = await resolveWorkspaceLogo(
+          dados.empresa_logo_bg_url,
+          'logo_bg',
+          "marca d'água",
+        );
+        html = injectLogoImg(html, 'logo', logoUrlV1);
+        html = injectLogoImg(html, 'logo_bg', logoBgUrlV1);
+      }
 
-    /* ==========================================
+      /* ==========================================
     🧠 GERAR PDF (PUPPETEER)
     ========================================== */
 
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-      ],
-    });
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+        ],
+      });
 
-    const page = await browser.newPage();
+      const page = await browser.newPage();
 
-    // 🔥 DEFINE TAMANHO DA PÁGINA (IMPORTANTE)
-    await page.setViewport({
-      width: 1240,
-      height: 1754,
-    });
+      // 🔥 DEFINE TAMANHO DA PÁGINA (IMPORTANTE)
+      await page.setViewport({
+        width: 1240,
+        height: 1754,
+      });
 
-    // Safety net: limpar placeholders não substituídos
-    html = html.replace(/\{\{[A-Za-z_]+\}\}/g, '');
+      // Safety net: limpar placeholders não substituídos
+      html = html.replace(/\{\{[A-Za-z_]+\}\}/g, '');
 
-    await page.setContent(html, {
-      waitUntil: 'networkidle0',
-    });
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+      });
 
-    // 🔥 FORÇA CARREGAMENTO DE IMAGENS
-    await page.evaluate(async () => {
-      const imgs = Array.from(document.images);
+      // 🔥 FORÇA CARREGAMENTO DE IMAGENS
+      await page.evaluate(async () => {
+        const imgs = Array.from(document.images);
 
-      await Promise.all(
-        imgs.map((img) => {
-          if (img.complete) return Promise.resolve();
+        await Promise.all(
+          imgs.map((img) => {
+            if (img.complete) return Promise.resolve();
 
-          return new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        }),
-      );
-    });
+            return new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          }),
+        );
+      });
 
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-    });
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+      });
 
-    await browser.close();
+      await browser.close();
 
-    /* ==========================================
+      /* ==========================================
     📤 RESPONSE
     ========================================== */
 
-    res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Type', 'application/pdf');
 
-    return res.send(pdf);
-  } catch (error) {
-    console.error('[Server] Erro ao gerar PDF:', error);
+      return res.send(pdf);
+    } catch (error) {
+      console.error('[Server] Erro ao gerar PDF:', error);
 
-    return res.status(500).json({
-      error: 'Erro ao gerar PDF',
-    });
-  }
-});
+      return res.status(500).json({
+        error: 'Erro ao gerar PDF',
+      });
+    }
+  },
+);
 
 /* ==========================================
 📄 GERAR PDF AGRUPADO (múltiplos orçamentos)
 ========================================== */
 
-app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
-  try {
-    const {
-      orcamentos,
-      cliente_nome,
-      cliente_telefone,
-      cliente_endereco,
-      mostrar_total_geral,
-      empresa_telefone,
-      empresa_email,
-      template_version,
-      empresa_nome,
-      empresa_cnpj,
-      empresa_endereco,
-      empresa_logo_url,
-      empresa_logo_bg_url,
-      texto_apresentacao,
-      condicoes_contrato,
-      metodos_pagamento,
-      cor_primaria,
-      cor_destaque,
-      empresa_instagram,
-      chave_pix,
-      nome_recebedor_pix,
-      cidade_pix,
-    } = req.body;
+app.post(
+  '/api/gerar-orcamento-agrupado',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    try {
+      const {
+        orcamentos,
+        cliente_nome,
+        cliente_telefone,
+        cliente_endereco,
+        mostrar_total_geral,
+        empresa_telefone,
+        empresa_email,
+        template_version,
+        empresa_nome,
+        empresa_cnpj,
+        empresa_endereco,
+        empresa_logo_url,
+        empresa_logo_bg_url,
+        texto_apresentacao,
+        condicoes_contrato,
+        metodos_pagamento,
+        cor_primaria,
+        cor_destaque,
+        empresa_instagram,
+        chave_pix,
+        nome_recebedor_pix,
+        cidade_pix,
+      } = req.body;
 
-    if (!Array.isArray(orcamentos) || orcamentos.length === 0) {
-      return res.status(400).json({ error: 'Nenhum orçamento fornecido' });
-    }
+      if (!Array.isArray(orcamentos) || orcamentos.length === 0) {
+        return res.status(400).json({ error: 'Nenhum orçamento fornecido' });
+      }
 
-    const formatar = (v) =>
-      Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      const formatar = (v) =>
+        Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
-    const contatoTelefone = empresa_telefone || '(34) 9 9199-8953';
-    const contatoEmail = empresa_email || 'flartmetal.uberaba@gmail.com';
+      const contatoTelefone = empresa_telefone || '(34) 9 9199-8953';
+      const contatoEmail = empresa_email || 'flartmetal.uberaba@gmail.com';
 
-    let totalGeral = 0;
+      let totalGeral = 0;
 
-    const blocos = orcamentos
-      .map((orc, index) => {
-        const itensLinhas = (orc.itens || [])
-          .filter((item) => {
-            const nome = (item.descricao || '').trim().toLowerCase();
-            const valor = parseFloat(item.valorTotal || 0);
-            if (!nome || nome === 'item') return false;
-            const isMaoDeObra =
-              nome.includes('mão de obra') || nome.includes('mao de obra');
-            if (valor === 0 && !isMaoDeObra) return false;
-            return true;
-          })
-          .map(
-            (item) => `
+      const blocos = orcamentos
+        .map((orc, index) => {
+          const itensLinhas = (orc.itens || [])
+            .filter((item) => {
+              const nome = (item.descricao || '').trim().toLowerCase();
+              const valor = parseFloat(item.valorTotal || 0);
+              if (!nome || nome === 'item') return false;
+              const isMaoDeObra =
+                nome.includes('mão de obra') || nome.includes('mao de obra');
+              if (valor === 0 && !isMaoDeObra) return false;
+              return true;
+            })
+            .map(
+              (item) => `
         <tr>
           <td>${escapeHtml(item.descricao) || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
@@ -922,36 +971,36 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
         </tr>
       `,
-          )
-          .join('');
+            )
+            .join('');
 
-        const subtotal = Number(orc.subtotal) || 0;
-        const multiplicador = Number(orc.multiplicador) || 1;
-        const total = Number(orc.total) || 0;
+          const subtotal = Number(orc.subtotal) || 0;
+          const multiplicador = Number(orc.multiplicador) || 1;
+          const total = Number(orc.total) || 0;
 
-        totalGeral += total;
+          totalGeral += total;
 
-        let maoDeObraHTML = '';
-        if (multiplicador > 1) {
-          const valor = subtotal * (multiplicador - 1);
-          maoDeObraHTML = `
+          let maoDeObraHTML = '';
+          if (multiplicador > 1) {
+            const valor = subtotal * (multiplicador - 1);
+            maoDeObraHTML = `
           <tr class="mao-de-obra">
             <td>Mão de obra especializada</td>
             <td class="right">1</td>
             <td class="right">R$ ${formatar(valor)}</td>
             <td class="right">R$ ${formatar(valor)}</td>
           </tr>`;
-        }
+          }
 
-        const pageBreak = index > 0 ? 'page-break-before: always;' : '';
+          const pageBreak = index > 0 ? 'page-break-before: always;' : '';
 
-        const titulo = escapeHtml(
-          orc.ambiente ||
-            (orc.observacoes ? orc.observacoes.substring(0, 40) : null) ||
-            `Orçamento ${index + 1}`,
-        );
+          const titulo = escapeHtml(
+            orc.ambiente ||
+              (orc.observacoes ? orc.observacoes.substring(0, 40) : null) ||
+              `Orçamento ${index + 1}`,
+          );
 
-        return `
+          return `
         <div style="${pageBreak}">
           <h2 style="color: ${cor_primaria || '#ff6a00'}; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid ${cor_primaria || '#ff6a00'}; padding-bottom: 6px;">
             ${titulo} — ${orc.numero || ''}
@@ -986,12 +1035,12 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
           </div>
         </div>
       `;
-      })
-      .join('');
+        })
+        .join('');
 
-    const totalGeralHTML =
-      mostrar_total_geral !== false
-        ? `
+      const totalGeralHTML =
+        mostrar_total_geral !== false
+          ? `
       <div style="page-break-inside: avoid; margin-top: 40px;">
         <div class="total-box" style="background: linear-gradient(135deg, #222, #444);">
           <div class="total-label">TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</div>
@@ -999,68 +1048,80 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
         </div>
       </div>
     `
-        : '';
+          : '';
 
-    let htmlFinal;
+      let htmlFinal;
 
-    if (template_version === 'v2') {
-      const v2TemplatePath = path.resolve(
-        process.cwd(),
-        'templates',
-        'orcamento-v2.html',
-      );
-      const v2Base = fs.readFileSync(v2TemplatePath, 'utf-8');
-      const v2StyleMatch = v2Base.match(/<style>([\s\S]*?)<\/style>/);
-      const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
+      if (template_version === 'v2') {
+        const v2TemplatePath = path.resolve(
+          process.cwd(),
+          'templates',
+          'orcamento-v2.html',
+        );
+        const v2Base = fs.readFileSync(v2TemplatePath, 'utf-8');
+        const v2StyleMatch = v2Base.match(/<style>([\s\S]*?)<\/style>/);
+        const v2Estilos = v2StyleMatch ? v2StyleMatch[1] : '';
 
-      const corPrimaria = cor_primaria || '#ff6a00';
-      const corDestaque = resolveCorDestaque(cor_destaque, corPrimaria);
-      const logoUrlAgrupado = await resolveWorkspaceLogo(empresa_logo_url, 'logo_header', 'logo');
-      const logoHtmlAgrupado = logoUrlAgrupado
-        ? `<img src="${logoUrlAgrupado}" />`
-        : '';
-      const logoBgUrlAgrupado = await resolveWorkspaceLogo(empresa_logo_bg_url, 'logo_bg', "marca d'água");
-      const watermarkHtmlAgrupadoV2 = logoBgUrlAgrupado
-        ? `<div class="watermark"><img src="${logoBgUrlAgrupado}" style="width: 100%" /></div>`
-        : '';
+        const corPrimaria = cor_primaria || '#ff6a00';
+        const corDestaque = resolveCorDestaque(cor_destaque, corPrimaria);
+        const logoUrlAgrupado = await resolveWorkspaceLogo(
+          empresa_logo_url,
+          'logo_header',
+          'logo',
+        );
+        const logoHtmlAgrupado = logoUrlAgrupado
+          ? `<img src="${logoUrlAgrupado}" />`
+          : '';
+        const logoBgUrlAgrupado = await resolveWorkspaceLogo(
+          empresa_logo_bg_url,
+          'logo_bg',
+          "marca d'água",
+        );
+        const watermarkHtmlAgrupadoV2 = logoBgUrlAgrupado
+          ? `<div class="watermark"><img src="${logoBgUrlAgrupado}" style="width: 100%" /></div>`
+          : '';
 
-      // Seção apresentação (aparece uma vez, antes dos orçamentos)
-      const secaoApresentacaoAgrp = texto_apresentacao
-        ? `<div class="secao">
+        // Seção apresentação (aparece uma vez, antes dos orçamentos)
+        const secaoApresentacaoAgrp = texto_apresentacao
+          ? `<div class="secao">
              <div class="secao-titulo"><span class="icon">📋</span> Relatório inicial</div>
              <div class="texto-apresentacao">${escapeHtml(texto_apresentacao).replace(/\n/g, '<br/>')}</div>
            </div>
            <div class="divider"></div>`
-        : '';
+          : '';
 
-      // Blocos de orçamento no estilo v3 (cards + resumo + caixa de total por orçamento)
-      let totalGeralV2 = 0;
-      const blocosV2 = orcamentos
-        .map((orc, index) => {
-          const pageBreak = index > 0 ? 'class="page-break"' : '';
-          const titulo = escapeHtml(
-            orc.ambiente ||
-              orc.observacoes?.substring(0, 40) ||
-              `Orçamento ${index + 1}`,
-          );
-          const subtotalOrc = Number(orc.subtotal) || 0;
-          const multiplicadorOrc = Number(orc.multiplicador) || 1;
-          const totalOrc = Number(orc.total) || 0;
-          const descontoOrc = Number(orc.desconto) || 0;
-          totalGeralV2 += totalOrc;
+        // Blocos de orçamento no estilo v3 (cards + resumo + caixa de total por orçamento)
+        let totalGeralV2 = 0;
+        const blocosV2 = orcamentos
+          .map((orc, index) => {
+            const pageBreak = index > 0 ? 'class="page-break"' : '';
+            const titulo = escapeHtml(
+              orc.ambiente ||
+                orc.observacoes?.substring(0, 40) ||
+                `Orçamento ${index + 1}`,
+            );
+            const subtotalOrc = Number(orc.subtotal) || 0;
+            const multiplicadorOrc = Number(orc.multiplicador) || 1;
+            const totalOrc = Number(orc.total) || 0;
+            const descontoOrc = Number(orc.desconto) || 0;
+            totalGeralV2 += totalOrc;
 
-          const { validos, zerados } = separarItens(orc.itens);
-          const mdoOrc = maoDeObraItem(subtotalOrc, multiplicadorOrc);
-          const itensExibirOrc = mdoOrc ? [...validos, mdoOrc] : validos;
+            const { validos, zerados } = separarItens(orc.itens);
+            const mdoOrc = maoDeObraItem(subtotalOrc, multiplicadorOrc);
+            const itensExibirOrc = mdoOrc ? [...validos, mdoOrc] : validos;
 
-          const cardsOrc =
-            itensExibirOrc.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
-            '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
-          const resumoOrc = resumoTabelaHtml(itensExibirOrc, descontoOrc, totalOrc);
-          const caixaOrc = caixaTotalHtml(totalOrc, 'Total deste orçamento');
-          const obsOrc = observacoesHtml(orc.observacoes, zerados);
+            const cardsOrc =
+              itensExibirOrc.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
+              '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
+            const resumoOrc = resumoTabelaHtml(
+              itensExibirOrc,
+              descontoOrc,
+              totalOrc,
+            );
+            const caixaOrc = caixaTotalHtml(totalOrc, 'Total deste orçamento');
+            const obsOrc = observacoesHtml(orc.observacoes, zerados);
 
-          return `
+            return `
           <div ${pageBreak}>
             <div class="secao">
               <div class="secao-titulo" style="color: ${corPrimaria}; border-bottom: 2px solid ${corDestaque}; padding-bottom: 6px;">
@@ -1074,13 +1135,13 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
             <div class="divider"></div>
           </div>
         `;
-        })
-        .join('');
+          })
+          .join('');
 
-      // Total geral (destaque na cor principal)
-      const totalGeralBlocoV2 =
-        mostrar_total_geral !== false
-          ? `
+        // Total geral (destaque na cor principal)
+        const totalGeralBlocoV2 =
+          mostrar_total_geral !== false
+            ? `
         <div class="secao no-break">
           <div style="display: flex; justify-content: space-between; align-items: center; background: ${corPrimaria}; color: #fff; padding: 16px 20px; border-radius: 10px; font-size: 20px; font-weight: 800;">
             <span>TOTAL GERAL (${orcamentos.length} orçamento${orcamentos.length !== 1 ? 's' : ''})</span>
@@ -1089,42 +1150,47 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
         </div>
         <div class="divider"></div>
       `
+            : '';
+
+        // Métodos de pagamento
+        const metodosLabelsAgrp = {
+          pix: 'PIX',
+          credito: 'Crédito',
+          debito: 'Débito',
+          dinheiro: 'Dinheiro',
+          transferencia: 'Transferência',
+          boleto: 'Boleto',
+        };
+        const metodosBadgesAgrp = (metodos_pagamento || '')
+          .split(',')
+          .filter(Boolean)
+          .map(
+            (m) =>
+              `<span class="metodo-badge">${escapeHtml(metodosLabelsAgrp[m.trim()] || m.trim())}</span>`,
+          )
+          .join('');
+        const secaoMetodosAgrp = metodosBadgesAgrp
+          ? `<div class="secao"><div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div><div class="metodos-container">${metodosBadgesAgrp}</div></div><div class="divider"></div>`
           : '';
 
-      // Métodos de pagamento
-      const metodosLabelsAgrp = {
-        pix: 'PIX',
-        credito: 'Crédito',
-        debito: 'Débito',
-        dinheiro: 'Dinheiro',
-        transferencia: 'Transferência',
-        boleto: 'Boleto',
-      };
-      const metodosBadgesAgrp = (metodos_pagamento || '')
-        .split(',')
-        .filter(Boolean)
-        .map(
-          (m) =>
-            `<span class="metodo-badge">${escapeHtml(metodosLabelsAgrp[m.trim()] || m.trim())}</span>`,
-        )
-        .join('');
-      const secaoMetodosAgrp = metodosBadgesAgrp
-        ? `<div class="secao"><div class="secao-titulo"><span class="icon">💳</span> Métodos de pagamento</div><div class="metodos-container">${metodosBadgesAgrp}</div></div><div class="divider"></div>`
-        : '';
+        // Condições
+        const condicoesItemsAgrp = (condicoes_contrato || '')
+          .split('\n')
+          .filter((l) => l.trim())
+          .map(
+            (l) => `<li>${escapeHtml(l.replace(/^\s*\d+[\.\)]\s*/, ''))}</li>`,
+          )
+          .join('');
+        const secaoCondicoesAgrp = condicoesItemsAgrp
+          ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
+          : '';
 
-      // Condições
-      const condicoesItemsAgrp = (condicoes_contrato || '')
-        .split('\n')
-        .filter((l) => l.trim())
-        .map((l) => `<li>${escapeHtml(l.replace(/^\s*\d+[\.\)]\s*/, ''))}</li>`)
-        .join('');
-      const secaoCondicoesAgrp = condicoesItemsAgrp
-        ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
-        : '';
+        const footerContatoAgrp = footerContatoHtml(
+          empresa_telefone,
+          empresa_instagram,
+        );
 
-      const footerContatoAgrp = footerContatoHtml(empresa_telefone, empresa_instagram);
-
-      htmlFinal = `<!doctype html>
+        htmlFinal = `<!doctype html>
 <html>
 <head>
   <meta charset="UTF-8" />
@@ -1160,27 +1226,35 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
   </div>
 </body>
 </html>`;
-    } else {
-      const templatePath = path.resolve(
-        process.cwd(),
-        'templates',
-        'orcamento.html',
-      );
-      const baseHtml = fs.readFileSync(templatePath, 'utf-8');
+      } else {
+        const templatePath = path.resolve(
+          process.cwd(),
+          'templates',
+          'orcamento.html',
+        );
+        const baseHtml = fs.readFileSync(templatePath, 'utf-8');
 
-      const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
-      const estilos = styleMatch ? styleMatch[1] : '';
+        const styleMatch = baseHtml.match(/<style>([\s\S]*?)<\/style>/);
+        const estilos = styleMatch ? styleMatch[1] : '';
 
-      const logoUrlAgrupadoV1 = await resolveWorkspaceLogo(empresa_logo_url, 'logo_header', 'logo');
-      const logoBgUrlAgrupadoV1 = await resolveWorkspaceLogo(empresa_logo_bg_url, 'logo_bg', "marca d'água");
-      const watermarkHtmlAgrupadoV1 = logoBgUrlAgrupadoV1
-        ? `<div class="watermark"><img src="${logoBgUrlAgrupadoV1}" style="width: 100%" /></div>`
-        : '';
-      const logoHtmlAgrupadoV1 = logoUrlAgrupadoV1
-        ? `<img src="${logoUrlAgrupadoV1}" style="width: 220px; margin-bottom: 6px" />`
-        : '';
+        const logoUrlAgrupadoV1 = await resolveWorkspaceLogo(
+          empresa_logo_url,
+          'logo_header',
+          'logo',
+        );
+        const logoBgUrlAgrupadoV1 = await resolveWorkspaceLogo(
+          empresa_logo_bg_url,
+          'logo_bg',
+          "marca d'água",
+        );
+        const watermarkHtmlAgrupadoV1 = logoBgUrlAgrupadoV1
+          ? `<div class="watermark"><img src="${logoBgUrlAgrupadoV1}" style="width: 100%" /></div>`
+          : '';
+        const logoHtmlAgrupadoV1 = logoUrlAgrupadoV1
+          ? `<img src="${logoUrlAgrupadoV1}" style="width: 220px; margin-bottom: 6px" />`
+          : '';
 
-      htmlFinal = `<!doctype html>
+        htmlFinal = `<!doctype html>
 <html>
 <head>
   <meta charset="UTF-8" />
@@ -1224,49 +1298,50 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
   </div>
 </body>
 </html>`;
+      }
+
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+        ],
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1240, height: 1754 });
+
+      // Safety net: limpar placeholders não substituídos
+      htmlFinal = htmlFinal.replace(/\{\{[A-Za-z_]+\}\}/g, '');
+
+      await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
+
+      await page.evaluate(async () => {
+        const imgs = Array.from(document.images);
+        await Promise.all(
+          imgs.map((img) => {
+            if (img.complete) return Promise.resolve();
+            return new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          }),
+        );
+      });
+
+      const pdf = await page.pdf({ format: 'A4', printBackground: true });
+      await browser.close();
+
+      res.setHeader('Content-Type', 'application/pdf');
+      return res.send(pdf);
+    } catch (error) {
+      console.error('[Server] Erro ao gerar PDF agrupado:', error);
+      return res.status(500).json({ error: 'Erro ao gerar PDF agrupado' });
     }
-
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-      ],
-    });
-
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1240, height: 1754 });
-
-    // Safety net: limpar placeholders não substituídos
-    htmlFinal = htmlFinal.replace(/\{\{[A-Za-z_]+\}\}/g, '');
-
-    await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
-
-    await page.evaluate(async () => {
-      const imgs = Array.from(document.images);
-      await Promise.all(
-        imgs.map((img) => {
-          if (img.complete) return Promise.resolve();
-          return new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        }),
-      );
-    });
-
-    const pdf = await page.pdf({ format: 'A4', printBackground: true });
-    await browser.close();
-
-    res.setHeader('Content-Type', 'application/pdf');
-    return res.send(pdf);
-  } catch (error) {
-    console.error('[Server] Erro ao gerar PDF agrupado:', error);
-    return res.status(500).json({ error: 'Erro ao gerar PDF agrupado' });
-  }
-});
+  },
+);
 
 /* ==========================================
 🧾 VALOR POR EXTENSO (pt-BR, até 999.999,99)
@@ -1397,7 +1472,7 @@ function dataExtenso(dataStr) {
 🧾 GERAR RECIBO PDF (TEMPLATE REAL)
 ========================================== */
 
-app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
+app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
   try {
     const dados = req.body;
 
@@ -1516,12 +1591,23 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
 
     // 🔥 IMAGENS DINÂMICAS
     if (templateVersion === 'v2') {
-      const logoUrl = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
+      const logoUrl = await resolveWorkspaceLogo(
+        dados.empresa_logo_url,
+        'logo_header',
+        'logo',
+      );
       const logoHtml = logoUrl ? `<img src="${logoUrl}" />` : '';
-      const logoBgUrl = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
+      const logoBgUrl = await resolveWorkspaceLogo(
+        dados.empresa_logo_bg_url,
+        'logo_bg',
+        "marca d'água",
+      );
 
       const corPrimariaRec = dados.cor_primaria || '#ff6a00';
-      const corDestaqueRec = resolveCorDestaque(dados.cor_destaque, corPrimariaRec);
+      const corDestaqueRec = resolveCorDestaque(
+        dados.cor_destaque,
+        corPrimariaRec,
+      );
       const footerContatoRec = footerContatoHtml(
         dados.empresa_telefone,
         dados.empresa_instagram,
@@ -1554,8 +1640,16 @@ app.post('/api/gerar-recibo', strictLimiter, async (req, res) => {
         .replace('{{ASSINATURA_CLIENTE}}', '')
         .replace('{{DATA_ASSINATURA}}', '');
     } else {
-      const logoUrlReciboV1 = await resolveWorkspaceLogo(dados.empresa_logo_url, 'logo_header', 'logo');
-      const logoBgUrlReciboV1 = await resolveWorkspaceLogo(dados.empresa_logo_bg_url, 'logo_bg', "marca d'água");
+      const logoUrlReciboV1 = await resolveWorkspaceLogo(
+        dados.empresa_logo_url,
+        'logo_header',
+        'logo',
+      );
+      const logoBgUrlReciboV1 = await resolveWorkspaceLogo(
+        dados.empresa_logo_bg_url,
+        'logo_bg',
+        "marca d'água",
+      );
       html = injectLogoImg(html, 'logo', logoUrlReciboV1);
       html = injectLogoImg(html, 'logo_bg', logoBgUrlReciboV1);
       html = html.replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
@@ -1794,7 +1888,9 @@ app.post(
 
 // Rota antiga sem secret — descontinuada (evita aceitar POST forjado)
 app.post('/webhook/evolution', (_req, res) => {
-  res.status(410).json({ error: 'Rota descontinuada. Atualize a URL do webhook.' });
+  res
+    .status(410)
+    .json({ error: 'Rota descontinuada. Atualize a URL do webhook.' });
 });
 
 app.post('/webhook/evolution/:secret', async (req, res) => {
