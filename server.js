@@ -664,10 +664,9 @@ app.post('/api/gerar-orcamento', strictLimiter, async (req, res) => {
         .split('\n')
         .filter((l) => l.trim())
         .map((l) => {
-          const texto = l.replace(
-            /\{\{validade\}\}/g,
-            String(dados.validade || 7),
-          );
+          const texto = l
+            .replace(/\{\{validade\}\}/g, String(dados.validade || 7))
+            .replace(/^\s*\d+[\.\)]\s*/, '');
           return `<li>${escapeHtml(texto)}</li>`;
         })
         .join('');
@@ -1117,7 +1116,7 @@ app.post('/api/gerar-orcamento-agrupado', strictLimiter, async (req, res) => {
       const condicoesItemsAgrp = (condicoes_contrato || '')
         .split('\n')
         .filter((l) => l.trim())
-        .map((l) => `<li>${escapeHtml(l)}</li>`)
+        .map((l) => `<li>${escapeHtml(l.replace(/^\s*\d+[\.\)]\s*/, ''))}</li>`)
         .join('');
       const secaoCondicoesAgrp = condicoesItemsAgrp
         ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
