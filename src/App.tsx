@@ -5,11 +5,13 @@ import Estoque from '@/modules/suprimentos/Estoque';
 import { supabase } from '@/lib/supabase';
 import { ensureWorkspaceForUser } from '@/lib/supabaseWorkspace';
 import { ensureBackendWarm } from '@/lib/backendWarmup';
+import { hasAcceptedCurrentTerms } from '@/lib/termsAcceptance';
 import { Central } from '@/modules/central/Central';
-import { useEffect, Suspense, lazy, useState } from 'react';
+import { useEffect, useCallback, Suspense, lazy, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { MainLayout } from '@/layout/MainLayout';
 import { AuthPage } from '@/modules/auth/AuthPage';
+import { TermsGate } from '@/components/TermsGate';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load modules for code splitting
@@ -83,6 +85,57 @@ function LoadingFallback() {
   );
 }
 
+// Tela cheia de carregamento (mesmo visual do loader interno do CRM).
+function FullscreenLoader({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center h-screen" style={{ background: '#0f1117' }}>
+      <div className="flex flex-col items-center gap-4">
+        <div
+          className="w-12 h-12 rounded-full animate-spin"
+          style={{ border: '4px solid rgba(255,106,0,0.2)', borderTopColor: '#ff6a00' }}
+        />
+        <div className="text-center">
+          <h1 className="text-xl font-semibold" style={{ color: '#e0e0e8' }}>
+            Vértice Digital
+          </h1>
+          <p className="text-sm mt-1" style={{ color: '#a0a0b0' }}>{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Fail-closed: se a verificação do aceite falhar, o app NÃO monta — mostra retry.
+function TermsCheckError({ onRetry, onExit }: { onRetry: () => void; onExit: () => void }) {
+  return (
+    <div className="flex items-center justify-center h-screen" style={{ background: '#0f1117' }}>
+      <div
+        className="flex flex-col items-center gap-4"
+        style={{ maxWidth: 360, textAlign: 'center', padding: 24 }}
+      >
+        <p className="text-sm" style={{ color: '#a0a0b0', lineHeight: 1.6 }}>
+          Não foi possível verificar o aceite dos termos. Verifique sua conexão e
+          tente novamente.
+        </p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={onExit}
+            style={{ minHeight: 44, padding: '0 20px', borderRadius: 8, background: 'transparent', color: '#a0a0b0', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}
+          >
+            Sair
+          </button>
+          <button
+            onClick={onRetry}
+            style={{ minHeight: 44, padding: '0 20px', borderRadius: 8, background: '#ff6a00', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ModuleRouter() {
   const activeModule = useStore((state) => state.activeModule);
 
@@ -119,6 +172,20 @@ export function App() {
 
   const [session, setSession] = useState<any>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  // Gate de aceite (LGPD), fail-closed: o app só monta quando 'accepted'.
+  const [termsStatus, setTermsStatus] = useState<
+    'checking' | 'accepted' | 'needed' | 'error'
+  >('checking');
+
+  const checkTerms = useCallback(async (userId: string) => {
+    setTermsStatus('checking');
+    try {
+      const accepted = await hasAcceptedCurrentTerms(userId);
+      setTermsStatus(accepted ? 'accepted' : 'needed');
+    } catch {
+      setTermsStatus('error'); // fail-closed: sem confirmação → bloqueia
+    }
+  }, []);
 
   // 🔐 Verifica sessão Supabase
   useEffect(() => {
@@ -142,6 +209,16 @@ export function App() {
   useEffect(() => {
     ensureBackendWarm();
   }, []);
+
+  // 📜 Verifica aceite dos termos vigentes assim que há sessão (user-scoped,
+  // independente do boot de workspace). Reseta para 'checking' no logout.
+  useEffect(() => {
+    if (!session) {
+      setTermsStatus('checking');
+      return;
+    }
+    checkTerms(session.user.id);
+  }, [session, checkTerms]);
 
   // 🚀 Inicializa store apenas se estiver autenticado
   useEffect(() => {
@@ -189,24 +266,31 @@ export function App() {
     return <AuthPage />;
   }
 
-  // ⏳ Loading interno do CRM
-  if (isLoading) {
+  // 📜 Gate de aceite (LGPD) — fail-closed: o app NUNCA monta enquanto o aceite
+  // da versão vigente não estiver confirmado.
+  if (termsStatus === 'checking') {
+    return <FullscreenLoader label="Verificando..." />;
+  }
+  if (termsStatus === 'error') {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: '#0f1117' }}>
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-full animate-spin"
-            style={{ border: '4px solid rgba(255,106,0,0.2)', borderTopColor: '#ff6a00' }}
-          />
-          <div className="text-center">
-            <h1 className="text-xl font-semibold" style={{ color: '#e0e0e8' }}>
-              Vértice Digital
-            </h1>
-            <p className="text-sm mt-1" style={{ color: '#a0a0b0' }}>Carregando dados...</p>
-          </div>
-        </div>
-      </div>
+      <TermsCheckError
+        onRetry={() => checkTerms(session.user.id)}
+        onExit={() => supabase.auth.signOut()}
+      />
     );
+  }
+  if (termsStatus === 'needed') {
+    return (
+      <TermsGate
+        userId={session.user.id}
+        onAccepted={() => setTermsStatus('accepted')}
+      />
+    );
+  }
+
+  // ⏳ Loading interno do CRM (só após aceite confirmado)
+  if (isLoading) {
+    return <FullscreenLoader label="Carregando dados..." />;
   }
 
   // ✅ Sistema carregado

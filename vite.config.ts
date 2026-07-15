@@ -47,6 +47,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // SPA fallback: navegações (inclui /termos e /privacidade) servem index.html
+        // no PWA instalado; o pathname é roteado no cliente (main.tsx).
+        navigateFallback: 'index.html',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

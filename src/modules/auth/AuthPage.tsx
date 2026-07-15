@@ -254,7 +254,10 @@ export function AuthPage() {
             </a>
 
             <p style={{ color: '#7a7f8c', fontSize: 12, marginTop: 24, lineHeight: 1.6 }}>
-              Ao continuar, você concorda com nossos Termos de Uso e Política de Privacidade.
+              Ao continuar, você concorda com nossos{' '}
+              <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: '#ff6a00', textDecoration: 'underline' }}>Termos de Uso</a>{' '}
+              e{' '}
+              <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: '#ff6a00', textDecoration: 'underline' }}>Política de Privacidade</a>.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 24, marginTop: 36, color: '#7a7f8c', fontSize: 13 }}>
@@ -277,6 +280,8 @@ export function AuthPage() {
             <a href="#features" style={{ color: 'inherit', textDecoration: 'none' }}>Funcionalidades</a>
             <a href="#how" style={{ color: 'inherit', textDecoration: 'none' }}>Como funciona</a>
             <a href="#testi" style={{ color: 'inherit', textDecoration: 'none' }}>Depoimentos</a>
+            <a href="/privacidade" style={{ color: 'inherit', textDecoration: 'none' }}>Privacidade</a>
+            <a href="/termos" style={{ color: 'inherit', textDecoration: 'none' }}>Termos</a>
           </div>
           <div>© 2026 VRTX · CRM Inteligente</div>
         </div>
