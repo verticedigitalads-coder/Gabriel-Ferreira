@@ -111,3 +111,13 @@
 **Alternativas descartadas:** WAHA Core (1 sessão por instância), Cloud API Meta (custo por conversa), Z-API (pago)
 **Motivo:** Multi-instância gratuita, self-hosted, comunidade BR ativa
 **Impacto:** Pré-requisito: migrar backend para VPS 24h
+
+---
+
+### [2026-07-14] — Split workspace FL Art Metal / Vértice Digital via rename, não move de dados
+
+**Contexto:** Workspace `72b024c0` tinha `nome='Vértice Digital'` no banco mas continha, na prática, 100% dos dados e identidade da FL Art Metal — resquício de quando o CRM era single-tenant, antes do multi-tenant existir. Não havia workspace próprio pra agência.
+**Decisão:** Renomear o workspace legado pra "FL Art Metal" (owner_id vira a conta da FL) e criar um workspace novo e vazio "Vértice Digital" (owner_id = host, segment='saas') — zero UPDATE nas 12 tabelas de dados de negócio, só em `workspaces`/`workspace_members`/`whatsapp_instances` (1 linha, instância pessoal de teste do Gabriel).
+**Motivo:** Mover ~180 registros entre workspaces (leads, orçamentos, recibos, etc.) é arriscado e desnecessário — renomear é uma operação de metadado, atômica, com rollback trivial. Confirmado via auditoria prévia (somente leitura) que não havia dado misto (Vértice/teste) nas 14 tabelas — só era necessário resolver a identidade do workspace.
+**Alternativas descartadas:** Mover os dados da FL pra um workspace novo (mais arriscado, exige UPDATE em todas as tabelas, sem ganho real já que o resultado final é idêntico)
+**Impacto:** Workspace `72b024c0` = FL Art Metal (nome oficial no banco agora bate com o conteúdo). Workspace novo `001843dd-97fc-42a6-88ee-08c7a404903a` = Vértice Digital, sem `workspace_settings` configuradas ainda (a fazer pela UI de Settings quando for usado). Migration versionada em `supabase/migrations/20260714000000_split_fl_artmetal_vertice_workspace.sql` com rollback documentado (ids literais).
