@@ -57,9 +57,10 @@ export default defineConfig({
             options: { cacheName: 'google-fonts', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } }
           },
           {
-            urlPattern: /^https:\/\/maadmoayrogrhntlyqvn\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'supabase-api', expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 } }
+            // Multi-tenant: dados de leads/settings NUNCA em disco. NetworkOnly =
+            // sem write em Cache Storage, sem fallback offline (falha é o correto).
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkOnly'
           }
         ]
       },
