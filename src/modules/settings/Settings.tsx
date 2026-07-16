@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, TextArea } from '@/components/ui/Input';
+import { FieldHint } from '@/components/ui/FieldHint';
 
 type Tab = 'empresa' | 'documentos' | 'pagamentos' | 'dados';
 
@@ -369,19 +370,26 @@ export function Settings() {
                 onChange={e => setEmpresaNome(e.target.value)}
                 placeholder="Ex: Vértice Digital Ltda"
               />
+              <FieldHint>Nome da sua empresa, exibido no cabeçalho de todos os orçamentos e recibos.</FieldHint>
             </div>
-            <Input
-              label="CNPJ"
-              value={empresaCnpj}
-              onChange={e => setEmpresaCnpj(e.target.value)}
-              placeholder="00.000.000/0000-00"
-            />
-            <Input
-              label="Telefone"
-              value={empresaTelefone}
-              onChange={e => setEmpresaTelefone(e.target.value)}
-              placeholder="(34) 99999-9999"
-            />
+            <div>
+              <Input
+                label="CNPJ"
+                value={empresaCnpj}
+                onChange={e => setEmpresaCnpj(e.target.value)}
+                placeholder="00.000.000/0000-00"
+              />
+              <FieldHint>CNPJ da empresa, exibido nos documentos oficiais (orçamentos e recibos) enviados ao cliente.</FieldHint>
+            </div>
+            <div>
+              <Input
+                label="Telefone"
+                value={empresaTelefone}
+                onChange={e => setEmpresaTelefone(e.target.value)}
+                placeholder="(34) 99999-9999"
+              />
+              <FieldHint>Telefone de contato exibido no cabeçalho e no rodapé dos PDFs, para o cliente falar com você.</FieldHint>
+            </div>
             <div className="md:col-span-2">
               <Input
                 label="E-mail Comercial"
@@ -390,6 +398,7 @@ export function Settings() {
                 onChange={e => setEmpresaEmail(e.target.value)}
                 placeholder="contato@empresa.com.br"
               />
+              <FieldHint>E-mail exibido no rodapé dos PDFs de orçamento e recibo.</FieldHint>
             </div>
             <div className="md:col-span-2">
               <Input
@@ -398,9 +407,7 @@ export function Settings() {
                 onChange={e => setEmpresaInstagram(e.target.value)}
                 placeholder="@suaempresa ou www.site.com.br"
               />
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Aparece no rodapé dos PDFs, ao lado do WhatsApp.
-              </p>
+              <FieldHint>Seu Instagram ou site, exibido no rodapé dos PDFs ao lado do telefone. Opcional.</FieldHint>
             </div>
             <div className="md:col-span-2">
               <TextArea
@@ -410,6 +417,7 @@ export function Settings() {
                 onChange={e => setEmpresaEndereco(e.target.value)}
                 placeholder="Rua, número, bairro, cidade — UF"
               />
+              <FieldHint>Endereço completo da empresa, exibido no cabeçalho dos orçamentos e recibos.</FieldHint>
             </div>
             <div className="md:col-span-2">
               <Input
@@ -418,6 +426,7 @@ export function Settings() {
                 onChange={e => setEmpresaLogoUrl(e.target.value)}
                 placeholder="URL da logo (upload de arquivo será futuro)"
               />
+              <FieldHint>Sua logo, exibida no topo de todos os PDFs. Cole o link direto da imagem (.png ou .jpg), sem espaços no nome do arquivo.</FieldHint>
             </div>
             <div className="md:col-span-2">
               <Input
@@ -426,9 +435,7 @@ export function Settings() {
                 onChange={e => setEmpresaLogoBgUrl(e.target.value)}
                 placeholder="URL da logo de fundo (watermark no PDF)"
               />
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Aparece como marca d'água atrás do conteúdo do PDF. Idealmente uma imagem maior/diferente da logo principal.
-              </p>
+              <FieldHint>Aparece como marca d'água (bem clara) atrás do conteúdo dos PDFs. Use uma imagem grande — ela é exibida com transparência.</FieldHint>
             </div>
 
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
@@ -461,9 +468,7 @@ export function Settings() {
                   style={{ backgroundColor: corPrimaria }}
                 />
               </div>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Usada na barra do topo, destaques e caixa de total nos PDFs.
-              </p>
+              <FieldHint>Cor usada na barra do topo, nos destaques e na caixa de total dos PDFs de orçamento e recibo.</FieldHint>
               <div className="flex gap-2 mt-2 flex-wrap">
                 {[
                   { cor: '#ff6a00', label: 'Laranja' },
@@ -517,9 +522,7 @@ export function Settings() {
                   style={{ backgroundColor: corDestaque || corPrimaria }}
                 />
               </div>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Usada nos círculos numerados dos itens e nos cabeçalhos de tabela dos PDFs. Se vazia, usa a cor principal.
-              </p>
+              <FieldHint>Cor dos detalhes nos PDFs: números dos itens e cabeçalho das tabelas. Se deixar vazio, usamos a cor principal.</FieldHint>
               <div className="flex gap-2 mt-2 flex-wrap items-center">
                 {[
                   { cor: '#E67E22', label: 'Cenoura' },
@@ -621,6 +624,7 @@ export function Settings() {
                 />
                 <span className="text-sm text-[var(--text-tertiary)]">dias</span>
               </div>
+              <FieldHint>Quantos dias o orçamento fica válido antes de vencer. Preenchido automaticamente ao criar um orçamento novo (pode mudar em cada um).</FieldHint>
             </div>
 
             <div>
@@ -635,6 +639,7 @@ export function Settings() {
                 onChange={e => setMultiplicadorPadrao(Number(e.target.value))}
                 className="w-24 px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               />
+              <FieldHint>Acréscimo automático sobre a mão de obra em orçamentos novos. Ex: 1.1 aumenta 10%; 1 = sem acréscimo. Pode ajustar em cada orçamento.</FieldHint>
             </div>
 
             <div>
@@ -650,9 +655,7 @@ export function Settings() {
                 onChange={e => setPercentualComissao(Number(e.target.value))}
                 className="w-24 px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               />
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Aplicado automaticamente em novos orçamentos. Pode ser ajustado por orçamento. Use 0 para desativar.
-              </p>
+              <FieldHint>Aplicado automaticamente em novos orçamentos. Pode ser ajustado por orçamento. Use 0 para desativar.</FieldHint>
             </div>
 
             <div className="md:col-span-2">
@@ -663,6 +666,7 @@ export function Settings() {
                 onChange={e => setObsPadraoOrcamento(e.target.value)}
                 placeholder="Ex: Instalação no mesmo dia da entrega. Pagamento 50% na aprovação."
               />
+              <FieldHint>Texto que já vem preenchido nas observações sempre que você cria um orçamento novo. Aparece no PDF do orçamento.</FieldHint>
             </div>
 
             <div className="md:col-span-2">
@@ -673,6 +677,7 @@ export function Settings() {
                 onChange={e => setObsPadraoRecibo(e.target.value)}
                 placeholder="Ex: Recibo emitido após confirmação do pagamento."
               />
+              <FieldHint>Texto que já vem preenchido nas observações sempre que você emite um recibo novo. Aparece no PDF do recibo.</FieldHint>
             </div>
 
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
@@ -687,9 +692,7 @@ export function Settings() {
                 onChange={e => setTextoApresentacao(e.target.value)}
                 placeholder="Para a nossa empresa, é um prazer apresentar esta proposta..."
               />
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Aparece no início do PDF como introdução ao cliente.
-              </p>
+              <FieldHint>Aparece no início do PDF como introdução ao cliente.</FieldHint>
             </div>
 
             <div className="md:col-span-2">
@@ -700,9 +703,7 @@ export function Settings() {
                 onChange={e => setCondicoesContrato(e.target.value)}
                 placeholder={'1. Neste orçamento já estão considerados os valores de mão de obra...\n2. A validade deste orçamento é de 7 dias...'}
               />
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                Uma condição por linha. Use {'{{validade}}'} para inserir os dias de validade automaticamente. Aparece no rodapé do PDF.
-              </p>
+              <FieldHint>Uma condição por linha. Use {'{{validade}}'} para inserir os dias de validade automaticamente. Aparece no rodapé do PDF.</FieldHint>
             </div>
 
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
@@ -726,6 +727,7 @@ export function Settings() {
                 <option value="telefone">Telefone</option>
                 <option value="aleatoria">Chave Aleatória</option>
               </select>
+              <FieldHint>Tipo da sua chave PIX. Usado para montar o QR Code de pagamento nos PDFs.</FieldHint>
             </div>
 
             <div>
@@ -737,6 +739,7 @@ export function Settings() {
                 placeholder="Ex: 12345678900, email@empresa.com..."
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
               />
+              <FieldHint>Sua chave PIX. Gera o QR Code de pagamento nos orçamentos e recibos. Deixe em branco para não exibir.</FieldHint>
             </div>
 
             <div>
@@ -749,6 +752,7 @@ export function Settings() {
                 placeholder="Ex: FL ART METAL"
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
               />
+              <FieldHint>Nome que aparece pro cliente ao escanear o QR Code no banco dele. Máximo 25 caracteres (limite do padrão PIX).</FieldHint>
             </div>
 
             <div>
@@ -761,9 +765,7 @@ export function Settings() {
                 placeholder="Ex: Uberaba"
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
               />
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                O QR Code PIX aparecerá automaticamente nos PDFs quando a chave estiver preenchida.
-              </p>
+              <FieldHint>Cidade da empresa, exigida pelo padrão PIX para gerar o QR Code. Máximo 15 caracteres.</FieldHint>
             </div>
 
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
@@ -820,7 +822,7 @@ export function Settings() {
               Métodos de Pagamento — PDF
             </h2>
             <p className="text-sm text-[var(--text-tertiary)]">
-              Exibidos no rodapé dos PDFs de orçamentos e recibos.
+              Exibidos no rodapé dos PDFs de orçamentos e recibos. Toque para ativar ou desativar cada um.
             </p>
             <div className="flex flex-wrap gap-2">
               {[
@@ -893,6 +895,7 @@ export function Settings() {
                   </button>
                 ))}
               </div>
+              <FieldHint>Tipo da sua chave PIX. Usado para montar o QR Code de pagamento nos PDFs.</FieldHint>
             </div>
 
             <Input
@@ -927,7 +930,7 @@ export function Settings() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Exportar Backup</h3>
                 <p className="text-sm text-[var(--text-tertiary)] mt-0.5">
-                  Exportar todos os dados do CRM em formato JSON
+                  Baixa um arquivo .json com todos os leads, orçamentos, recibos e financeiro do seu workspace — útil para guardar uma cópia de segurança.
                 </p>
               </div>
             </div>
@@ -945,7 +948,7 @@ export function Settings() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Importar Leads via CSV</h3>
                 <p className="text-sm text-[var(--text-tertiary)] mt-0.5">
-                  Importar leads a partir de um arquivo CSV
+                  Importa leads em massa a partir de uma planilha CSV. Colunas esperadas: nome, telefone, email, servico, status.
                 </p>
               </div>
             </div>
