@@ -238,6 +238,41 @@ const logoBgBase64 = fs.readFileSync(path.join(assetsPath, 'logo_bg.png'), {
 const logoPath = `data:image/png;base64,${logoBase64}`;
 const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
 
+// ===== Central de Ajuda: cache dos docs/help/*.md em memória =====
+const helpDocsPath = path.join(__dirname, 'docs/help');
+let helpDocsCache = {};
+try {
+  const helpFiles = fs.readdirSync(helpDocsPath).filter(f => f.endsWith('.md'));
+  helpDocsCache = Object.fromEntries(
+    helpFiles.map(f => [
+      f.replace(/\.md$/, ''),
+      fs.readFileSync(path.join(helpDocsPath, f), 'utf-8'),
+    ])
+  );
+  console.log(`[HelpChat] ${Object.keys(helpDocsCache).length} docs carregados de docs/help`);
+} catch (err) {
+  console.warn('[HelpChat] docs/help não encontrado — /api/help-chat responderá 503:', err.message);
+}
+
+// Mapeia o activeModule do frontend para o nome do arquivo em docs/help
+const HELP_MODULE_TO_DOC = {
+  dashboard: 'dashboard',
+  operacional: 'operacional',
+  kanban: 'kanban',
+  central: 'central',
+  leads: 'leads',
+  whatsapp: 'whatsapp',
+  orcamentos: 'orcamentos',
+  recibos: 'recibos',
+  financeiro: 'financeiro',
+  'contas-receber': 'contas-a-receber',
+  notas: 'notas',
+  ia: 'ia-assistente',
+  fornecedores: 'fornecedores',
+  estoque: 'estoque',
+  settings: 'configuracoes',
+};
+
 async function gerarQrCodePixHtml({
   chavePix,
   nomeRecebedor,
@@ -402,6 +437,77 @@ app.post('/api/chat', requireAuth, strictLimiter, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('[Server] Erro OpenAI:', error);
+    res.status(500).json({ error: 'Erro ao chamar OpenAI' });
+  }
+});
+
+/* ==========================================
+🆘 CENTRAL DE AJUDA — CHAT COM CONTEXTO DA DOCUMENTAÇÃO
+========================================== */
+
+app.post('/api/help-chat', requireAuth, strictLimiter, async (req, res) => {
+  if (Object.keys(helpDocsCache).length === 0) {
+    return res.status(503).json({ error: 'Central de Ajuda indisponível no momento.' });
+  }
+
+  try {
+    const { message, history, activeModule } = req.body || {};
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Mensagem inválida' });
+    }
+
+    const safeHistory = Array.isArray(history)
+      ? history
+          .filter(h => h && (h.role === 'user' || h.role === 'assistant') && typeof h.content === 'string')
+          .slice(-6)
+      : [];
+
+    const priorityStem = HELP_MODULE_TO_DOC[activeModule];
+    const orderedStems = Object.keys(helpDocsCache).sort();
+    const docOrder = priorityStem && helpDocsCache[priorityStem]
+      ? [priorityStem, ...orderedStems.filter(s => s !== priorityStem)]
+      : orderedStems;
+
+    const docsBlock = docOrder
+      .map(stem => `### ${stem}\n${helpDocsCache[stem]}`)
+      .join('\n\n---\n\n');
+
+    const systemPrompt =
+      'Você é o assistente de ajuda do CRM VRTX. Responda SOMENTE com base na documentação fornecida abaixo. ' +
+      "Se a resposta não estiver na documentação, diga honestamente que não tem essa informação e oriente o usuário a clicar em 'Falar com suporte'. " +
+      'Nunca invente funcionalidades. Responda curto e prático, em português.\n\n' +
+      docsBlock;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...safeHistory.map(h => ({ role: h.role, content: h.content })),
+      { role: 'user', content: message },
+    ];
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages,
+        max_tokens: 500,
+        temperature: 0.2,
+      }),
+    });
+
+    const data = await response.json();
+    const reply = data?.choices?.[0]?.message?.content;
+    if (!reply) {
+      console.error('[HelpChat] Resposta sem conteúdo da OpenAI:', data);
+      return res.status(500).json({ error: 'Erro ao chamar OpenAI' });
+    }
+
+    res.json({ reply });
+  } catch (error) {
+    console.error('[HelpChat] Erro:', error);
     res.status(500).json({ error: 'Erro ao chamar OpenAI' });
   }
 });

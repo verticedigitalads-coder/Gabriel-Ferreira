@@ -14,6 +14,7 @@ import {
   CalendarDays,
   Receipt,
   MessageCircle,
+  HelpCircle,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -64,6 +65,7 @@ const sections: { title: string; items: MenuItem[] }[] = [
     title: 'Sistema',
     items: [
       { id: 'settings', label: 'Configurações', icon: SettingsIcon },
+      { id: 'ajuda', label: 'Central de Ajuda', icon: HelpCircle },
     ],
   },
 ];
@@ -71,9 +73,10 @@ const sections: { title: string; items: MenuItem[] }[] = [
 interface SidebarProps {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
+  onOpenHelp: () => void;
 }
 
-export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
+export function Sidebar({ mobileOpen, setMobileOpen, onOpenHelp }: SidebarProps) {
   const activeModule = useStore(state => state.activeModule);
   const setActiveModule = useStore((state: any) => state.setActiveModule);
   const isAdmin = useIsAdmin();
@@ -138,7 +141,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             return (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveModule(item.id)}
+                  onClick={() => (item.id === 'ajuda' ? onOpenHelp() : setActiveModule(item.id))}
                   className={cn(
                     'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm transition-all duration-150',
                     !isActive && 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'

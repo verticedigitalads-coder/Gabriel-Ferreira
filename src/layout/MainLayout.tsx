@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { ToastContainer } from '@/components/ui/Toast';
 import { HeaderGlobal } from './HeaderGlobal';
+import { HelpPanel } from './HelpPanel';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
 import { Menu, LogOut } from 'lucide-react';
@@ -15,6 +16,7 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const logout = useStore(state => state.logout);
 
@@ -48,7 +50,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex h-screen bg-[var(--bg-app)] overflow-hidden">
 
-      <Sidebar mobileOpen={sidebarOpen} setMobileOpen={setSidebarOpen} />
+      <Sidebar mobileOpen={sidebarOpen} setMobileOpen={setSidebarOpen} onOpenHelp={() => setHelpOpen(true)} />
 
       <div className="flex flex-col flex-1 overflow-hidden">
 
@@ -67,7 +69,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     <Menu className="w-5 h-5" />
   </button>
 
-  <HeaderGlobal />
+  <HeaderGlobal onOpenHelp={() => setHelpOpen(true)} />
 
           {/* Avatar dropdown */}
           <div className="relative">
@@ -129,6 +131,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       <ToastContainer />
+      <HelpPanel isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }

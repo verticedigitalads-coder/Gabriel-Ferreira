@@ -1,10 +1,15 @@
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { HelpCircle } from 'lucide-react';
 import { NotificationsDropdown } from './NotificationsDropdown';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
-export function HeaderGlobal() {
+interface HeaderGlobalProps {
+  onOpenHelp: () => void;
+}
+
+export function HeaderGlobal({ onOpenHelp }: HeaderGlobalProps) {
   const activeModule = useStore(state => state.activeModule);
 
   const moduleNames: Record<string, string> = {
@@ -71,6 +76,19 @@ export function HeaderGlobal() {
 
         {/* Empresa (workspace selector) */}
         <WorkspaceSwitcher />
+
+        {/* Ajuda */}
+        <button
+          onClick={onOpenHelp}
+          aria-label="Ajuda"
+          title="Ajuda"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-colors"
+          style={{ color: 'var(--text-tertiary)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-2)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <HelpCircle className="w-5 h-5" />
+        </button>
 
         {/* Notificações */}
         <NotificationsDropdown />
