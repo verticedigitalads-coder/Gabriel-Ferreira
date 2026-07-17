@@ -254,6 +254,25 @@ try {
   console.warn('[HelpChat] docs/help não encontrado — /api/help-chat responderá 503:', err.message);
 }
 
+// Nome amigável do módulo (mesmo texto de src/layout/HeaderGlobal.tsx moduleNames)
+const HELP_MODULE_FRIENDLY_NAME = {
+  dashboard: 'Dashboard Executivo',
+  leads: 'Gestão de Leads',
+  kanban: 'Pipeline Comercial',
+  orcamentos: 'Orçamentos',
+  recibos: 'Recibos',
+  financeiro: 'Financeiro',
+  notas: 'Notas Fiscais',
+  ia: 'IA Assistente',
+  settings: 'Configurações',
+  operacional: 'Painel Operacional',
+  central: 'Modo Execução',
+  'contas-receber': 'Contas a Receber',
+  fornecedores: 'Fornecedores',
+  estoque: 'Estoque',
+  whatsapp: 'WhatsApp',
+};
+
 // Mapeia o activeModule do frontend para o nome do arquivo em docs/help
 const HELP_MODULE_TO_DOC = {
   dashboard: 'dashboard',
@@ -472,10 +491,16 @@ app.post('/api/help-chat', requireAuth, strictLimiter, async (req, res) => {
       .map(stem => `### ${stem}\n${helpDocsCache[stem]}`)
       .join('\n\n---\n\n');
 
+    const friendlyName = HELP_MODULE_FRIENDLY_NAME[activeModule];
+    const screenContextLine = friendlyName
+      ? `O usuário está NESTE MOMENTO na tela '${friendlyName}'. Quando ele disser 'esta tela', 'essa página', 'aqui', refere-se a ela.\n\n`
+      : '';
+
     const systemPrompt =
       'Você é o assistente de ajuda do CRM VRTX. Responda SOMENTE com base na documentação fornecida abaixo. ' +
       "Se a resposta não estiver na documentação, diga honestamente que não tem essa informação e oriente o usuário a clicar em 'Falar com suporte'. " +
       'Nunca invente funcionalidades. Responda curto e prático, em português.\n\n' +
+      screenContextLine +
       docsBlock;
 
     const messages = [
