@@ -134,7 +134,7 @@ export function AdminEmpresas() {
             Empresas Cadastradas
           </h1>
           <p className="text-sm text-[var(--text-tertiary)] mt-1">
-            Gerencie workspaces e acesso de novas empresas
+            Gerencie os workspaces cadastrados e o acesso de cada empresa. Dados isolados por RLS.
           </p>
         </div>
         <div className="flex items-center gap-2">
