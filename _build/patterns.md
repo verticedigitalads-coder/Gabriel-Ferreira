@@ -191,6 +191,46 @@ const settings = useDefaultSettings();
 
 ---
 
+## Padrão: Dependência de efeitos ligados a auth (session vs. user.id)
+
+**Quando usar:** Todo `useEffect` que reage ao estado de autenticação do
+Supabase (`session` vindo de `onAuthStateChange`/`getSession`).
+**Onde já foi usado:** App.tsx (efeito de verificação de termos — bug
+corrigido em 17/07/2026; efeito de bootstrap de workspace — hardening
+preventivo na mesma data).
+**Estrutura:**
+
+```typescript
+// ERRADO — objeto session ganha nova identidade em TODO evento do
+// onAuthStateChange, incluindo TOKEN_REFRESHED (disparado ao refocar aba)
+useEffect(() => {
+  if (!session) { /* ... */ return; }
+  fazAlgo(session.user.id);
+}, [session]);
+
+// CERTO — só reage quando o USUÁRIO de fato muda (login/logout/troca)
+useEffect(() => {
+  if (!session) { /* ... */ return; }
+  fazAlgo(session.user.id);
+}, [session?.user?.id]);
+```
+
+Sintoma quando violado: app desmonta/reseta ao trocar de aba — formulários
+em edição perdidos, toasts/notificações redisparadas como num primeiro
+acesso. Já ocorreu 2x (bootstrap em jun/2026, gate de termos em jul/2026).
+
+Teste de aceitação padrão para qualquer mudança em `App.tsx`/auth/gate:
+preencher metade de um formulário → trocar de aba 30s → voltar →
+formulário intacto, sem toasts redisparados.
+
+**Não usar quando:** O efeito precisa mesmo do token/objeto `session`
+atualizado (ex: passar pra uma chamada de API que exige o JWT mais recente)
+— nesse caso ler `session` direto do closure dentro do efeito, mas ainda
+assim manter a *decisão de re-executar* (array de deps) baseada em
+`user.id`, não no objeto inteiro.
+
+---
+
 ## Padrão: Prompt para Claude Code
 
 **Quando usar:** Toda tarefa de código gerada pelo chat

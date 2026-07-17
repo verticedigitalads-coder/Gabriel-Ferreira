@@ -218,7 +218,13 @@ export function App() {
       return;
     }
     checkTerms(session.user.id);
-  }, [session, checkTerms]);
+    // Depende só de user.id (não do objeto session inteiro): TOKEN_REFRESHED
+    // ao refocar a aba cria um novo objeto session para o MESMO usuário —
+    // se o efeito reagisse a `session`, isso re-rodaria checkTerms e forçaria
+    // 'checking' em App.tsx, desmontando MainLayout (perda de formulários
+    // em edição) e reexecutando setupNotifications() em MainLayout (toasts
+    // redisparados). Ver _build/patterns.md.
+  }, [session?.user?.id, checkTerms]);
 
   // 🚀 Inicializa store apenas se estiver autenticado
   useEffect(() => {
@@ -250,7 +256,11 @@ export function App() {
     };
 
     init();
-  }, [session]);
+    // Mesmo motivo do efeito de termos acima: reagir só a user.id evita
+    // recriar a closure de init() a cada TOKEN_REFRESHED (já era inofensivo
+    // pelo guard de realtimeStarted.current, mas isso deixa a intenção
+    // explícita em vez de depender só de um ref mutável).
+  }, [session?.user?.id]);
 
   // Ao trocar workspace, permite que startRealtime reinicialize
   useEffect(() => {
