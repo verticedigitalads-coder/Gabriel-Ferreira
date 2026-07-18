@@ -64,7 +64,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
     setIsAnalyzing(true);
 
     try {
-      const result = await AIService.analyzeConversation(conversation);
+      const result = await AIService.analyzeConversationWithAI(conversation);
       setAnalysis(result);
 
       // Check for duplicity
@@ -232,6 +232,20 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              {!analysis.aiUsed && (
+                <div className="p-4 bg-[var(--warning-subtle)] border border-[var(--warning)] rounded-md flex gap-3">
+                  <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-bold text-[var(--warning)]">
+                      Extração simplificada — IA indisponível
+                    </h4>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      Não foi possível usar a IA para extrair os dados agora. Os campos abaixo foram preenchidos por reconhecimento de padrões local; revise com atenção antes de criar o lead.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {duplicateLead && (
                 <div className="p-4 bg-[var(--warning-subtle)] border border-[var(--warning)] rounded-md flex gap-3">
                   <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />

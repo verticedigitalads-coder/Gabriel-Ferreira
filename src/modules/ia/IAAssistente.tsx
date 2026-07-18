@@ -16,6 +16,7 @@ import {
   FileText,
   Search,
   X,
+  AlertTriangle,
 } from 'lucide-react'
 import { analyzeLeadsBatch, generatePriorityReport } from './iaService'
 
@@ -545,6 +546,20 @@ export function IAAssistente() {
 >
   {analysis && (
     <div className="p-6 space-y-6">
+
+      {!analysis.aiUsed && (
+        <div className="p-4 bg-[var(--warning-subtle)] border border-[var(--warning)] rounded-md flex gap-3">
+          <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
+          <div>
+            <h4 className="text-sm font-bold text-[var(--warning)]">
+              Análise simplificada — IA indisponível
+            </h4>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Não foi possível confirmar o refinamento com a IA agora. Os dados abaixo usam o diagnóstico heurístico local; revise antes de aplicar.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* 🔷 DIAGNÓSTICO ESTRATÉGICO */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm bg-[var(--bg-surface-2)] p-4 rounded-lg border border-[var(--border)]">

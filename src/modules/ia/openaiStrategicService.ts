@@ -1,12 +1,22 @@
 import type { Lead } from '@/types';
 import { apiFetch } from '@/lib/apiFetch';
+import type { StrategicDiagnosis } from './strategicDiagnosisService';
 
-interface OpenAIStrategicResponse {
-  ajusteMensagem?: string;
-  ajusteEstrategia?: string;
-  observacaoExtra?: string;
-  riscoReavaliado?: 'baixo' | 'medio' | 'alto' | 'critico';
-}
+// A IA responde só com os campos reais de StrategicDiagnosis que decidir ajustar
+// — usar as mesmas chaves evita qualquer camada de tradução/mapeamento no merge.
+export type OpenAIStrategicResponse = Partial<
+  Pick<
+    StrategicDiagnosis,
+    | 'resumoExecutivo'
+    | 'estrategiaDeAbordagem'
+    | 'mensagemSugeridaWhatsApp'
+    | 'riscoDePerda'
+    | 'probabilidadeConversao'
+    | 'maturidade'
+    | 'riscoConcorrencia'
+    | 'potencialFuturo'
+  >
+>;
 
 function calcularDiasSemContato(lead: Lead): number {
   if (!lead.ultimoContato) return 999;
@@ -29,7 +39,7 @@ function formatarHistoricoRecente(lead: Lead): string {
 
 export async function refineLeadStrategyWithAI(
   lead: Lead,
-  baseAnalysis: any,
+  baseAnalysis: StrategicDiagnosis,
 ): Promise<OpenAIStrategicResponse | null> {
   const diasSemContato = calcularDiasSemContato(lead);
   const historicoRecente = formatarHistoricoRecente(lead);
@@ -69,13 +79,18 @@ Mensagem Base: ${baseAnalysis.mensagemSugeridaWhatsApp}
 4. Nunca invente fatos.
 5. Não reescreva tudo se estiver adequado.
 
-Responda SOMENTE em JSON válido:
+Responda SOMENTE em JSON válido, usando EXATAMENTE estas chaves — inclua
+apenas as que você decidir ajustar (omita as demais, não repita o valor base):
 
 {
-  "ajusteMensagem": "mensagem melhorada mantendo contexto",
-  "ajusteEstrategia": "estratégia melhorada se necessário",
-  "observacaoExtra": "insight estratégico adicional opcional",
-  "riscoReavaliado": "baixo | medio | alto | critico"
+  "resumoExecutivo": "resumo executivo revisado, se necessário",
+  "estrategiaDeAbordagem": "estratégia revisada, se necessário",
+  "mensagemSugeridaWhatsApp": "mensagem melhorada mantendo contexto",
+  "riscoDePerda": "baixo | medio | alto | critico",
+  "probabilidadeConversao": 0,
+  "maturidade": 0,
+  "riscoConcorrencia": "baixo | medio | alto",
+  "potencialFuturo": "baixo | medio | alto"
 }
 
 Se tudo estiver adequado, retorne {}.
@@ -85,6 +100,7 @@ Se tudo estiver adequado, retorne {}.
     method: 'POST',
     body: JSON.stringify({
       model: 'gpt-4o-mini',
+      response_format: { type: 'json_object' },
       messages: [
         {
           role: 'system',
@@ -96,15 +112,26 @@ Se tudo estiver adequado, retorne {}.
     }),
   });
 
+  if (!response.ok) {
+    console.error('[IA Estratégica] OpenAI respondeu com erro HTTP', response.status);
+    return null;
+  }
+
   const data = await response.json();
 
   if (!data.choices?.[0]?.message?.content) {
+    console.error('[IA Estratégica] Resposta OpenAI sem conteúdo utilizável', data);
     return null;
   }
 
   try {
-    return JSON.parse(data.choices[0].message.content);
-  } catch {
+    return JSON.parse(data.choices[0].message.content) as OpenAIStrategicResponse;
+  } catch (err) {
+    console.error(
+      '[IA Estratégica] Falha ao parsear JSON da IA',
+      err,
+      data.choices[0].message.content,
+    );
     return null;
   }
 }

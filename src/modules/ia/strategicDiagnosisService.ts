@@ -20,6 +20,9 @@ export interface StrategicDiagnosis {
   estrategiaDeAbordagem: string
   mensagemSugeridaWhatsApp: string
   dataIdealFollowUp: string
+
+  // 🔥 Indica se o refinamento por IA foi realmente aplicado (false = fallback heurístico)
+  aiUsed: boolean
 }
 
 /**
@@ -138,6 +141,8 @@ export async function generateFullStrategicDiagnosisWithAI(
     dataIdealFollowUp: new Date(
       Date.now() + 2 * 86400000
     ).toISOString(),
+
+    aiUsed: false, // valor base — sobrescrito para true só se a IA responder com sucesso
   }
 
   // ==============================
@@ -147,20 +152,24 @@ export async function generateFullStrategicDiagnosisWithAI(
   try {
     const refined = await refineLeadStrategyWithAI(lead, baseDiagnosis)
 
+    // refined !== null significa que a IA respondeu com sucesso (mesmo que {}
+    // — "está tudo adequado" é uma resposta válida, não uma falha).
     if (refined) {
       return {
         ...baseDiagnosis,
-        ...refined
+        ...refined,
+        aiUsed: true,
       }
     }
 
+    console.warn('[IA Estratégica] IA não retornou ajustes utilizáveis — usando diagnóstico base.')
   } catch (error) {
-    console.warn('OpenAI indisponível, usando diagnóstico base.')
+    console.error('[IA Estratégica] Falha ao chamar IA de refinamento estratégico:', error)
   }
 
   // ==============================
   // 3️⃣ FALLBACK
   // ==============================
 
-  return baseDiagnosis
+  return baseDiagnosis // aiUsed já é false aqui
 }

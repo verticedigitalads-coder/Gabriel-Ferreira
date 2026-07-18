@@ -1,5 +1,6 @@
-import { Lead, LeadStatus, LeadTemperature, HISTORICO_TIPO } from '@/types';
+import { Lead, LeadStatus, LeadTemperature, LeadOrigin, LeadPrazo, HISTORICO_TIPO } from '@/types';
 import { calculatePriority } from '@/lib/priority';
+import { apiFetch } from '@/lib/apiFetch';
 
 export interface AIAnalysisResult {
   nome: string | null;
@@ -19,6 +20,43 @@ export interface AIAnalysisResult {
   ultimoContato?: string;
   visitaSugerida?: boolean | null;
   dataVisitaSugerida?: string | null;
+
+  // 🔥 NOVOS CAMPOS (urgência/prazo e período de visita — usam enums já existentes do Lead)
+  prazoCliente: LeadPrazo;
+  visitaOrcamentoPeriodo: 'manha' | 'almoco' | 'tarde' | null;
+
+  // 🔥 Indica se a extração usou a IA com sucesso (false = só heurística local)
+  aiUsed: boolean;
+}
+
+function buildExtractionPrompt(conversation: string): string {
+  return `
+Extraia os dados abaixo de uma conversa de WhatsApp entre uma empresa de serralheria/marcenaria/reformas e um cliente.
+Nunca invente. Se não tiver certeza de um campo, retorne null para ele.
+
+===== CONVERSA =====
+${conversation}
+===== FIM DA CONVERSA =====
+
+Responda SOMENTE em JSON válido com estas chaves (use null quando não tiver certeza):
+
+{
+  "nome": "nome do cliente ou null",
+  "telefone": "telefone ou null",
+  "email": "email ou null",
+  "endereco": "endereço completo da obra, incluindo bairro se mencionado, ou null",
+  "servico": "descrição do serviço solicitado, incluindo medidas e materiais mencionados, ou null",
+  "origem": "indicacao | facebook | instagram | google | outro",
+  "prazoCliente": "urgente | curto | medio | longo | nao_definido",
+  "temperatura": "frio | morno | quente",
+  "status": "novo | atendimento | orcado | fechado | perdido",
+  "valorOrcado": 0,
+  "visitaSugerida": false,
+  "dataVisitaSugerida": "YYYY-MM-DD ou null",
+  "visitaOrcamentoPeriodo": "manha | almoco | tarde | null",
+  "resumo": "resumo rico da conversa em 2-4 frases, mencionando medidas, materiais e contexto que não têm campo próprio"
+}
+`;
 }
 
 export class AIService {
@@ -181,6 +219,49 @@ export class AIService {
       return 'indicacao';
 
     return 'outro';
+  }
+
+  // =========================
+  // DETECTAR PRAZO/URGÊNCIA DO CLIENTE
+  // =========================
+  static detectPrazoCliente(text: string): LeadPrazo {
+    const lower = text.toLowerCase();
+
+    if (
+      lower.includes('urgente') ||
+      lower.includes('o quanto antes') ||
+      lower.includes('pra ontem') ||
+      lower.includes('hoje mesmo')
+    ) {
+      return 'urgente';
+    }
+
+    if (
+      lower.includes('essa semana') ||
+      lower.includes('próximos dias') ||
+      lower.includes('proximos dias')
+    ) {
+      return 'curto';
+    }
+
+    if (
+      lower.includes('esse mês') ||
+      lower.includes('esse mes') ||
+      lower.includes('próximas semanas') ||
+      lower.includes('proximas semanas')
+    ) {
+      return 'medio';
+    }
+
+    if (
+      lower.includes('sem pressa') ||
+      lower.includes('futuramente') ||
+      lower.includes('mais pra frente')
+    ) {
+      return 'longo';
+    }
+
+    return 'nao_definido';
   }
 
   // =========================
@@ -448,6 +529,8 @@ export class AIService {
 
     const visitIntent = this.detectVisitIntent(clean);
     const visitDate = this.detectVisitDate(clean);
+    const visitPeriod = this.detectVisitPeriod(clean);
+    const prazoCliente = this.detectPrazoCliente(clean);
 
     const valor = this.extractBudget(clean);
 
@@ -502,8 +585,10 @@ export class AIService {
 
       visitaSugerida: visitIntent,
       dataVisitaSugerida: visitDate,
+      visitaOrcamentoPeriodo: visitPeriod,
 
       origem,
+      prazoCliente,
       temperatura,
       status,
       risco: 'baixo',
@@ -522,6 +607,113 @@ export class AIService {
       dataSugeridaFollowUp: new Date(Date.now() + 86400000)
         .toISOString()
         .split('T')[0],
+
+      aiUsed: false, // esta função é 100% heurística; só analyzeConversationWithAI pode marcar true
+    };
+  }
+
+  // =========================
+  // ANÁLISE PRINCIPAL COM IA (fonte primária) + FALLBACK HEURÍSTICO
+  // =========================
+  static async analyzeConversationWithAI(text: string): Promise<AIAnalysisResult> {
+    // 🔥 Heurística SEMPRE roda primeiro — é o piso garantido, nunca falha.
+    const heuristic = await this.analyzeConversation(text);
+
+    // Conversas de WhatsApp coladas podem ser longas — trunca preservando
+    // a parte mais recente (contexto de negociação atual costuma estar no fim).
+    const MAX_CHARS = 12000;
+    const truncated = text.length > MAX_CHARS ? text.slice(-MAX_CHARS) : text;
+
+    try {
+      const response = await apiFetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          response_format: { type: 'json_object' },
+          temperature: 0,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Você extrai dados estruturados de conversas de WhatsApp para uma empresa de serralheria/marcenaria/reformas. Nunca invente dados que não estejam explicitamente no texto — use null quando não tiver certeza. Retorne apenas JSON válido.',
+            },
+            { role: 'user', content: buildExtractionPrompt(truncated) },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('[AIService] OpenAI respondeu com erro HTTP', response.status);
+        return heuristic;
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      if (!content) {
+        console.error('[AIService] Resposta OpenAI sem conteúdo utilizável', data);
+        return heuristic;
+      }
+
+      let parsed: Partial<AIAnalysisResult>;
+      try {
+        parsed = JSON.parse(content);
+      } catch (err) {
+        console.error('[AIService] Falha ao parsear JSON da IA', err, content);
+        return heuristic;
+      }
+
+      return this.mergeAIWithHeuristic(heuristic, parsed);
+    } catch (error) {
+      console.error('[AIService] Falha ao chamar IA de extração de conversa:', error);
+      return heuristic;
+    }
+  }
+
+  // =========================
+  // MERGE: IA sobrescreve só o que confirmou; heurística cobre o resto
+  // =========================
+  private static readonly ORIGENS: LeadOrigin[] = ['indicacao', 'facebook', 'instagram', 'google', 'outro'];
+  private static readonly PRAZOS: LeadPrazo[] = ['urgente', 'curto', 'medio', 'longo', 'nao_definido'];
+  private static readonly PERIODOS = ['manha', 'almoco', 'tarde'] as const;
+  private static readonly STATUSES: LeadStatus[] = ['novo', 'atendimento', 'orcado', 'fechado', 'perdido'];
+  private static readonly TEMPERATURAS: LeadTemperature[] = ['frio', 'morno', 'quente'];
+
+  private static mergeAIWithHeuristic(
+    heuristic: AIAnalysisResult,
+    ai: Partial<AIAnalysisResult>,
+  ): AIAnalysisResult {
+    const pickEnum = <T,>(value: unknown, allowed: readonly T[], fallback: T): T =>
+      (allowed as readonly unknown[]).includes(value) ? (value as T) : fallback;
+
+    const pickText = (value: unknown, fallback: string | null) =>
+      typeof value === 'string' && value.trim() ? value.trim() : fallback;
+
+    const valorOrcadoAI =
+      typeof ai.valorOrcado === 'number' && ai.valorOrcado > 0 ? ai.valorOrcado : null;
+
+    return {
+      ...heuristic,
+      nome: pickText(ai.nome, heuristic.nome),
+      telefone: pickText(ai.telefone, heuristic.telefone),
+      email: pickText(ai.email, heuristic.email),
+      endereco: pickText(ai.endereco, heuristic.endereco),
+      servico: pickText(ai.servico, heuristic.servico),
+      origem: pickEnum(ai.origem, this.ORIGENS, (heuristic.origem as LeadOrigin) || 'outro'),
+      prazoCliente: pickEnum(ai.prazoCliente, this.PRAZOS, heuristic.prazoCliente),
+      temperatura: pickEnum(ai.temperatura, this.TEMPERATURAS, heuristic.temperatura),
+      status: pickEnum(ai.status, this.STATUSES, heuristic.status),
+      valorOrcado: valorOrcadoAI ?? heuristic.valorOrcado,
+      orcamentoEnviado: valorOrcadoAI !== null ? true : heuristic.orcamentoEnviado,
+      resumo: pickText(ai.resumo, heuristic.resumo) || heuristic.resumo,
+      visitaSugerida: typeof ai.visitaSugerida === 'boolean' ? ai.visitaSugerida : heuristic.visitaSugerida,
+      dataVisitaSugerida: pickText(ai.dataVisitaSugerida, heuristic.dataVisitaSugerida ?? null),
+      visitaOrcamentoPeriodo: pickEnum(
+        ai.visitaOrcamentoPeriodo,
+        this.PERIODOS,
+        heuristic.visitaOrcamentoPeriodo,
+      ),
+      aiUsed: true,
     };
   }
 
@@ -589,8 +781,11 @@ export class AIService {
 
       origem: (analysis.origem as any) || 'outro',
 
-      prazoCliente: 'nao_definido',
+      prazoCliente: analysis.prazoCliente || 'nao_definido',
       probabilidadeManual: 3,
+
+      visitaOrcamentoData: analysis.dataVisitaSugerida || undefined,
+      visitaOrcamentoPeriodo: analysis.visitaOrcamentoPeriodo || undefined,
 
       ultimoContato: analysis.ultimoContato || new Date().toISOString(),
       proximoContato: analysis.dataSugeridaFollowUp,
