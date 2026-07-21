@@ -59,7 +59,11 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
       await updateLead(lead.id, formData);
       addToast({ type: 'success', message: 'Lead atualizado com sucesso!' });
     } else {
-      await addLead(formData);
+      const inserted = await addLead(formData);
+      if (!inserted) {
+        addToast({ type: 'error', message: 'Erro ao adicionar lead. Tente novamente.' });
+        return;
+      }
       addToast({ type: 'success', message: 'Lead adicionado com sucesso!' });
     }
 

@@ -22,8 +22,6 @@ export async function createLead(data: Partial<Lead>, workspaceId: string) {
     orcamento_enviado: data.orcamentoEnviado ?? false,
     ultimo_contato: data.ultimoContato || null,
     proximo_contato: data.proximoContato || null,
-    visita_orcamento_data: data.visitaOrcamentoData || null,
-    visita_orcamento_periodo: data.visitaOrcamentoPeriodo || null,
     workspace_id: workspaceId,
     created_at: now,
     updated_at: now
