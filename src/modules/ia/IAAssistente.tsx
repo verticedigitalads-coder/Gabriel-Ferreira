@@ -127,6 +127,12 @@ export function IAAssistente() {
   const handleApply = async () => {
     if (!selectedLead || !analysis) return
 
+    const observacoesExistentes = selectedLead.observacoes?.trim()
+    const blocoPlano = `[Plano IA - ${new Date().toLocaleDateString('pt-BR')}]\n${analysis.estrategiaDeAbordagem}`
+    const observacoesAtualizadas = observacoesExistentes
+      ? `${observacoesExistentes}\n\n---\n${blocoPlano}`
+      : blocoPlano
+
     await updateLead(selectedLead.id, {
   temperatura:
     analysis.temperaturaSugerida === 'fria'
@@ -138,7 +144,7 @@ export function IAAssistente() {
   status: analysis.statusSugerido,
   resumo: analysis.resumoExecutivo,
   proximoContato: analysis.dataIdealFollowUp,
-  observacoes: analysis.estrategiaDeAbordagem,
+  observacoes: observacoesAtualizadas,
 
   historico: [
     ...(selectedLead.historico || []),

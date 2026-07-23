@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Send, HelpCircle, MessageCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { SlidePanel } from '@/components/ui/Modal';
 import { useStore } from '@/store/useStore';
 import { apiFetch } from '@/lib/apiFetch';
@@ -131,9 +133,18 @@ export function HelpPanel({ isOpen, onClose }: HelpPanelProps) {
                       border: '1px solid var(--border)',
                     }}
                   >
-                    <p className="text-sm whitespace-pre-wrap break-words" style={{ color: 'var(--text-primary)' }}>
-                      {m.content}
-                    </p>
+                    {m.role === 'assistant' ? (
+                      <div
+                        className="text-sm break-words [&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap break-words" style={{ color: 'var(--text-primary)' }}>
+                        {m.content}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

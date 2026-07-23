@@ -322,7 +322,11 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
               <button
                 onClick={e => {
                   e.stopPropagation();
-                  window.open(`https://wa.me/55${lead.telefone.replace(/\D/g, '')}`, '_blank');
+                  const cleanPhone = lead.telefone.replace(/\D/g, '');
+                  const phone = cleanPhone.startsWith('55') && cleanPhone.length >= 12
+                    ? cleanPhone
+                    : `55${cleanPhone}`;
+                  window.open(`https://wa.me/${phone}`, '_blank');
                 }}
                 className="flex items-center gap-1 text-xs text-green-500 hover:text-green-400 transition-colors min-h-[44px] px-2 py-2"
                 title="Abrir WhatsApp"

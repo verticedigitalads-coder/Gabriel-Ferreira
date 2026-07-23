@@ -113,13 +113,13 @@ export function Dashboard() {
 
   const criticos = useMemo(() => {
     const now = new Date();
-    return leads.filter(l =>
-      l.prioridadeLevel === 'critico' &&
-      l.status !== 'fechado' &&
-      l.status !== 'perdido' &&
-      l.ultimoContato != null &&
-      differenceInDays(now, parseISO(l.ultimoContato)) >= 5
-    );
+    return leads.filter(l => {
+      if (l.prioridadeLevel !== 'critico') return false;
+      if (l.status === 'fechado' || l.status === 'perdido') return false;
+      const referencia = l.ultimoContato ?? l.createdAt;
+      if (!referencia) return false;
+      return differenceInDays(now, parseISO(referencia)) >= 5;
+    });
   }, [leads]);
 
   // ==============================
@@ -285,7 +285,7 @@ export function Dashboard() {
             </div>
             <div className="space-y-1.5">
               {criticos.map(lead => {
-                const dias = differenceInDays(now, parseISO(lead.ultimoContato!));
+                const dias = differenceInDays(now, parseISO(lead.ultimoContato ?? lead.createdAt));
                 return (
                   <div
                     key={lead.id}

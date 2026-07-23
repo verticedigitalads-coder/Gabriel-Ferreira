@@ -37,7 +37,7 @@ export function NotificationsDropdown() {
   ).length;
   const financeiroCount = contasReceber.filter(c => c.status === 'atrasado').length;
   const tarefasCount = stats.tarefasHoje + stats.tarefasAtrasadas;
-  const estoqueCount = materiais.filter(m => m.estoque <= m.estoque_minimo).length;
+  const estoqueCount = materiais.filter(m => m.estoque <= (m.estoqueMinimo ?? 0)).length;
 
   const categories = [
     { key: 'leads', icon: AlertCircle, color: 'var(--danger)', subtle: 'var(--danger-subtle)', label: 'Leads críticos', count: leadsCount, module: 'leads' },
