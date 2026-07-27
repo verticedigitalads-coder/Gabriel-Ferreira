@@ -230,11 +230,13 @@ export const useStore = create<StoreState>()(
             operacionalTasks: (tasksRes.data || []).map(formatOperacionalTask),
             transactions: (transactionsRes.data || []).map(formatTransaction),
             contasReceber: (contasReceberRes.data || []).map(formatContaReceber),
+            fornecedores: [],
             isLoading: false,
           });
 
           await get().fetchRecibos(workspaceId);
           await get().fetchSettings(workspaceId);
+          await get().loadFornecedores();
         } catch (error) {
           console.error('[UseStore] Erro de inicialização:', error);
           set({ isLoading: false });
@@ -630,6 +632,7 @@ export const useStore = create<StoreState>()(
           notas: [],
           operacionalTasks: [],
           contasReceber: [],
+          fornecedores: [],
           whatsappConversations: [],
           whatsappMessages: [],
           selectedConversation: null,

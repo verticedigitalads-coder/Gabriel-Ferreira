@@ -11,10 +11,14 @@ export const createFornecedorSlice = (set: any, get: any) => ({
   loadFornecedores: async () => {
     const { workspaceId } = get()
     if (!workspaceId) return
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('fornecedores')
       .select('*')
       .eq('workspace_id', workspaceId)
+    if (error) {
+      console.error('[FornecedorSlice] Erro ao carregar fornecedores:', error)
+      return
+    }
     set({ fornecedores: (data || []).map(formatFornecedor) })
   },
 
