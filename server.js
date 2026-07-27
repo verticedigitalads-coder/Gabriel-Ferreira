@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -13,6 +14,14 @@ import rateLimit from 'express-rate-limit';
 import { pixPayload } from './utils/pixPayload.js';
 
 dotenv.config({ path: './.env' });
+
+// Comparação constante no tempo (evita timing side-channel em segredos).
+// Trata tamanhos diferentes sem lançar (timingSafeEqual exige buffers iguais).
+function safeEqual(a, b) {
+  const ba = Buffer.from(String(a ?? ''));
+  const bb = Buffer.from(String(b ?? ''));
+  return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
+}
 
 // ===== Sanitização de HTML =====
 function escapeHtml(str) {
@@ -333,13 +342,19 @@ async function gerarQrCodePixHtml({
 🌐 CORS (whitelist via env)
 ========================================== */
 
-const allowedOrigins = (
-  process.env.CORS_ALLOWED_ORIGINS ||
-  'http://localhost:5173,http://localhost:3000,https://vertice-digital-crm.vercel.app'
+// Produção: apenas domínios reais (via env). Localhost entra só fora de
+// produção (NODE_ENV !== 'production') — não fica na whitelist em prod.
+const isProd = process.env.NODE_ENV === 'production';
+const envOrigins = (
+  process.env.CORS_ALLOWED_ORIGINS || 'https://vertice-digital-crm.vercel.app'
 )
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+const devOrigins = isProd
+  ? []
+  : ['http://localhost:5173', 'http://localhost:3000'];
+const allowedOrigins = [...new Set([...envOrigins, ...devOrigins])];
 
 app.use(
   cors({
@@ -541,7 +556,7 @@ app.post('/api/help-chat', requireAuth, strictLimiter, async (req, res) => {
 🏢 PROXY CNPJ (ReceitaWS)
 ========================================== */
 
-app.get('/api/cnpj/:cnpj', async (req, res) => {
+app.get('/api/cnpj/:cnpj', requireAuth, async (req, res) => {
   const { cnpj } = req.params;
   const cnpjLimpo = cnpj.replace(/\D/g, '');
 
@@ -1859,7 +1874,7 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
 💸 PIX — Gerar payload Copia e Cola
 ========================================== */
 
-app.post('/api/pix-payload', async (req, res) => {
+app.post('/api/pix-payload', requireAuth, async (req, res) => {
   try {
     const { chavePix, nomeRecebedor, cidadeRecebedor, valor, txid } = req.body;
 
@@ -2025,7 +2040,10 @@ app.post('/webhook/evolution', (_req, res) => {
 });
 
 app.post('/webhook/evolution/:secret', async (req, res) => {
-  if (req.params.secret !== process.env.WEBHOOK_SECRET) {
+  // DÉBITO: segredo no path da URL aparece em logs de servidor/proxy. Migrar p/
+  // header X-Webhook-Secret quando a URL configurada no Evolution API puder ser
+  // atualizada (mover agora quebraria a config em produção).
+  if (!safeEqual(req.params.secret, process.env.WEBHOOK_SECRET)) {
     return res.status(401).json({ error: 'Não autorizado' });
   }
   try {
@@ -2050,12 +2068,14 @@ app.post('/webhook/evolution/:secret', async (req, res) => {
       .eq('instance_name', instance)
       .single();
 
-    const workspaceId =
-      instanceData?.workspace_id || process.env.DEFAULT_WORKSPACE_ID;
+    // Instância não mapeada em whatsapp_instances → REJEITA (não atribui ao
+    // DEFAULT_WORKSPACE_ID, que misturaria dados de origem desconhecida). 200
+    // evita retry infinito do Evolution; a mensagem é descartada.
+    const workspaceId = instanceData?.workspace_id;
 
     if (!workspaceId) {
-      console.log(
-        '[Evolution Webhook] No workspace mapping for instance:',
+      console.warn(
+        '[Evolution Webhook] Instância não-mapeada, mensagem rejeitada:',
         instance,
       );
       return res.status(200).json({ status: 'no_workspace' });
@@ -2128,6 +2148,37 @@ function evolutionConfig(res) {
   return { url, key };
 }
 
+// Valida que a instância pertence a um workspace do usuário autenticado.
+// Retorna o workspace_id se pertencer, senão null. Duas queries explícitas via
+// service_role (que BYPASSA RLS) — o filtro por workspace_members.user_id é
+// OBRIGATÓRIO. Não usa embed do PostgREST (a RLS/FK de whatsapp_instances foi
+// criada no painel, sem relação garantida ao PostgREST).
+async function assertInstanceOwnership(instanceName, userId) {
+  if (!instanceName || !userId) return null;
+  try {
+    const admin = getSupabaseAdmin();
+    const { data: inst, error: e1 } = await admin
+      .from('whatsapp_instances')
+      .select('workspace_id')
+      .eq('instance_name', instanceName)
+      .maybeSingle();
+    if (e1 || !inst?.workspace_id) return null;
+
+    const { data: member, error: e2 } = await admin
+      .from('workspace_members')
+      .select('user_id')
+      .eq('workspace_id', inst.workspace_id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (e2 || !member) return null;
+
+    return inst.workspace_id;
+  } catch (err) {
+    console.error('[assertInstanceOwnership] erro:', err);
+    return null;
+  }
+}
+
 // Enviar mensagem de texto
 app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
   const cfg = evolutionConfig(res);
@@ -2139,6 +2190,9 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
         .status(400)
         .json({ error: 'instanceName, number e text são obrigatórios' });
     }
+
+    const wsId = await assertInstanceOwnership(instanceName, req.user.id);
+    if (!wsId) return res.status(403).json({ error: 'Acesso negado' });
 
     if (String(number).includes('@g.us')) {
       return res.status(400).json({
@@ -2172,31 +2226,24 @@ app.post('/api/whatsapp/send-text', requireAuth, async (req, res) => {
 
     if (response.ok && data?.key?.id && data?.key?.remoteJid) {
       try {
+        // workspace_id vem do helper de ownership (nunca do body)
         const admin = getSupabaseAdmin();
-        const { data: inst } = await admin
-          .from('whatsapp_instances')
-          .select('workspace_id')
-          .eq('instance_name', instanceName)
-          .single();
-
-        if (inst?.workspace_id) {
-          const persistJid = originalJid || data.key.remoteJid;
-          await admin.from('whatsapp_messages').upsert(
-            {
-              workspace_id: inst.workspace_id,
-              instance_name: instanceName,
-              remote_jid: persistJid,
-              contact_name: null,
-              message_id: data.key.id,
-              from_me: true,
-              message_type: 'text',
-              content: text,
-              timestamp: new Date().toISOString(),
-              raw_data: data,
-            },
-            { onConflict: 'message_id' },
-          );
-        }
+        const persistJid = originalJid || data.key.remoteJid;
+        await admin.from('whatsapp_messages').upsert(
+          {
+            workspace_id: wsId,
+            instance_name: instanceName,
+            remote_jid: persistJid,
+            contact_name: null,
+            message_id: data.key.id,
+            from_me: true,
+            message_type: 'text',
+            content: text,
+            timestamp: new Date().toISOString(),
+            raw_data: data,
+          },
+          { onConflict: 'message_id' },
+        );
       } catch (err) {
         console.error('[WhatsApp Send] persist error:', err);
       }
@@ -2217,6 +2264,9 @@ app.post('/api/whatsapp/send-media', requireAuth, async (req, res) => {
     const { instanceName, number, mediatype, caption, media } = req.body ?? {};
     if (!instanceName || !number || !mediatype || !media) {
       return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+    }
+    if (!(await assertInstanceOwnership(instanceName, req.user.id))) {
+      return res.status(403).json({ error: 'Acesso negado' });
     }
     const response = await fetch(
       `${cfg.url}/message/sendMedia/${instanceName}`,
@@ -2239,6 +2289,9 @@ app.get('/api/whatsapp/status/:instanceName', requireAuth, async (req, res) => {
   const cfg = evolutionConfig(res);
   if (!cfg) return;
   try {
+    if (!(await assertInstanceOwnership(req.params.instanceName, req.user.id))) {
+      return res.status(403).json({ error: 'Acesso negado' });
+    }
     const response = await fetch(
       `${cfg.url}/instance/connectionState/${req.params.instanceName}`,
       { headers: { apikey: cfg.key } },
@@ -2259,6 +2312,9 @@ app.post(
     const cfg = evolutionConfig(res);
     if (!cfg) return;
     try {
+      if (!(await assertInstanceOwnership(req.params.instanceName, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const response = await fetch(
         `${cfg.url}/instance/logout/${req.params.instanceName}`,
         { method: 'DELETE', headers: { apikey: cfg.key } },
@@ -2280,6 +2336,9 @@ app.get(
     const cfg = evolutionConfig(res);
     if (!cfg) return;
     try {
+      if (!(await assertInstanceOwnership(req.params.instanceName, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const response = await fetch(
         `${cfg.url}/chat/findContacts/${req.params.instanceName}`,
         {
@@ -2316,6 +2375,9 @@ app.get(
     if (!cfg) return;
     try {
       const { instanceName, messageId } = req.params;
+      if (!(await assertInstanceOwnership(instanceName, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const response = await fetch(
         `${cfg.url}/chat/getBase64FromMediaMessage/${instanceName}`,
         {

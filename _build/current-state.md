@@ -111,13 +111,15 @@ Versão: v2.36.4
 - Frontend: Vercel (vertice-digital-crm.vercel.app)
 - Backend: produção na VPS Hetzner (178.104.236.222), `/opt/crm-backend`, gerenciado via PM2 (processo `crm-backend`), Nginx reverse proxy 80→3001, API pública `https://api.vrtxcrm.com.br`. Deploy: SSH na VPS → `git pull origin main && pm2 restart crm-backend`. Dev local continua em `localhost:3001` (ngrok não é mais necessário)
 - Supabase: online, RLS 100%
+- VPS `.env`: `NODE_ENV=production` adicionado manualmente em 23/07/2026 — não versionado (`.env` gitignored), necessário para o CORS por ambiente do fix de segurança (localhost só entra na whitelist fora de produção). `CORS_ALLOWED_ORIGINS` deve conter apenas domínio(s) real(is) em prod.
 
 ## WhatsApp / Evolution API
 - Fase 12 concluída: webhook `/webhook/evolution` no server.js (POST, recebe `messages.upsert`)
 - `whatsapp_instances` criada no Supabase (FK → workspaces, RLS, `instance_name UNIQUE`)
 - `whatsapp_messages` já existia no Supabase (RLS ativa)
 - Mapeamento instance_name → workspace_id via tabela `whatsapp_instances`
-- Fallback: `DEFAULT_WORKSPACE_ID` env se instance não mapeada
+- Instância não mapeada em `whatsapp_instances` → mensagem REJEITADA no webhook (`no_workspace` + warning). Fallback `DEFAULT_WORKSPACE_ID` REMOVIDO no fix de segurança 07/2026 (era vetor de mistura cross-tenant); a env pode ser removida do `.env` da VPS (não tem mais efeito).
+- Rotas proxy `/api/whatsapp/*` validam ownership da instância (`assertInstanceOwnership`: instância pertence a workspace do usuário via `workspace_members`) antes de repassar ao Evolution — fix IDOR cross-tenant 07/2026. Falha → 403.
 - Evolution API: https://evo.vrtxcrm.com.br
 - Fase 12.5 concluída (v2.32.0): WhatsApp funcional — `apiFetch` agora anexa `Authorization: Bearer <jwt>` via `supabase.auth.getSession()` (cache local; conserta gap latente do `/api/admin/*`, não-quebra rotas sem auth); 4 rotas proxy Evolution em server.js após `/webhook/evolution` (`POST /api/whatsapp/send-text|send-media`, `GET /api/whatsapp/status/:inst`, `POST /api/whatsapp/logout/:inst`, todas `requireAuth` + globalLimiter, helper `evolutionConfig` valida envs); slice ganhou `whatsappInstanceName`/`connectionStatus`/`sendingMessage` + `fetchWhatsappInstance` (lê `whatsapp_instances` por workspace), `fetchConnectionStatus`, `sendMessage` (sem insert otimista — chega via webhook→realtime), `deleteConversation` (delete Supabase + update local, RLS); UI: footer fixo com textarea (Enter envia / Shift+Enter quebra) + botão Send, menu ⋮ com status (bolinha success/danger) e "Limpar conversa" (ConfirmDialog). ENV backend necessária: `EVOLUTION_API_URL=https://evo.vrtxcrm.com.br`, `EVOLUTION_API_KEY=<key>` (adicionar manual no .env do VPS)
 - Auditoria UX WhatsApp v2.31.1: 3 fixes — `color:'#fff'` (×2 avatares) → `var(--accent-foreground)`; `focus:ring-2` → `focus:ring-2 focus:ring-[var(--accent)]` no input de busca; zero CSS hardcoded restante

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { Fornecedor, FornecedorCategoria, FornecedorStatus } from '@/types'
 import { formatPhone } from '@/utils/formatters'
+import { apiFetch } from '@/lib/apiFetch'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ interface ReceitaWSResult {
 
 async function fetchCnpjData(cnpj14: string): Promise<ReceitaWSResult | null> {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cnpj/${cnpj14}`)
+    const res = await apiFetch(`/api/cnpj/${cnpj14}`)
     if (!res.ok) return null
     const data = await res.json()
     if (data.erro) return null
