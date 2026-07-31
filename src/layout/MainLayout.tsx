@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { ToastContainer } from '@/components/ui/Toast';
 import { HeaderGlobal } from './HeaderGlobal';
 import { HelpPanel } from './HelpPanel';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
 import { Menu, LogOut } from 'lucide-react';
@@ -55,7 +56,8 @@ export function MainLayout({ children }: MainLayoutProps) {
       <div className="flex flex-col flex-1 overflow-hidden">
 
         {/* Header Global */}
-        <div className="flex items-center justify-between gap-2.5 px-3 py-2 md:px-6 md:py-3 bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
+        <div className="flex flex-col bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
+        <div className="flex items-center justify-between gap-2.5 px-3 py-2 md:px-6 md:py-3">
 
   <button
     className="md:hidden mr-1 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md"
@@ -120,6 +122,12 @@ export function MainLayout({ children }: MainLayoutProps) {
               </>
             )}
           </div>
+        </div>
+
+        {/* Linha 2 — mobile: seletor de workspace (visível apenas com 2+ workspaces) */}
+        <div className="md:hidden px-3 pb-2">
+          <WorkspaceSwitcher />
+        </div>
         </div>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">

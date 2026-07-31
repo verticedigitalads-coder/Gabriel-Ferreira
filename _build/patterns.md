@@ -254,3 +254,13 @@ DEPOIS: [código corrigido]
 ```
 
 **Não usar quando:** Perguntas exploratórias ou de diagnóstico sem implementação
+
+---
+
+## Gotcha: `h1{font-size:...}` em index.css vence classes Tailwind `text-*`
+
+**Quando desconfiar:** uma classe `text-sm`/`text-base`/`text-lg`/`md:text-*` aplicada a um `<h1>` parece não fazer efeito nenhum (fonte sempre no mesmo tamanho, responsivo ou não).
+**Causa:** `src/index.css` define `h1{font-size:1.5rem;...}` **fora de qualquer `@layer`**. O Tailwind v4 (`@import 'tailwindcss'`) gera suas utilidades dentro de `@layer theme, base, components, utilities`. Nas CSS Cascade Layers, uma regra **sem layer** sempre vence qualquer regra **com layer**, não importa a especificidade — então esse `h1{}` bate qualquer `.text-*` aplicada a um `<h1>`, mesmo `!important`-free vs. sem-`!important`.
+**Confirmado em:** `src/layout/HeaderGlobal.tsx` (fix v2.36.5, `_build/current-state.md`) — o `<h1>` do header sempre renderizou 24px, mesmo antes desse fix, apesar de já ter `text-base md:text-lg` no código desde antes.
+**Como contornar:** usar o modifier `!important` do Tailwind v4 (sufixo `!`, ex. `text-sm!`) — `!important` sempre vence uma declaração normal, independente de layer. Verificar sempre com `getComputedStyle` (classe no HTML não é prova de efeito real).
+**Não vale para:** `h2`-`h6` (a regra do index.css só define `h1`; os demais headings usam `font-size:inherit` e respondem normalmente às classes Tailwind).

@@ -82,11 +82,11 @@ export function WorkspaceSwitcher() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Trocar empresa"
         aria-expanded={open}
-        className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-3)] transition-colors min-h-[44px]"
+        className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-3)] transition-colors min-h-[44px] min-w-0 max-w-full"
       >
-        <Building2 className="w-4 h-4" />
-        <span className="hidden md:inline">{activeNome}</span>
-        <ChevronDown className="w-3.5 h-3.5" />
+        <Building2 className="w-4 h-4 shrink-0" />
+        <span className="truncate">{activeNome}</span>
+        <ChevronDown className="w-3.5 h-3.5 shrink-0" />
       </button>
 
       {open && (

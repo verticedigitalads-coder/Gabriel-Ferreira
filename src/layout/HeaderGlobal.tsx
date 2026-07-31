@@ -58,14 +58,14 @@ export function HeaderGlobal({ onOpenHelp }: HeaderGlobalProps) {
 
       {/* ESQUERDA */}
       <div className="min-w-0">
-        <h1 className="text-base md:text-lg font-semibold text-[var(--text-primary)] tracking-tight truncate">
+        <h1 className="text-sm! md:text-lg font-semibold text-[var(--text-primary)] tracking-tight truncate">
           {moduleNames[activeModule] ?? 'CRM'}
         </h1>
-        <p className="text-xs text-[var(--text-tertiary)] mt-0.5 truncate">
+        <p className="hidden md:block text-xs text-[var(--text-tertiary)] mt-0.5 truncate">
           {today}
         </p>
         {subtitle && (
-          <p className="text-xs text-[var(--text-tertiary)] mt-0.5 md:max-w-xl">
+          <p className="hidden md:block text-xs text-[var(--text-tertiary)] mt-0.5 md:max-w-xl">
             {subtitle}
           </p>
         )}
@@ -74,15 +74,17 @@ export function HeaderGlobal({ onOpenHelp }: HeaderGlobalProps) {
       {/* DIREITA */}
       <div className="flex items-center" style={{ gap: 10 }}>
 
-        {/* Empresa (workspace selector) */}
-        <WorkspaceSwitcher />
+        {/* Empresa (workspace selector) — desktop: linha principal do header */}
+        <div className="hidden md:flex">
+          <WorkspaceSwitcher />
+        </div>
 
-        {/* Ajuda */}
+        {/* Ajuda — mobile: acessível via Sidebar ("Central de Ajuda") */}
         <button
           onClick={onOpenHelp}
           aria-label="Ajuda"
           title="Ajuda"
-          className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-colors"
+          className="hidden md:flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-colors"
           style={{ color: 'var(--text-tertiary)' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-2)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
