@@ -130,7 +130,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-[calc(72px_+_env(safe-area-inset-bottom,0px))] md:p-6">
           {children}
         </main>
 
