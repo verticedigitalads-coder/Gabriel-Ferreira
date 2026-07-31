@@ -98,6 +98,23 @@ const iconBtn: React.CSSProperties = {
   alignItems: 'center',
 }
 
+const mobileIconBtn: React.CSSProperties = {
+  ...iconBtn,
+  minWidth: 44,
+  minHeight: 44,
+  justifyContent: 'center',
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+  color: 'var(--text-tertiary)',
+  fontSize: 'var(--text-xs)',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+}
+
+const EMPTY_MATERIAIS_MSG = 'Nenhum item cadastrado. Clique em "Novo Item" para começar.'
+
 // ─────────────────────────────────────────────
 // Badge de status
 // ─────────────────────────────────────────────
@@ -476,8 +493,8 @@ export default function Estoque() {
 
       </div>
 
-      {/* Tabela */}
-      <div style={{
+      {/* Tabela (desktop, md+) */}
+      <div className="hidden md:block" style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
@@ -493,13 +510,7 @@ export default function Estoque() {
           background: 'var(--bg-surface-2)',
         }}>
           {['Nome', 'Categoria', 'Unidade', 'Estoque', 'Mínimo', 'Status', 'Ações'].map(h => (
-            <span key={h} style={{
-              color: 'var(--text-tertiary)',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}>
+            <span key={h} style={fieldLabelStyle}>
               {h}
             </span>
           ))}
@@ -508,7 +519,7 @@ export default function Estoque() {
         {/* Empty state */}
         {materiais.length === 0 && (
           <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-            Nenhum item cadastrado. Clique em "Novo Item" para começar.
+            {EMPTY_MATERIAIS_MSG}
           </div>
         )}
 
@@ -573,6 +584,123 @@ export default function Estoque() {
                 </button>
                 <button
                   style={{ ...iconBtn, color: 'var(--danger)' }}
+                  title="Excluir"
+                  onClick={() => handleDelete(m.id)}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          )
+        })}
+
+      </div>
+
+      {/* Cards (mobile, <md) */}
+      <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {materiais.length === 0 && (
+          <div style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '32px 16px',
+            textAlign: 'center',
+            color: 'var(--text-tertiary)',
+            fontSize: 'var(--text-sm)',
+          }}>
+            {EMPTY_MATERIAIS_MSG}
+          </div>
+        )}
+
+        {materiais.map((m: any) => {
+          const status = getStatus(m.estoque, m.estoqueMinimo ?? 0)
+
+          return (
+            <div
+              key={m.id}
+              style={{
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                background: status === 'critico'
+                  ? 'rgba(248,113,113,0.04)'
+                  : status === 'baixo'
+                    ? 'rgba(245,158,11,0.04)'
+                    : 'var(--bg-surface)',
+              }}
+            >
+              {/* Nome + Status */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 'var(--text-sm)' }}>
+                  {m.nome}
+                </span>
+                <StatusBadge status={status} />
+              </div>
+
+              {/* Campos rotulados */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <span style={fieldLabelStyle}>Categoria</span>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', margin: '2px 0 0 0' }}>
+                    {m.categoria || '—'}
+                  </p>
+                </div>
+                <div>
+                  <span style={fieldLabelStyle}>Unidade</span>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', margin: '2px 0 0 0' }}>
+                    {m.unidade || '—'}
+                  </p>
+                </div>
+                <div>
+                  <span style={fieldLabelStyle}>Estoque</span>
+                  <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 'var(--text-sm)', margin: '2px 0 0 0' }}>
+                    {m.estoque}
+                  </p>
+                </div>
+                <div>
+                  <span style={fieldLabelStyle}>Mínimo</span>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', margin: '2px 0 0 0' }}>
+                    {m.estoqueMinimo ?? 0}
+                  </p>
+                </div>
+              </div>
+
+              {/* Ações */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 4,
+                marginTop: 2,
+                paddingTop: 10,
+                borderTop: '1px solid var(--border)',
+              }}>
+                <button
+                  style={{ ...mobileIconBtn, color: 'var(--success)' }}
+                  title="Entrada de estoque"
+                  onClick={() => setMovimentando({ ...m, _tipoInicial: 'entrada' })}
+                >
+                  <PackagePlus size={15} />
+                </button>
+                <button
+                  style={{ ...mobileIconBtn, color: 'var(--warning)' }}
+                  title="Saída de estoque"
+                  onClick={() => setMovimentando({ ...m, _tipoInicial: 'saida' })}
+                >
+                  <PackageMinus size={15} />
+                </button>
+                <button
+                  style={{ ...mobileIconBtn, color: 'var(--text-secondary)' }}
+                  title="Editar"
+                  onClick={() => { setEditando(m); setModalCadastro(true) }}
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  style={{ ...mobileIconBtn, color: 'var(--danger)' }}
                   title="Excluir"
                   onClick={() => handleDelete(m.id)}
                 >
