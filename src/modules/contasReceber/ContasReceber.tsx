@@ -150,7 +150,7 @@ export function ContasReceber() {
   return (
     <div className="h-full flex flex-col">
       {/* HEADER */}
-      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <div className="min-w-0">
             <h1 className="text-2xl! font-bold text-[var(--text-primary)]">
@@ -175,28 +175,32 @@ export function ContasReceber() {
         </div>
 
         {/* STAT CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <StatCard
             label="Total Pendente"
             value={formatCurrency(stats.pendente)}
+            valueClassName="text-lg md:text-2xl"
             color="yellow"
             icon={<Clock />}
           />
           <StatCard
             label="Recebido este Mês"
             value={formatCurrency(stats.recebido)}
+            valueClassName="text-lg md:text-2xl"
             color="green"
             icon={<CheckCircle />}
           />
           <StatCard
             label="Total Atrasado"
             value={formatCurrency(stats.atrasado)}
+            valueClassName="text-lg md:text-2xl"
             color="red"
             icon={<AlertTriangle />}
           />
           <StatCard
             label="Vencem em 3 dias"
             value={`${stats.proximosVencimentos} conta${stats.proximosVencimentos !== 1 ? 's' : ''}`}
+            valueClassName="text-lg md:text-2xl"
             color={stats.proximosVencimentos > 0 ? 'red' : 'default'}
             icon={<CalendarClock />}
           />

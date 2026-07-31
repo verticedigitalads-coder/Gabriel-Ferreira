@@ -33,6 +33,7 @@ interface StatCardProps {
   value: string | number;
   suffix?: ReactNode;
   valueStyle?: CSSProperties;
+  valueClassName?: string;
   icon?: ReactNode;
   trend?: { value: number; isPositive: boolean };
   delta?: ReactNode;
@@ -41,7 +42,7 @@ interface StatCardProps {
   active?: boolean;
 }
 
-export function StatCard({ label, value, suffix, valueStyle, icon, trend, delta, color = 'default', onClick, active }: StatCardProps) {
+export function StatCard({ label, value, suffix, valueStyle, valueClassName, icon, trend, delta, color = 'default', onClick, active }: StatCardProps) {
   const colorStyles = {
     default: '',
     red: 'border-l-4 border-l-red-600',
@@ -66,7 +67,7 @@ export function StatCard({ label, value, suffix, valueStyle, icon, trend, delta,
         <div className="flex-1">
           <p className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">{label}</p>
           <div className="mt-1 flex items-baseline gap-0.5">
-            <p className="text-2xl font-bold text-[var(--text-primary)]" style={valueStyle}>{value}</p>
+            <p className={cn('font-bold text-[var(--text-primary)]', valueClassName ?? 'text-2xl')} style={valueStyle}>{value}</p>
             {suffix && <span className="text-sm font-normal" style={{ color: 'var(--text-tertiary)' }}>{suffix}</span>}
           </div>
           {trend && (
