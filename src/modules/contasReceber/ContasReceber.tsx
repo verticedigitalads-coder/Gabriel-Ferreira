@@ -165,7 +165,7 @@ export function ContasReceber() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface)] text-[var(--text-primary)] shrink-0"
+              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface)] text-[var(--text-primary)] shrink-0 min-w-[150px]"
             />
             <Button onClick={() => setShowModal(true)} className="gap-2">
               <Plus className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function ContasReceber() {
         </div>
 
         {/* STAT CARDS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             label="Total Pendente"
             value={formatCurrency(stats.pendente)}
@@ -239,7 +239,8 @@ export function ContasReceber() {
 
               return (
                 <Card key={conta.id} className="p-4" hoverable>
-                  <div className="flex items-center gap-4">
+                  {/* Desktop (md+): linha única */}
+                  <div className="hidden md:flex items-center gap-4">
                     <DollarSign
                       className={`w-5 h-5 shrink-0 ${
                         conta.status === 'recebido'
@@ -327,6 +328,102 @@ export function ContasReceber() {
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
+                    </div>
+                  </div>
+
+                  {/* Mobile (<md): empilhado, barra de ações separada embaixo */}
+                  <div className="flex md:hidden flex-col gap-2">
+                    <div className="flex items-start gap-2">
+                      <DollarSign
+                        className={`w-5 h-5 shrink-0 mt-0.5 ${
+                          conta.status === 'recebido'
+                            ? 'text-[var(--success)]'
+                            : conta.status === 'atrasado' || vencida
+                            ? 'text-[var(--danger)]'
+                            : 'text-[var(--warning)]'
+                        }`}
+                      />
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-[var(--text-primary)] truncate">
+                            {conta.descricao}
+                          </p>
+                          {vencida && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[var(--danger-subtle)] text-[var(--danger)] rounded uppercase tracking-wide">
+                              Vencida
+                            </span>
+                          )}
+                        </div>
+                        {conta.observacao && (
+                          <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
+                            {conta.observacao}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-0.5 flex-wrap">
+                          {leadNome && <span>{leadNome}</span>}
+                          {leadNome && <span>•</span>}
+                          <span>
+                            Vence{' '}
+                            {format(parseISO(conta.dataVencimento), 'dd/MM/yyyy')}
+                          </span>
+                          {conta.formaRecebimento && (
+                            <>
+                              <span>•</span>
+                              <span className="capitalize">
+                                {conta.formaRecebimento}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border)]">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${getStatusClasses(conta.status, vencida)}`}
+                        >
+                          {getStatusLabel(conta.status)}
+                        </span>
+
+                        <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums whitespace-nowrap">
+                          {formatCurrency(conta.valor)}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-1 shrink-0">
+                        {conta.status === 'pendente' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => marcarComoRecebido(conta.id)}
+                            title="Marcar como recebido"
+                          >
+                            <CheckCheck className="w-4 h-4 text-[var(--success)]" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingConta(conta);
+                            setShowEditModal(true);
+                          }}
+                        >
+                          ✏️
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedConta(conta);
+                            setConfirmOpen(true);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
