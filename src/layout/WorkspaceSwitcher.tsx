@@ -77,7 +77,7 @@ export function WorkspaceSwitcher() {
   }
 
   return (
-    <div className="relative hidden md:block" ref={containerRef}>
+    <div className="relative block" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Trocar empresa"
@@ -85,7 +85,7 @@ export function WorkspaceSwitcher() {
         className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-3)] transition-colors min-h-[44px]"
       >
         <Building2 className="w-4 h-4" />
-        {activeNome}
+        <span className="hidden md:inline">{activeNome}</span>
         <ChevronDown className="w-3.5 h-3.5" />
       </button>
 
@@ -97,7 +97,8 @@ export function WorkspaceSwitcher() {
             left: 0,
             zIndex: 200,
             marginTop: 8,
-            minWidth: 220,
+            minWidth: 'min(220px, calc(100vw - 32px))',
+            maxWidth: 'calc(100vw - 32px)',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
