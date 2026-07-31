@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { cn } from '@/utils/cn';
@@ -88,10 +89,29 @@ export function Sidebar({ mobileOpen, setMobileOpen, onOpenHelp }: SidebarProps)
     l.status !== 'fechado' && l.status !== 'perdido'
   ).length;
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileOpen]);
+
   return (
-    <aside
+    <>
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
   className={cn(
-    "fixed md:relative top-0 left-0 z-40 w-64 bg-[var(--bg-sidebar)] text-white flex flex-col h-screen border-r border-[var(--border)] transition-transform",
+    "fixed md:relative top-0 left-0 z-50 w-64 bg-[var(--bg-sidebar)] text-white flex flex-col h-screen border-r border-[var(--border)] transition-transform",
     mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
   )}
 >
@@ -141,7 +161,14 @@ export function Sidebar({ mobileOpen, setMobileOpen, onOpenHelp }: SidebarProps)
             return (
               <li key={item.id}>
                 <button
-                  onClick={() => (item.id === 'ajuda' ? onOpenHelp() : setActiveModule(item.id))}
+                  onClick={() => {
+                    if (item.id === 'ajuda') {
+                      onOpenHelp();
+                    } else {
+                      setActiveModule(item.id);
+                    }
+                    setMobileOpen(false);
+                  }}
                   className={cn(
                     'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm transition-all duration-150',
                     !isActive && 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
@@ -192,7 +219,10 @@ export function Sidebar({ mobileOpen, setMobileOpen, onOpenHelp }: SidebarProps)
         <ul className="space-y-0.5 px-3">
           <li>
             <button
-              onClick={() => setActiveModule('admin')}
+              onClick={() => {
+                setActiveModule('admin');
+                setMobileOpen(false);
+              }}
               className={cn(
                 'w-full flex items-center gap-2.5 px-3 h-[var(--sidebar-item-height)] min-h-[44px] md:min-h-0 rounded-[var(--radius-md)] text-sm transition-all duration-150',
                 activeModule !== 'admin' && 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-primary)]'
@@ -223,5 +253,6 @@ export function Sidebar({ mobileOpen, setMobileOpen, onOpenHelp }: SidebarProps)
     </div>
   </div>
 </aside>
+    </>
   );
 }
