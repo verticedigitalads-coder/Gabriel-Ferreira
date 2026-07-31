@@ -379,7 +379,7 @@ export function ContasReceber() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border)]">
+                    <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-[var(--border)]">
                       <div className="flex items-center gap-2 min-w-0">
                         <span
                           className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${getStatusClasses(conta.status, vencida)}`}
@@ -392,7 +392,7 @@ export function ContasReceber() {
                         </p>
                       </div>
 
-                      <div className="flex gap-1 shrink-0">
+                      <div className="flex gap-1 shrink-0 ml-auto">
                         {conta.status === 'pendente' && (
                           <Button
                             variant="ghost"
