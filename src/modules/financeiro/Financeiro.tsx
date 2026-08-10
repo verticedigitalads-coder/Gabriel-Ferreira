@@ -287,7 +287,7 @@ export function Financeiro() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col md:h-full">
       {/* ── Header ── */}
       <div
         className="p-4 md:p-6 border-b"
@@ -307,7 +307,7 @@ export function Financeiro() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 rounded-md text-sm min-h-[44px]"
+              className="px-3 py-2 rounded-md text-sm min-h-[44px] shrink-0 min-w-[150px]"
               style={{
                 border: '1px solid var(--border)',
                 background: 'var(--bg-surface)',
@@ -423,7 +423,7 @@ export function Financeiro() {
       </div>
 
       {/* ── Lista ── */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
         {/* Resultado do Mês */}
         {(() => {
           const receitasMes = filteredTransactions
@@ -436,7 +436,7 @@ export function Financeiro() {
           const positivo = resultado >= 0;
           return (
             <div
-              className="flex items-center justify-between rounded-xl px-5 py-4 mb-4"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-2 rounded-xl px-4 md:px-5 py-4 mb-4"
               style={{
                 background: positivo ? 'var(--success-subtle)' : 'var(--danger-subtle)',
                 border: `1px solid ${positivo ? 'var(--success)' : 'var(--danger)'}`,
@@ -449,7 +449,7 @@ export function Financeiro() {
                 >
                   Resultado do Mês
                 </span>
-                <div className="flex items-center gap-3 mt-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
                   <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                     Receitas: {formatCurrency(receitasMes)}
                   </span>
@@ -482,44 +482,49 @@ export function Financeiro() {
 
               return (
                 <Card key={t.id} className="p-4" hoverable>
-                  <div className="flex items-start gap-3">
-                    {getTypeIcon(t.tipo)}
+                  <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {getTypeIcon(t.tipo)}
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p
-                          className="font-medium truncate"
-                          style={{ color: 'var(--text-primary)' }}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p
+                            className="font-medium truncate"
+                            style={{ color: 'var(--text-primary)' }}
+                          >
+                            {t.descricao}
+                          </p>
+                          <StatusBadge transaction={t} />
+                        </div>
+
+                        <div
+                          className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs"
+                          style={{ color: 'var(--text-tertiary)' }}
                         >
-                          {t.descricao}
-                        </p>
-                        <StatusBadge transaction={t} />
-                      </div>
-
-                      <div
-                        className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs"
-                        style={{ color: 'var(--text-tertiary)' }}
-                      >
-                        {t.categoria && <span>{t.categoria}</span>}
-                        {t.leadId && getLeadName(t.leadId) && (
-                          <span>• {getLeadName(t.leadId)}</span>
-                        )}
-                        <span>
-                          {format(parseISO(t.data), "dd 'de' MMM", { locale: ptBR })}
-                        </span>
-                        {isDespesaTipo(t.tipo) && t.dataVencimento && (
-                          <span>• Vence: {format(parseISO(t.dataVencimento), 'dd/MM/yy')}</span>
-                        )}
-                        {t.dataPagamento && (
+                          {t.categoria && <span>{t.categoria}</span>}
+                          {t.leadId && getLeadName(t.leadId) && (
+                            <span>• {getLeadName(t.leadId)}</span>
+                          )}
                           <span>
-                            • Pago em: {format(parseISO(t.dataPagamento), 'dd/MM/yy')}
-                            {t.formaPagamento && ` (${t.formaPagamento.replace('_', ' ')})`}
+                            {format(parseISO(t.data), "dd 'de' MMM", { locale: ptBR })}
                           </span>
-                        )}
+                          {isDespesaTipo(t.tipo) && t.dataVencimento && (
+                            <span>• Vence: {format(parseISO(t.dataVencimento), 'dd/MM/yy')}</span>
+                          )}
+                          {t.dataPagamento && (
+                            <span>
+                              • Pago em: {format(parseISO(t.dataPagamento), 'dd/MM/yy')}
+                              {t.formaPagamento && ` (${t.formaPagamento.replace('_', ' ')})`}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div
+                      className="flex items-center justify-between md:justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
                       <p
                         className="text-base font-bold tabular-nums"
                         style={{
@@ -538,7 +543,7 @@ export function Financeiro() {
                               setPagarModal(t);
                             }}
                             title="Marcar como pago"
-                            className="p-2 rounded-md min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"
+                            className="p-2 rounded-md min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center transition-colors"
                             style={{
                               color: 'var(--success)',
                               background: 'var(--success-subtle)',
@@ -553,7 +558,7 @@ export function Financeiro() {
                             setEditingTransaction(t);
                             setShowEditModal(true);
                           }}
-                          className="p-2 rounded-md min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"
+                          className="p-2 rounded-md min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center transition-colors"
                           style={{ color: 'var(--text-secondary)' }}
                           title="Editar"
                         >
@@ -565,7 +570,7 @@ export function Financeiro() {
                             setSelectedTransaction(t);
                             setConfirmOpen(true);
                           }}
-                          className="p-2 rounded-md min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"
+                          className="p-2 rounded-md min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center transition-colors"
                           style={{ color: 'var(--danger)' }}
                           title="Excluir"
                         >
