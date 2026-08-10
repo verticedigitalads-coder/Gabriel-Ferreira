@@ -228,7 +228,7 @@ export function ContasReceber() {
       </div>
 
       {/* LISTA */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {filteredContas.length === 0 ? (
           <div className="flex items-center justify-center h-32">
             <p className="text-sm text-[var(--text-tertiary)]">
@@ -383,20 +383,20 @@ export function ContasReceber() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-[var(--border)]">
-                      <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span
                           className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${getStatusClasses(conta.status, vencida)}`}
                         >
                           {getStatusLabel(conta.status)}
                         </span>
 
-                        <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums whitespace-nowrap">
+                        <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums">
                           {formatCurrency(conta.valor)}
                         </p>
                       </div>
 
-                      <div className="flex gap-1 shrink-0 ml-auto">
+                      <div className="flex items-center justify-end gap-1">
                         {conta.status === 'pendente' && (
                           <Button
                             variant="ghost"
