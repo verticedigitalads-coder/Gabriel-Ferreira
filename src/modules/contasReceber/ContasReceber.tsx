@@ -148,7 +148,7 @@ export function ContasReceber() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col md:h-full">
       {/* HEADER */}
       <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
@@ -208,7 +208,7 @@ export function ContasReceber() {
       </div>
 
       {/* FILTROS DE STATUS */}
-      <div className="px-6 py-3 border-b border-[var(--border)] bg-[var(--bg-surface)] flex items-center gap-2 flex-wrap">
+      <div className="px-4 md:px-6 py-3 border-b border-[var(--border)] bg-[var(--bg-surface)] flex items-center gap-2 flex-wrap">
         <span className="text-xs font-medium text-[var(--text-tertiary)] mr-1">
           Status:
         </span>
@@ -228,7 +228,7 @@ export function ContasReceber() {
       </div>
 
       {/* LISTA */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
         {filteredContas.length === 0 ? (
           <div className="flex items-center justify-center h-32">
             <p className="text-sm text-[var(--text-tertiary)]">
@@ -243,103 +243,12 @@ export function ContasReceber() {
 
               return (
                 <Card key={conta.id} className="p-4" hoverable>
-                  {/* Desktop (md+): linha única */}
-                  <div className="hidden md:flex items-center gap-4">
-                    <DollarSign
-                      className={`w-5 h-5 shrink-0 ${
-                        conta.status === 'recebido'
-                          ? 'text-[var(--success)]'
-                          : conta.status === 'atrasado' || vencida
-                          ? 'text-[var(--danger)]'
-                          : 'text-[var(--warning)]'
-                      }`}
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium text-[var(--text-primary)] truncate">
-                          {conta.descricao}
-                        </p>
-                        {vencida && (
-                          <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[var(--danger-subtle)] text-[var(--danger)] rounded uppercase tracking-wide">
-                            Vencida
-                          </span>
-                        )}
-                      </div>
-                      {conta.observacao && (
-                        <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
-                          {conta.observacao}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-0.5 flex-wrap">
-                        {leadNome && <span>{leadNome}</span>}
-                        {leadNome && <span>•</span>}
-                        <span>
-                          Vence{' '}
-                          {format(parseISO(conta.dataVencimento), 'dd/MM/yyyy')}
-                        </span>
-                        {conta.formaRecebimento && (
-                          <>
-                            <span>•</span>
-                            <span className="capitalize">
-                              {conta.formaRecebimento}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusClasses(conta.status, vencida)}`}
-                      >
-                        {getStatusLabel(conta.status)}
-                      </span>
-
-                      <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums whitespace-nowrap">
-                        {formatCurrency(conta.valor)}
-                      </p>
-                    </div>
-
-                    <div className="flex gap-1 shrink-0">
-                      {conta.status === 'pendente' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => marcarComoRecebido(conta.id)}
-                          title="Marcar como recebido"
-                        >
-                          <CheckCheck className="w-4 h-4 text-[var(--success)]" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingConta(conta);
-                          setShowEditModal(true);
-                        }}
-                      >
-                        ✏️
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedConta(conta);
-                          setConfirmOpen(true);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Mobile (<md): empilhado, barra de ações separada embaixo */}
-                  <div className="flex md:hidden flex-col gap-2">
-                    <div className="flex items-start gap-2">
+                  {/* Markup único: mobile empilhado, desktop (md+) em linha única */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    {/* ícone + conteúdo */}
+                    <div className="flex items-start md:items-center gap-2 md:gap-4 flex-1 min-w-0">
                       <DollarSign
-                        className={`w-5 h-5 shrink-0 mt-0.5 ${
+                        className={`w-5 h-5 shrink-0 mt-0.5 md:mt-0 ${
                           conta.status === 'recebido'
                             ? 'text-[var(--success)]'
                             : conta.status === 'atrasado' || vencida
@@ -383,24 +292,26 @@ export function ContasReceber() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    {/* barra valor + ações (no mobile pode quebrar em 2 linhas) */}
+                    <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 flex-wrap md:flex-nowrap shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+                      <div className="flex items-center gap-2 md:gap-3">
                         <span
                           className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${getStatusClasses(conta.status, vencida)}`}
                         >
                           {getStatusLabel(conta.status)}
                         </span>
 
-                        <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums">
+                        <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums md:whitespace-nowrap">
                           {formatCurrency(conta.valor)}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex gap-1 shrink-0 ml-auto md:ml-0">
                         {conta.status === 'pendente' && (
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="min-w-[44px] md:min-w-auto"
                             onClick={() => marcarComoRecebido(conta.id)}
                             title="Marcar como recebido"
                           >
@@ -410,6 +321,7 @@ export function ContasReceber() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="min-w-[44px] md:min-w-auto"
                           onClick={() => {
                             setEditingConta(conta);
                             setShowEditModal(true);
@@ -420,6 +332,7 @@ export function ContasReceber() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="min-w-[44px] md:min-w-auto"
                           onClick={() => {
                             setSelectedConta(conta);
                             setConfirmOpen(true);

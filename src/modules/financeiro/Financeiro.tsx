@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, StatCard } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { Input, TextArea, Select } from '@/components/ui/Input';
-import {
-  format,
-  parseISO,
-  startOfMonth,
-  endOfMonth,
-  isWithinInterval,
-} from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Plus,
@@ -35,6 +29,16 @@ import type {
   StatusPagamentoDisplay,
   FormaPagamentoTransacao,
 } from '@/types';
+
+// ─── helpers de data ───────────────────────────────────────────────────────
+
+// transactions.data é timestamptz no Postgres ("2026-05-05T00:00:00+00:00") e chega cru do
+// formatters.ts (único campo de data que não passa por toDateInput). parseISO nesse valor
+// converte para o fuso local (UTC-3) e cai no dia anterior — o que empurra lançamentos do dia 1
+// para o mês anterior no filtro de mês. Normaliza para "AAAA-MM-DD", mesmo tratamento que
+// formatters.toDateInput já dá a dataVencimento/dataPagamento.
+const normalizeDate = (date: string) =>
+  date?.includes('T') ? date.split('T')[0] : date;
 
 // ─── helpers de status ─────────────────────────────────────────────────────
 
@@ -123,7 +127,7 @@ function exportCSV(transactions: Transaction[], month: string) {
   const rows = transactions.map((t) => {
     const status = getStatusDisplay(t);
     return [
-      t.data,
+      normalizeDate(t.data),
       t.tipo,
       `"${t.descricao}"`,
       t.categoria,
@@ -190,17 +194,13 @@ export function Financeiro() {
   const [filtroStatus, setFiltroStatus] = useState<'todos' | StatusPagamentoDisplay>('todos');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
 
-  const monthStart = startOfMonth(parseISO(`${selectedMonth}-01`));
-  const monthEnd = endOfMonth(monthStart);
-
+  // input[type=month] emite "AAAA-MM" e normalizeDate devolve "AAAA-MM-DD" — o prefixo casa
+  // exatamente, sem conversão de fuso no meio (ver comentário de normalizeDate).
   const monthTransactions = useMemo(() => {
     return transactions
-      .filter((t) => {
-        const date = parseISO(t.data);
-        return isWithinInterval(date, { start: monthStart, end: monthEnd });
-      })
-      .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
-  }, [transactions, monthStart, monthEnd]);
+      .filter((t) => normalizeDate(t.data).startsWith(selectedMonth))
+      .sort((a, b) => normalizeDate(b.data).localeCompare(normalizeDate(a.data)));
+  }, [transactions, selectedMonth]);
 
   const filteredTransactions = useMemo(() => {
     return monthTransactions.filter((t) => {
@@ -506,7 +506,7 @@ export function Financeiro() {
                             <span>• {getLeadName(t.leadId)}</span>
                           )}
                           <span>
-                            {format(parseISO(t.data), "dd 'de' MMM", { locale: ptBR })}
+                            {format(parseISO(normalizeDate(t.data)), "dd 'de' MMM", { locale: ptBR })}
                           </span>
                           {isDespesaTipo(t.tipo) && t.dataVencimento && (
                             <span>• Vence: {format(parseISO(t.dataVencimento), 'dd/MM/yy')}</span>
@@ -675,9 +675,6 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
   const [tipo, setTipo] = useState<string>(initialData?.tipo || 'receita');
   const [descricao, setDescricao] = useState(initialData?.descricao || '');
   const [valor, setValor] = useState<number>(initialData?.valor || 0);
-
-  const normalizeDate = (date: string) =>
-    date?.includes('T') ? date.split('T')[0] : date;
 
   const [data, setData] = useState(
     initialData?.data

@@ -264,3 +264,24 @@ DEPOIS: [código corrigido]
 **Confirmado em:** `src/layout/HeaderGlobal.tsx` (fix v2.36.5, `_build/current-state.md`) — o `<h1>` do header sempre renderizou 24px, mesmo antes desse fix, apesar de já ter `text-base md:text-lg` no código desde antes.
 **Como contornar:** usar o modifier `!important` do Tailwind v4 (sufixo `!`, ex. `text-sm!`) — `!important` sempre vence uma declaração normal, independente de layer. Verificar sempre com `getComputedStyle` (classe no HTML não é prova de efeito real).
 **Não vale para:** `h2`-`h6` (a regra do index.css só define `h1`; os demais headings usam `font-size:inherit` e respondem normalmente às classes Tailwind).
+
+---
+
+## Gotcha: `h-full flex flex-col` + lista `flex-1 overflow-y-auto` colapsa a lista no mobile
+
+**Quando desconfiar:** no celular, uma tela "corta" o conteúdo da lista (fim inalcançável, rodapé dos cards cortado, valor/botões que não aparecem) enquanto o desktop está perfeito. Sintoma clássico: a barra de rolagem indica que há conteúdo abaixo, mas o gesto nunca chega lá.
+
+**Causa:** a raiz do módulo é `h-full flex flex-col` (trava a altura no que sobra do `<main>`) e a lista é `flex-1 overflow-y-auto` — **um segundo scroller aninhado dentro do `<main>`, que já é `overflow-y-auto`**. Pela spec do flexbox (§4.5), o mínimo automático de um item flex com `overflow ≠ visible` é **0**; o header irmão tem `overflow: visible`, logo `min-height: auto` = altura do conteúdo e ele **não encolhe**. No mobile o header (título + controles que embrulham + StatCards 2×2 + chips de filtro) mede mais que a altura disponível → **a lista colapsa para perto de 0px** e vira uma fresta rolável que o dedo não alcança.
+
+**Como diagnosticar (não confie em inspeção visual):** medir `lista.clientHeight` vs `lista.scrollHeight` e, principalmente, rolar **só o `<main>`** (o gesto real) e checar se o rodapé do último card entra no retângulo da lista. Rolar o scroller interno por JS mascara o bug — no v2.36.11 essa foi a diferença entre "parece ok" e `altura visível do card = 0px`.
+
+**Fix (escopado em `md:`, desktop intocado):**
+- raiz: `h-full flex flex-col` → `flex flex-col md:h-full`
+- lista: `flex-1 overflow-y-auto p-4 md:p-6` → `p-4 md:p-6 md:flex-1 md:overflow-y-auto`
+
+No mobile o `<main>` volta a ser o **único** scroller (já reserva o BottomNav via `pb-[calc(72px + env(safe-area-inset-bottom))]` desde o v2.36.8). No desktop tudo continua sob `md:`.
+
+**Efeito colateral a checar depois do fix:** sem `overflow-y-auto` na lista, o `overflow-x` volta a `visible` — qualquer barra interna que não caiba deixa de ser clipada e passa a empurrar a página inteira na horizontal. Medir `document.scrollWidth == document.clientWidth` e, se preciso, deixar a barra quebrar (`flex-wrap md:flex-nowrap` + `ml-auto md:ml-0`), como no ContasReceber.
+
+**Confirmado em:** `Financeiro.tsx` (v2.36.10) e `ContasReceber.tsx` (v2.36.11).
+**Ainda com o padrão de risco (não auditados):** Kanban, Notas, LeadsList, LeadDetail, Recibos, Orcamentos, IAAssistente, WhatsApp.
