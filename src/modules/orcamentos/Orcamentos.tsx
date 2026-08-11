@@ -273,122 +273,130 @@ export function Orcamentos() {
 
   const renderOrcCard = (orc: Orcamento) => {
     const isSelecionado = selecionados.has(orc.id);
+    const lead = leads.find((l) => l.id === orc.leadId);
     return (
       <Card
         key={orc.id}
         className={`p-4${modoSelecao && isSelecionado ? ' ring-2 ring-[var(--accent)]' : ''}`}
         hoverable
       >
-        <div className="flex items-center gap-4">
-          {modoSelecao && (
-            <input
-              type="checkbox"
-              checked={isSelecionado}
-              onChange={() => {
-                setSelecionados((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(orc.id)) next.delete(orc.id);
-                  else next.add(orc.id);
-                  return next;
-                });
-              }}
-              style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
-            />
-          )}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-semibold text-[var(--text-primary)]">
-                {getLeadName(orc)}
-              </span>
-              <span
-                className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[orc.status as OrcamentoStatus]}`}
-              >
-                {statusOptions.find((s) => s.value === orc.status)?.label}
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-[var(--text-disabled)]">
-              <span className="font-mono">{orc.numero}</span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {orc.createdAt
-                  ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', { locale: ptBR })
-                  : '-'}
-              </span>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-lg font-bold text-[var(--text-primary)]">
-              {formatCurrency(orc.total)}
-            </p>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {orc.itens.length} {orc.itens.length === 1 ? 'item' : 'itens'}
-            </p>
-            {(orc.valorComissao ?? 0) > 0 && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--warning)' }}>
-                Comissão: {formatCurrency(orc.valorComissao ?? 0)}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            {/* Sempre visíveis: PDF + PIX */}
-            <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF" className="gap-1">
-              <Download className="w-4 h-4" />
-              <span className="sm:hidden text-[10px]">PDF</span>
-            </Button>
-            {defaultSettings.chavePix && (leads.find(l => l.id === orc.leadId)?.telefone || orc.clienteTelefone) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                title="Enviar PIX via WhatsApp"
-                aria-label="Enviar PIX via WhatsApp"
-                className="gap-1"
-                onClick={() => {
-                  const lead = leads.find(l => l.id === orc.leadId);
-                  enviarPixWhatsapp({
-                    telefoneCliente: orc.clienteTelefone || lead?.telefone || '',
-                    nomeCliente: orc.clienteNome || lead?.nome || 'Cliente',
-                    empresaNome: defaultSettings.empresaNome,
-                    codigoDocumento: orc.numero || `ORC-${orc.id?.slice(0, 8)}`,
-                    tipoDocumento: 'orçamento',
-                    valorTotal: orc.total || 0,
-                    chavePix: defaultSettings.chavePix || '',
-                    nomeRecebedorPix: defaultSettings.nomeRecebedorPix || '',
-                    cidadePix: defaultSettings.cidadePix || '',
+        {/* Markup único: mobile empilhado, desktop (md+) em linha única */}
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+          {/* checkbox + conteúdo */}
+          <div className="flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0">
+            {modoSelecao && (
+              <input
+                type="checkbox"
+                checked={isSelecionado}
+                onChange={() => {
+                  setSelecionados((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(orc.id)) next.delete(orc.id);
+                    else next.add(orc.id);
+                    return next;
                   });
                 }}
-              >
-                <QrCode className="w-4 h-4 text-[var(--success)]" />
-                <span className="sm:hidden text-[10px]">PIX</span>
-              </Button>
+                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
+              />
             )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="text-sm font-semibold text-[var(--text-primary)]">
+                  {getLeadName(orc)}
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${statusColors[orc.status as OrcamentoStatus]}`}
+                >
+                  {statusOptions.find((s) => s.value === orc.status)?.label}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 md:gap-4 text-xs text-[var(--text-disabled)] flex-wrap">
+                <span className="font-mono">{orc.numero}</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {orc.createdAt
+                    ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', { locale: ptBR })
+                    : '-'}
+                </span>
+              </div>
+            </div>
+          </div>
 
-            {/* Desktop: Editar, Excluir, Assinatura */}
-            <div className="hidden sm:flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento">
-                <Edit className="w-4 h-4" />
+          {/* barra valor + ações (no mobile pode quebrar em 2 linhas) */}
+          <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 flex-wrap md:flex-nowrap shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+            <div className="text-left md:text-right">
+              <p className="text-lg font-bold text-[var(--text-primary)] md:whitespace-nowrap">
+                {formatCurrency(orc.total)}
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                {orc.itens.length} {orc.itens.length === 1 ? 'item' : 'itens'}
+              </p>
+              {(orc.valorComissao ?? 0) > 0 && (
+                <p className="text-xs mt-0.5" style={{ color: 'var(--warning)' }}>
+                  Comissão: {formatCurrency(orc.valorComissao ?? 0)}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 shrink-0 ml-auto md:ml-0">
+              {/* Sempre visíveis: PDF + PIX */}
+              <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF" className="gap-1">
+                <Download className="w-4 h-4" />
+                <span className="sm:hidden text-[10px]">PDF</span>
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento">
-                <Trash2 className="w-4 h-4 text-[var(--danger)]" />
-              </Button>
-              {!orc.assinaturaCliente ? (
+              {defaultSettings.chavePix && (lead?.telefone || orc.clienteTelefone) && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  title="Coletar assinatura do cliente"
-                  aria-label="Coletar assinatura do cliente"
+                  title="Enviar PIX via WhatsApp"
+                  aria-label="Enviar PIX via WhatsApp"
+                  className="gap-1"
                   onClick={() => {
-                    setSelectedOrcamentoForSign(orc);
-                    setSignatureModalOpen(true);
+                    enviarPixWhatsapp({
+                      telefoneCliente: orc.clienteTelefone || lead?.telefone || '',
+                      nomeCliente: orc.clienteNome || lead?.nome || 'Cliente',
+                      empresaNome: defaultSettings.empresaNome,
+                      codigoDocumento: orc.numero || `ORC-${orc.id?.slice(0, 8)}`,
+                      tipoDocumento: 'orçamento',
+                      valorTotal: orc.total || 0,
+                      chavePix: defaultSettings.chavePix || '',
+                      nomeRecebedorPix: defaultSettings.nomeRecebedorPix || '',
+                      cidadePix: defaultSettings.cidadePix || '',
+                    });
                   }}
                 >
-                  <PenTool className="w-4 h-4 text-amber-500" />
+                  <QrCode className="w-4 h-4 text-[var(--success)]" />
+                  <span className="sm:hidden text-[10px]">PIX</span>
                 </Button>
-              ) : (
-                <span className="flex items-center gap-1 text-xs text-[var(--success)] px-2" title="Orçamento assinado">
-                  <PenTool className="w-3 h-3" />
-                  Assinado
-                </span>
               )}
+
+              {/* Desktop: Editar, Excluir, Assinatura */}
+              <div className="hidden sm:flex items-center gap-1">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento">
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento">
+                  <Trash2 className="w-4 h-4 text-[var(--danger)]" />
+                </Button>
+                {!orc.assinaturaCliente ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Coletar assinatura do cliente"
+                    aria-label="Coletar assinatura do cliente"
+                    onClick={() => {
+                      setSelectedOrcamentoForSign(orc);
+                      setSignatureModalOpen(true);
+                    }}
+                  >
+                    <PenTool className="w-4 h-4 text-amber-500" />
+                  </Button>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs text-[var(--success)] px-2" title="Orçamento assinado">
+                    <PenTool className="w-3 h-3" />
+                    Assinado
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -399,12 +407,12 @@ export function Orcamentos() {
   return (
     <div className="flex flex-col md:h-full">
       {/* Header */}
-      <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-center justify-between">
+      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="text-sm text-[var(--text-secondary)]">
             {orcamentos.length} orçamentos
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant={modoSelecao ? 'primary' : 'secondary'}
               onClick={() => {
@@ -438,7 +446,7 @@ export function Orcamentos() {
       </div>
 
       {/* List */}
-      <div className="p-6 md:flex-1 md:overflow-y-auto">
+      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
         {sortedOrcamentos.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-3xl mb-3 opacity-30">📄</div>
@@ -461,8 +469,8 @@ export function Orcamentos() {
           <div className="space-y-6">
             {Object.entries(orcamentosPorCliente).map(([clienteKey, grupo]) => (
               <div key={clienteKey}>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-3 px-1">
+                  <div className="flex items-center gap-2 min-w-0">
                     <User className="w-4 h-4 text-[var(--text-secondary)]" />
                     <span className="font-semibold text-[var(--text-primary)]">
                       {grupo.nome}
