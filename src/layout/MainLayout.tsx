@@ -3,7 +3,6 @@ import { Sidebar } from './Sidebar';
 import { ToastContainer } from '@/components/ui/Toast';
 import { HeaderGlobal } from './HeaderGlobal';
 import { HelpPanel } from './HelpPanel';
-import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
 import { Menu, LogOut } from 'lucide-react';
@@ -122,11 +121,6 @@ export function MainLayout({ children }: MainLayoutProps) {
               </>
             )}
           </div>
-        </div>
-
-        {/* Linha 2 — mobile: seletor de workspace (visível apenas com 2+ workspaces) */}
-        <div className="md:hidden px-3 pb-2">
-          <WorkspaceSwitcher />
         </div>
         </div>
 

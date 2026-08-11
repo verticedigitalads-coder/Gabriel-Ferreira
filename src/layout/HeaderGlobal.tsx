@@ -61,6 +61,13 @@ export function HeaderGlobal({ onOpenHelp }: HeaderGlobalProps) {
         <h1 className="text-sm! md:text-lg font-semibold text-[var(--text-primary)] tracking-tight truncate">
           {moduleNames[activeModule] ?? 'CRM'}
         </h1>
+
+        {/* Empresa (workspace selector) — mobile: info secundária sob o título,
+            no espaço onde data/subtítulo aparecem no desktop. -ml-1 compensa o px-1 do botão. */}
+        <div className="md:hidden min-w-0 -ml-1">
+          <WorkspaceSwitcher variant="mobile" />
+        </div>
+
         <p className="hidden md:block text-xs text-[var(--text-tertiary)] mt-0.5 truncate">
           {today}
         </p>
