@@ -387,9 +387,11 @@ app.use(
 ⏱️ RATE LIMIT
 ========================================== */
 
+// Limites configuráveis via env (RATE_LIMIT_GLOBAL_MAX / RATE_LIMIT_STRICT_MAX)
+// para janelas temporárias de teste de carga — defaults preservam produção.
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: Number(process.env.RATE_LIMIT_GLOBAL_MAX) || 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Muitas requisições. Tente novamente em 1 minuto.' },
@@ -398,7 +400,7 @@ app.use(globalLimiter);
 
 const strictLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 10,
+  max: Number(process.env.RATE_LIMIT_STRICT_MAX) || 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Limite de requisições excedido.' },

@@ -19,3 +19,4 @@ dist/
 # Logs (opcional)
 *.log
 node_modules
+load-tests/.env
