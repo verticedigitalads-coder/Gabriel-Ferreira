@@ -284,4 +284,23 @@ No mobile o `<main>` volta a ser o **único** scroller (já reserva o BottomNav 
 **Efeito colateral a checar depois do fix:** sem `overflow-y-auto` na lista, o `overflow-x` volta a `visible` — qualquer barra interna que não caiba deixa de ser clipada e passa a empurrar a página inteira na horizontal. Medir `document.scrollWidth == document.clientWidth` e, se preciso, deixar a barra quebrar (`flex-wrap md:flex-nowrap` + `ml-auto md:ml-0`), como no ContasReceber.
 
 **Confirmado em:** `Financeiro.tsx` (v2.36.10) e `ContasReceber.tsx` (v2.36.11).
-**Ainda com o padrão de risco (não auditados):** Kanban, Notas, LeadsList, LeadDetail, Recibos, Orcamentos, IAAssistente, WhatsApp.
+
+**Varredura completa do projeto (v2.36.12) — o padrão está auditado, não há mais tela "não auditada":**
+
+- **Corrigidas com este fix:** `Financeiro.tsx`, `ContasReceber.tsx`, `Notas.tsx`, `LeadsList.tsx`,
+  `Orcamentos.tsx`, `Recibos.tsx`, `Fornecedores.tsx`, `IAAssistente.tsx`.
+- **Têm o padrão mas NÃO recebem este fix (particularidade — ver `current-state.md` v2.36.12):**
+  - `Kanban.tsx` — board `overflow-x-auto` com colunas `min-h-[600px] pb-32` e `@dnd-kit`;
+    soltar o `h-full` faz a página rolar nos dois eixos. Precisa de decisão de UX própria.
+  - `WhatsApp.tsx` — layout de chat: ali a altura travada é **requisito** (é o que mantém o
+    composer colado no rodapé). Aplicar "scroller único" quebraria a tela.
+- **Não sofrem (não confundir com o bug):** `LeadDetail.tsx` (só roda dentro do `SlidePanel`, que é
+  `fixed h-full` fora do `<main>`); `Modal`/`SlidePanel`/`AILeadModal`/`SignatureModal` (são
+  `max-h-*`, altura **máxima** e não travada — o scroller interno ali é o correto).
+
+**Orçamento de altura no mobile (para estimar o risco de qualquer tela nova):** `h-full` de um
+módulo vale `100vh − ~112px` (header global em 2 linhas) `− 72px` (BottomNav, que é **em fluxo**,
+não `fixed`) `− 88px` (padding do `<main>`) ≈ **395px num iPhone SE**. Se o header do módulo passar
+disso, a lista vai a zero. O `pb-[calc(72px + safe-area)]` do `<main>` parece redundante com o
+BottomNav em fluxo, mas é **intencional** (v2.36.8: `h-screen` não acompanha a barra dinâmica do
+navegador mobile) — **não remover**.

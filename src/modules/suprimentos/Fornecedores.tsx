@@ -399,7 +399,7 @@ export default function Fornecedores() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col md:h-full">
 
       {/* Header */}
       <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
@@ -420,7 +420,7 @@ export default function Fornecedores() {
       </div>
 
       {/* Lista */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="p-6 md:flex-1 md:overflow-y-auto">
         <div className="space-y-3 max-w-5xl">
 
           {fornecedores.length === 0 && (

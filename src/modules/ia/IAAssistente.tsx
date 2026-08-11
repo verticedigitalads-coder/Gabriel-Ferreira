@@ -192,7 +192,7 @@ export function IAAssistente() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col md:h-full">
 
       {/* HEADER */}
       <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-surface)] flex justify-between items-center">
@@ -212,7 +212,7 @@ export function IAAssistente() {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="p-6 space-y-6 md:flex-1 md:overflow-y-auto">
 
         {/* ONBOARDING — visível enquanto nenhum lead foi analisado */}
         {!leads.some(l => l.historico?.some((h: HistoricoEntry) => h.tipo === HISTORICO_TIPO.IA_ANALYSIS)) && (

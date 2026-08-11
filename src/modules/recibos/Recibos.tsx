@@ -146,7 +146,7 @@ export function Recibos() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col md:h-full">
       {/* Header */}
       <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between flex-wrap gap-3">
@@ -176,7 +176,7 @@ export function Recibos() {
       </div>
 
       {/* Lista */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
         {sortedRecibos.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-3xl mb-3 opacity-30">🧾</div>

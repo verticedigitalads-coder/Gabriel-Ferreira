@@ -57,7 +57,7 @@ export function LeadsList() {
     filters.search !== '';
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col md:h-full">
       {/* Header */}
       <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
@@ -181,7 +181,7 @@ export function LeadsList() {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
         {filteredLeads.length === 0 ? (
           <div className="text-center py-12">
             {hasActiveFilters ? (
