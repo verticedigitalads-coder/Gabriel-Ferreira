@@ -20,13 +20,10 @@ export function LandingStyles() {
         @keyframes lp-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .lp-fade{animation:lp-fadeUp .7s ease forwards;opacity:0}
         .lp-d1{animation-delay:.08s}.lp-d2{animation-delay:.16s}.lp-d3{animation-delay:.24s}.lp-d4{animation-delay:.32s}
-        @keyframes lp-pulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
-        .lp-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;animation:lp-pulse 1.6s ease-in-out infinite}
         .lp-feat{background:#1a1d27;border:1px solid #262a36;border-radius:14px;padding:28px;transition:all .2s}
         .lp-feat:hover{border-color:#363b4a;transform:translateY(-2px);box-shadow:0 20px 40px -20px rgba(0,0,0,0.5)}
         .lp-feat.highlight{background:linear-gradient(180deg,rgba(255,106,0,0.06) 0%,#1a1d27 60%);border-color:rgba(255,106,0,0.25)}
         .lp-step{background:#1a1d27;border:1px solid #262a36;border-radius:14px;padding:32px 28px}
-        .lp-testi{background:#1a1d27;border:1px solid #262a36;border-radius:14px;padding:28px;display:flex;flex-direction:column}
         .lp-google{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:10px;background:#fff;color:#1f1f1f;font-weight:600;font-size:15px;transition:all .15s;min-height:48px;border:none;cursor:pointer}
         .lp-google:hover{transform:translateY(-1px);box-shadow:0 12px 28px -10px rgba(255,255,255,0.2)}
         @media(max-width:720px){.lp-mockup-body{grid-template-columns:1fr!important}.lp-mockup-side{display:none!important}.lp-stat-row{grid-template-columns:repeat(2,1fr)!important}}

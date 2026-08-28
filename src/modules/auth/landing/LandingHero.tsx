@@ -19,14 +19,6 @@ export function LandingHero() {
             <a href={hero.ctaPrimary.href} className="lp-btn lp-btn-primary lp-btn-lg">{hero.ctaPrimary.label}</a>
             <a href={hero.ctaSecondary.href} className="lp-btn lp-btn-ghost lp-btn-lg">{hero.ctaSecondary.label}</a>
           </div>
-          <div className="lp-fade lp-d3" style={{ display: 'flex', gap: 40, justifyContent: 'center', marginTop: 48, flexWrap: 'wrap' }}>
-            {hero.stats.map(s => (
-              <div key={s.v} style={{ textAlign: 'center' }}>
-                <strong style={{ display: 'block', fontSize: 28, fontWeight: 800 }}>{s.v}</strong>
-                <span style={{ fontSize: 12, color: '#7a7f8c' }}>{s.l}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <HeroMockup />

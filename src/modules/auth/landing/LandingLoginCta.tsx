@@ -5,7 +5,6 @@ export function LandingLoginCta({ onLogin }: { onLogin: () => void }) {
     <section id="login" style={{ padding: '96px 0', background: 'radial-gradient(50% 80% at 50% 0%,rgba(255,106,0,0.18) 0%,transparent 60%),#0f1117', position: 'relative', overflow: 'hidden' }}>
       <div className="lp-container">
         <div className="lp-cta-card lp-reveal" style={{ maxWidth: 560, margin: '0 auto', background: '#1a1d27', border: '1px solid #363b4a', borderRadius: 20, padding: '48px 40px', textAlign: 'center', boxShadow: '0 40px 100px -30px rgba(0,0,0,0.6)' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,106,0,0.12)', color: '#ff6a00', fontSize: 13, fontWeight: 600, border: '1px solid rgba(255,106,0,0.25)', marginBottom: 20 }}>{loginCta.badge}</span>
           <h2 style={{ fontSize: 'clamp(26px,3vw,34px)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 14 }}>{loginCta.title}</h2>
           <p style={{ color: '#b8bcc7', fontSize: 16, marginBottom: 32, lineHeight: 1.55 }}>{loginCta.subtitle}</p>
 

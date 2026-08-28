@@ -39,11 +39,6 @@ export interface LandingLink {
   label: string;
 }
 
-export interface HeroStat {
-  v: string;
-  l: string;
-}
-
 export interface MockupStat {
   l: string;
   v: string;
@@ -73,14 +68,6 @@ export interface LandingStep {
   d: string;
 }
 
-export interface LandingTestimonial {
-  q: string;
-  n: string;
-  r: string;
-  i: string;
-  g: string;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTEÚDO
 // ─────────────────────────────────────────────────────────────────────────────
@@ -92,7 +79,6 @@ export const nav = {
   links: [
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
-    { href: '#testi', label: 'Depoimentos' },
   ] as LandingLink[],
   cta: { href: '#login', label: 'Acessar CRM' } as LandingLink,
 };
@@ -103,18 +89,12 @@ export const hero = {
   titleHighlight: 'empresas que vendem serviços',
   subtitle:
     'Metalúrgicas, marcenarias e serralherias gerenciam leads, orçamentos e operação em um só lugar — com priorização automática por IA e PDFs profissionais com PIX.',
-  ctaPrimary: { href: '#login', label: 'Começar agora — Grátis →' } as LandingLink,
+  ctaPrimary: { href: '#login', label: 'Falar com a equipe' } as LandingLink,
   ctaSecondary: { href: '#features', label: 'Ver funcionalidades' } as LandingLink,
-  stats: [
-    { v: 'R$ 2M+', l: 'em orçamentos gerenciados' },
-    { v: '500+', l: 'leads acompanhados' },
-    { v: '98%', l: 'de uptime' },
-  ] as HeroStat[],
 };
 
 export const mockup = {
-  url: 'vertice-digital-crm.vercel.app',
-  liveLabel: 'Ao vivo',
+  url: 'vrtxcrm.com.br',
   sidebarItems: [
     '⊞ Dashboard',
     '👥 Leads',
@@ -156,29 +136,18 @@ export const features = {
 
 export const howItWorks = {
   eyebrow: 'Como funciona',
-  title: 'Do cadastro ao primeiro orçamento em menos de 10 minutos',
+  title: 'Três passos até sua operação rodar no VRTX',
   steps: [
-    { n: '1', t: 'Cadastre sua empresa', d: 'Entre com Google, configure logo, dados PIX e modelo de orçamento. Tudo pronto em poucos cliques.' },
-    { n: '2', t: 'Importe ou crie seus leads', d: 'Cadastro manual rápido, importação em lote ou captura via formulário. A IA já começa a priorizar.' },
+    { n: '1', t: 'Fale com a equipe', d: 'A gente entende sua operação e configura seu workspace: logo, dados PIX e o modelo de orçamento do seu jeito.' },
+    { n: '2', t: 'Cadastre seus leads', d: 'Cadastro rápido de lead e orçamento. A IA já começa a priorizar por valor, urgência e histórico de contato.' },
     { n: '3', t: 'Gerencie tudo num só lugar', d: 'Leads, orçamentos, agenda, financeiro e equipe. Acompanhe o crescimento pelo dashboard executivo.' },
   ] as LandingStep[],
 };
 
-export const testimonials = {
-  eyebrow: 'O que dizem',
-  title: 'Empresas que pararam de perder lead em planilha',
-  items: [
-    { q: '"Antes eu perdia 3-4 orçamentos por semana esquecidos no WhatsApp. Em 2 meses de VRTX, fechei 32% mais."', n: 'Rafael Marques', r: 'Sócio · Marquemetal Serralheria', i: 'RM', g: 'linear-gradient(135deg,#ff6a00,#ff9a5c)' },
-    { q: '"O PDF do orçamento com QR Code PIX virou nosso diferencial. Cliente recebe, vê o valor e paga ali mesmo."', n: 'Carla Lima', r: 'Diretora · Marcenaria Lima & Filhos', i: 'CL', g: 'linear-gradient(135deg,#6366f1,#a78bfa)' },
-    { q: '"Tenho 3 empresas e cada uma com workspace separado. Acabou a confusão de relatórios misturados."', n: 'João Pereira', r: 'CEO · Grupo Pereira Indústria', i: 'JP', g: 'linear-gradient(135deg,#22c55e,#86efac)' },
-  ] as LandingTestimonial[],
-};
-
 export const loginCta = {
-  badge: '⚡ Comece grátis · Sem cartão',
   title: 'Pronto para parar de perder venda?',
   subtitle:
-    'Entre com sua conta Google, crie seu workspace em segundos e teste todas as funcionalidades.',
+    'Acesso liberado para clientes VRTX. Ainda não é cliente? Fale com nossa equipe.',
   googleLabel: 'Entrar com Google',
   dividerLabel: 'ou',
   salesEmail: 'contato@verticedigital.com.br',
@@ -187,7 +156,7 @@ export const loginCta = {
   legalAnd: 'e',
   termsLabel: 'Termos de Uso',
   privacyLabel: 'Política de Privacidade',
-  trust: ['🔒 SSL criptografado', '💾 Backup diário', '🛡️ LGPD compliant'],
+  trust: ['🔒 SSL criptografado', '🏢 Dados isolados por workspace'],
 };
 
 export const footer = {
@@ -196,7 +165,6 @@ export const footer = {
   links: [
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
-    { href: '#testi', label: 'Depoimentos' },
     { href: '/privacidade', label: 'Privacidade' },
     { href: '/termos', label: 'Termos' },
   ] as LandingLink[],

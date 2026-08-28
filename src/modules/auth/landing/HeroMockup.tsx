@@ -9,7 +9,6 @@ export function HeroMockup() {
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28ca42' }} />
           <span style={{ marginLeft: 16, fontSize: 12, color: '#7a7f8c', background: '#222633', padding: '5px 12px', borderRadius: 6 }}>{mockup.url}</span>
-          <span style={{ fontSize: 11, color: '#7a7f8c', display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}><span className="lp-live-dot" /> {mockup.liveLabel}</span>
         </div>
         <div className="lp-mockup-body" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', minHeight: 420 }}>
           <aside className="lp-mockup-side" style={{ background: '#13161e', borderRight: '1px solid #262a36', padding: '18px 12px', fontSize: 13 }}>
