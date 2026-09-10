@@ -1,4 +1,4 @@
-import { nav } from './landingContent';
+import { CTA_WHATSAPP_LABEL, nav, whatsappUrl } from './landingContent';
 
 export function LandingNav() {
   return (
@@ -13,7 +13,10 @@ export function LandingNav() {
             <a key={link.href} href={link.href} style={{ color: 'inherit', textDecoration: 'none' }}>{link.label}</a>
           ))}
         </div>
-        <a href={nav.cta.href} className="lp-btn lp-btn-primary">{nav.cta.label}</a>
+        <div className="lp-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a href={nav.ctaLogin.href} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '0 4px', color: '#b8bcc7', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>{nav.ctaLogin.label}</a>
+          <a href={whatsappUrl('nav')} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn-primary lp-nav-cta">{CTA_WHATSAPP_LABEL}</a>
+        </div>
       </div>
     </nav>
   );

@@ -176,6 +176,9 @@ export function App() {
   const [termsStatus, setTermsStatus] = useState<
     'checking' | 'accepted' | 'needed' | 'error'
   >('checking');
+  // Motivo do último logout automático, exibido na landing. Sobrevive ao
+  // signOut porque App não desmonta — só troca o que renderiza.
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
 
   const checkTerms = useCallback(async (userId: string) => {
     setTermsStatus('checking');
@@ -231,6 +234,8 @@ export function App() {
     const init = async () => {
       if (!session) return;
 
+      setAuthNotice(null); // novo login: limpa aviso de tentativa anterior
+
       // 🔒 Evita iniciar 2x
       if (realtimeStarted.current) return;
 
@@ -239,6 +244,7 @@ export function App() {
 
         if (!workspaceId) {
           console.warn('Usuário sem workspace — fazendo logout');
+          setAuthNotice('sem-acesso');
           await supabase.auth.signOut();
           return;
         }
@@ -251,6 +257,7 @@ export function App() {
         realtimeStarted.current = true; // ✅ trava aqui
       } catch (error) {
         console.error('Erro na inicialização:', error);
+        setAuthNotice('erro-init'); // falha de carga, não falta de acesso
         await supabase.auth.signOut();
       }
     };
@@ -273,7 +280,7 @@ export function App() {
 
   // 🔒 Se não estiver logado → Tela de Login
   if (!session) {
-    return <AuthPage />;
+    return <AuthPage notice={authNotice} onDismissNotice={() => setAuthNotice(null)} />;
   }
 
   // 📜 Gate de aceite (LGPD) — fail-closed: o app NUNCA monta enquanto o aceite

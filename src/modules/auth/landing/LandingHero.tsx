@@ -1,4 +1,4 @@
-import { hero } from './landingContent';
+import { CTA_WHATSAPP_LABEL, hero, whatsappUrl } from './landingContent';
 import { HeroMockup } from './HeroMockup';
 
 export function LandingHero() {
@@ -15,8 +15,8 @@ export function LandingHero() {
           <p className="lp-fade lp-d2" style={{ fontSize: 'clamp(16px,1.6vw,19px)', color: '#b8bcc7', maxWidth: 640, margin: '0 auto 36px', lineHeight: 1.6 }}>
             {hero.subtitle}
           </p>
-          <div className="lp-fade lp-d3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href={hero.ctaPrimary.href} className="lp-btn lp-btn-primary lp-btn-lg">{hero.ctaPrimary.label}</a>
+          <div className="lp-fade lp-d3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
+            <a href={whatsappUrl('hero')} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn-primary lp-btn-lg">{CTA_WHATSAPP_LABEL}</a>
             <a href={hero.ctaSecondary.href} className="lp-btn lp-btn-ghost lp-btn-lg">{hero.ctaSecondary.label}</a>
           </div>
         </div>

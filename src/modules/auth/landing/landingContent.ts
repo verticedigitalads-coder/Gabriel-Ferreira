@@ -23,12 +23,31 @@ export const PRICING = {
 } as const;
 
 // A origem entra no texto da mensagem para rastrear qual CTA converteu.
-export type WhatsappOrigem = 'nav' | 'hero' | 'cta-final' | 'sem-acesso';
+export type WhatsappOrigem =
+  | 'nav'
+  | 'hero'
+  | 'cta-final'
+  | 'sem-acesso'
+  | 'erro-init';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
   return `https://wa.me/${SALES_WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 }
+
+// Um label só para todos os CTAs de conversão — nav, hero, card e banner.
+export const CTA_WHATSAPP_LABEL = 'Falar com a equipe';
+
+// Avisos mostrados na landing quando o login acontece mas o acesso não rola.
+// As chaves são origens válidas de whatsappUrl(), então o banner rastreia o motivo.
+export const accessNotice = {
+  'sem-acesso':
+    'Login feito, mas esta conta ainda não tem acesso ao VRTX. Fale com a equipe para liberar.',
+  'erro-init':
+    'Não conseguimos carregar seus dados agora. Tente novamente em instantes ou fale com a equipe.',
+} as const;
+
+export type AccessNoticeKind = keyof typeof accessNotice;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TIPOS DAS LISTAS
@@ -80,7 +99,8 @@ export const nav = {
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
   ] as LandingLink[],
-  cta: { href: '#login', label: 'Acessar CRM' } as LandingLink,
+  // Login é caminho secundário: link de texto, não botão.
+  ctaLogin: { href: '#acesso', label: 'Entrar' } as LandingLink,
 };
 
 export const hero = {
@@ -89,7 +109,7 @@ export const hero = {
   titleHighlight: 'empresas que vendem serviços',
   subtitle:
     'Metalúrgicas, marcenarias e serralherias gerenciam leads, orçamentos e operação em um só lugar — com priorização automática por IA e PDFs profissionais com PIX.',
-  ctaPrimary: { href: '#login', label: 'Falar com a equipe' } as LandingLink,
+  // Primário é WhatsApp (href vem de whatsappUrl('hero')), por isso só o label.
   ctaSecondary: { href: '#features', label: 'Ver funcionalidades' } as LandingLink,
 };
 
@@ -149,9 +169,7 @@ export const loginCta = {
   subtitle:
     'Acesso liberado para clientes VRTX. Ainda não é cliente? Fale com nossa equipe.',
   googleLabel: 'Entrar com Google',
-  dividerLabel: 'ou',
-  salesEmail: 'contato@verticedigital.com.br',
-  salesLabel: '✉️ Falar com vendas',
+  dividerLabel: 'Já é cliente?',
   legalPrefix: 'Ao continuar, você concorda com nossos',
   legalAnd: 'e',
   termsLabel: 'Termos de Uso',
@@ -165,6 +183,8 @@ export const footer = {
   links: [
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
+    // TODO: confirmar caixa antes de publicar
+    // { href: 'mailto:contato@verticedigital.com.br', label: 'Contato' },
     { href: '/privacidade', label: 'Privacidade' },
     { href: '/termos', label: 'Termos' },
   ] as LandingLink[],
