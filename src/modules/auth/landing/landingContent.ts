@@ -1,15 +1,15 @@
 // Fonte única de verdade do CONTEÚDO da landing pública (a tela de auth).
 // Os componentes em src/modules/auth/landing/ só cuidam de layout — toda copy,
 // lista e constante comercial mora aqui, para iterar texto sem tocar em JSX.
-import { SUPPORT_WHATSAPP_NUMBER } from '@/lib/support';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMERCIAL
 // ─────────────────────────────────────────────────────────────────────────────
 
-// TODO(Gabriel): trocar pelo WhatsApp COMERCIAL quando existir. Hoje aponta para
-// o mesmo número do suporte (src/lib/support.ts) — assim o CTA nunca fica quebrado.
-export const SALES_WHATSAPP_NUMBER = String(SUPPORT_WHATSAPP_NUMBER);
+// WhatsApp COMERCIAL da Vértice (lead novo), separado de propósito do WhatsApp
+// de SUPORTE em src/lib/support.ts — trocar aqui não afeta o atendimento a
+// cliente existente. Provisório: hoje é o mesmo número, até o comercial existir.
+export const SALES_WHATSAPP_NUMBER = '5534998049083';
 
 // Provisório — ainda NÃO exibido na landing (a etapa de pricing vem depois).
 export const PRICING = {
