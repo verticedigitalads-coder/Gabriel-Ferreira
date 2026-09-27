@@ -44,7 +44,7 @@
 ## ⚠️ Breaking changes
 
 - Escrita de `authenticated`/`anon` em `workspaces` e `workspace_members` revogada — apenas `service_role` via backend (`95fce92`)
-- Policies RLS migradas de `= (SELECT … LIMIT 1)` para `IN (SELECT …)` — queries sem `.eq('workspace_id', ...)` explícito passam a retornar vazio (`2e95400`)
+- Policies RLS migradas de `= (SELECT … LIMIT 1)` para `IN (SELECT …)` — queries sem `.eq('workspace_id', ...)` explícito passam a retornar dados de todos os workspaces acessíveis ao usuário; escopo explícito é obrigatório (`2e95400`)
 - `requireAuth` adicionado nas rotas de PDF e `/api/chat` — chamadas sem token resultam em 401 (`b337107`, `f640ef0`)
 - CORS restrito por ambiente + webhook Evolution exige secret na URL (`46e3c1e`)
 - Service Worker usa `NetworkOnly` para `*.supabase.co` — dados multi-tenant nunca em Cache Storage (`13e3857`)
