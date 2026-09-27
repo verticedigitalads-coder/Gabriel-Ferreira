@@ -6,41 +6,47 @@
 //   - useStore startRealtime() handlers
 // ═══════════════════════════════════════════════════════════════════════════
 
+import { calculatePriority } from '@/lib/priority'
+import type { Lead } from '@/types'
+
 // Converte ISO 8601 do Supabase → yyyy-MM-dd para <input type="date">
 // Ex: "2026-03-16T00:00:00+00:00" → "2026-03-16"
 const toDateInput = (val: string | null | undefined): string | null =>
   val ? val.split('T')[0] : null
 
-export const formatLead = (raw: any) => ({
-  id: raw.id,
-  workspaceId: raw.workspace_id,
-  nome: raw.nome,
-  telefone: raw.telefone,
-  email: raw.email,
-  endereco: raw.endereco,
-  servico: raw.servico,
-  visitaOrcamentoData: raw.visita_orcamento_data,
-  visitaOrcamentoPeriodo: raw.visita_orcamento_periodo,
-  status: raw.status,
-  temperatura: raw.temperatura,
-  origem: raw.origem,
-  prazoCliente: raw.prazo_cliente,
-  probabilidadeManual: raw.probabilidade_manual,
-  prioridadeScore: raw.prioridade_score ?? 0,
-  prioridadeLevel: raw.prioridade_level ?? 'baixo',
-  ultimoContato: toDateInput(raw.ultimo_contato),
-  proximoContato: toDateInput(raw.proximo_contato),
-  orcamentoEnviado: raw.orcamento_enviado ?? false,
-  valorOrcado: raw.valor_orcado ?? null,
-  dataOrcamento: raw.data_orcamento ?? null,
-  dataExecucao: raw.data_execucao ?? null,
-  resumo: raw.resumo || '',
-  observacoes: raw.observacoes || '',
-  historico: raw.historico || [],
-  createdAt: raw.created_at,
-  updatedAt: raw.updated_at,
-  syncStatus: raw.sync_status || 'synced',
-})
+export const formatLead = (raw: any) => {
+  const lead = {
+    id: raw.id,
+    workspaceId: raw.workspace_id,
+    nome: raw.nome,
+    telefone: raw.telefone,
+    email: raw.email,
+    endereco: raw.endereco,
+    servico: raw.servico,
+    visitaOrcamentoData: raw.visita_orcamento_data,
+    visitaOrcamentoPeriodo: raw.visita_orcamento_periodo,
+    status: raw.status,
+    temperatura: raw.temperatura,
+    origem: raw.origem,
+    prazoCliente: raw.prazo_cliente,
+    probabilidadeManual: raw.probabilidade_manual,
+    ultimoContato: toDateInput(raw.ultimo_contato),
+    proximoContato: toDateInput(raw.proximo_contato),
+    orcamentoEnviado: raw.orcamento_enviado ?? false,
+    valorOrcado: raw.valor_orcado ?? null,
+    dataOrcamento: raw.data_orcamento ?? null,
+    dataExecucao: raw.data_execucao ?? null,
+    resumo: raw.resumo || '',
+    observacoes: raw.observacoes || '',
+    historico: raw.historico || [],
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+    syncStatus: raw.sync_status || 'synced',
+  }
+  // Prioridade derivada na leitura — colunas prioridade_* do banco são ignoradas
+  const { score, level } = calculatePriority(lead as Lead)
+  return { ...lead, prioridadeScore: score, prioridadeLevel: level }
+}
 
 export const formatOperacionalTask = (raw: any) => ({
   id: raw.id,

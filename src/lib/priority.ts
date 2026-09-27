@@ -28,6 +28,11 @@ export function calculatePriority(lead: Lead): PriorityCalculation {
     followUpVencido: 0,
   };
 
+  // Lead encerrado não é prioridade
+  if (lead.status === 'fechado' || lead.status === 'perdido') {
+    return { score, level: 'baixo', breakdown };
+  }
+
   // +5 se temperatura = quente
   if (lead.temperatura === 'quente') {
     breakdown.temperatura = 5;
