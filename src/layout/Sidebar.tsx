@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { cn } from '@/utils/cn';
+import featureFlags from '../../feature-flags.json';
 import { AlertTriangle, X, Building2 } from 'lucide-react';
 import {
   LayoutDashboard,
@@ -38,12 +39,20 @@ const sections: { title: string; items: MenuItem[] }[] = [
     title: 'Comercial',
     items: [
       { id: 'leads', label: 'Leads', icon: Users },
-      { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+      // Ocultação temporária pré-lançamento p/ clientes novos — envio com bug de formato
+      // LID pendente de correção. Reverter: MODULO_WHATSAPP_VISIVEL: true em feature-flags.json
+      ...(featureFlags.MODULO_WHATSAPP_VISIVEL
+        ? [{ id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle }]
+        : []),
       { id: 'orcamentos', label: 'Orçamentos', icon: FileText },
       { id: 'recibos', label: 'Recibos', icon: Receipt },
       { id: 'financeiro', label: 'Financeiro', icon: DollarSign },
       { id: 'contas-receber', label: 'Contas a Receber', icon: Receipt },
-      { id: 'notas', label: 'Notas', icon: FileCheck },
+      // Ocultação temporária pré-lançamento — funcionalidade não vai evoluir agora.
+      // Reverter: MODULO_NOTAS_VISIVEL: true em feature-flags.json
+      ...(featureFlags.MODULO_NOTAS_VISIVEL
+        ? [{ id: 'notas', label: 'Notas', icon: FileCheck }]
+        : []),
     ],
   },
   {

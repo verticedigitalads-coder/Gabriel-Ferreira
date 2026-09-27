@@ -247,6 +247,13 @@ const logoBgBase64 = fs.readFileSync(path.join(assetsPath, 'logo_bg.png'), {
 const logoPath = `data:image/png;base64,${logoBase64}`;
 const logoBgPath = `data:image/png;base64,${logoBgBase64}`;
 
+// Ocultação temporária do envio de WhatsApp (bug de formato LID pendente de
+// correção — com dado de cliente sob LGPD, envio é risco até a correção existir).
+// Reverter: MODULO_WHATSAPP_VISIVEL: true em feature-flags.json
+const featureFlags = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'feature-flags.json'), 'utf-8'),
+);
+
 // ===== Central de Ajuda: cache dos docs/help/*.md em memória =====
 const helpDocsPath = path.join(__dirname, 'docs/help');
 let helpDocsCache = {};
@@ -2139,6 +2146,12 @@ app.post('/webhook/evolution/:secret', async (req, res) => {
 ========================================== */
 
 function evolutionConfig(res) {
+  if (!featureFlags.MODULO_WHATSAPP_VISIVEL) {
+    res
+      .status(503)
+      .json({ error: 'Envio de WhatsApp temporariamente desativado' });
+    return null;
+  }
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
   if (!url || !key) {
