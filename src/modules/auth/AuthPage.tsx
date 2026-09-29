@@ -4,6 +4,7 @@ import { LandingStyles } from './landing/landingStyles';
 import { useScrollReveal } from './landing/useScrollReveal';
 import { LandingNav } from './landing/LandingNav';
 import { LandingHero } from './landing/LandingHero';
+import { LandingClientes } from './landing/LandingClientes';
 import { LandingFeatures } from './landing/LandingFeatures';
 import { LandingHowItWorks } from './landing/LandingHowItWorks';
 import { LandingLoginCta } from './landing/LandingLoginCta';
@@ -37,6 +38,7 @@ export function AuthPage({
       <AccessNotice notice={notice} onDismiss={onDismissNotice} />
       <LandingNav />
       <LandingHero />
+      <LandingClientes />
       <LandingFeatures />
       <LandingHowItWorks />
       <LandingLoginCta onLogin={handleLogin} />

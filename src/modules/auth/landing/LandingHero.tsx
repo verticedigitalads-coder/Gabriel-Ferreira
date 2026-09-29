@@ -6,16 +6,18 @@ export function LandingHero() {
     <section className="lp-hero">
       <div className="lp-container">
         <div style={{ position: 'relative', textAlign: 'center', maxWidth: 880, margin: '0 auto' }}>
-          <span className="lp-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,106,0,0.12)', color: '#ff6a00', fontSize: 13, fontWeight: 600, border: '1px solid rgba(255,106,0,0.25)', marginBottom: 24 }}>
+          <span className="lp-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,106,0,0.12)', color: '#ff6a00', fontSize: 13, fontWeight: 600, border: '1px solid rgba(255,106,0,0.25)', marginBottom: 16 }}>
             {hero.badge}
           </span>
-          <h1 className="lp-fade lp-d1" style={{ fontSize: 'clamp(34px,5.5vw,64px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 20 }}>
+          <h1 className="lp-fade lp-d1" style={{ fontSize: 'clamp(34px,5.5vw,64px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 16 }}>
             {hero.titleLine1}<br /><span className="lp-grad">{hero.titleHighlight}</span>
           </h1>
-          <p className="lp-fade lp-d2" style={{ fontSize: 'clamp(16px,1.6vw,19px)', color: '#b8bcc7', maxWidth: 640, margin: '0 auto 36px', lineHeight: 1.6 }}>
-            {hero.subtitle}
+          {/* Quebra casada com o texto exato de subtitleLine1/2 e com maxWidth 720;
+              .lp-br-desk some em <=720px e no mobile a quebra é natural. */}
+          <p className="lp-fade lp-d2" style={{ fontSize: 'clamp(16px,1.6vw,19px)', color: '#b8bcc7', maxWidth: 720, margin: '0 auto 24px', lineHeight: 1.6 }}>
+            {hero.subtitleLine1}<br className="lp-br-desk" />{' '}{hero.subtitleLine2}
           </p>
-          <div className="lp-fade lp-d3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
+          <div className="lp-fade lp-d3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
             <a href={whatsappUrl('hero')} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn-primary lp-btn-lg">{CTA_WHATSAPP_LABEL}</a>
             <a href={hero.ctaSecondary.href} className="lp-btn lp-btn-ghost lp-btn-lg">{hero.ctaSecondary.label}</a>
           </div>

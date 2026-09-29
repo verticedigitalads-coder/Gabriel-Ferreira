@@ -18,7 +18,7 @@ export function LandingStyles() {
         .lp-btn:hover{text-decoration:none}
         html{scroll-behavior:smooth}
         /* Sem isso a ancora para atras do .lp-nav sticky (64px de altura). */
-        #acesso,#features,#how{scroll-margin-top:80px}
+        #acesso,#features,#how,#clientes{scroll-margin-top:80px}
         .lp-hero{position:relative;background:radial-gradient(60% 80% at 70% 0%,rgba(255,106,0,0.18) 0%,transparent 60%),radial-gradient(50% 60% at 10% 20%,rgba(99,102,241,0.18) 0%,transparent 60%),linear-gradient(180deg,#0f1117,#0b0d12);padding:80px 0 60px;overflow:hidden}
         .lp-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000 30%,transparent 80%);pointer-events:none}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -33,7 +33,7 @@ export function LandingStyles() {
            para reconhecimento, mas para de competir com o botao laranja. */
         .lp-google{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:10px;background:transparent;color:#b8bcc7;font-weight:600;font-size:15px;transition:all .15s;min-height:48px;border:1px solid #363b4a;cursor:pointer}
         .lp-google:hover{border-color:#7a7f8c;color:#f4f5f7}
-        @media(max-width:720px){.lp-mockup-body{grid-template-columns:1fr!important}.lp-mockup-side{display:none!important}.lp-stat-row{grid-template-columns:repeat(2,1fr)!important}}
+        @media(max-width:720px){.lp-mockup-body{grid-template-columns:1fr!important}.lp-mockup-side{display:none!important}.lp-stat-row{grid-template-columns:repeat(2,1fr)!important}.lp-br-desk{display:none}}
         @media(max-width:600px){.lp-hero{padding:60px 0 40px}.lp-cta-card{padding:32px 20px!important;margin:0 12px}}
         @media(max-width:900px){.lp-nav-links{display:none!important}}
         /* A 375px o nav tem logo + "Entrar" + botao (os links ja somem em 900px). */

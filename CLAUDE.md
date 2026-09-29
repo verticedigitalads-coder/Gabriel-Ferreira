@@ -94,6 +94,7 @@ Resolva o pedido no menor código que funciona. Sem abstração, camada de indir
 - `server.js` — geração de PDF, sanitização, rotas admin
 - `src/store/slices/leadSlice.ts` — automações encadeadas
 - `src/modules/auth/AuthPage.tsx` — é a landing pública E a tela de login; quebrar aqui derruba o acesso de todos. Mexer em `src/modules/auth/landing/` (11 arquivos componentizados), nunca no AuthPage direto
+  - EXCEÇÃO: a composição das seções da landing (imports e JSX de <Landing*/>) pode ser editada aqui. Nada de auth, handleLogin ou autorização.
 
 ### 🟡 CUIDADO ELEVADO
 

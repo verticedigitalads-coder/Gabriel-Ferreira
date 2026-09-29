@@ -28,7 +28,8 @@ export type WhatsappOrigem =
   | 'hero'
   | 'cta-final'
   | 'sem-acesso'
-  | 'erro-init';
+  | 'erro-init'
+  | 'rodape';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
@@ -87,6 +88,46 @@ export interface LandingStep {
   d: string;
 }
 
+export interface Testimonial {
+  empresa: string;
+  nicho: string;
+  cidade: string;
+  desde: string;
+  frase: string;
+  metrica?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROVA SOCIAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Clientes reais. As frases entram quando os clientes enviarem — até lá ficam
+// vazias e a seção #clientes (e o link "Clientes" do nav) fica oculta pela guarda
+// abaixo. A guarda olha a FRASE, não o tamanho do array: estes dois registros já
+// existem e não podem ir ao ar com depoimento em branco.
+export const TESTIMONIALS: Testimonial[] = [
+  {
+    empresa: 'FL Art Metal',
+    nicho: 'Metalúrgica',
+    cidade: 'Uberaba/MG',
+    desde: 'fev/2026',
+    frase: '',
+    metrica: '61 leads · 98 orçamentos',
+  },
+  {
+    empresa: 'Ítalo Colares Drywall',
+    nicho: 'Drywall',
+    cidade: 'Uberaba/MG',
+    desde: 'jun/2026',
+    frase: '',
+  },
+];
+
+// Só depoimento com frase preenchida aparece. Lista vazia = seção e link somem.
+export const TESTIMONIALS_VISIVEIS = TESTIMONIALS.filter(
+  (t) => t.frase.trim() !== '',
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTEÚDO
 // ─────────────────────────────────────────────────────────────────────────────
@@ -96,6 +137,10 @@ export const nav = {
   brandSuffix: 'CRM',
   brandInitial: 'V',
   links: [
+    // Mesma guarda da seção: sem depoimento visível, o link não aparece.
+    ...(TESTIMONIALS_VISIVEIS.length
+      ? [{ href: '#clientes', label: 'Clientes' }]
+      : []),
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
   ] as LandingLink[],
@@ -104,13 +149,19 @@ export const nav = {
 };
 
 export const hero = {
-  badge: '✦ CRM com Inteligência Artificial integrada',
-  titleLine1: 'O CRM inteligente para',
-  titleHighlight: 'empresas que vendem serviços',
-  subtitle:
-    'Metalúrgicas, marcenarias e serralherias gerenciam leads, orçamentos e operação em um só lugar — com priorização automática por IA e PDFs profissionais com PIX.',
+  badge: 'Serralheria · Marcenaria · Metalúrgica · Drywall',
+  titleLine1: 'O CRM de quem vende',
+  titleHighlight: 'por orçamento',
+  // Duas linhas no desktop: o <br> do LandingHero está casado com este texto
+  // exato (e com o maxWidth 720). Mudou a copy? Revise a quebra.
+  subtitleLine1: 'Do primeiro contato ao PIX recebido.',
+  subtitleLine2:
+    'Orçamento em PDF com sua logo, lead priorizado, nada perdido no WhatsApp.',
   // Primário é WhatsApp (href vem de whatsappUrl('hero')), por isso só o label.
-  ctaSecondary: { href: '#features', label: 'Ver funcionalidades' } as LandingLink,
+  ctaSecondary: {
+    href: '#features',
+    label: 'Ver funcionalidades',
+  } as LandingLink,
 };
 
 export const mockup = {
@@ -133,9 +184,24 @@ export const mockup = {
   ] as MockupStat[],
   focusLabel: 'Foco hoje · 3 leads',
   leads: [
-    { n: 'João Almeida — Portão automático', p: 'Crítico', c: '#ff6a00', bc: 'rgba(255,106,0,0.12)' },
-    { n: 'Marcenaria Souza — Móveis sob medida', p: 'Médio', c: '#60a5fa', bc: 'rgba(96,165,250,0.12)' },
-    { n: 'Construtora Lima — Estruturas metálicas', p: 'Baixo', c: '#7a7f8c', bc: '#1f2330' },
+    {
+      n: 'João Almeida — Portão automático',
+      p: 'Crítico',
+      c: '#ff6a00',
+      bc: 'rgba(255,106,0,0.12)',
+    },
+    {
+      n: 'Marcenaria Souza — Móveis sob medida',
+      p: 'Médio',
+      c: '#60a5fa',
+      bc: 'rgba(96,165,250,0.12)',
+    },
+    {
+      n: 'Construtora Lima — Estruturas metálicas',
+      p: 'Baixo',
+      c: '#7a7f8c',
+      bc: '#1f2330',
+    },
   ] as MockupLead[],
 };
 
@@ -145,12 +211,55 @@ export const features = {
   subtitle:
     'De primeiro contato a recebimento — uma plataforma única, pensada para quem vende serviços de alto valor.',
   items: [
-    { icon: '✦', title: 'Gestão de Leads com IA', desc: 'A IA analisa cada lead e atribui prioridade automática com base em valor, urgência e histórico de contato.', tag: '✦ Priorização automática', hi: true, iconBg: 'rgba(168,85,247,0.12)', iconColor: '#a855f7' },
-    { icon: '📄', title: 'Orçamentos profissionais', desc: 'PDF com sua identidade visual, QR Code PIX integrado e assinatura digital.', tag: 'PDF · PIX · Assinatura', iconBg: 'rgba(255,106,0,0.12)', iconColor: '#ff6a00' },
-    { icon: '📊', title: 'Dashboard executivo', desc: 'Receita prevista, foco do dia, saúde do CRM e conversão por etapa.', tag: 'Visão estratégica', iconBg: 'rgba(34,197,94,0.12)', iconColor: '#22c55e' },
-    { icon: '📅', title: 'Painel operacional', desc: 'Agenda semanal e mensal, tarefas por prioridade, alertas de atraso.', tag: 'Agenda inteligente', iconBg: 'rgba(96,165,250,0.12)', iconColor: '#60a5fa' },
-    { icon: '💰', title: 'Financeiro completo', desc: 'Receitas, despesas, contas a receber e resultado do mês com fluxo de caixa visual.', tag: 'Fluxo de caixa', iconBg: 'rgba(245,158,11,0.12)', iconColor: '#f59e0b' },
-    { icon: '🏢', title: 'Multi-workspace', desc: 'Cada empresa com dados isolados: leads, financeiro, branding e documentos separados.', tag: 'Isolamento total', iconBg: 'rgba(248,113,113,0.12)', iconColor: '#f87171' },
+    {
+      icon: '✦',
+      title: 'Gestão de Leads com IA',
+      desc: 'A IA analisa cada lead e atribui prioridade automática com base em valor, urgência e histórico de contato.',
+      tag: '✦ Priorização automática',
+      hi: true,
+      iconBg: 'rgba(168,85,247,0.12)',
+      iconColor: '#a855f7',
+    },
+    {
+      icon: '📄',
+      title: 'Orçamentos profissionais',
+      desc: 'PDF com sua identidade visual, QR Code PIX integrado e assinatura digital.',
+      tag: 'PDF · PIX · Assinatura',
+      iconBg: 'rgba(255,106,0,0.12)',
+      iconColor: '#ff6a00',
+    },
+    {
+      icon: '📊',
+      title: 'Dashboard executivo',
+      desc: 'Receita prevista, foco do dia, saúde do CRM e conversão por etapa.',
+      tag: 'Visão estratégica',
+      iconBg: 'rgba(34,197,94,0.12)',
+      iconColor: '#22c55e',
+    },
+    {
+      icon: '📅',
+      title: 'Painel operacional',
+      desc: 'Agenda semanal e mensal, tarefas por prioridade, alertas de atraso.',
+      tag: 'Agenda inteligente',
+      iconBg: 'rgba(96,165,250,0.12)',
+      iconColor: '#60a5fa',
+    },
+    {
+      icon: '💰',
+      title: 'Financeiro completo',
+      desc: 'Receitas, despesas, contas a receber e resultado do mês com fluxo de caixa visual.',
+      tag: 'Fluxo de caixa',
+      iconBg: 'rgba(245,158,11,0.12)',
+      iconColor: '#f59e0b',
+    },
+    {
+      icon: '🏢',
+      title: 'Multi-workspace',
+      desc: 'Cada empresa com dados isolados: leads, financeiro, branding e documentos separados.',
+      tag: 'Isolamento total',
+      iconBg: 'rgba(248,113,113,0.12)',
+      iconColor: '#f87171',
+    },
   ] as LandingFeature[],
 };
 
@@ -158,10 +267,28 @@ export const howItWorks = {
   eyebrow: 'Como funciona',
   title: 'Três passos até sua operação rodar no VRTX',
   steps: [
-    { n: '1', t: 'Fale com a equipe', d: 'A gente entende sua operação e configura seu workspace: logo, dados PIX e o modelo de orçamento do seu jeito.' },
-    { n: '2', t: 'Cadastre seus leads', d: 'Cadastro rápido de lead e orçamento. A IA já começa a priorizar por valor, urgência e histórico de contato.' },
-    { n: '3', t: 'Gerencie tudo num só lugar', d: 'Leads, orçamentos, agenda, financeiro e equipe. Acompanhe o crescimento pelo dashboard executivo.' },
+    {
+      n: '1',
+      t: 'Fale com a equipe',
+      d: 'A gente entende sua operação e configura seu workspace: logo, dados PIX e o modelo de orçamento do seu jeito.',
+    },
+    {
+      n: '2',
+      t: 'Cadastre seus leads',
+      d: 'Cadastro rápido de lead e orçamento. A IA já começa a priorizar por valor, urgência e histórico de contato.',
+    },
+    {
+      n: '3',
+      t: 'Time usando no mesmo dia',
+      d: 'Suporte humano, direto no WhatsApp. E dentro do sistema tem uma central de ajuda que responde dúvida na hora, sem abrir chamado.',
+    },
   ] as LandingStep[],
+};
+
+// Copy provisória — a seção só aparece quando houver depoimento com frase.
+export const clientes = {
+  eyebrow: 'Clientes',
+  title: 'Quem já vende com o VRTX',
 };
 
 export const loginCta = {
@@ -189,6 +316,11 @@ export const footer = {
     { href: '/termos', label: 'Termos' },
   ] as LandingLink[],
   copyright: '© 2026 VRTX · CRM Inteligente',
+  local: 'Vértice Digital · Uberaba/MG',
+  // CNPJ: entra aqui (e numa linha abaixo de `local` no LandingFooter) quando existir.
+  // Exibição derivada de SALES_WHATSAPP_NUMBER ('55' + DDD + número) — trocar o
+  // número lá atualiza aqui.
+  whatsappLabel: `(${SALES_WHATSAPP_NUMBER.slice(2, 4)}) ${SALES_WHATSAPP_NUMBER.slice(4, 9)}-${SALES_WHATSAPP_NUMBER.slice(9)}`,
 };
 
 export const LEGAL_PATHS = {
