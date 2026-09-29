@@ -54,7 +54,8 @@ export const formatOperacionalTask = (raw: any) => ({
   leadId: raw.lead_id ?? null,
   titulo: raw.titulo,
   descricao: raw.descricao ?? null,
-  data: raw.data,
+  // task.data sai do store como YYYY-MM-DD, não ISO completo
+  data: toDateInput(raw.data),
   tipo: raw.tipo,
   prioridade: raw.prioridade,
   status: raw.status,

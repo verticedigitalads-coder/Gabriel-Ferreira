@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, isBefore, isToday } from 'date-fns';
+import { differenceInCalendarDays, isBefore, isToday, parseISO } from 'date-fns';
 import type { Lead } from '@/types';
 
 interface UrgencyParams {
@@ -17,7 +17,7 @@ export function calculateOperationalUrgency({
   if (concluido) return 0;
 
   const hoje = new Date();
-  const taskDate = new Date(data);
+  const taskDate = parseISO(data);
 
   let score = 0;
 

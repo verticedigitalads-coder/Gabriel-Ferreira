@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns'
 import { useStore } from '../useStore'
 import type { DashboardStats } from '@/types'
 
@@ -38,19 +39,19 @@ export const useDashboardStats = (): DashboardStats => {
   const receitaConservadora = receitaPotencial * 0.3
 
   const tarefasHoje = tasks.filter(t=>{
-    const dataTask = new Date(t.data)
+    const dataTask = parseISO(t.data)
     dataTask.setHours(0,0,0,0)
     return dataTask.getTime() === hojeDate.getTime() && !t.concluido
   })
 
   const tarefasAtrasadas = tasks.filter(t=>{
-    const dataTask = new Date(t.data)
+    const dataTask = parseISO(t.data)
     dataTask.setHours(0,0,0,0)
     return dataTask.getTime() < hojeDate.getTime() && !t.concluido
   })
 
   const tarefasCriticas = tasks.filter(t=>{
-    const dataTask = new Date(t.data)
+    const dataTask = parseISO(t.data)
     dataTask.setHours(0,0,0,0)
     return dataTask.getTime() <= hojeDate.getTime() && !t.concluido
   })
