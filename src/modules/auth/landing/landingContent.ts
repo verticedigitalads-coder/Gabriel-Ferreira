@@ -156,7 +156,7 @@ export const hero = {
   // exato (e com o maxWidth 720). Mudou a copy? Revise a quebra.
   subtitleLine1: 'Do primeiro contato ao PIX recebido.',
   subtitleLine2:
-    'Orçamento em PDF com sua logo, lead priorizado, nada perdido no WhatsApp.',
+    'Orçamento em PDF com sua logo e lead priorizado automaticamente.',
   // Primário é WhatsApp (href vem de whatsappUrl('hero')), por isso só o label.
   ctaSecondary: {
     href: '#features',
@@ -213,8 +213,8 @@ export const features = {
   items: [
     {
       icon: '✦',
-      title: 'Gestão de Leads com IA',
-      desc: 'A IA analisa cada lead e atribui prioridade automática com base em valor, urgência e histórico de contato.',
+      title: 'Gestão de Leads com priorização automática',
+      desc: 'O sistema classifica cada lead em crítico, alto, médio ou baixo com base no valor, no tempo sem contato e no estágio do orçamento. Quem está esfriando aparece primeiro na lista.',
       tag: '✦ Priorização automática',
       hi: true,
       iconBg: 'rgba(168,85,247,0.12)',
@@ -275,7 +275,7 @@ export const howItWorks = {
     {
       n: '2',
       t: 'Cadastre seus leads',
-      d: 'Cadastro rápido de lead e orçamento. A IA já começa a priorizar por valor, urgência e histórico de contato.',
+      d: 'Cadastro rápido de lead e orçamento. O sistema já começa a priorizar por valor, tempo sem contato e estágio do orçamento.',
     },
     {
       n: '3',
