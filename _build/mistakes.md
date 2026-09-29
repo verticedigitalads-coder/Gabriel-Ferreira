@@ -64,3 +64,11 @@ campos inline fora desse arquivo.
 **Impacto:** Campos como workspace_id, created_at, lead_id apareciam
 como undefined em vez de workspaceId, createdAt, leadId.
 **Status:** ✅ CORRIGIDO — formatters.ts centralizado, todos os slices migrados.
+
+### [2026-09-29] — parseISO vs new Date em string de data pura
+
+**O que aconteceu:** `new Date('2026-09-29')` parseia a string como meia-noite UTC — em UTC-3 vira `28/09 21:00` local, retrocedendo o dia calendário. `parseISO('2026-09-29')` (date-fns) parseia como local e dá o dia certo.
+**Causa raiz:** `operacional_tasks.data` (timestamptz) é gravado em `00:00:00 UTC`. `formatOperacionalTask` repassava o ISO completo (25 chars) sem normalizar, e os pontos de leitura comparavam com `new Date(t.data)` em vez de `parseISO(t.data)`. Normalizar o store para `YYYY-MM-DD` conserta comparação de string e `parseISO`, mas **não** conserta `new Date` — os dois têm que ser trocados juntos, senão sobra um bug meio-corrigido e mais difícil de notar.
+**Como prevenir:** Para campo `timestamptz` que representa dia calendário (não instante), normalizar no formatter com `toDateInput` (`src/store/formatters.ts:14`) e ler sempre com `parseISO` do date-fns. Nunca `new Date()` direto em string de data.
+**Impacto:** Seção "Hoje" do módulo Operacional vazia por meses (comparação `t.data === hoje` nunca casava); tarefa de hoje contada como atrasada no Dashboard e no sino; toda tarefa de prioridade média datada hoje marcada CRÍTICA (score 60 em vez de 40); campo Data em branco no modal de edição do Operacional, e salvar gravava `data: ''` → Postgres erro 22007.
+**Status:** ✅ CORRIGIDO (leitura) — `formatters.ts`, `dashboardSelectors.ts`, `calculateOperationalUrgency.ts`. Commit `e9001ce2`. Escrita ainda grava dia UTC ou ISO com hora em 3 pontos — pendência registrada em current-state.md.
