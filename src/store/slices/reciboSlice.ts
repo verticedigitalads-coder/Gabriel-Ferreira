@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
+import { format } from 'date-fns';
 import type { Recibo, ReciboStatus } from '@/types';
 
 const VALID_RECIBO_STATUS: ReciboStatus[] = ['pendente', 'emitido', 'cancelado'];
@@ -193,7 +194,7 @@ export const createReciboSlice = (set: any, get: any) => ({
       .update({
         numero_recibo: numeroRecibo,
         status: 'emitido',
-        data_emissao: new Date().toISOString().split('T')[0],
+        data_emissao: format(new Date(), 'yyyy-MM-dd'),
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

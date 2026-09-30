@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
+import { format } from 'date-fns';
 import { formatContaReceber } from '@/store/formatters';
 import type { ContaReceber, ContaReceberFormData } from '@/types';
 
@@ -135,7 +136,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
 
   // ================= MARCAR COMO RECEBIDO =================
   marcarComoRecebido: async (id: string) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = format(new Date(), 'yyyy-MM-dd');
     const now = new Date().toISOString();
 
     const conta = get().contasReceber.find((c: ContaReceber) => c.id === id);

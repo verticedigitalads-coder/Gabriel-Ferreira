@@ -45,7 +45,7 @@ const normalizeDate = (date: string) =>
 const getStatusDisplay = (t: Transaction): StatusPagamentoDisplay => {
   if (t.statusPagamento === 'pago') return 'pago';
   if (!t.dataVencimento) return 'a_vencer';
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = format(new Date(), 'yyyy-MM-dd');
   return t.dataVencimento < hoje ? 'vencido' : 'a_vencer';
 };
 

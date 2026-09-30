@@ -71,7 +71,7 @@ export const formatTransaction = (raw: any) => ({
   tipo: raw.tipo,
   descricao: raw.descricao,
   valor: raw.valor,
-  data: raw.data,
+  data: toDateInput(raw.data),
   categoria: raw.categoria ?? '',
   observacoes: raw.observacoes ?? '',
   statusPagamento: raw.status_pagamento ?? 'pendente',

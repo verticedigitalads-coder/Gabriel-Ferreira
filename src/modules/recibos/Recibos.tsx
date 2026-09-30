@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/apiFetch';
 import { useDefaultSettings } from '@/hooks/useDefaultSettings';
 import type { Recibo, ReciboStatus } from '@/types';
 import { useState, useMemo } from 'react';
+import { format, parseISO } from 'date-fns';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -92,7 +93,7 @@ export function Recibos() {
           valor_total: recibo.valorTotal,
           observacoes: recibo.observacoes || '',
           data_emissao: recibo.dataEmissao
-            ? new Date(recibo.dataEmissao).toLocaleDateString('pt-BR')
+            ? parseISO(recibo.dataEmissao).toLocaleDateString('pt-BR')
             : new Date().toLocaleDateString('pt-BR'),
           empresa_nome: defaultSettings.empresaNome,
           empresa_telefone: defaultSettings.empresaTelefone,
@@ -399,7 +400,7 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
   const updateRecibo = useStore((state) => state.updateRecibo);
   const addToast = useStore((state) => state.addToast);
 
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = format(new Date(), 'yyyy-MM-dd');
 
   const [leadId, setLeadId] = useState(recibo?.leadId || '');
   const [orcamentoId, setOrcamentoId] = useState(recibo?.orcamentoId || '');

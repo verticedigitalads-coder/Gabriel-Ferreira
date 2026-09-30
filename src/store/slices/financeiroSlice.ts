@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
+import { format } from 'date-fns';
 import { formatTransaction } from '@/store/formatters';
 import type { Transaction } from '@/types';
 
@@ -161,7 +162,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
   // ================= MARCAR COMO PAGO =================
   marcarComoPago: async (id: string, formaPagamento: string) => {
     const now = new Date().toISOString();
-    const hoje = now.split('T')[0];
+    const hoje = format(new Date(), 'yyyy-MM-dd');
 
     const { data: updated, error } = await supabase
       .from('transactions')

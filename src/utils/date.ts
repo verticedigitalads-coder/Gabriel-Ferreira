@@ -1,8 +1,8 @@
-import { format, isValid } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export function formatDateBR(date: string | Date) {
-  const d = new Date(date);
+export function formatDateBR(date: string) {
+  const d = parseISO(date);
 
   if (!isValid(d)) return "";
 
