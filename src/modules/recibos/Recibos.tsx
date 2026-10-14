@@ -21,8 +21,10 @@ import {
   CalendarDays,
   User,
   QrCode,
+  Search,
 } from 'lucide-react';
 import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
+import { clienteCorrespondeBusca } from '@/utils/busca';
 
 const statusColors: Record<ReciboStatus, string> = {
   pendente:  'bg-[var(--warning-subtle)] text-[var(--warning)]',
@@ -42,6 +44,7 @@ const statusLabel: Record<ReciboStatus, string> = {
 
 export function Recibos() {
   const recibos = useStore((state) => state.recibos) as Recibo[];
+  const leads = useStore((state) => state.leads);
   const emitirRecibo = useStore((state) => state.emitirRecibo);
   const updateRecibo = useStore((state) => state.updateRecibo);
   const addToast = useStore((state) => state.addToast);
@@ -52,6 +55,7 @@ export function Recibos() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const [incluirPixPorRecibo, setIncluirPixPorRecibo] = useState<Record<string, boolean>>({});
+  const [busca, setBusca] = useState('');
 
   const sortedRecibos = useMemo(
     () =>
@@ -61,6 +65,19 @@ export function Recibos() {
           new Date(a.createdAt || 0).getTime(),
       ),
     [recibos],
+  );
+
+  const recibosFiltrados = useMemo(
+    () =>
+      sortedRecibos.filter((r) => {
+        const lead = leads.find((l) => l.id === r.leadId);
+        return clienteCorrespondeBusca(busca, {
+          nome: r.clienteNome,
+          telefone: r.clienteTelefone || lead?.telefone,
+          endereco: r.clienteEndereco || lead?.endereco,
+        });
+      }),
+    [sortedRecibos, leads, busca],
   );
 
   const handleEdit = (r: Recibo) => {
@@ -156,6 +173,7 @@ export function Recibos() {
               Recibos
             </h1>
             <p className="text-sm text-[var(--text-secondary)]">
+              {busca.trim() ? `${recibosFiltrados.length} de ` : ''}
               {recibos.length} {recibos.length === 1 ? 'recibo' : 'recibos'}
             </p>
           </div>
@@ -163,6 +181,18 @@ export function Recibos() {
             <Plus className="w-4 h-4" />
             Novo Recibo
           </Button>
+        </div>
+
+        <div className="relative mt-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+          <Input
+            type="text"
+            placeholder="Buscar nome, telefone ou endereço..."
+            aria-label="Buscar recibos"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="pl-9 min-h-[44px]"
+          />
         </div>
 
         <ConfirmDialog
@@ -188,9 +218,19 @@ export function Recibos() {
               Recibos são gerados automaticamente ao aprovar um orçamento
             </p>
           </div>
+        ) : recibosFiltrados.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-3xl mb-3 opacity-30">🔍</div>
+            <p className="text-sm text-[var(--text-tertiary)] mb-1">
+              Nenhum recibo encontrado
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => setBusca('')} className="mt-3">
+              Limpar busca
+            </Button>
+          </div>
         ) : (
           <div className="space-y-3">
-            {sortedRecibos.map((r) => (
+            {recibosFiltrados.map((r) => (
               <Card
                 key={r.id}
                 className="p-4 hover:shadow-md transition-shadow"

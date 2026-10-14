@@ -26,8 +26,10 @@ import {
   CheckCircle2,
   QrCode,
   PenTool,
+  Search,
 } from 'lucide-react';
 import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
+import { clienteCorrespondeBusca } from '@/utils/busca';
 import { SignatureModal } from '@/components/ui/SignatureModal';
 import type { Orcamento, OrcamentoItem, OrcamentoStatus, UnidadeOrcamento } from '@/types';
 
@@ -80,6 +82,7 @@ export function Orcamentos() {
 
   const [modoSelecao, setModoSelecao] = useState(false);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [busca, setBusca] = useState('');
 
   const sortedOrcamentos = useMemo(() => {
     return [...orcamentos].sort(
@@ -99,16 +102,30 @@ export function Orcamentos() {
   const getLeadName = (orc: Orcamento) =>
     orc.clienteNome || leadsMap[orc.leadId] || 'Cliente';
 
+  // Só a lista exibida é filtrada. totalSelecionado e o PDF agrupado seguem em sortedOrcamentos.
+  const orcamentosFiltrados = useMemo(
+    () =>
+      sortedOrcamentos.filter((orc) => {
+        const lead = leads.find((l) => l.id === orc.leadId);
+        return clienteCorrespondeBusca(busca, {
+          nome: orc.clienteNome || lead?.nome,
+          telefone: orc.clienteTelefone || lead?.telefone,
+          endereco: orc.clienteEndereco || lead?.endereco,
+        });
+      }),
+    [sortedOrcamentos, leads, busca],
+  );
+
   const orcamentosPorCliente = useMemo(() => {
     const grupos: Record<string, { nome: string; orcamentos: Orcamento[] }> = {};
-    sortedOrcamentos.forEach((orc) => {
+    orcamentosFiltrados.forEach((orc) => {
       const key = orc.leadId || 'sem-cliente';
       const nome = getLeadName(orc);
       if (!grupos[key]) grupos[key] = { nome, orcamentos: [] };
       grupos[key].orcamentos.push(orc);
     });
     return grupos;
-  }, [sortedOrcamentos, leadsMap]);
+  }, [orcamentosFiltrados, leadsMap]);
 
   const totalSelecionado = useMemo(
     () =>
@@ -410,6 +427,7 @@ export function Orcamentos() {
       <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="text-sm text-[var(--text-secondary)]">
+            {busca.trim() ? `${orcamentosFiltrados.length} de ` : ''}
             {orcamentos.length} orçamentos
           </p>
           <div className="flex items-center gap-2 flex-wrap">
@@ -437,6 +455,18 @@ export function Orcamentos() {
           </div>
         </div>
 
+        <div className="relative mt-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+          <Input
+            type="text"
+            placeholder="Buscar nome, telefone ou endereço..."
+            aria-label="Buscar orçamentos"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="pl-9 min-h-[44px]"
+          />
+        </div>
+
         <ConfirmDialog
           isOpen={confirmOpen}
           onConfirm={handleConfirmDelete}
@@ -461,9 +491,19 @@ export function Orcamentos() {
               Novo Orçamento
             </Button>
           </div>
+        ) : orcamentosFiltrados.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-3xl mb-3 opacity-30">🔍</div>
+            <p className="text-sm text-[var(--text-tertiary)] mb-1">
+              Nenhum orçamento encontrado
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => setBusca('')} className="mt-3">
+              Limpar busca
+            </Button>
+          </div>
         ) : !modoSelecao ? (
           <div className="space-y-3">
-            {sortedOrcamentos.map((orc) => renderOrcCard(orc))}
+            {orcamentosFiltrados.map((orc) => renderOrcCard(orc))}
           </div>
         ) : (
           <div className="space-y-6">
