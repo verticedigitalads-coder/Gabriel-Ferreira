@@ -17,10 +17,3 @@ Pare aqui e espere minha resposta.
 Pedido: $ARGUMENTS
 
 Não altere nenhum outro arquivo.
-
-## EXECUÇÃO
-- Modelo: Haiku (ou Sonnet)
-- Effort: low
-- Modo: direto
-- Caveman: sim
-- Razão: criação de 1 arquivo novo, sem lógica e sem consumidor
