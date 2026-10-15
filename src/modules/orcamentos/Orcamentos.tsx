@@ -135,9 +135,36 @@ export function Orcamentos() {
     [selecionados, sortedOrcamentos],
   );
 
+  // Cliente travado = lead do orçamento marcado. Derivado: desmarcar tudo solta a trava.
+  const orcTravado = sortedOrcamentos.find((o) => selecionados.has(o.id));
+
+  const alternarSelecao = (orc: Orcamento) => {
+    if (!selecionados.has(orc.id) && orcTravado && orc.leadId !== orcTravado.leadId) {
+      addToast({
+        type: 'warning',
+        message: `Seleção travada em ${getLeadName(orcTravado)}. Desmarque para trocar de cliente.`,
+      });
+      return;
+    }
+    setSelecionados((prev) => {
+      const next = new Set(prev);
+      if (next.has(orc.id)) next.delete(orc.id);
+      else next.add(orc.id);
+      return next;
+    });
+  };
+
   const handleGerarPDFAgrupado = async () => {
     const orcsSelecionados = sortedOrcamentos.filter((o) => selecionados.has(o.id));
     if (orcsSelecionados.length === 0) return;
+
+    if (new Set(orcsSelecionados.map((o) => o.leadId)).size > 1) {
+      addToast({
+        type: 'error',
+        message: 'A seleção tem orçamentos de mais de um cliente. Deixe só um cliente para gerar o PDF.',
+      });
+      return;
+    }
 
     const primeiro = orcsSelecionados[0];
     const lead = leads.find((l: Lead) => l.id === primeiro.leadId);
@@ -290,6 +317,8 @@ export function Orcamentos() {
 
   const renderOrcCard = (orc: Orcamento) => {
     const isSelecionado = selecionados.has(orc.id);
+    const bloqueado =
+      modoSelecao && !isSelecionado && !!orcTravado && orc.leadId !== orcTravado.leadId;
     const lead = leads.find((l) => l.id === orc.leadId);
     return (
       <Card
@@ -300,20 +329,18 @@ export function Orcamentos() {
         {/* Markup único: mobile empilhado, desktop (md+) em linha única */}
         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
           {/* checkbox + conteúdo */}
-          <div className="flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0">
+          <div
+            className={`flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0${modoSelecao ? ' min-h-[44px]' : ''}`}
+            onClick={modoSelecao ? () => alternarSelecao(orc) : undefined}
+          >
             {modoSelecao && (
               <input
                 type="checkbox"
                 checked={isSelecionado}
-                onChange={() => {
-                  setSelecionados((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(orc.id)) next.delete(orc.id);
-                    else next.add(orc.id);
-                    return next;
-                  });
-                }}
-                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
+                aria-disabled={bloqueado}
+                onClick={(e) => e.stopPropagation()}
+                onChange={() => alternarSelecao(orc)}
+                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0, opacity: bloqueado ? 0.4 : 1 }}
               />
             )}
             <div className="flex-1 min-w-0">
@@ -554,6 +581,12 @@ export function Orcamentos() {
             <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
               {formatCurrency(totalSelecionado)}
             </span>
+            {orcTravado && (
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Cliente:{' '}
+                <span style={{ color: 'var(--text-primary)' }}>{getLeadName(orcTravado)}</span>
+              </span>
+            )}
           </div>
           <Button onClick={handleGerarPDFAgrupado} className="gap-2 shrink-0">
             <Download className="w-4 h-4" />

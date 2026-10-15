@@ -22,7 +22,7 @@ Crie e envie orçamentos profissionais em PDF, com sua logo, suas cores e QR Cod
 
 ### Gerar um PDF com vários orçamentos
 1. Toque em **PDF Agrupado**.
-2. Marque os orçamentos desejados (a barra de baixo mostra a soma).
+2. Marque os orçamentos desejados (a barra de baixo mostra a soma). Os orçamentos precisam ser do mesmo cliente.
 3. Toque em **Gerar PDF Agrupado**.
 
 ### Marcar como aprovado (fechar a venda)
