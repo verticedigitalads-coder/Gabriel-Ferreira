@@ -65,6 +65,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const [showContatoModal, setShowContatoModal] = useState(false);
   const [textoContato, setTextoContato] = useState('');
   const [dataProximoContato, setDataProximoContato] = useState('');
+  const [isSavingContato, setIsSavingContato] = useState(false);
 
   const diasSemContato = lead.ultimoContato
     ? differenceInDays(new Date(), parseISO(lead.ultimoContato))
@@ -110,19 +111,24 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const handleRegistrarContato = async () => {
     if (!textoContato.trim()) return;
 
-    await updateLead(lead.id, {
-      ultimoContato: new Date().toISOString(),
-      proximoContato: dataProximoContato || lead.proximoContato,
-      historico: [
-        ...(Array.isArray(lead.historico) ? lead.historico : []),
-        {
-          id: crypto.randomUUID(),
-          tipo: HISTORICO_TIPO.CONTATO,
-          descricao: textoContato.trim(),
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    });
+    setIsSavingContato(true);
+    try {
+      await updateLead(lead.id, {
+        ultimoContato: new Date().toISOString(),
+        proximoContato: dataProximoContato || lead.proximoContato,
+        historico: [
+          ...(Array.isArray(lead.historico) ? lead.historico : []),
+          {
+            id: crypto.randomUUID(),
+            tipo: HISTORICO_TIPO.CONTATO,
+            descricao: textoContato.trim(),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      });
+    } finally {
+      setIsSavingContato(false);
+    }
 
     addToast({ type: 'success', message: 'Contato registrado!' });
     setShowContatoModal(false);
@@ -495,7 +501,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
             <Button
               variant="primary"
               onClick={handleRegistrarContato}
-              disabled={!textoContato.trim()}
+              disabled={!textoContato.trim() || isSavingContato}
             >
               Confirmar
             </Button>

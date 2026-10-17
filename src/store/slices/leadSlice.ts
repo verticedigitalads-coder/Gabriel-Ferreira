@@ -102,6 +102,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
       payload.ultimo_contato = updates.ultimoContato || null;
     if (updates.proximoContato !== undefined)
       payload.proximo_contato = updates.proximoContato || null;
+    if (updates.historico !== undefined) payload.historico = updates.historico;
 
     const { error } = await supabase
       .from('leads')
