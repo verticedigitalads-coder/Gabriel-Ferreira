@@ -20,3 +20,5 @@ dist/
 *.log
 node_modules
 load-tests/.env
+ 
+dev.bat
