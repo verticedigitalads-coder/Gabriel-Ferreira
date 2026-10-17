@@ -2,7 +2,7 @@ import { criarOrcamentoFromLead } from '@/services/automation/orcamentoAutomatio
 import { createLead } from '@/services/database/lead.service';
 import { supabase } from '@/lib/supabase';
 import { formatLead } from '@/store/formatters';
-import type { Lead, LeadStatus } from '@/types';
+import type { Lead, LeadStatus, OperacionalTask } from '@/types';
 
 // TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createLeadSlice = (_set: any, get: any) => ({
@@ -226,14 +226,35 @@ export const createLeadSlice = (_set: any, get: any) => ({
       return;
     }
 
-    const { addOperacionalTask } = get();
+    const { addOperacionalTask, operacionalTasks, addToast } = get();
 
-    await addOperacionalTask({
+    // 🔥 Ir e voltar de Fechado não duplica: só cria se não houver execução aberta
+    const execucaoAberta = operacionalTasks.some(
+      (t: OperacionalTask) =>
+        t.leadId === id && t.tipo === 'execucao' && !t.concluido,
+    );
+
+    if (execucaoAberta) {
+      addToast({
+        type: 'info',
+        message: 'Negócio fechado! Já existe tarefa de execução aberta.',
+      });
+      return;
+    }
+
+    const task = await addOperacionalTask({
       titulo: `Executar serviço - ${updatedLead.nome}`,
       data: new Date().toISOString().split('T')[0],
       tipo: 'execucao',
       prioridade: 'media',
       leadId: updatedLead.id,
     });
+
+    if (task) {
+      addToast({
+        type: 'success',
+        message: 'Negócio fechado! Tarefa de execução criada.',
+      });
+    }
   },
 });

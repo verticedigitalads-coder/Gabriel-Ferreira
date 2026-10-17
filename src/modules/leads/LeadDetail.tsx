@@ -79,7 +79,6 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const handleFechamento = async () => {
     setIsClosing(true);
     await markAsFechado(lead.id);
-    addToast({ type: 'success', message: 'Negócio fechado! Tarefa de execução criada.' });
     setIsClosing(false);
     onClose();
   };

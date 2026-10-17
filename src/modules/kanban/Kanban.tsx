@@ -38,6 +38,7 @@ const COLUMNS: { id: LeadStatus; title: string; color: string }[] = [
 export function Kanban() {
   const leads = useStore(state => state.leads);
   const updateLeadStatus = useStore(state => state.updateLeadStatus);
+  const markAsFechado = useStore(state => state.markAsFechado);
   const selectLead = useStore(state => state.selectLead);
   const selectedLeadId = useStore(state => state.selectedLeadId);
 
@@ -90,7 +91,11 @@ export function Kanban() {
     if (!lead) return;
 
     if (lead.status !== newStatus) {
-      updateLeadStatus(leadId, newStatus as LeadStatus);
+      if (newStatus === 'fechado') {
+        markAsFechado(leadId);
+      } else {
+        updateLeadStatus(leadId, newStatus as LeadStatus);
+      }
     }
   };
 

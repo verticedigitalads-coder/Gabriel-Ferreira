@@ -26,6 +26,7 @@ const temperaturaOptions = [
 export function LeadForm({ lead, onClose }: LeadFormProps) {
   const addLead = useStore(state => state.addLead)
   const updateLead = useStore(state => state.updateLead)
+  const markAsFechado = useStore(state => state.markAsFechado)
 
   const formData = useStore(state => state.leadForm)
   const setLeadForm = useStore(state => state.setLeadForm)
@@ -57,6 +58,9 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
 
     if (lead) {
       await updateLead(lead.id, formData);
+      if (formData.status === 'fechado' && lead.status !== 'fechado') {
+        await markAsFechado(lead.id);
+      }
       addToast({ type: 'success', message: 'Lead atualizado com sucesso!' });
     } else {
       const inserted = await addLead(formData);
