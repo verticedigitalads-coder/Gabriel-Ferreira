@@ -153,6 +153,8 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
       historico: newHist,
       createdAt,
       updatedAt,
+      status,
+      temperatura,
       ...leadData
     } = AIService.convertToLead(analysis, workspaceId || '') as Lead;
 

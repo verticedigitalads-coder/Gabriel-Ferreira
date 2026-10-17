@@ -134,14 +134,6 @@ export function IAAssistente() {
       : blocoPlano
 
     await updateLead(selectedLead.id, {
-  temperatura:
-    analysis.temperaturaSugerida === 'fria'
-      ? 'frio'
-      : analysis.temperaturaSugerida === 'morna'
-      ? 'morno'
-      : 'quente',
-
-  status: analysis.statusSugerido,
   resumo: analysis.resumoExecutivo,
   proximoContato: analysis.dataIdealFollowUp,
   observacoes: observacoesAtualizadas,
@@ -702,7 +694,7 @@ export function IAAssistente() {
         </Button>
 
         <p className="text-xs text-[var(--text-tertiary)] text-center mt-2">
-          Atualizará status, temperatura e poderá criar ação operacional.
+          Atualizará resumo, próximo contato e observações, e poderá criar ação operacional.
         </p>
       </div>
 

@@ -103,6 +103,9 @@ export const createLeadSlice = (_set: any, get: any) => ({
     if (updates.proximoContato !== undefined)
       payload.proximo_contato = updates.proximoContato || null;
     if (updates.historico !== undefined) payload.historico = updates.historico;
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.temperatura !== undefined)
+      payload.temperatura = updates.temperatura;
 
     const { error } = await supabase
       .from('leads')
