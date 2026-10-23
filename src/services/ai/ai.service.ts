@@ -1,6 +1,7 @@
 import { Lead, LeadStatus, LeadTemperature, LeadOrigin, LeadPrazo, HISTORICO_TIPO } from '@/types';
 import { calculatePriority } from '@/lib/priority';
 import { apiFetch } from '@/lib/apiFetch';
+import { format } from 'date-fns';
 
 export interface AIAnalysisResult {
   nome: string | null;
@@ -787,7 +788,7 @@ export class AIService {
       visitaOrcamentoData: analysis.dataVisitaSugerida || undefined,
       visitaOrcamentoPeriodo: analysis.visitaOrcamentoPeriodo || undefined,
 
-      ultimoContato: analysis.ultimoContato || new Date().toISOString(),
+      ultimoContato: analysis.ultimoContato || format(new Date(), 'yyyy-MM-dd'),
       proximoContato: analysis.dataSugeridaFollowUp,
 
       orcamentoEnviado: analysis.orcamentoEnviado,

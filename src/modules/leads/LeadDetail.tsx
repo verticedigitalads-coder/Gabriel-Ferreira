@@ -113,7 +113,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     setIsSavingContato(true);
     try {
       await updateLead(lead.id, {
-        ultimoContato: new Date().toISOString(),
+        ultimoContato: format(new Date(), 'yyyy-MM-dd'),
         proximoContato: dataProximoContato || lead.proximoContato,
         historico: [
           ...(Array.isArray(lead.historico) ? lead.historico : []),

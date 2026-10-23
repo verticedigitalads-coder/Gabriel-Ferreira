@@ -1,6 +1,7 @@
 import { criarOrcamentoFromLead } from '@/services/automation/orcamentoAutomation';
 import { useCallback } from 'react';
 import { useStore } from '@/store/useStore';
+import { format } from 'date-fns';
 
 export function useLeadActions() {
   const { updateLead, deleteLead, addToast, addOrcamento } = useStore();
@@ -28,7 +29,7 @@ export function useLeadActions() {
 
   const registerContact = useCallback(
     async (leadId: string) => {
-      await updateLead(leadId, { ultimoContato: new Date().toISOString() });
+      await updateLead(leadId, { ultimoContato: format(new Date(), 'yyyy-MM-dd') });
       addToast({ type: 'success', message: 'Contato registrado' });
     },
     [updateLead, addToast],
