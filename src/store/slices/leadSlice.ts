@@ -3,6 +3,7 @@ import { createLead } from '@/services/database/lead.service';
 import { supabase } from '@/lib/supabase';
 import { formatLead } from '@/store/formatters';
 import type { Lead, LeadStatus, OperacionalTask } from '@/types';
+import { format } from 'date-fns';
 
 // TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
 export const createLeadSlice = (_set: any, get: any) => ({
@@ -37,7 +38,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     const nome = nomeNormalizado;
     const temperatura = inserted.temperatura || 'frio';
 
-    const hoje = new Date().toISOString().split('T')[0];
+    const hoje = format(new Date(), 'yyyy-MM-dd');
 
     // ================= AUTOMAÇÃO =================
 
@@ -244,7 +245,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     const task = await addOperacionalTask({
       titulo: `Executar serviço - ${updatedLead.nome}`,
-      data: new Date().toISOString().split('T')[0],
+      data: format(new Date(), 'yyyy-MM-dd'),
       tipo: 'execucao',
       prioridade: 'media',
       leadId: updatedLead.id,

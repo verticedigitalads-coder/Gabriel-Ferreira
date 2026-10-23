@@ -1,5 +1,6 @@
 import { AIAnalysisResult } from '@/services/ai/ai.service';
 import React, { useState } from 'react';
+import { format } from 'date-fns';
 import {
   Bot,
   X,
@@ -122,7 +123,7 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
 
     if (visitaSugerida) {
       const dataVisita =
-        analysis.dataVisitaSugerida || new Date().toISOString().split('T')[0];
+        analysis.dataVisitaSugerida || format(new Date(), 'yyyy-MM-dd');
 
       await addOperacionalTask({
         titulo: `Visita orçamento - ${analysis.nome || 'Cliente'}`,
