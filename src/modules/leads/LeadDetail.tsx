@@ -72,7 +72,8 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     : null;
 
   const handleDelete = async () => {
-    await deleteLead(lead.id);
+    const ok = await deleteLead(lead.id);
+    if (!ok) return;
     onClose();
   };
 
@@ -111,8 +112,9 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     if (!textoContato.trim()) return;
 
     setIsSavingContato(true);
+    let ok = false;
     try {
-      await updateLead(lead.id, {
+      ok = await updateLead(lead.id, {
         ultimoContato: format(new Date(), 'yyyy-MM-dd'),
         proximoContato: dataProximoContato || lead.proximoContato,
         historico: [
@@ -128,6 +130,8 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     } finally {
       setIsSavingContato(false);
     }
+
+    if (!ok) return;
 
     addToast({ type: 'success', message: 'Contato registrado!' });
     setShowContatoModal(false);

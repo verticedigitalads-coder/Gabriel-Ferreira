@@ -118,8 +118,11 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[LeadSlice] Erro ao atualizar lead:', error);
-      return;
+      get().addToast({ type: 'error', message: 'Erro ao atualizar lead' });
+      return false;
     }
+
+    return true;
   },
 
   // ================= UPDATE STATUS =================
@@ -138,8 +141,11 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[LeadSlice] Erro ao atualizar status:', error);
-      return;
+      get().addToast({ type: 'error', message: 'Erro ao atualizar status' });
+      return false;
     }
+
+    return true;
   },
 
   // ================= DELETE LEAD =================
@@ -153,8 +159,11 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[LeadSlice] Erro ao deletar lead:', error);
-      return;
+      get().addToast({ type: 'error', message: 'Erro ao deletar lead' });
+      return false;
     }
+
+    return true;
   },
   // ================= MARCAR ORÇADO =================
 
@@ -181,6 +190,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (error || !updatedLead) {
       console.error('[LeadSlice] Erro ao marcar como orçado:', error);
+      get().addToast({ type: 'error', message: 'Erro ao marcar como orçado' });
       return;
     }
 
@@ -224,6 +234,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[LeadSlice] Erro ao marcar como fechado:', error);
+      get().addToast({ type: 'error', message: 'Erro ao marcar como fechado' });
       return;
     }
 

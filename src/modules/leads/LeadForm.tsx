@@ -57,7 +57,8 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
     e.preventDefault();
 
     if (lead) {
-      await updateLead(lead.id, formData);
+      const ok = await updateLead(lead.id, formData);
+      if (!ok) return;
       if (formData.status === 'fechado' && lead.status !== 'fechado') {
         await markAsFechado(lead.id);
       }

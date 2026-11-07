@@ -29,8 +29,8 @@ export function useLeadActions() {
 
   const registerContact = useCallback(
     async (leadId: string) => {
-      await updateLead(leadId, { ultimoContato: format(new Date(), 'yyyy-MM-dd') });
-      addToast({ type: 'success', message: 'Contato registrado' });
+      const ok = await updateLead(leadId, { ultimoContato: format(new Date(), 'yyyy-MM-dd') });
+      if (ok) addToast({ type: 'success', message: 'Contato registrado' });
     },
     [updateLead, addToast],
   );

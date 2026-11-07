@@ -78,7 +78,7 @@ export function Kanban() {
     setActiveId(event.active.id as string);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
     if (!over) return;
@@ -94,7 +94,7 @@ export function Kanban() {
       if (newStatus === 'fechado') {
         markAsFechado(leadId);
       } else {
-        updateLeadStatus(leadId, newStatus as LeadStatus);
+        await updateLeadStatus(leadId, newStatus as LeadStatus);
       }
     }
   };
@@ -370,8 +370,8 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
                   <button
                     onClick={async e => {
                       e.stopPropagation();
-                      await updateLead(lead.id, { observacoes: obsText });
-                      setShowObs(false);
+                      const ok = await updateLead(lead.id, { observacoes: obsText });
+                      if (ok) setShowObs(false);
                     }}
                     className="w-full text-xs bg-[var(--accent)] text-white rounded py-2 hover:bg-[var(--accent-hover)]"
                   >

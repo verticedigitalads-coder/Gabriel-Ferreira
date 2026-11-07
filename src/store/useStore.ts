@@ -38,9 +38,9 @@ type StoreState = {
 
   leads: any[];
   addLead: (data: any) => Promise<any>;
-  updateLead: (id: string, data: any) => Promise<void>;
-  updateLeadStatus: (leadId: string, status: any) => Promise<void>;
-  deleteLead: (id: string) => Promise<void>;
+  updateLead: (id: string, data: any) => Promise<boolean>;
+  updateLeadStatus: (leadId: string, status: any) => Promise<boolean>;
+  deleteLead: (id: string) => Promise<boolean>;
   handleMarkAsOrcado: (id: string, valor: number) => Promise<void>;
   markAsFechado: (id: string) => Promise<void>;
 
