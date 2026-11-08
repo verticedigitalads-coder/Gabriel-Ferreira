@@ -1,14 +1,17 @@
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useStore } from '@/store/useStore';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CheckCircle2, Trash2, Plus } from 'lucide-react';
 
 import OperacionalCalendar from './components/OperacionalCalendar';
 import { statusConfig } from './statusConfig';
 import OperacionalMonthCalendar from './components/OperacionalMonthCalendar';
+
+// Quantas atrasadas aparecem antes do "Ver todas (N)".
+const LIMITE_ATRASADAS = 5;
 
 export function Operacional() {
   const tasks = useStore((state) => state.operacionalTasks) || [];
@@ -38,6 +41,7 @@ export function Operacional() {
   // 🔥 TOGGLE SEMANA / MÊS
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
+  const [showAllAtrasadas, setShowAllAtrasadas] = useState(false);
 
   const [titulo, setTitulo] = useState('');
   const [data, setData] = useState('');
@@ -50,6 +54,14 @@ export function Operacional() {
   const tarefasHoje = tasks.filter((t) => t.data === hoje);
   const tarefasHojePendentes = tarefasHoje.filter((t) => !t.concluido);
   const tarefasHojeConcluidas = tarefasHoje.filter((t) => t.concluido);
+  // Mesmo critério do Dashboard ("N atrasadas") e do sino: aberta e data < hoje.
+  // Mais antiga primeiro. data nula não entra (null < 'yyyy-MM-dd' é false).
+  const tarefasAtrasadas = tasks
+    .filter((t) => !t.concluido && t.data < hoje)
+    .sort((a, b) => a.data.localeCompare(b.data));
+  const tarefasAtrasadasVisiveis = showAllAtrasadas
+    ? tarefasAtrasadas
+    : tarefasAtrasadas.slice(0, LIMITE_ATRASADAS);
   const tarefasSemana = tasks.filter((t) => t.data > hoje);
 
   const confirmEdit = async () => {
@@ -100,6 +112,62 @@ export function Operacional() {
     if (nivel === 'media') return 'text-[var(--warning)]';
     return 'text-[var(--success)]';
   };
+
+  // Card de tarefa pendente. "Hoje" chama sem info/extra (renderiza como antes);
+  // "Atrasadas" passa a linha "há N dias" (info) e o botão "Mover para hoje" (extra).
+  const renderTaskCard = (task: any, info?: ReactNode, extra?: ReactNode) => (
+    <div
+      key={task.id}
+      className="bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-start mb-2 border border-[var(--border)]"
+    >
+      <div className="flex-1">
+        <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
+        {info}
+        <div className={`text-sm ${prioridadeColor(task.prioridade)}`}>
+          {task.prioridade.toUpperCase()}
+        </div>
+        {/* Pills de status de produção */}
+        <div className="flex gap-1 flex-wrap mt-2">
+          {(['pendente', 'em_producao', 'pronto', 'instalado'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => updateTask(task.id, { status: s })}
+              className="text-xs px-2 py-1.5 md:py-0.5 rounded-full border transition-colors font-medium min-h-[32px]"
+              style={
+                (task.status || 'pendente') === s
+                  ? { background: statusConfig[s].bg, color: statusConfig[s].color, borderColor: 'transparent', fontWeight: 600 }
+                  : { background: 'transparent', color: 'var(--text-tertiary)', borderColor: 'var(--border)' }
+              }
+            >
+              {statusConfig[s].label}
+            </button>
+          ))}
+        </div>
+        {extra}
+      </div>
+
+      <div className="flex gap-3 items-center ml-3">
+        <button
+          onClick={() => updateTask(task.id, { concluido: true })}
+          className="text-[var(--text-tertiary)] hover:text-[var(--success)] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          title="Marcar como concluída"
+        >
+          <CheckCircle2 size={16} />
+        </button>
+
+        <button
+          onClick={() => {
+            setTaskToDelete(task);
+            setShowDeleteModal(true);
+          }}
+          className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          title="Excluir"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-4 md:p-6 space-y-6 md:space-y-8 max-w-6xl mx-auto">
@@ -231,6 +299,40 @@ export function Operacional() {
         />
       )}
 
+      {/* ================= ATRASADAS ================= */}
+      {tarefasAtrasadas.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-2 text-[var(--text-primary)]">
+            Atrasadas ({tarefasAtrasadas.length})
+          </h2>
+
+          {tarefasAtrasadasVisiveis.map((task) => {
+            const dias = differenceInCalendarDays(parseISO(hoje), parseISO(task.data));
+            return renderTaskCard(
+              task,
+              <div className="text-xs text-[var(--danger)]">
+                Atrasada há {dias} {dias === 1 ? 'dia' : 'dias'}
+              </div>,
+              <button
+                onClick={() => updateTask(task.id, { data: hoje })}
+                className="mt-2 px-4 min-h-[44px] rounded border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-surface-2)]"
+              >
+                Mover para hoje
+              </button>,
+            );
+          })}
+
+          {tarefasAtrasadas.length > LIMITE_ATRASADAS && (
+            <button
+              onClick={() => setShowAllAtrasadas((v) => !v)}
+              className="px-4 min-h-[44px] rounded border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-surface-2)]"
+            >
+              {showAllAtrasadas ? 'Mostrar menos' : `Ver todas (${tarefasAtrasadas.length})`}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ================= HOJE ================= */}
       <div>
         <h2 className="text-lg font-semibold mb-2 text-[var(--text-primary)]">Hoje</h2>
@@ -239,57 +341,7 @@ export function Operacional() {
           <p className="text-[var(--text-tertiary)] text-sm">Nenhuma tarefa para hoje</p>
         )}
 
-        {tarefasHojePendentes.map((task) => (
-          <div
-            key={task.id}
-            className="bg-[var(--bg-surface)] p-3 rounded shadow flex justify-between items-start mb-2 border border-[var(--border)]"
-          >
-            <div className="flex-1">
-              <div className="font-medium text-[var(--text-primary)]">{task.titulo}</div>
-              <div className={`text-sm ${prioridadeColor(task.prioridade)}`}>
-                {task.prioridade.toUpperCase()}
-              </div>
-              {/* Pills de status de produção */}
-              <div className="flex gap-1 flex-wrap mt-2">
-                {(['pendente', 'em_producao', 'pronto', 'instalado'] as const).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => updateTask(task.id, { status: s })}
-                    className="text-xs px-2 py-1.5 md:py-0.5 rounded-full border transition-colors font-medium min-h-[32px]"
-                    style={
-                      (task.status || 'pendente') === s
-                        ? { background: statusConfig[s].bg, color: statusConfig[s].color, borderColor: 'transparent', fontWeight: 600 }
-                        : { background: 'transparent', color: 'var(--text-tertiary)', borderColor: 'var(--border)' }
-                    }
-                  >
-                    {statusConfig[s].label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-3 items-center ml-3">
-              <button
-                onClick={() => updateTask(task.id, { concluido: true })}
-                className="text-[var(--text-tertiary)] hover:text-[var(--success)] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                title="Marcar como concluída"
-              >
-                <CheckCircle2 size={16} />
-              </button>
-
-              <button
-                onClick={() => {
-                  setTaskToDelete(task);
-                  setShowDeleteModal(true);
-                }}
-                className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                title="Excluir"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
+        {tarefasHojePendentes.map((task) => renderTaskCard(task))}
 
         {tarefasHojeConcluidas.length > 0 && (
           <div className="mt-4">
