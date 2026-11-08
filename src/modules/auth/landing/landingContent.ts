@@ -6,9 +6,9 @@
 // COMERCIAL
 // ─────────────────────────────────────────────────────────────────────────────
 
-// WhatsApp COMERCIAL da Vértice (lead novo), separado de propósito do WhatsApp
-// de SUPORTE em src/lib/support.ts — trocar aqui não afeta o atendimento a
-// cliente existente.
+// WhatsApp COMERCIAL da Vértice (lead novo). Hoje suporte e comercial usam o
+// mesmo número, mas as constantes continuam separadas de propósito — trocar
+// este aqui não afeta o atendimento a cliente existente em src/lib/support.ts.
 export const SALES_WHATSAPP_NUMBER = '5534988501702';
 
 // Provisório — ainda NÃO exibido na landing (a etapa de pricing vem depois).
