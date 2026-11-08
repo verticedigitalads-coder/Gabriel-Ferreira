@@ -5,11 +5,67 @@ Versão: v2.39.3
 
 ## Build
 - TypeScript: 0 erros (tsc --noEmit, 08/11/2026)
-- Build vite: limpo (✓ 8.45s, 08/11/2026; só aviso pré-existente de bundle >500KB)
+- Build vite: limpo (✓ 8.50s, 08/11/2026; só aviso pré-existente de bundle >500KB)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Landing: redesign R2 — problema real (seção clara), interlúdio com foto, depoimentos e três frentes (08/11/2026) — commit sem push, sobe junto com a R1:**
+  - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 2 de 5).
+    - Em `src/modules/auth/landing/`: `landingContent.ts` e `landingStyles.tsx` alterados; novos `LandingProblema.tsx`, `LandingInterludio.tsx`, `LandingDepoimentos.tsx` e `LandingFrentes.tsx`.
+    - Novo `public/landing/forge.webp`, a partir de `_build/design-ref/mimo/public/images/forge.jpg` (forja com faíscas, gerada por IA).
+    - `AuthPage.tsx` 🔴 só +8 −4: saem os imports e o JSX de `LandingClientes` e `LandingFeatures`; entram os 4 novos entre `<LandingFaixa />` e `<LandingAutomacoes />`.
+  - **Não tocados:** `tokens.css`, `index.css`, `index.html`, `vite.config.ts`, `handleLogin`, `App.tsx`, `TermsGate`, `src/lib/terms.ts`, demais seções.
+  - **Decisões do grill-me:**
+    - laranja em TEXTO na seção clara = `color-mix(in srgb, var(--accent) 70%, var(--bg-app))`, ≈ rgb(183,79,7), 4,61:1 (o `--accent` puro daria 2,6:1);
+    - só a seção 4 é clara, mais o card 02 das três frentes;
+    - interlúdio COM foto;
+    - cards das três frentes sem mini-tela.
+    - Ajuste na revisão do plano: os depoimentos mostram o "cliente desde" real (fev/2026, jun/2026). O proibido era só o "desde 2023" inventado da referência.
+  - **(4) O problema real** (`.lp-claro` + `.lp-prob-*`):
+    - Sem token de superfície clara: fundo `--text-primary`, tinta `--bg-app` (17,17:1), secundária com `--bg-app` a 65% (5,68:1), trecho apagado do título a 55% (4,06:1, título grande), linhas a 15%.
+    - As misturas viram variáveis locais `--lp-tinta-2`, `--lp-linha` e `--lp-laranja-texto` dentro de `.lp-claro`: só apelidos de tokens, sem hex. A mesma classe pinta o card 02 das três frentes.
+    - Título "Vender por orçamento é uma *operação.* / Não uma pasta de orçamentos no WhatsApp." e comparativo Antes (riscado) × Com o VRTX (célula `--bg-surface`, check laranja).
+    - Sem o card "custo invisível", sem parágrafo lateral, sem rodapé de seção.
+  - **(5) Interlúdio** (`.lp-inter-*`):
+    - `<img>` decorativa: `alt=""`, `loading="lazy"`, 1248×832, 57,1 KB, webp q 0,8 gerado pelo canvas do Chrome via Puppeteer (não há sharp nem cwebp no projeto).
+    - Véus de `--bg-app`: uniforme abaixo de 768px; a partir de 768px, escuro à esquerda e leve à direita, onde estão as faíscas.
+    - Título serif "A obra não espera. / A venda *também não*." com sublinhado SVG em `currentColor`.
+    - Botão `.lp-cta-big` → `whatsappUrl('manifesto')` (origem nova no `WhatsappOrigem`), com "WhatsApp (34) 98850-1702" embaixo.
+  - **(6) Depoimentos** (`.lp-dep-*`, `id="clientes"`):
+    - As 2 frases literais do `TESTIMONIALS` em serif, sem trecho destacado, sem avatar, sem `metrica`.
+    - Legenda: autor · empresa e, em mono, nicho · cidade · cliente desde {desde} (rótulo em `clientes.desdeLabel`).
+    - O trecho "cliente desde {desde}" fica num span `.lp-dep-desde` com `white-space:nowrap` (ajuste pedido antes do commit): a linha quebra antes dele, nunca no meio. O span leva `font-family` e `font-feature-settings` em `inherit`, senão o `*` do `index.css` trocaria a mono pela sans.
+    - Mesma guarda do bloco antigo: sem frase preenchida, a seção some.
+  - **(8) Três frentes** (`.lp-frentes-*`, herda o `id="features"`):
+    - Título e subtítulo do bloco de funcionalidades anterior; descrições de frases que já estavam na página.
+    - 3 cards (Leads · Orçamentos · Operacional) com rótulos reais em `.lp-chip`: prioridade de `LeadsList.tsx`, status de `operacional/statusConfig.ts`, com seta entre os status.
+  - **Pegadinha repetida:** `.lp-serif` no `<h2>` não chega ao texto que está dentro de `<span>`, porque o `*` do `index.css` reaplica a sans em cada filho. O interlúdio saiu em sans itálico no 1º screenshot; corrigido com `.lp-serif` em cada span que tem texto.
+  - **Desvios pequenos do plano:**
+    - `id="clientes"` na seção de depoimentos: mantém verdadeiro o comentário do `TESTIMONIALS` e o seletor de `scroll-margin-top` que já existia;
+    - caminho da foto em `interludio.foto`, no padrão do `celular`;
+    - `clientes.desdeLabel`, porque a string "cliente desde" estava no JSX do bloco antigo;
+    - classe compartilhada `.lp-eyebrow` (rótulo mono com quadrado laranja).
+  - **Verificação:**
+    - `tsc --noEmit` 0 erros. `npm run build` limpo (✓ 8,50s, só o aviso antigo de >500KB).
+    - Puppeteer deslogado contra o dev server a 1440/390/320 (scripts e 12 screenshots fora do repo):
+      - LISTA PROIBIDA (plano + textos das referências): zero ocorrências no `innerText` da página inteira nas 3 larguras;
+      - depoimentos com as frases idênticas às do `TESTIMONIALS`, "cliente desde fev/2026" e "cliente desde jun/2026"; o único número fora das frases é 2026;
+      - "cliente desde X" em JetBrains Mono e numa linha só nas 3 larguras; a 390/320 a legenda quebra logo antes dele, a 1440 cabe inteira numa linha;
+      - zero rolagem horizontal e nenhum elemento das 4 seções fora da tela;
+      - um único `#features`; "Produto" (nav, 1440), "Ver funcionalidades" (hero) e "Funcionalidades" (rodapé) param a 80px do topo;
+      - CTA do interlúdio: `wa.me/5534988501702` com "(manifesto)", `_blank`, 64px de altura;
+      - contraste calculado: título claro 17,17; laranja derivado 4,61 (título e card 02); secundário 5,68; apagado 4,06; "também não" sobre `--bg-app` 6,57;
+      - Automações, Celular, Como funciona, Preços, Login e Rodapé com `innerText` e altura idênticos à linha de base tirada antes das edições;
+      - dock escondida no topo, visível no meio, escondida no `#acesso` e no rodapé (390/320);
+      - reduced-motion: `.lp-reveal` com opacity 1 e transição 0s; sem a preferência, 0 → 1 ao rolar nas 4 seções;
+      - "Entrar com Google" ainda dispara `/auth/v1/authorize?provider=google` (interceptado).
+  - **Órfãos até a R5:** `LandingClientes.tsx`, `LandingFeatures.tsx`, o objeto `features` e o CSS `.lp-feat*`.
+  - **Observações:**
+    - A 1440, a `forge.webp` já baixa na carga inicial: o interlúdio fica dentro da distância em que o Chrome antecipa imagens `lazy`.
+    - `workbox.globPatterns` continua sem `webp` (já reportado): a foto não entra no precache.
+  - **Aceite:** commit pedido pelo usuário em 08/11/2026, depois do ajuste do `nowrap` na legenda dos depoimentos.
+  - **Pendências do usuário:** login real; push (R1 e R2 sobem juntas).
 - **Landing: redesign R1 — fontes, nav, hero, faixa laranja e dock mobile (08/11/2026) — commit sem push, sobe junto com a R2:**
   - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 1 de 5).
     - Em `src/modules/auth/landing/`: `landingContent.ts`, `landingStyles.tsx`, `LandingNav.tsx` e `LandingHero.tsx` alterados ou reescritos; novos `HeroCards.tsx`, `LandingFaixa.tsx` e `LandingDock.tsx`.

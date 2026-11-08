@@ -5,8 +5,10 @@ import { useScrollReveal } from './landing/useScrollReveal';
 import { LandingNav } from './landing/LandingNav';
 import { LandingHero } from './landing/LandingHero';
 import { LandingFaixa } from './landing/LandingFaixa';
-import { LandingClientes } from './landing/LandingClientes';
-import { LandingFeatures } from './landing/LandingFeatures';
+import { LandingProblema } from './landing/LandingProblema';
+import { LandingInterludio } from './landing/LandingInterludio';
+import { LandingDepoimentos } from './landing/LandingDepoimentos';
+import { LandingFrentes } from './landing/LandingFrentes';
 import { LandingAutomacoes } from './landing/LandingAutomacoes';
 import { LandingCelular } from './landing/LandingCelular';
 import { LandingHowItWorks } from './landing/LandingHowItWorks';
@@ -44,8 +46,10 @@ export function AuthPage({
       <LandingNav />
       <LandingHero />
       <LandingFaixa />
-      <LandingClientes />
-      <LandingFeatures />
+      <LandingProblema />
+      <LandingInterludio />
+      <LandingDepoimentos />
+      <LandingFrentes />
       <LandingAutomacoes />
       <LandingCelular />
       <LandingHowItWorks />

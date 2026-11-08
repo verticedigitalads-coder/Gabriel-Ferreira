@@ -151,6 +151,98 @@ export function LandingStyles() {
         .lp-dock-cta{flex-shrink:0;min-height:48px}
         @media(max-width:360px){.lp-dock-num{display:none}}
         @media(min-width:1024px){.lp-dock{display:none}}
+        /* R2 do redesign (problema, interludio, depoimentos, tres frentes). */
+        /* Rotulo mono com quadrado laranja no topo das secoes da R2. */
+        .lp-eyebrow{display:inline-flex;align-items:center;gap:var(--space-3);color:var(--text-secondary)}
+        .lp-eyebrow::before{content:"";flex-shrink:0;width:8px;height:8px;background:var(--accent)}
+        /* Superficie clara (secao do problema e card 02 das tres frentes). Nao ha token
+           de superficie clara: fundo --text-primary e tinta --bg-app, como o card de
+           orcamento do hero. As variaveis locais so apelidam misturas desses tokens:
+           tinta secundaria (~5,7:1), linhas e o laranja para TEXTO (--accent com
+           --bg-app, ~4,6:1; o --accent puro daria 2,6:1 neste fundo). Fica depois do
+           .lp-v2 para vencer o color dele. */
+        .lp-claro{--lp-tinta-2:color-mix(in srgb,var(--bg-app) 65%,transparent);--lp-linha:color-mix(in srgb,var(--bg-app) 15%,transparent);--lp-laranja-texto:color-mix(in srgb,var(--accent) 70%,var(--bg-app));background-color:var(--text-primary);color:var(--bg-app)}
+        .lp-claro .lp-eyebrow{color:var(--lp-tinta-2)}
+        /* Secao 4: grade de linhas escuras no fundo, titulo e comparativo empilhados.
+           Sem .lp-cta nem .lp-textlink aqui: o hover deles usa --text-primary e sumiria. */
+        .lp-prob{padding-block:calc(var(--space-8) * 2);background-image:linear-gradient(to right,color-mix(in srgb,var(--bg-app) 6%,transparent) 1px,transparent 1px),linear-gradient(to bottom,color-mix(in srgb,var(--bg-app) 4%,transparent) 1px,transparent 1px);background-size:12.5% 100%,100% 120px}
+        .lp-prob-titulo{max-width:18ch;margin:var(--space-8) 0 0;color:inherit;font-size:clamp(2.2rem,5.6vw,5rem);font-weight:var(--font-semibold);line-height:.95;letter-spacing:-.048em}
+        .lp-prob-destaque{color:var(--lp-laranja-texto);letter-spacing:-.025em}
+        .lp-prob-l2{display:block}
+        .lp-prob-apagado{color:color-mix(in srgb,var(--bg-app) 55%,transparent)}
+        .lp-prob-comp{display:grid;grid-template-columns:minmax(0,1fr);margin-top:var(--space-12);border:1px solid var(--lp-linha)}
+        .lp-prob-col{padding:var(--space-6)}
+        .lp-prob-antes{border-bottom:1px solid var(--lp-linha)}
+        .lp-prob-rotulo{display:inline-block;padding:var(--space-1) 0;color:var(--lp-tinta-2)}
+        .lp-prob-selo{padding:var(--space-1) var(--space-2);background:var(--accent);color:var(--bg-app)}
+        .lp-prob-lista{margin:var(--space-4) 0 0;padding:0;list-style:none}
+        .lp-prob-lista li{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--lp-linha);font-size:var(--text-md);line-height:1.4}
+        .lp-prob-lista li:last-child{border-bottom:0}
+        .lp-prob-antes li{color:var(--lp-tinta-2);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bg-app) 30%,transparent)}
+        .lp-prob-com{background:var(--bg-surface);color:var(--text-primary)}
+        .lp-prob-com li{border-bottom-color:var(--border-strong)}
+        .lp-prob-com li svg{flex-shrink:0;margin-top:3px;color:var(--accent)}
+        @media(min-width:640px){.lp-prob-comp{grid-template-columns:repeat(2,minmax(0,1fr))}.lp-prob-antes{border-bottom:0;border-right:1px solid var(--lp-linha)}}
+        @media(min-width:1024px){.lp-prob{padding-block:calc(var(--space-12) * 2)}.lp-prob-col{padding:var(--space-8)}.lp-prob-lista li{font-size:var(--text-lg)}}
+        /* Secao 5: foto decorativa (alt="") sob veus de --bg-app. Celular: veu forte por
+           igual, porque o titulo ocupa a largura toda. A partir de 768px: escuro a
+           esquerda (atras do titulo) e leve a direita, onde estao as faiscas. Em cima e
+           embaixo o veu fecha em --bg-app para emendar nas secoes vizinhas. */
+        .lp-inter{position:relative;overflow:hidden;background:var(--bg-app)}
+        .lp-inter-foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% 50%}
+        .lp-inter::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,var(--bg-app),transparent 45%),linear-gradient(to bottom,var(--bg-app),transparent 30%),color-mix(in srgb,var(--bg-app) 55%,transparent)}
+        .lp-inter-linha{position:absolute;top:28%;left:0;right:0;z-index:1;height:1px;background:var(--border-accent);pointer-events:none}
+        .lp-inter-linha::before{content:"";position:absolute;top:-3px;left:8%;width:7px;height:7px;background:var(--accent)}
+        .lp-inter-conteudo{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;gap:var(--space-10);min-height:560px;padding-top:calc(var(--space-12) * 2);padding-bottom:calc(var(--space-8) * 2)}
+        .lp-inter-titulo{margin:0;color:var(--text-primary);font-size:clamp(3.2rem,7.6vw,7.6rem);line-height:.92;letter-spacing:-.02em}
+        .lp-inter-titulo>span{display:block}
+        .lp-inter-destaque{position:relative;display:inline-block;color:var(--accent)}
+        .lp-inter-destaque svg{position:absolute;left:0;bottom:-.04em;width:100%;height:.12em;overflow:visible}
+        .lp-inter-cta{display:flex;flex-direction:column;gap:var(--space-2);max-width:440px}
+        .lp-inter-cta .lp-mono{color:var(--text-secondary)}
+        @media(min-width:768px){.lp-inter::after{background:linear-gradient(to top,var(--bg-app),transparent 40%),linear-gradient(to bottom,var(--bg-app),transparent 25%),linear-gradient(to right,var(--bg-app) 10%,color-mix(in srgb,var(--bg-app) 70%,transparent) 45%,color-mix(in srgb,var(--bg-app) 10%,transparent))}.lp-inter-conteudo{min-height:640px}}
+        /* Secao 6: as frases reais, literais, em serif grande. A legenda alinha no pe
+           das duas colunas porque o blockquote estica (flex:1). */
+        .lp-dep{padding-block:calc(var(--space-8) * 2);background:var(--bg-app)}
+        .lp-dep-titulo{margin:var(--space-4) 0 0;color:var(--text-primary);font-size:clamp(1.75rem,3.4vw,3rem);font-weight:var(--font-semibold);line-height:1.05;letter-spacing:-.04em}
+        .lp-dep-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-12);margin-top:var(--space-12)}
+        .lp-dep-item{display:flex;flex-direction:column;margin:0}
+        .lp-dep-item>svg{color:var(--accent)}
+        .lp-dep-frase{flex:1;margin:var(--space-5) 0 0;color:var(--text-primary);font-size:clamp(1.5rem,2.5vw,2.25rem);line-height:1.12;letter-spacing:-.01em}
+        .lp-dep-legenda{margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--border-strong)}
+        .lp-dep-autor{display:block;font-size:var(--text-md);font-weight:var(--font-semibold)}
+        .lp-dep-empresa{color:var(--text-secondary);font-weight:var(--font-normal)}
+        .lp-dep-legenda .lp-mono{display:block;margin-top:var(--space-1);color:var(--text-secondary)}
+        /* "cliente desde X" inteiro: a linha quebra antes do trecho, nunca no meio.
+           font-family/feature inherit porque o * do index.css trocaria a mono pela sans. */
+        .lp-dep-desde{font-family:inherit;font-feature-settings:inherit;white-space:nowrap}
+        @media(min-width:1024px){.lp-dep{padding-block:calc(var(--space-12) * 2)}.lp-dep-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:calc(var(--space-12) * 2)}}
+        /* Secao 8 (id="features"): cabecalho e 3 cards, o do meio claro. Os cards nao
+           sao links: sem seta nem hover. */
+        .lp-frentes{padding-block:calc(var(--space-8) * 2);border-top:1px solid var(--border-strong);background:var(--bg-app)}
+        .lp-frentes-head{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-5)}
+        .lp-frentes-titulo{max-width:20ch;margin:var(--space-4) 0 0;color:var(--text-primary);font-size:clamp(2rem,4.6vw,4.2rem);font-weight:var(--font-semibold);line-height:.98;letter-spacing:-.045em}
+        .lp-frentes-titulo .lp-serif,.lp-frente-titulo .lp-serif{color:var(--accent);letter-spacing:-.02em}
+        .lp-frentes-sub{max-width:440px;margin:0;color:var(--text-secondary);font-size:var(--text-md);line-height:1.6}
+        .lp-frentes-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-5);margin-top:var(--space-12)}
+        .lp-frente{display:flex;flex-direction:column;padding:var(--space-6);border:1px solid var(--border-strong);background-color:var(--bg-surface)}
+        .lp-frente-topo{display:flex;align-items:center;gap:var(--space-3);padding-bottom:var(--space-3);border-bottom:1px solid var(--border-strong)}
+        .lp-frente-n{color:var(--accent)}
+        .lp-frente-filete{width:1px;height:12px;background:var(--border-strong)}
+        .lp-frente-label{color:var(--text-secondary)}
+        .lp-frente-titulo{margin:var(--space-8) 0 0;color:inherit;font-size:clamp(1.6rem,2.4vw,2.2rem);font-weight:var(--font-medium);line-height:1.02;letter-spacing:-.04em}
+        .lp-frente-desc{margin:var(--space-4) 0 0;color:var(--text-secondary);font-size:var(--text-base);line-height:1.6}
+        .lp-frente-chips{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);margin:auto 0 0;padding:var(--space-8) 0 0;list-style:none}
+        .lp-frente-chips li{display:flex;align-items:center;gap:var(--space-2)}
+        .lp-frente-chips svg{flex-shrink:0;color:var(--text-tertiary)}
+        .lp-chip{padding:var(--space-1) var(--space-2);border:1px solid var(--border-strong);color:var(--text-secondary)}
+        .lp-frente.lp-claro{border-color:var(--lp-linha);background-color:var(--text-primary)}
+        .lp-claro .lp-frente-topo{border-bottom-color:var(--lp-linha)}
+        .lp-claro .lp-frente-filete{background:var(--lp-linha)}
+        .lp-claro .lp-frente-n,.lp-claro .lp-frente-titulo .lp-serif{color:var(--lp-laranja-texto)}
+        .lp-claro .lp-frente-label,.lp-claro .lp-frente-desc,.lp-claro .lp-chip{color:var(--lp-tinta-2)}
+        .lp-claro .lp-chip{border-color:var(--lp-linha)}
+        @media(min-width:1024px){.lp-frentes{padding-block:calc(var(--space-12) * 2)}.lp-frentes-head{grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:end}.lp-frentes-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.lp-frente{padding:var(--space-8)}}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @keyframes lp-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .lp-fade{animation:lp-fadeUp .7s ease forwards;opacity:0}

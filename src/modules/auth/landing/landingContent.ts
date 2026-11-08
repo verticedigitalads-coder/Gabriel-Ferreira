@@ -32,7 +32,8 @@ export type WhatsappOrigem =
   | 'erro-init'
   | 'rodape'
   | 'precos'
-  | 'dock';
+  | 'dock'
+  | 'manifesto';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
@@ -133,6 +134,18 @@ export interface Testimonial {
   frase: string;
   metrica?: string;
   autor?: string;
+}
+
+// Cards da seção Três frentes (LandingFrentes.tsx). `chips` são rótulos reais do
+// app; `fluxo` põe seta entre eles quando são etapas em sequência (status).
+export interface FrenteItem {
+  n: string;
+  label: string;
+  titulo: string;
+  destaque: string;
+  desc: string;
+  chips: string[];
+  fluxo?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -254,6 +267,85 @@ export const faixa = {
 // e CTA_WHATSAPP_LABEL no botão. Curto de propósito para caber a 320px.
 export const dock = {
   kicker: 'WhatsApp',
+};
+
+// Seção clara "O problema real" (LandingProblema.tsx), logo depois da faixa. Sem
+// o card de "custo invisível" da referência: nenhum número de resultado aqui.
+export const problema = {
+  eyebrow: 'O problema real',
+  // Título em 4 pedaços: tituloDestaque sai em serif itálico e tituloApagado em
+  // tinta mais clara.
+  titulo1: 'Vender por orçamento é uma',
+  tituloDestaque: 'operação.',
+  tituloApagado: 'Não uma pasta de',
+  tituloFim: 'orçamentos no WhatsApp.',
+  antesLabel: 'Antes',
+  antes: [
+    'Cliente anotado no caderno',
+    'Orçamento perdido no WhatsApp',
+    'Follow-up de memória',
+    'Recebimento sem controle',
+  ],
+  comLabel: 'Com o VRTX',
+  com: [
+    'Cada cliente num lugar só',
+    'Orçamento em PDF com a sua marca',
+    'Quem esfriou aparece primeiro',
+    'Contas a receber organizadas',
+  ],
+};
+
+// Interlúdio com foto (LandingInterludio.tsx). Botão: CTA_WHATSAPP_LABEL com
+// whatsappUrl('manifesto'); embaixo, hero.ctaNota + footer.whatsappLabel, igual
+// ao hero. `destaque` sai em laranja e sublinhado. A foto é decorativa (alt
+// vazio): forja com faíscas, gerada por IA (1248x832).
+export const interludio = {
+  foto: '/landing/forge.webp',
+  linha1: 'A obra não espera.',
+  linha2: 'A venda',
+  destaque: 'também não',
+  fim: '.',
+};
+
+// Os depoimentos (LandingDepoimentos.tsx) usam TESTIMONIALS_VISIVEIS e `clientes`.
+
+// Três frentes (LandingFrentes.tsx, id="features"). Título e subtítulo vêm do
+// bloco de funcionalidades anterior; as descrições, de frases que já estavam na
+// página (funcionalidades e legenda do celular). Rótulos dos chips conferidos no
+// app: prioridade em LeadsList.tsx, status em operacional/statusConfig.ts.
+export const frentes = {
+  eyebrow: 'Funcionalidades',
+  titulo: 'Tudo que sua operação precisa,',
+  tituloDestaque: 'sem amarrar 5 ferramentas.',
+  subtitulo:
+    'De primeiro contato a recebimento — uma plataforma única, pensada para quem vende serviços de alto valor.',
+  items: [
+    {
+      n: '01',
+      label: 'Leads',
+      titulo: 'Leads com',
+      destaque: 'prioridade automática.',
+      desc: 'O sistema classifica cada lead em crítico, alto, médio ou baixo com base no valor, no tempo sem contato e no estágio do orçamento. Quem está esfriando aparece primeiro na lista.',
+      chips: ['Crítico', 'Alto', 'Médio', 'Baixo'],
+    },
+    {
+      n: '02',
+      label: 'Orçamentos',
+      titulo: 'Orçamento em PDF com',
+      destaque: 'logo, PIX e assinatura.',
+      desc: 'PDF com sua logo e seus dados, QR Code PIX para o cliente pagar e assinatura digital.',
+      chips: ['Logo', 'PIX', 'Assinatura'],
+    },
+    {
+      n: '03',
+      label: 'Operacional',
+      titulo: 'Agenda e status de',
+      destaque: 'cada serviço.',
+      desc: 'Agenda semanal e mensal, com tarefas por prioridade. Atualize o serviço direto da obra: em produção, pronto, instalado.',
+      chips: ['Pendente', 'Em produção', 'Pronto', 'Instalado'],
+      fluxo: true,
+    },
+  ] as FrenteItem[],
 };
 
 export const mockup = {
@@ -447,6 +539,8 @@ export const precos = {
 export const clientes = {
   eyebrow: 'Clientes',
   title: 'Quem já vende com o VRTX',
+  // Antes da data real de TESTIMONIALS[].desde, na legenda do depoimento.
+  desdeLabel: 'cliente desde',
 };
 
 export const loginCta = {
