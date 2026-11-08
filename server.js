@@ -452,6 +452,29 @@ const requireAdmin = (req, res, next) => {
 
 app.get('/', (_req, res) => res.sendStatus(200));
 
+// Health check real: sem auth e sem Origin (UptimeRobot não manda). Consulta
+// mínima no Supabase com timeout de 3s. Corpo fixo: nunca devolve mensagem de
+// erro, chave, URL do banco ou stack. Sem log no sucesso (monitor bate a cada
+// 5 min); só a falha é logada, para o PM2 mostrar por que o banco caiu.
+app.get('/health', async (_req, res) => {
+  try {
+    const { error } = await getSupabaseAdmin()
+      .from('workspaces')
+      .select('id')
+      .limit(1)
+      .abortSignal(AbortSignal.timeout(3000));
+    if (error) throw error;
+    return res.status(200).json({
+      status: 'ok',
+      db: 'ok',
+      uptime: Math.round(process.uptime()),
+    });
+  } catch (err) {
+    console.error('[health] banco indisponível:', err?.message);
+    return res.status(503).json({ status: 'error', db: 'down' });
+  }
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
