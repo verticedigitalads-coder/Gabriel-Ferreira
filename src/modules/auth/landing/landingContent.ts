@@ -11,7 +11,8 @@
 // este aqui não afeta o atendimento a cliente existente em src/lib/support.ts.
 export const SALES_WHATSAPP_NUMBER = '5534988501702';
 
-// Provisório — ainda NÃO exibido na landing (a etapa de pricing vem depois).
+// Exibido na landing (#precos): só o Básico. O Completo NÃO é exibido; fica aqui
+// como registro do plano futuro.
 export const PRICING = {
   basico: { nome: 'Básico', precoMensal: 147, disponivel: true },
   completo: {
@@ -29,7 +30,8 @@ export type WhatsappOrigem =
   | 'cta-final'
   | 'sem-acesso'
   | 'erro-init'
-  | 'rodape';
+  | 'rodape'
+  | 'precos';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
@@ -86,6 +88,11 @@ export interface LandingStep {
   n: string;
   t: string;
   d: string;
+}
+
+export interface AutomacaoItem {
+  quando: string;
+  vrtx: string;
 }
 
 export interface Testimonial {
@@ -147,6 +154,7 @@ export const nav = {
       : []),
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
+    { href: '#precos', label: 'Preços' },
   ] as LandingLink[],
   // Login é caminho secundário: link de texto, não botão.
   ctaLogin: { href: '#acesso', label: 'Entrar' } as LandingLink,
@@ -176,7 +184,6 @@ export const mockup = {
     '📄 Orçamentos',
     '📅 Operacional',
     '💰 Financeiro',
-    '✦ IA Assistente',
   ],
   title: 'Dashboard Executivo',
   subtitle: 'Receita prevista, foco do dia e saúde do CRM em tempo real',
@@ -216,10 +223,10 @@ export const features = {
     'De primeiro contato a recebimento — uma plataforma única, pensada para quem vende serviços de alto valor.',
   items: [
     {
-      icon: '✦',
+      icon: '🎯',
       title: 'Gestão de Leads com priorização automática',
       desc: 'O sistema classifica cada lead em crítico, alto, médio ou baixo com base no valor, no tempo sem contato e no estágio do orçamento. Quem está esfriando aparece primeiro na lista.',
-      tag: '✦ Priorização automática',
+      tag: 'Priorização automática',
       hi: true,
       iconBg: 'rgba(168,85,247,0.12)',
       iconColor: '#a855f7',
@@ -235,7 +242,7 @@ export const features = {
     {
       icon: '📊',
       title: 'Dashboard executivo',
-      desc: 'Receita prevista, foco do dia, saúde do CRM e conversão por etapa.',
+      desc: 'Receita prevista, foco do dia e saúde do CRM.',
       tag: 'Visão estratégica',
       iconBg: 'rgba(34,197,94,0.12)',
       iconColor: '#22c55e',
@@ -244,7 +251,7 @@ export const features = {
       icon: '📅',
       title: 'Painel operacional',
       desc: 'Agenda semanal e mensal, tarefas por prioridade, alertas de atraso.',
-      tag: 'Agenda inteligente',
+      tag: 'Agenda semanal e mensal',
       iconBg: 'rgba(96,165,250,0.12)',
       iconColor: '#60a5fa',
     },
@@ -267,6 +274,34 @@ export const features = {
   ] as LandingFeature[],
 };
 
+// Só automação ATIVA e validada (_build/automacoes-reais.md: F1, F2, F7, F10,
+// reconferidas no código). Tudo dispara a partir de uma ação do usuário no app.
+export const automacoes = {
+  eyebrow: 'Automações',
+  title: 'Você faz o principal, o VRTX cuida do resto',
+  subtitle: 'Ações que o sistema faz sozinho a partir do que você registra.',
+  quandoLabel: 'Quando você',
+  vrtxLabel: 'O VRTX',
+  items: [
+    {
+      quando: 'cadastra um lead novo',
+      vrtx: 'Cria a tarefa de hoje no Operacional: lead quente vira “Criar orçamento”, morno vira “Entrar em contato” e frio vira “Reativar lead”.',
+    },
+    {
+      quando: 'fecha um negócio',
+      vrtx: 'Cria a tarefa “Executar serviço” no Operacional. Se já houver uma aberta para esse cliente, não cria outra.',
+    },
+    {
+      quando: 'aprova um orçamento',
+      vrtx: 'Gera o recibo como pendente, com os mesmos itens e o valor total. Falta só emitir.',
+    },
+    {
+      quando: 'marca uma conta a receber como recebida',
+      vrtx: 'Lança a receita no Financeiro, com o mesmo valor e a data de hoje.',
+    },
+  ] as AutomacaoItem[],
+};
+
 export const howItWorks = {
   eyebrow: 'Como funciona',
   title: 'Três passos até sua operação rodar no VRTX',
@@ -287,6 +322,27 @@ export const howItWorks = {
       d: 'Suporte humano, direto no WhatsApp. E dentro do sistema tem uma central de ajuda que responde dúvida na hora, sem abrir chamado.',
     },
   ] as LandingStep[],
+};
+
+// Só módulos VISÍVEIS no menu (Sidebar.tsx; WhatsApp e Notas ocultos por flag).
+// Estoque fica de fora até decidir o conflito com PRICING.completo.recursos.
+// O valor vem de PRICING.basico.precoMensal — não repetir o número aqui.
+export const precos = {
+  eyebrow: 'Preços',
+  title: 'Quanto custa o VRTX',
+  moeda: 'R$',
+  periodo: '/mês por empresa',
+  incluiTitulo: 'O que está incluso',
+  inclui: [
+    'Leads e Kanban com prioridade automática',
+    'Orçamentos em PDF com sua logo, QR Code PIX e assinatura do cliente',
+    'Recibos com numeração automática',
+    'Financeiro e contas a receber',
+    'Agenda de tarefas e visitas no Operacional',
+    'Dashboard com receita prevista e foco do dia',
+    'Fornecedores, com preenchimento pelo CNPJ',
+    'Suporte no WhatsApp e central de ajuda dentro do sistema',
+  ],
 };
 
 // Copy provisória — a seção só aparece quando houver depoimento com frase.
@@ -314,12 +370,13 @@ export const footer = {
   links: [
     { href: '#features', label: 'Funcionalidades' },
     { href: '#how', label: 'Como funciona' },
+    { href: '#precos', label: 'Preços' },
     // TODO: confirmar caixa antes de publicar
     // { href: 'mailto:contato@verticedigital.com.br', label: 'Contato' },
     { href: '/privacidade', label: 'Privacidade' },
     { href: '/termos', label: 'Termos' },
   ] as LandingLink[],
-  copyright: '© 2026 VRTX · CRM Inteligente',
+  copyright: '© 2026 VRTX CRM · Vértice Digital',
   local: 'Vértice Digital · Uberaba/MG',
   // CNPJ: entra aqui (e numa linha abaixo de `local` no LandingFooter) quando existir.
   // Exibição derivada de SALES_WHATSAPP_NUMBER ('55' + DDD + número) — trocar o

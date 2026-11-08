@@ -21,7 +21,7 @@ export default defineConfig({
       manifest: {
         name: "VRTX CRM — Inteligência Comercial",
         short_name: "VRTX CRM",
-        description: "Sistema Inteligente de Gestão Comercial",
+        description: "CRM para quem vende por orçamento",
         theme_color: "#0F172A",
         background_color: "#0F172A",
         display: "standalone",

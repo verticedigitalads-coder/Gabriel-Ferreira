@@ -6,7 +6,9 @@ import { LandingNav } from './landing/LandingNav';
 import { LandingHero } from './landing/LandingHero';
 import { LandingClientes } from './landing/LandingClientes';
 import { LandingFeatures } from './landing/LandingFeatures';
+import { LandingAutomacoes } from './landing/LandingAutomacoes';
 import { LandingHowItWorks } from './landing/LandingHowItWorks';
+import { LandingPrecos } from './landing/LandingPrecos';
 import { LandingLoginCta } from './landing/LandingLoginCta';
 import { LandingFooter } from './landing/LandingFooter';
 
@@ -40,7 +42,9 @@ export function AuthPage({
       <LandingHero />
       <LandingClientes />
       <LandingFeatures />
+      <LandingAutomacoes />
       <LandingHowItWorks />
+      <LandingPrecos />
       <LandingLoginCta onLogin={handleLogin} />
       <LandingFooter />
     </div>

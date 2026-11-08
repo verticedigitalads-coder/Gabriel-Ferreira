@@ -18,7 +18,7 @@ export function LandingStyles() {
         .lp-btn:hover{text-decoration:none}
         html{scroll-behavior:smooth}
         /* Sem isso a ancora para atras do .lp-nav sticky (64px de altura). */
-        #acesso,#features,#how,#clientes{scroll-margin-top:80px}
+        #acesso,#features,#how,#clientes,#automacoes,#precos{scroll-margin-top:80px}
         .lp-hero{position:relative;background:radial-gradient(60% 80% at 70% 0%,rgba(255,106,0,0.18) 0%,transparent 60%),radial-gradient(50% 60% at 10% 20%,rgba(99,102,241,0.18) 0%,transparent 60%),linear-gradient(180deg,#0f1117,#0b0d12);padding:80px 0 60px;overflow:hidden}
         .lp-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000 30%,transparent 80%);pointer-events:none}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
