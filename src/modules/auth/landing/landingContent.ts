@@ -31,7 +31,8 @@ export type WhatsappOrigem =
   | 'sem-acesso'
   | 'erro-init'
   | 'rodape'
-  | 'precos';
+  | 'precos'
+  | 'dock';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
@@ -110,6 +111,20 @@ export interface CelularItem {
   legenda: string;
 }
 
+// Cartões ilustrativos do hero (HeroCards.tsx): só os 3 níveis que aparecem lá.
+export type PrioridadeIlustrativa = 'critico' | 'alto' | 'medio';
+
+export interface LeadIlustrativo {
+  nome: string;
+  servico: string;
+  prioridade: PrioridadeIlustrativa;
+}
+
+export interface ItemIlustrativo {
+  desc: string;
+  valor: string;
+}
+
 export interface Testimonial {
   empresa: string;
   nicho: string;
@@ -125,9 +140,9 @@ export interface Testimonial {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Clientes reais. As frases entram quando os clientes enviarem — até lá ficam
-// vazias e a seção #clientes (e o link "Clientes" do nav) fica oculta pela guarda
-// abaixo. A guarda olha a FRASE, não o tamanho do array: estes dois registros já
-// existem e não podem ir ao ar com depoimento em branco.
+// vazias e a seção #clientes fica oculta pela guarda abaixo. A guarda olha a
+// FRASE, não o tamanho do array: estes dois registros já existem e não podem ir
+// ao ar com depoimento em branco.
 export const TESTIMONIALS: Testimonial[] = [
   {
     empresa: 'FL Art Metal',
@@ -149,7 +164,7 @@ export const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-// Só depoimento com frase preenchida aparece. Lista vazia = seção e link somem.
+// Só depoimento com frase preenchida aparece. Lista vazia = seção some.
 export const TESTIMONIALS_VISIVEIS = TESTIMONIALS.filter(
   (t) => t.frase.trim() !== '',
 );
@@ -162,33 +177,83 @@ export const nav = {
   brand: 'VRTX',
   brandSuffix: 'CRM',
   brandInitial: 'V',
+  // Só links com seção de destino na página. Segmentos e Dúvidas entram na R4 do
+  // redesign junto com as seções; Produto passa para #produto na R3.
   links: [
-    // Mesma guarda da seção: sem depoimento visível, o link não aparece.
-    ...(TESTIMONIALS_VISIVEIS.length
-      ? [{ href: '#clientes', label: 'Clientes' }]
-      : []),
-    { href: '#features', label: 'Funcionalidades' },
-    { href: '#how', label: 'Como funciona' },
-    { href: '#precos', label: 'Preços' },
+    { href: '#features', label: 'Produto' },
+    { href: '#automacoes', label: 'Automações' },
+    { href: '#precos', label: 'Preço' },
   ] as LandingLink[],
   // Login é caminho secundário: link de texto, não botão.
   ctaLogin: { href: '#acesso', label: 'Entrar' } as LandingLink,
 };
 
 export const hero = {
-  badge: 'Serralheria · Marcenaria · Metalúrgica · Drywall',
-  titleLine1: 'O CRM de quem vende',
-  titleHighlight: 'por orçamento',
-  // Duas linhas no desktop: o <br> do LandingHero está casado com este texto
-  // exato (e com o maxWidth 720). Mudou a copy? Revise a quebra.
-  subtitleLine1: 'Do primeiro contato ao PIX recebido.',
-  subtitleLine2:
-    'Orçamento em PDF com sua logo e lead priorizado automaticamente.',
+  // Linha de cima do hero. À direita o LandingHero mostra footer.local.
+  meta: 'VRTX CRM — CRM para quem vende por orçamento',
+  // Título em 4 linhas; titleWord e titleEnd saem em serif itálico.
+  title1: 'O próximo',
+  titleWord: 'orçamento',
+  title2: 'pode ser o seu',
+  title3: 'próximo grande',
+  titleEnd: 'negócio.',
+  subtitle:
+    'Do primeiro contato ao PIX recebido. Orçamento em PDF com sua logo e lead priorizado automaticamente.',
+  // No lugar de métricas: só fatos do produto.
+  fatos: ['PDF com sua logo', 'QR Code PIX', 'Prioridade automática'],
   // Primário é WhatsApp (href vem de whatsappUrl('hero')), por isso só o label.
+  // Embaixo do botão: ctaNota + footer.whatsappLabel.
+  ctaNota: 'WhatsApp',
   ctaSecondary: {
     href: '#features',
     label: 'Ver funcionalidades',
   } as LandingLink,
+};
+
+// Cartões ILUSTRATIVOS do hero: dados fictícios, nomes genéricos e só campos que
+// o app tem. Prioridade com os rótulos da lista de Leads (LeadsList.tsx); Cliente,
+// Nº, itens, total e PIX como no PDF (templates/orcamento-v2.html). Sem métrica de
+// resultado, sem total de pipeline, sem "visualizado".
+export const heroCards = {
+  selo: 'Ilustrativo',
+  prioridades: {
+    critico: 'Crítico',
+    alto: 'Alto',
+    medio: 'Médio',
+  } as Record<PrioridadeIlustrativa, string>,
+  leads: {
+    titulo: 'Leads por prioridade',
+    itens: [
+      { nome: 'Cliente A', servico: 'Portão de correr', prioridade: 'critico' },
+      { nome: 'Cliente B', servico: 'Móveis planejados', prioridade: 'alto' },
+      { nome: 'Cliente C', servico: 'Forro de drywall', prioridade: 'medio' },
+    ] as LeadIlustrativo[],
+  },
+  orcamento: {
+    titulo: 'Orçamento',
+    numero: 'Nº 0042',
+    clienteLabel: 'Cliente',
+    cliente: 'Cliente A',
+    itens: [
+      { desc: 'Portão de correr', valor: 'R$ 4.800,00' },
+      { desc: 'Motor do portão', valor: 'R$ 1.650,00' },
+      { desc: 'Instalação', valor: 'R$ 550,00' },
+    ] as ItemIlustrativo[],
+    totalLabel: 'Total',
+    total: 'R$ 7.000,00',
+    pix: 'PIX no PDF',
+  },
+};
+
+// Faixa laranja logo abaixo do hero (rolagem em CSS no LandingFaixa.tsx).
+export const faixa = {
+  itens: ['Serralheria', 'Marcenaria', 'Metalúrgica', 'Drywall', 'Vidraçaria', 'Esquadrias'],
+};
+
+// Barra fixa do celular (LandingDock.tsx): kicker + footer.whatsappLabel à esquerda
+// e CTA_WHATSAPP_LABEL no botão. Curto de propósito para caber a 320px.
+export const dock = {
+  kicker: 'WhatsApp',
 };
 
 export const mockup = {

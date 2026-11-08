@@ -1,29 +1,54 @@
-import { CTA_WHATSAPP_LABEL, hero, whatsappUrl } from './landingContent';
-import { HeroMockup } from './HeroMockup';
+import { ArrowUpRight, Asterisk } from 'lucide-react';
+import { CTA_WHATSAPP_LABEL, footer, hero, whatsappUrl } from './landingContent';
+import { HeroCards } from './HeroCards';
 
+// Hero: tipografia da v4.1 + cards e bloco CTA lateral da ds2. O layout mora em
+// landingStyles.tsx (.lp-hero-*): a partir de 1024px fica título | cards com a barra
+// de 3 colunas embaixo; no celular é uma coluna, com o CTA antes dos fatos e dos
+// cards. Os {' '} entre as linhas do <h1> mantêm o texto corrido para leitor de tela.
 export function LandingHero() {
   return (
-    <section className="lp-hero">
-      <div className="lp-container">
-        <div style={{ position: 'relative', textAlign: 'center', maxWidth: 880, margin: '0 auto' }}>
-          <span className="lp-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,106,0,0.12)', color: '#ff6a00', fontSize: 13, fontWeight: 600, border: '1px solid rgba(255,106,0,0.25)', marginBottom: 16 }}>
-            {hero.badge}
+    <section className="lp-hero lp-v2">
+      <div className="lp-wrap lp-hero-grid">
+        <div className="lp-hero-meta">
+          <span className="lp-mono lp-hero-meta-tag">
+            <Asterisk size={12} strokeWidth={2} aria-hidden="true" />
+            {hero.meta}
           </span>
-          <h1 className="lp-fade lp-d1" style={{ fontSize: 'clamp(34px,5.5vw,64px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 16 }}>
-            {hero.titleLine1}<br /><span className="lp-grad">{hero.titleHighlight}</span>
-          </h1>
-          {/* Quebra casada com o texto exato de subtitleLine1/2 e com maxWidth 720;
-              .lp-br-desk some em <=720px e no mobile a quebra é natural. */}
-          <p className="lp-fade lp-d2" style={{ fontSize: 'clamp(16px,1.6vw,19px)', color: '#b8bcc7', maxWidth: 720, margin: '0 auto 24px', lineHeight: 1.6 }}>
-            {hero.subtitleLine1}<br className="lp-br-desk" />{' '}{hero.subtitleLine2}
-          </p>
-          <div className="lp-fade lp-d3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-            <a href={whatsappUrl('hero')} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn-primary lp-btn-lg">{CTA_WHATSAPP_LABEL}</a>
-            <a href={hero.ctaSecondary.href} className="lp-btn lp-btn-ghost lp-btn-lg">{hero.ctaSecondary.label}</a>
+          <span className="lp-mono lp-hero-meta-local">{footer.local}</span>
+        </div>
+
+        <h1 className="lp-hero-title">
+          <span className="lp-hero-l1 lp-fade">{hero.title1}</span>{' '}
+          <span className="lp-hero-rule lp-fade lp-d1" aria-hidden="true" />
+          <span className="lp-hero-word lp-serif lp-fade lp-d1">{hero.titleWord}</span>{' '}
+          <span className="lp-hero-l3 lp-fade lp-d2">{hero.title2}</span>{' '}
+          <span className="lp-hero-l4 lp-fade lp-d3">
+            {hero.title3}{' '}<span className="lp-hero-end lp-serif">{hero.titleEnd}</span>
+          </span>
+        </h1>
+
+        <div className="lp-hero-bar lp-fade lp-d4">
+          <div className="lp-hero-sub">
+            <p>{hero.subtitle}</p>
+            <a href={hero.ctaSecondary.href} className="lp-textlink">
+              <span>{hero.ctaSecondary.label}</span>
+              <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
+            </a>
+          </div>
+          <ul className="lp-hero-fatos">
+            {hero.fatos.map(f => <li key={f}>{f}</li>)}
+          </ul>
+          <div className="lp-hero-cta">
+            <a href={whatsappUrl('hero')} target="_blank" rel="noopener noreferrer" className="lp-cta-big">
+              {CTA_WHATSAPP_LABEL}
+              <ArrowUpRight size={18} strokeWidth={1.75} aria-hidden="true" />
+            </a>
+            <span className="lp-mono">{hero.ctaNota} {footer.whatsappLabel}</span>
           </div>
         </div>
 
-        <HeroMockup />
+        <HeroCards />
       </div>
     </section>
   );

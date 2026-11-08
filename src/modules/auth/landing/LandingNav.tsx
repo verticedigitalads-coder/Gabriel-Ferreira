@@ -1,21 +1,30 @@
+import { ArrowUpRight } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, nav, whatsappUrl } from './landingContent';
 
+// Nav da v4.1. Links só a partir de 1024px; o botão de WhatsApp só a partir de
+// 640px (no celular o CTA do hero e a LandingDock fazem esse papel). "Entrar"
+// aparece em todas as larguras.
 export function LandingNav() {
   return (
-    <nav className="lp-nav">
-      <div className="lp-nav-inner">
-        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 16, color: '#f4f5f7', textDecoration: 'none' }}>
-          <span style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#ff6a00,#ff8a3d)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px -4px rgba(255,106,0,0.35)', color: '#fff', fontSize: 14, fontWeight: 800 }}>{nav.brandInitial}</span>
-          {nav.brand}{' '}<span style={{ color: '#7a7f8c', fontWeight: 500 }}>{nav.brandSuffix}</span>
+    <nav className="lp-nav lp-v2" aria-label="Navegação principal">
+      <div className="lp-wrap lp-nav-inner">
+        <a href="#" className="lp-logo">
+          <span className="lp-logo-mark" aria-hidden="true">{nav.brandInitial}</span>
+          <span>
+            {nav.brand}{' '}<span className="lp-logo-suffix">{nav.brandSuffix}</span>
+          </span>
         </a>
-        <div className="lp-nav-links" style={{ display: 'flex', gap: 32, fontSize: 14, color: '#b8bcc7' }}>
+        <div className="lp-nav-links">
           {nav.links.map(link => (
-            <a key={link.href} href={link.href} style={{ color: 'inherit', textDecoration: 'none' }}>{link.label}</a>
+            <a key={link.href} href={link.href} className="lp-nav-link">{link.label}</a>
           ))}
         </div>
-        <div className="lp-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href={nav.ctaLogin.href} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '0 4px', color: '#b8bcc7', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>{nav.ctaLogin.label}</a>
-          <a href={whatsappUrl('nav')} target="_blank" rel="noopener noreferrer" className="lp-btn lp-btn-primary lp-nav-cta">{CTA_WHATSAPP_LABEL}</a>
+        <div className="lp-nav-actions">
+          <a href={nav.ctaLogin.href} className="lp-nav-link">{nav.ctaLogin.label}</a>
+          <a href={whatsappUrl('nav')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-nav-cta">
+            <span>{CTA_WHATSAPP_LABEL}</span>
+            <span className="lp-cta-seta" aria-hidden="true"><ArrowUpRight size={16} strokeWidth={1.75} /></span>
+          </a>
         </div>
       </div>
     </nav>

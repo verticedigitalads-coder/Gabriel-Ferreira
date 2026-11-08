@@ -4,6 +4,7 @@ import { LandingStyles } from './landing/landingStyles';
 import { useScrollReveal } from './landing/useScrollReveal';
 import { LandingNav } from './landing/LandingNav';
 import { LandingHero } from './landing/LandingHero';
+import { LandingFaixa } from './landing/LandingFaixa';
 import { LandingClientes } from './landing/LandingClientes';
 import { LandingFeatures } from './landing/LandingFeatures';
 import { LandingAutomacoes } from './landing/LandingAutomacoes';
@@ -12,6 +13,7 @@ import { LandingHowItWorks } from './landing/LandingHowItWorks';
 import { LandingPrecos } from './landing/LandingPrecos';
 import { LandingLoginCta } from './landing/LandingLoginCta';
 import { LandingFooter } from './landing/LandingFooter';
+import { LandingDock } from './landing/LandingDock';
 
 // A landing pública É a tela de auth (App.tsx renderiza este componente quando
 // não há sessão). Aqui só ficam o login e a composição das seções — a copy mora
@@ -41,6 +43,7 @@ export function AuthPage({
       <AccessNotice notice={notice} onDismiss={onDismissNotice} />
       <LandingNav />
       <LandingHero />
+      <LandingFaixa />
       <LandingClientes />
       <LandingFeatures />
       <LandingAutomacoes />
@@ -49,6 +52,7 @@ export function AuthPage({
       <LandingPrecos />
       <LandingLoginCta onLogin={handleLogin} />
       <LandingFooter />
+      <LandingDock />
     </div>
   );
 }
