@@ -10,7 +10,7 @@ Organize as atividades da equipe, acompanhe o andamento das tarefas e mantenha t
 - Filtrar a semana por **Todas / Críticas / Urgentes / Atrasadas**.
 - Na seção **Atrasadas**, ver as tarefas pendentes com data passada e **mover para hoje** as que ainda precisam ser feitas.
 - Na seção **Hoje**, mudar o andamento de cada tarefa com um toque: Pendente → Em produção → Pronto → Instalado.
-- Concluir tarefas (e desfazer, se marcou sem querer), editar e excluir.
+- Concluir tarefas, editar e excluir. Se você concluir sem querer, dá para desfazer em **Concluídas hoje** e na visão **Semana**; na seção **Atrasadas** não.
 - Ver as tarefas futuras na seção **Próximos Dias**.
 
 ## Passo a passo
@@ -63,7 +63,7 @@ Só a data: ela passa a ser de hoje. O status e a prioridade ficam como estavam.
 Na seção "Atrasadas" não há botão de desfazer: ao concluir, a tarefa sai da lista na hora. Para reabrir, vá para a visão **Semana**, volte com **← Semana anterior** até a semana da data da tarefa (com o filtro em **Todas**) e toque no círculo com o check da tarefa riscada. Na visão **Mês** não é possível reabrir.
 
 **O que é o selo vermelho "CRÍTICA"?**
-Tarefas atrasadas ou muito urgentes ganham esse selo e um contorno vermelho no calendário, para não passarem despercebidas.
+Na visão Semana, o selo CRÍTICA marca tarefas que pedem atenção. Ele soma a data (atrasada ou de hoje), a prioridade e o peso do cliente vinculado (lead quente, orçado ou de valor alto). Por isso uma tarefa de hoje de um cliente importante pode aparecer como CRÍTICA mesmo sem estar atrasada.
 
 **Como recebo lembretes das tarefas?**
 Permita as notificações do navegador (aviso no Dashboard). O sistema mostra um resumo com as tarefas do dia, atrasadas e urgentes de tempos em tempos, enquanto o CRM estiver aberto.
