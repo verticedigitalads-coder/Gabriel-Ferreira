@@ -11,6 +11,8 @@ import {
 import { Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react';
 
 import { calculateOperationalUrgency } from '@/domain/operacional/calculateOperationalUrgency';
+import { getStatusLabel } from '@/lib/priority';
+import { statusConfig } from '../statusConfig';
 
 const prioridadeStyle: Record<string, React.CSSProperties> = {
   baixa: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',    color: 'var(--info)' },
@@ -79,12 +81,12 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
         <p className={`font-semibold text-xs leading-tight break-words ${task.concluido ? 'line-through italic' : ''}`} title={task.titulo}>
           {task.titulo}
         </p>
-        <p className="text-[10px] opacity-70 capitalize mt-0.5">
-          Status: {task.status?.replace('_', ' ')}
+        <p className="text-[10px] opacity-70 mt-0.5">
+          Status: {statusConfig[task.status || 'pendente']?.label}
         </p>
         {lead && (
           <p className="text-[10px] opacity-70 truncate">
-            {lead.nome} • {lead.status}
+            {lead.nome} • {getStatusLabel(lead.status)}
           </p>
         )}
         {isCritical && (

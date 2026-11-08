@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import { CheckCircle2, Trash2, Plus } from 'lucide-react';
 
 import OperacionalCalendar from './components/OperacionalCalendar';
+import { statusConfig } from './statusConfig';
 import OperacionalMonthCalendar from './components/OperacionalMonthCalendar';
 
 export function Operacional() {
@@ -49,14 +50,7 @@ export function Operacional() {
   const tarefasHoje = tasks.filter((t) => t.data === hoje);
   const tarefasHojePendentes = tarefasHoje.filter((t) => !t.concluido);
   const tarefasHojeConcluidas = tarefasHoje.filter((t) => t.concluido);
-  const tarefasSemana = tasks.filter((t) => t.data >= hoje);
-
-  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-    pendente:    { label: 'Pendente',    color: 'var(--text-secondary)', bg: 'var(--bg-surface-3)' },
-    em_producao: { label: 'Em produção', color: 'var(--info)',           bg: 'var(--info-subtle)' },
-    pronto:      { label: 'Pronto',      color: 'var(--success)',        bg: 'var(--success-subtle)' },
-    instalado:   { label: 'Instalado',   color: 'var(--ia)',             bg: 'var(--ia-subtle)' },
-  };
+  const tarefasSemana = tasks.filter((t) => t.data > hoje);
 
   const confirmEdit = async () => {
     if (!taskToEdit) return;
