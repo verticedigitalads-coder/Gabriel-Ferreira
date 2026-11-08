@@ -22,6 +22,7 @@ export default defineConfig({
         name: "VRTX CRM",
         short_name: "VRTX CRM",
         description: "CRM para quem vende por orçamento",
+        lang: "pt-BR",
         theme_color: "#0F172A",
         background_color: "#0F172A",
         display: "standalone",

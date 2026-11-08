@@ -18,7 +18,7 @@ export function LandingStyles() {
         .lp-btn:hover{text-decoration:none}
         html{scroll-behavior:smooth}
         /* Sem isso a ancora para atras do .lp-nav sticky (64px de altura). */
-        #acesso,#features,#how,#clientes,#automacoes,#precos{scroll-margin-top:80px}
+        #acesso,#features,#how,#clientes,#automacoes,#precos,#celular{scroll-margin-top:80px}
         .lp-hero{position:relative;background:radial-gradient(60% 80% at 70% 0%,rgba(255,106,0,0.18) 0%,transparent 60%),radial-gradient(50% 60% at 10% 20%,rgba(99,102,241,0.18) 0%,transparent 60%),linear-gradient(180deg,#0f1117,#0b0d12);padding:80px 0 60px;overflow:hidden}
         .lp-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000 30%,transparent 80%);pointer-events:none}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -33,6 +33,15 @@ export function LandingStyles() {
            para reconhecimento, mas para de competir com o botao laranja. */
         .lp-google{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:10px;background:transparent;color:#b8bcc7;font-weight:600;font-size:15px;transition:all .15s;min-height:48px;border:1px solid #363b4a;cursor:pointer}
         .lp-google:hover{border-color:#7a7f8c;color:#f4f5f7}
+        /* Secao #celular. Mobile: carrossel horizontal contido (o scroll-snap roda
+           dentro do proprio .lp-phones, a pagina nao rola de lado). Desktop: 3
+           colunas, Operacional no centro e maior (order, o DOM segue a ordem de leitura). */
+        .lp-phones{display:flex;gap:var(--space-4);overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;padding-bottom:var(--space-3);scrollbar-width:thin}
+        .lp-phone{flex:0 0 min(240px,70vw);margin:0;scroll-snap-align:start}
+        .lp-phone-frame{border:8px solid var(--bg-surface-3);border-radius:36px;overflow:hidden;background:var(--bg-surface);box-shadow:0 0 0 1px var(--border-strong)}
+        .lp-phone-frame img{display:block;width:100%;height:auto}
+        .lp-phone figcaption{margin-top:var(--space-4);text-align:center;color:var(--text-secondary);font-size:var(--text-base);line-height:1.5}
+        @media(min-width:960px){.lp-phones{justify-content:center;align-items:center;gap:var(--space-8);overflow:visible;scroll-snap-type:none;padding-bottom:0}.lp-phone{flex:0 1 250px}.lp-phone-operacional{flex-basis:310px;order:2}.lp-phone-lead{order:1}.lp-phone-orcamentos{order:3}}
         @media(max-width:720px){.lp-mockup-body{grid-template-columns:1fr!important}.lp-mockup-side{display:none!important}.lp-stat-row{grid-template-columns:repeat(2,1fr)!important}.lp-br-desk{display:none}}
         @media(max-width:600px){.lp-hero{padding:60px 0 40px}.lp-cta-card{padding:32px 20px!important;margin:0 12px}}
         @media(max-width:900px){.lp-nav-links{display:none!important}}

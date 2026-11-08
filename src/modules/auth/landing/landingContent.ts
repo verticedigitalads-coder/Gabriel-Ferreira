@@ -95,6 +95,13 @@ export interface AutomacaoItem {
   vrtx: string;
 }
 
+export interface CelularItem {
+  id: 'operacional' | 'lead' | 'orcamentos';
+  src: string;
+  alt: string;
+  legenda: string;
+}
+
 export interface Testimonial {
   empresa: string;
   nicho: string;
@@ -300,6 +307,36 @@ export const automacoes = {
       vrtx: 'Lança a receita no Financeiro, com o mesmo valor e a data de hoje.',
     },
   ] as AutomacaoItem[],
+};
+
+// Telas reais do app no celular (public/landing/*.webp, 780x1691). A ordem do
+// array é a ordem de leitura e do carrossel no mobile; no desktop o CSS
+// (landingStyles.tsx) coloca o Operacional no centro. `pwa` só vale enquanto o
+// manifesto PWA estiver ativo em vite.config.ts.
+export const celular = {
+  eyebrow: 'No celular',
+  title: 'Sua operação no bolso, até dentro da obra',
+  pwa: 'Funciona como aplicativo, sem baixar da loja.',
+  items: [
+    {
+      id: 'operacional',
+      src: '/landing/mobile-operacional.webp',
+      alt: 'Tela do Painel Operacional no celular: tarefa “Instalar grades” com os status Pendente, Em produção, Pronto e Instalado para marcar.',
+      legenda: 'Atualize o serviço direto da obra: em produção, pronto, instalado.',
+    },
+    {
+      id: 'lead',
+      src: '/landing/mobile-lead.webp',
+      alt: 'Tela de detalhes de um lead no celular, com os botões Registrar Contato, WhatsApp, Marcar Visita, Marcar Orçado e Fechar Negócio.',
+      legenda: 'Registre o contato e chame o cliente no WhatsApp com um toque.',
+    },
+    {
+      id: 'orcamentos',
+      src: '/landing/mobile-orcamentos.webp',
+      alt: 'Tela de Orçamentos no celular: lista de orçamentos com valor, status e os botões PDF e PIX em cada um.',
+      legenda: 'Gere o orçamento em PDF com PIX pelo celular.',
+    },
+  ] as CelularItem[],
 };
 
 export const howItWorks = {

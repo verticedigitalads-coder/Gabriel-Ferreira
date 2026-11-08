@@ -7,6 +7,7 @@ import { LandingHero } from './landing/LandingHero';
 import { LandingClientes } from './landing/LandingClientes';
 import { LandingFeatures } from './landing/LandingFeatures';
 import { LandingAutomacoes } from './landing/LandingAutomacoes';
+import { LandingCelular } from './landing/LandingCelular';
 import { LandingHowItWorks } from './landing/LandingHowItWorks';
 import { LandingPrecos } from './landing/LandingPrecos';
 import { LandingLoginCta } from './landing/LandingLoginCta';
@@ -43,6 +44,7 @@ export function AuthPage({
       <LandingClientes />
       <LandingFeatures />
       <LandingAutomacoes />
+      <LandingCelular />
       <LandingHowItWorks />
       <LandingPrecos />
       <LandingLoginCta onLogin={handleLogin} />
