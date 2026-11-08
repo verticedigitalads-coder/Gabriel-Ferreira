@@ -74,14 +74,22 @@ export interface MockupLead {
   bc: string;
 }
 
+// Chave do ícone; o componente (LandingFeatures.tsx) mapeia chave → ícone lucide,
+// para este arquivo seguir sem import de React.
+export type FeatureIconKey =
+  | 'leads'
+  | 'orcamentos'
+  | 'dashboard'
+  | 'operacional'
+  | 'financeiro'
+  | 'workspace';
+
 export interface LandingFeature {
-  icon: string;
+  icon: FeatureIconKey;
   title: string;
   desc: string;
   tag: string;
   hi?: boolean;
-  iconBg: string;
-  iconColor: string;
 }
 
 export interface LandingStep {
@@ -230,53 +238,41 @@ export const features = {
     'De primeiro contato a recebimento — uma plataforma única, pensada para quem vende serviços de alto valor.',
   items: [
     {
-      icon: '🎯',
+      icon: 'leads',
       title: 'Gestão de Leads com priorização automática',
       desc: 'O sistema classifica cada lead em crítico, alto, médio ou baixo com base no valor, no tempo sem contato e no estágio do orçamento. Quem está esfriando aparece primeiro na lista.',
       tag: 'Priorização automática',
       hi: true,
-      iconBg: 'rgba(168,85,247,0.12)',
-      iconColor: '#a855f7',
     },
     {
-      icon: '📄',
+      icon: 'orcamentos',
       title: 'Orçamentos profissionais',
       desc: 'PDF com sua identidade visual, QR Code PIX integrado e assinatura digital.',
       tag: 'PDF · PIX · Assinatura',
-      iconBg: 'rgba(255,106,0,0.12)',
-      iconColor: '#ff6a00',
     },
     {
-      icon: '📊',
+      icon: 'dashboard',
       title: 'Dashboard executivo',
       desc: 'Receita prevista, foco do dia e saúde do CRM.',
       tag: 'Visão estratégica',
-      iconBg: 'rgba(34,197,94,0.12)',
-      iconColor: '#22c55e',
     },
     {
-      icon: '📅',
+      icon: 'operacional',
       title: 'Painel operacional',
       desc: 'Agenda semanal e mensal, tarefas por prioridade, alertas de atraso.',
       tag: 'Agenda semanal e mensal',
-      iconBg: 'rgba(96,165,250,0.12)',
-      iconColor: '#60a5fa',
     },
     {
-      icon: '💰',
+      icon: 'financeiro',
       title: 'Financeiro completo',
       desc: 'Receitas, despesas, contas a receber e resultado do mês com fluxo de caixa visual.',
       tag: 'Fluxo de caixa',
-      iconBg: 'rgba(245,158,11,0.12)',
-      iconColor: '#f59e0b',
     },
     {
-      icon: '🏢',
+      icon: 'workspace',
       title: 'Multi-workspace',
       desc: 'Cada empresa com dados isolados: leads, financeiro, branding e documentos separados.',
       tag: 'Isolamento total',
-      iconBg: 'rgba(248,113,113,0.12)',
-      iconColor: '#f87171',
     },
   ] as LandingFeature[],
 };

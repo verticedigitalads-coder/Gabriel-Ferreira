@@ -3,7 +3,7 @@ import { mockup } from './landingContent';
 export function HeroMockup() {
   return (
     <div className="lp-fade lp-d4" style={{ marginTop: 64, perspective: 1400 }}>
-      <div style={{ background: 'linear-gradient(180deg,#1a1d27,#13161e)', border: '1px solid #363b4a', borderRadius: 16, overflow: 'hidden', boxShadow: '0 40px 80px -20px rgba(0,0,0,0.6),0 60px 120px -30px rgba(255,106,0,0.35)', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ background: 'linear-gradient(180deg,#1a1d27,#13161e)', border: '1px solid #363b4a', borderRadius: 16, overflow: 'hidden', boxShadow: '0 40px 80px -20px rgba(0,0,0,0.6)', maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 18px', borderBottom: '1px solid #262a36', background: 'rgba(0,0,0,0.2)' }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }} />
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />

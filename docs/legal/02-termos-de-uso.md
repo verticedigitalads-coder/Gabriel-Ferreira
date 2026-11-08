@@ -1,6 +1,6 @@
 # Termos de Uso — CRM VRTX
 
-**Última atualização:** 2026-07-15
+**Última atualização:** 15 de julho de 2026
 
 ---
 
@@ -44,7 +44,7 @@ plataforma. Tais alterações não caracterizam quebra contratual.
 
 ## 4. Planos, pagamento e renovação
 
-[Valores e planos vigentes são apresentados na plataforma e/ou no site.]
+Os valores e planos vigentes são os apresentados no site vrtxcrm.com.br e no momento da contratação.
 
 - A assinatura é cobrada de forma recorrente (mensal/anual), conforme o plano.
 - O pagamento é processado por processadores de pagamento devidamente autorizados

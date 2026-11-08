@@ -67,7 +67,7 @@ export function useNotifications() {
 
   useEffect(() => {
     const total = tarefasHoje.length + tarefasAtrasadas.length;
-    const baseTitle = 'Vértice Digital | CRM Inteligente';
+    const baseTitle = 'VRTX CRM';
 
     if (total > 0) {
       document.title = `(${total}) ${baseTitle}`;

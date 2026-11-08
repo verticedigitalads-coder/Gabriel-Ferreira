@@ -1,5 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { TERMS_VERSION } from '@/lib/terms';
 import { legalContent, type LegalDoc } from './legalContent';
 
@@ -71,8 +73,8 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
       </main>
 
       <footer className="legal-footer">
-        <span>Vigente desde {TERMS_VERSION}</span>
-        <span>© 2026 VRTX · CRM Inteligente</span>
+        <span>Vigente desde {format(parseISO(TERMS_VERSION), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+        <span>© 2026 VRTX CRM · Vértice Digital</span>
       </footer>
     </div>
   );

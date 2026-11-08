@@ -16,7 +16,7 @@ export function LandingAutomacoes() {
             <article key={a.quando} className="lp-reveal" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-strong)', borderRadius: 14, padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{automacoes.quandoLabel}</div>
-                <div style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)', fontWeight: 700, lineHeight: 1.35, marginTop: 'var(--space-1)' }}>{a.quando}</div>
+                <div className="lp-auto-quando" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)', fontWeight: 700, lineHeight: 1.35, marginTop: 'var(--space-1)' }}>{a.quando}</div>
               </div>
               <div aria-hidden="true" style={{ color: 'var(--accent)', fontSize: 'var(--text-xl)', lineHeight: 1 }}>↓</div>
               <div>

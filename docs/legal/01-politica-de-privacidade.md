@@ -1,6 +1,6 @@
 # Política de Privacidade — CRM VRTX
 
-**Última atualização:** 2026-07-15
+**Última atualização:** 15 de julho de 2026
 
 ---
 

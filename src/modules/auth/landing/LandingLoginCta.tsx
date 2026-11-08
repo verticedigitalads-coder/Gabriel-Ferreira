@@ -2,7 +2,7 @@ import { CTA_WHATSAPP_LABEL, LEGAL_PATHS, loginCta, whatsappUrl } from './landin
 
 export function LandingLoginCta({ onLogin }: { onLogin: () => void }) {
   return (
-    <section id="login" style={{ padding: '96px 0', background: 'radial-gradient(50% 80% at 50% 0%,rgba(255,106,0,0.18) 0%,transparent 60%),#0f1117', position: 'relative', overflow: 'hidden' }}>
+    <section id="login" className="lp-login" style={{ padding: '96px 0', background: 'var(--bg-app)', position: 'relative', overflow: 'hidden' }}>
       <div className="lp-container">
         <div id="acesso" className="lp-cta-card lp-reveal" style={{ maxWidth: 560, margin: '0 auto', background: '#1a1d27', border: '1px solid #363b4a', borderRadius: 20, padding: '48px 40px', textAlign: 'center', boxShadow: '0 40px 100px -30px rgba(0,0,0,0.6)' }}>
           <h2 style={{ fontSize: 'clamp(26px,3vw,34px)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 14 }}>{loginCta.title}</h2>
