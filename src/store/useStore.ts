@@ -75,7 +75,7 @@ type StoreState = {
   deleteNota: (id: string) => Promise<void>;
   salvarAssinaturaCliente: (orcamentoId: string, assinatura: string) => Promise<boolean>;
   metaMensal: number;
-  addOperacionalTask: (data: any) => Promise<void>;
+  addOperacionalTask: (data: any) => Promise<boolean>;
 
   filters: any;
   setFilter: (filter: any) => void;

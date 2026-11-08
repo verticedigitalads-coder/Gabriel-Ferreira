@@ -67,13 +67,15 @@ export function Operacional() {
   const confirmEdit = async () => {
     if (!taskToEdit) return;
 
-    await updateTask(taskToEdit.id, {
+    const ok = await updateTask(taskToEdit.id, {
       titulo: editTitle,
       data: editData,
       prioridade: editPrioridade,
       status: editStatus,
       descricao: editDescricao,
     });
+
+    if (!ok) return;
 
     setShowEditModal(false);
     setTaskToEdit(null);
@@ -84,9 +86,12 @@ export function Operacional() {
 
     setLoadingDelete(true);
 
-    await deleteTask(taskToDelete.id);
+    const ok = await deleteTask(taskToDelete.id);
 
     setLoadingDelete(false);
+
+    if (!ok) return;
+
     setShowDeleteModal(false);
     setTaskToDelete(null);
   };
@@ -94,12 +99,14 @@ export function Operacional() {
   const handleAdd = async () => {
     if (!titulo || !data) return;
 
-    await addTask({
+    const ok = await addTask({
       titulo,
       data,
       prioridade,
       concluido: false,
     });
+
+    if (!ok) return;
 
     setTitulo('');
     setData('');

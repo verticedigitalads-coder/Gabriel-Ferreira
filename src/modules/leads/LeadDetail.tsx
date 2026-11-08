@@ -97,13 +97,15 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const handleScheduleVisit = async () => {
     if (!visitDate) return;
 
-    await addOperacionalTask({
+    const ok = await addOperacionalTask({
       titulo: `Visita orçamento - ${lead.nome}`,
       data: visitDate,
       tipo: 'visita',
       prioridade: 'media',
       leadId: lead.id,
     });
+
+    if (!ok) return;
 
     setShowVisitModal(false);
   };

@@ -34,7 +34,8 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[OperacionalSlice] Erro ao criar tarefa:', error);
-      return;
+      get().addToast({ type: 'error', message: 'Erro ao criar tarefa' });
+      return false;
     }
 
     // ✅ atualização imediata (UX)
@@ -48,7 +49,7 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       };
     });
 
-    return data;
+    return true;
   },
 
   // ================= DELETE =================
@@ -61,7 +62,8 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[OperacionalSlice] Erro ao deletar tarefa:', error);
-      return;
+      get().addToast({ type: 'error', message: 'Erro ao excluir tarefa' });
+      return false;
     }
 
     set((state: any) => ({
@@ -69,6 +71,8 @@ export const createOperacionalSlice = (set: any, get: any) => ({
         (t: OperacionalTask) => t.id !== taskId,
       ),
     }));
+
+    return true;
   },
 
   // ================= UPDATE =================
@@ -101,7 +105,8 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[OperacionalSlice] Erro ao atualizar tarefa:', error);
-      return;
+      get().addToast({ type: 'error', message: 'Erro ao atualizar tarefa' });
+      return false;
     }
 
     set((state: any) => ({
@@ -110,6 +115,6 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       ),
     }));
 
-    return formatOperacionalTask(data);
+    return true;
   },
 });
