@@ -19,7 +19,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({      registerType: "autoUpdate",
       manifest: {
-        name: "VRTX CRM — Inteligência Comercial",
+        name: "VRTX CRM",
         short_name: "VRTX CRM",
         description: "CRM para quem vende por orçamento",
         theme_color: "#0F172A",
