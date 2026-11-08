@@ -8,6 +8,7 @@ Organize as atividades da equipe, acompanhe o andamento das tarefas e mantenha t
 - Alternar entre as visões **Semana** e **Mês** do calendário.
 - **Arrastar** uma tarefa para outro dia na visão Semana para reagendar.
 - Filtrar a semana por **Todas / Críticas / Urgentes / Atrasadas**.
+- Na seção **Atrasadas**, ver as tarefas pendentes com data passada e **mover para hoje** as que ainda precisam ser feitas.
 - Na seção **Hoje**, mudar o andamento de cada tarefa com um toque: Pendente → Em produção → Pronto → Instalado.
 - Concluir tarefas (e desfazer, se marcou sem querer), editar e excluir.
 - Ver as tarefas futuras na seção **Próximos Dias**.
@@ -23,6 +24,12 @@ Organize as atividades da equipe, acompanhe o andamento das tarefas e mantenha t
 1. Na seção **Hoje**, localize a tarefa.
 2. Toque no status desejado: Pendente, Em produção, Pronto ou Instalado.
 3. Quando terminar de fato, toque no círculo de concluir.
+
+### Resolver uma tarefa atrasada
+1. Se houver tarefa pendente com data passada, a seção **Atrasadas** aparece acima de **Hoje**.
+2. Cada tarefa mostra há quantos dias está atrasada, da mais antiga para a mais nova.
+3. Se o serviço ainda precisa ser feito, toque em **Mover para hoje**. A tarefa sai de Atrasadas e passa a aparecer em **Hoje**.
+4. Se o serviço já foi feito, toque no círculo de concluir.
 
 ### Reagendar uma tarefa
 1. Vá para a visão **Semana**.
@@ -40,8 +47,20 @@ O atalho "+ adicionar" do calendário do mês cria uma tarefa pronta com esse no
 **Qual a diferença entre concluir e mudar o status?**
 São controles separados. O status (Pendente/Em produção/Pronto/Instalado) mostra o andamento da produção; concluir tira a tarefa da lista de pendentes. Marcar "Instalado" não conclui sozinho — conclua no círculo quando encerrar.
 
-**Minha tarefa de hoje aparece duas vezes (em "Hoje" e em "Próximos Dias").**
-É o comportamento atual da tela: a lista de próximos dias inclui o dia de hoje. A tarefa é a mesma — qualquer mudança vale para as duas listas.
+**Minha tarefa de hoje aparece também em "Próximos Dias"?**
+Não. "Próximos Dias" mostra só as tarefas de amanhã em diante. A tarefa de hoje aparece apenas em "Hoje" (e no calendário).
+
+**Uma tarefa sumiu de "Hoje" e de "Próximos Dias". Onde ela está?**
+Se a data já passou e a tarefa não foi concluída, ela está na seção **Atrasadas**, acima de "Hoje". Se a data já passou e você concluiu, ela deixa as listas e fica riscada no calendário.
+
+**Como funciona a seção "Atrasadas"?**
+Ela só aparece quando há tarefa pendente com data anterior a hoje. Mostra há quantos dias cada uma está atrasada, da mais antiga para a mais nova, e começa com as 5 mais antigas. Toque em **Ver todas (N)** para abrir a lista completa e em **Mostrar menos** para recolher. Em cada tarefa você pode mudar o status, concluir, excluir ou tocar em **Mover para hoje**. O número N é o mesmo de tarefas atrasadas que o Dashboard mostra.
+
+**O que "Mover para hoje" muda na tarefa?**
+Só a data: ela passa a ser de hoje. O status e a prioridade ficam como estavam.
+
+**Concluí uma tarefa atrasada sem querer. Como desfaço?**
+Na seção "Atrasadas" não há botão de desfazer: ao concluir, a tarefa sai da lista na hora. Para reabrir, vá para a visão **Semana**, volte com **← Semana anterior** até a semana da data da tarefa (com o filtro em **Todas**) e toque no círculo com o check da tarefa riscada. Na visão **Mês** não é possível reabrir.
 
 **O que é o selo vermelho "CRÍTICA"?**
 Tarefas atrasadas ou muito urgentes ganham esse selo e um contorno vermelho no calendário, para não passarem despercebidas.
