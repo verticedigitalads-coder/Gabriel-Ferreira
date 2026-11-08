@@ -18,7 +18,10 @@ export function LandingClientes() {
             <figure key={t.empresa} className="lp-reveal" style={{ margin: 0, background: 'var(--bg-surface)', border: '1px solid var(--border-strong)', borderRadius: 14, padding: 'var(--space-8) var(--space-6)' }}>
               <blockquote style={{ margin: 0, color: 'var(--text-primary)', fontSize: 'var(--text-lg)', lineHeight: 1.6 }}>“{t.frase}”</blockquote>
               <figcaption style={{ marginTop: 'var(--space-5)' }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 'var(--text-md)' }}>{t.empresa}</div>
+                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 'var(--text-md)' }}>
+                  {t.empresa}
+                  {t.autor && <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}> · {t.autor}</span>}
+                </div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-1)' }}>
                   {t.nicho} · {t.cidade} · cliente desde {t.desde}
                 </div>

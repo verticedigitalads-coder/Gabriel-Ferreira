@@ -8,8 +8,8 @@
 
 // WhatsApp COMERCIAL da Vértice (lead novo), separado de propósito do WhatsApp
 // de SUPORTE em src/lib/support.ts — trocar aqui não afeta o atendimento a
-// cliente existente. Provisório: hoje é o mesmo número, até o comercial existir.
-export const SALES_WHATSAPP_NUMBER = '5534998049083';
+// cliente existente.
+export const SALES_WHATSAPP_NUMBER = '5534988501702';
 
 // Provisório — ainda NÃO exibido na landing (a etapa de pricing vem depois).
 export const PRICING = {
@@ -95,6 +95,7 @@ export interface Testimonial {
   desde: string;
   frase: string;
   metrica?: string;
+  autor?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -111,15 +112,18 @@ export const TESTIMONIALS: Testimonial[] = [
     nicho: 'Metalúrgica',
     cidade: 'Uberaba/MG',
     desde: 'fev/2026',
-    frase: '',
-    metrica: '61 leads · 98 orçamentos',
+    frase:
+      'Antes eu controlava os orçamentos no caderno. Hoje tenho orçamento e cadastro de cliente num lugar só, e o orçamento chega ao cliente bem explicado e profissional. Isso trouxe credibilidade com os clientes.',
+    autor: 'Fabrício Lima',
   },
   {
     empresa: 'Ítalo Colares Drywall',
     nicho: 'Drywall',
     cidade: 'Uberaba/MG',
     desde: 'jun/2026',
-    frase: '',
+    frase:
+      'Eu fazia meus orçamentos num modelo que montei na internet. Pedi para o VRTX sair com a minha logo e do jeito da minha empresa, e fui atendido. Hoje mando orçamento profissional direto pelo sistema.',
+    autor: 'Ítalo Colares',
   },
 ];
 
