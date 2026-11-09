@@ -1,9 +1,10 @@
 import { ArrowUpRight } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, footer, hero, interludio, whatsappUrl } from './landingContent';
+import { abrirContato } from './LandingContato';
 
 // Interlúdio (visual do Manifesto da ds2): foto decorativa da forja sob véus de
 // --bg-app (landingStyles.tsx, .lp-inter-*) e o título serif por cima. O botão
-// abre o WhatsApp direto, sem formulário. A foto tem alt vazio porque não
+// abre o formulário (LandingContato); sem JS, o href leva ao WhatsApp. A foto tem alt vazio porque não
 // carrega informação; o sublinhado do destaque também é só enfeite.
 // .lp-serif vai em cada span com texto, não no <h2>: o * do index.css reaplica
 // a fonte sans em todo elemento filho.
@@ -35,7 +36,7 @@ export function LandingInterludio() {
           </span>
         </h2>
         <div className="lp-inter-cta lp-reveal">
-          <a href={whatsappUrl('manifesto')} target="_blank" rel="noopener noreferrer" className="lp-cta-big">
+          <a href={whatsappUrl('manifesto')} target="_blank" rel="noopener noreferrer" className="lp-cta-big" onClick={abrirContato}>
             {CTA_WHATSAPP_LABEL}
             <ArrowUpRight size={18} strokeWidth={1.75} aria-hidden="true" />
           </a>

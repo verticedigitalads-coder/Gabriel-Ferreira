@@ -426,6 +426,60 @@ export function LandingStyles() {
         .lp-rodape-base .lp-mono{color:var(--lp-tinta-2)}
         .lp-rodape-legal{display:flex;gap:var(--space-6)}
         @media(min-width:1024px){.lp-rodape{padding-top:calc(var(--space-12) * 2)}.lp-rodape-topo{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}.lp-rodape-nav{justify-content:flex-end}}
+        /* Painel "Falar com a equipe" (LandingContato.tsx), visual do ContactModal da
+           v4.1. Celular: tela cheia vindo de baixo, com rolagem propria. A partir de
+           640px: caixa centralizada; a partir de 1024px: lado editorial | formulario
+           (5/7). Filete laranja no topo. Campos com fonte --text-lg (17px): abaixo de
+           16px o Safari do iOS da zoom no foco. color-scheme dark para o <select>
+           abrir a lista escura. */
+        .lp-contato{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;color-scheme:dark}
+        .lp-contato-fundo{position:absolute;inset:0;background:color-mix(in srgb,var(--bg-app) 85%,transparent);backdrop-filter:blur(4px)}
+        .lp-contato-painel{position:relative;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;width:100%;height:100%;overflow-y:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom);border-top:3px solid var(--accent);background:var(--bg-surface);box-shadow:var(--shadow-modal);animation:lp-contato-sobe .35s ease}
+        @keyframes lp-contato-sobe{from{opacity:0;transform:translateY(var(--space-6))}to{opacity:1;transform:none}}
+        .lp-contato-fechar{position:absolute;top:var(--space-3);right:var(--space-3);z-index:1;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border-strong);background:var(--bg-surface-2);color:var(--text-secondary);cursor:pointer;transition:color var(--transition-base),border-color var(--transition-base)}
+        .lp-contato-fechar:hover{border-color:var(--accent);color:var(--accent)}
+        .lp-contato-fechar:disabled{cursor:wait;opacity:.5}
+        .lp-contato-lado{padding:var(--space-8) var(--space-4) var(--space-6);border-bottom:1px solid var(--border-strong)}
+        .lp-contato-titulo{max-width:16ch;margin:var(--space-4) 0 0;color:var(--text-primary);font-size:clamp(1.9rem,3.2vw,2.8rem);font-weight:var(--font-medium);line-height:.98;letter-spacing:-.045em}
+        .lp-contato-titulo .lp-serif{color:var(--accent);letter-spacing:-.02em}
+        .lp-contato-texto{max-width:40ch;margin:var(--space-4) 0 0;color:var(--text-secondary);font-size:var(--text-base);line-height:1.6}
+        .lp-contato-itens{display:none;flex-direction:column;gap:var(--space-3);margin:var(--space-8) 0 0;padding:var(--space-5) 0 0;border-top:1px solid var(--border-strong);list-style:none}
+        .lp-contato-itens li{display:flex;align-items:center;gap:var(--space-3);color:var(--text-secondary);font-size:var(--text-sm)}
+        .lp-contato-itens li::before{content:"";flex-shrink:0;width:6px;height:6px;background:var(--accent)}
+        .lp-contato-form{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-5);padding:var(--space-6) var(--space-4) var(--space-8)}
+        .lp-contato-campos{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-5);width:100%}
+        .lp-contato-campo label{display:block;color:var(--text-secondary)}
+        .lp-contato-campo input,.lp-contato-campo select{display:block;width:100%;min-height:44px;margin-top:var(--space-1);padding:var(--space-2) 0;border:0;border-bottom:1px solid var(--border-strong);border-radius:0;background:transparent;color:var(--text-primary);font-size:var(--text-lg);outline:none;transition:border-color var(--transition-base)}
+        .lp-contato-campo input::placeholder{color:var(--text-tertiary)}
+        .lp-contato-campo input:focus,.lp-contato-campo select:focus{border-bottom-color:var(--accent)}
+        .lp-contato-campo [aria-invalid="true"]{border-bottom-color:var(--danger)}
+        .lp-contato-select{position:relative}
+        .lp-contato-select select{padding-right:var(--space-6);appearance:none;cursor:pointer}
+        .lp-contato-select svg{position:absolute;right:0;top:50%;transform:translateY(-50%);color:var(--accent);pointer-events:none}
+        .lp-contato-select option{background:var(--bg-surface);color:var(--text-primary)}
+        .lp-contato-erro{margin:var(--space-1) 0 0;color:var(--danger);font-size:var(--text-xs)}
+        .lp-contato-hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+        .lp-contato-enviar{justify-content:space-between;width:100%;min-height:48px;cursor:pointer}
+        .lp-contato-enviar:disabled{cursor:wait;opacity:.7}
+        .lp-contato-enviar:disabled:hover{background:var(--accent);border-color:var(--accent)}
+        .lp-contato-status{margin:0;color:var(--text-primary);font-size:var(--text-sm)}
+        .lp-contato-status:empty{display:none}
+        .lp-contato-form .lp-acesso-legal{margin:0}
+        @media(min-width:640px){
+          .lp-contato{align-items:center;padding:var(--space-6)}
+          .lp-contato-painel{max-width:560px;height:auto;max-height:calc(100vh - var(--space-12));max-height:calc(100dvh - var(--space-12));border:1px solid var(--border-strong);border-top:3px solid var(--accent)}
+          .lp-contato-lado{padding:var(--space-8) var(--space-8) var(--space-6)}
+          .lp-contato-form{padding:var(--space-6) var(--space-8) var(--space-8)}
+          .lp-contato-campos{grid-template-columns:repeat(2,minmax(0,1fr))}
+          .lp-contato-largo{grid-column:1/-1}
+        }
+        @media(min-width:1024px){
+          .lp-contato-painel{max-width:940px;grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+          .lp-contato-lado{padding:var(--space-10) var(--space-8);border-bottom:0;border-right:1px solid var(--border-strong)}
+          .lp-contato-itens{display:flex}
+          .lp-contato-form{padding:var(--space-10) var(--space-8)}
+        }
+        @media(prefers-reduced-motion:reduce){.lp-contato-painel{animation:none}.lp-contato-fechar,.lp-contato-campo input,.lp-contato-campo select{transition:none}}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @keyframes lp-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .lp-fade{animation:lp-fadeUp .7s ease forwards;opacity:0}

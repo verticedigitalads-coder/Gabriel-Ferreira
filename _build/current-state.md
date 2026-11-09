@@ -4,12 +4,40 @@
 Versão: v2.39.3
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 09/11/2026, R4)
-- Build vite: limpo (✓ 7.86s, 09/11/2026, R4; só aviso pré-existente de bundle >500KB)
+- TypeScript: 0 erros (tsc --noEmit, 09/11/2026, formulário da landing)
+- Build vite: limpo (09/11/2026, formulário da landing; só aviso pré-existente de bundle >500KB)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Landing: formulário "Falar com a equipe" que grava lead real (09/11/2026) — SEM commit, aguardando aceite e deploy:**
+  - **Escopo:** fechado via `/grill-me` (plano em `~/.claude/plans/`). Os 7 CTAs "Falar com a equipe" (nav, hero, interlúdio, preço, FAQ, fechamento, dock) abrem um painel com formulário. O envio grava o lead no workspace da Vértice e a página segue para o WhatsApp **na mesma aba**, com a mensagem montada a partir dos campos. Isso substitui a regra 5 de `_build/plano-redesign-landing.md` ("não existe formulário").
+  - **Decisões do Gabriel:** workspace **Vértice Digital** `001843dd-97fc-42a6-88ee-08c7a404903a` ("Vértice Digital ADS" não existe no banco); `origem: 'site'`, que entrou no `LeadOrigin`; só o lead, sem tarefa no Operacional (`status 'novo'`, `temperatura 'morno'`); WhatsApp na mesma aba, porque o tráfego vem de anúncio Meta e o navegador interno do Instagram/Facebook bloqueia aba nova; limite de 20 por IP/hora, não 5 (CGNAT de operadora móvel); aviso de falha sem a palavra "erro".
+  - **`server.js` 🔴 (+98, só adição):** `landingLimiter` (1h, máximo 20, `{ ok:false }`) e `POST /api/landing/contato` sem `requireAuth`, logo depois do `express.json` (precisa ficar abaixo dele: antes, `req.body` chega vazio).
+    - O destino vem SÓ do env `LANDING_WORKSPACE_ID`, nunca do body.
+    - Honeypot `site` preenchido → 200 `{ ok:true }`, sem gravar.
+    - Validação: nome 2–80, empresa 1–80, WhatsApp bruto até 20 caracteres e 10–11 dígitos depois de normalizar, e-mail opcional até 120, segmento na lista fechada. Inválido → 400 `{ ok:false }`. Sem o env → 500 + log.
+    - Telefone no formato que o banco já usa (76 de 85 leads): só dígitos, DDD + número, sem o 55. O 55 inicial sai quando sobram 12 ou 13 dígitos.
+    - Insert com `getSupabaseAdmin()` e os defaults do `createLead` (`lead.service.ts:8-30`); `observacoes` = "Empresa: X · Segmento: Y · via landing".
+    - Log só `[landing/contato] lead criado` ou `falhou <error.code>`, sem dado pessoal.
+  - **Frontend (`src/modules/auth/landing/`):**
+    - `LandingContato.tsx` (novo): painel `role=dialog` com foco preso, Esc fecha, foco volta ao CTA e rolagem da página travada. `abrirContato` abre por evento de janela, para não passar prop por 7 componentes.
+    - Envio por `apiFetch(..., 0)`, sem retry, porque o retry padrão espera mais de 60s e pode duplicar o lead. Corre contra um timer de 5s. Gravou → "Abrindo o WhatsApp…" → `location.href`. Falhou, demorou ou deu 429 → "Vamos continuar pelo WhatsApp." por 1,5s → `location.href`.
+    - 3s depois de seguir para o WhatsApp, o painel fecha e limpa os campos. No iOS o wa.me abre o app por cima e a aba fica na landing; sem isso, quem voltasse encontraria o painel travado em "Abrindo…".
+    - "Prefiro ir direto pro WhatsApp" = `whatsappUrl('form')` na mesma aba. A linha da Política de Privacidade abre `/privacidade` em nova aba.
+    - `landingContent.ts`: `'form'` no `WhatsappOrigem`, `CONTATO_SEGMENTOS`, `CONTATO_LIMITES`, `ContatoCampos`, `whatsappContatoUrl` e a copy `contato` (escrita do zero; a referência v4.1 tinha "20 minutos", `ola@`, "São Paulo", "VRTXCRM"). Segmentos e limites se repetem em `server.js`, que é quem decide.
+    - `landingStyles.tsx`: bloco `.lp-contato-*`. Celular: tela cheia vindo de baixo. 640px+: caixa centralizada. 1024px+: editorial | formulário (5/7). Campos em `--text-lg` (17px; abaixo de 16 o iOS dá zoom no foco), `color-scheme: dark` no `<select>`, animação desligada com `prefers-reduced-motion`.
+    - CTAs em `LandingNav`, `LandingHero`, `LandingInterludio`, `LandingPrecos`, `LandingDuvidas`, `LandingLoginCta` e `LandingDock`: só `onClick={abrirContato}` e o import; o `href` wa.me fica. No Interlúdio também o comentário do topo, que dizia "sem formulário".
+    - `AuthPage.tsx` 🔴: +2, só import e `<LandingContato />` depois de `<LandingDock />`. `handleLogin` intocado.
+  - **`src/types/index.ts`:** `| 'site'` no `LeadOrigin`. Varredura antes: nenhum `<select>`, mapa de rótulos ou filtro de origem na UI. **Fica de fora** `ai.service.ts` `ORIGENS`, para a IA não classificar como "site" um lead colado do WhatsApp.
+  - **`docs/legal/01-politica-de-privacidade.md`:** parágrafo novo em §3.1 (dados, finalidade de contato comercial, base consentimento + legítimo interesse, prazo até o fim da relação comercial ou o pedido de exclusão pela §13) e "Última atualização" 9 de novembro de 2026. `TERMS_VERSION` não mudou.
+  - **Verificação (09/11/2026):**
+    - `node --check server.js` ok, `tsc --noEmit` 0 erros, build limpo.
+    - Backend local na 3002 (a 3001 estava ocupada) com `LANDING_WORKSPACE_ID` = "Teste Multi-Tenant" e `NODE_ENV=development` pela linha de comando; o `.env` local tem `NODE_ENV=production` e não foi tocado.
+    - curl: válido → 201; válido com `+55` e "Metalúrgica" → 201; telefone, e-mail, segmento ou campos ruins → 400; honeypot → 200 sem gravar; 21º envio na hora → 429.
+    - MCP: os 2 leads caíram no "Teste Multi-Tenant", **não** na FL Art Metal, apesar do `workspace_id` dela no body. Telefone `34999990001`, acento intacto, honeypot sem linha.
+    - Navegador (puppeteer, Vite na 3000 → backend 3002): os 6 CTAs visíveis a 1440 e o dock a 390 abrem o painel; foco no 1º campo, Esc fecha, foco volta ao CTA, Tab/Shift+Tab presos; envio vazio → 4 erros e foco no 1º; POST 201 e navegação para wa.me com "Sou Teste Navegador, da Vidros Teste (Vidraçaria/Esquadrias)… (form)"; botão "Enviando…" desabilitado; com fetch rejeitado → aviso, 1,5s, wa.me; painel fecha sozinho 3s depois; 320px sem scroll lateral; alvos de toque 44–48px; LISTA PROIBIDA no `innerText` do painel = nada.
+  - **Não verificado:** sem JS a SPA não renderiza nada, então o `href` wa.me cobre só a falha do JS do painel, não navegador sem JS. Também falta o aceite em produção (ver Pendências Manuais).
 - **Landing: redesign R4 — segmentos, preço, dúvidas, fechamento + login e rodapé (09/11/2026) — SEM commit, aguardando aceite:**
   - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 4 de 5). Com ela, a página inteira está no visual novo.
     - Em `src/modules/auth/landing/`: `landingContent.ts` e `landingStyles.tsx` alterados; `LandingPrecos.tsx`, `LandingLoginCta.tsx` e `LandingFooter.tsx` reescritos no mesmo arquivo; novos `LandingSegmentos.tsx` e `LandingDuvidas.tsx`.
@@ -407,6 +435,8 @@ Versão: v2.39.3
 - ✅ Migração backend para VPS Hetzner (178.104.236.222) — PM2 (`crm-backend`) + Nginx reverse proxy, API pública `https://api.vrtxcrm.com.br` (supera decisão anterior "backend local via ngrok")
 
 ## Pendências Manuais
+- **Formulário da landing: deploy e aceite (09/11/2026):** (1) VPS: acrescentar `LANDING_WORKSPACE_ID=001843dd-97fc-42a6-88ee-08c7a404903a` no `.env` de `/opt/crm-backend`, depois `git pull origin main && pm2 restart crm-backend`. (2) Mandar 1 envio real pela landing, ver o lead em Leads do workspace Vértice (chega por Realtime) e apagar. Sem o env, ou com o frontend no ar antes do backend, o envio dá 500/404 e o visitante vê "Vamos continuar pelo WhatsApp." e segue para o WhatsApp do mesmo jeito: nada quebra, só não grava.
+- **4 leads de teste do formulário no workspace "Teste Multi-Tenant" (09/11/2026):** o `DELETE` foi recusado na tela de permissão e eles ficaram lá. Ids: `0ea4de2f-26ed-4173-b815-c5bf8561180a`, `ac547156-5d4e-4a04-9c14-6f2478d696df`, `1538c38d-8d6c-4525-9e31-b23edd981e18`, `10843cb5-d259-46ba-879d-fbc2a6fe4ea4` (são os únicos com `origem = 'site'` no banco). Apagar com `delete from public.leads where workspace_id = '0d79ca0c-72b2-4609-8466-c84c695e89d6' and origem = 'site';`.
 - **DPA `docs/legal/03-DPA-adendo-operador.md` ainda com campos em branco (08/11/2026):** `[PREENCHER]` na data de atualização e na linha Evolution API / WhatsApp, e `[Gateway de pagamento]` na tabela de operadores. Preencher quando sair o CNPJ. O documento não é importado em nenhum chunk (`legalContent.ts` só importa 01 e 02), então não afeta a landing nem as páginas `/termos` e `/privacidade`.
 - **`/health`: deploy e UptimeRobot (08/11/2026):** (1) VPS: `git pull origin main && pm2 restart crm-backend`. (2) Conferir que o Nginx deixa passar: `curl -i https://api.vrtxcrm.com.br/health` deve dar 200 e `{"status":"ok","db":"ok",...}` (o Nginx não foi tocado; um 404 em HTML do próprio Nginx indicaria `location` específica). (3) UptimeRobot: trocar a URL do monitor de `https://api.vrtxcrm.com.br/` para `https://api.vrtxcrm.com.br/health`; o 503 já marca como fora do ar, não precisa de keyword. (4) Se quiser ver o alerta funcionando antes do primeiro cliente: no teste, derrubar o banco não é necessário, a simulação local (URL inválida → 503) já provou o caminho de falha.
 - Deletar nota órfã id:58118722 na tabela `notas` (dado de teste, workspace Vértice Digital) — fazer via Supabase Dashboard

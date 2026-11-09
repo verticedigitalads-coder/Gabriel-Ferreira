@@ -1,5 +1,6 @@
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { duvidas, whatsappUrl } from './landingContent';
+import { abrirContato } from './LandingContato';
 
 // Dúvidas (visual do FAQ da v4.1), seção clara (.lp-claro). Acordeão com
 // <details>/<summary> nativos: teclado e leitor de tela sem JS, e o `name` em
@@ -19,7 +20,7 @@ export function LandingDuvidas() {
           </h2>
           <div className="lp-faq-cta">
             <span className="lp-mono">{duvidas.ctaTexto}</span>
-            <a href={whatsappUrl('faq')} target="_blank" rel="noopener noreferrer" className="lp-faq-link">
+            <a href={whatsappUrl('faq')} target="_blank" rel="noopener noreferrer" className="lp-faq-link" onClick={abrirContato}>
               <span>{duvidas.ctaLabel}</span>
               <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden="true" />
             </a>

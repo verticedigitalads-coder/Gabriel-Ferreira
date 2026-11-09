@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, dock, footer, whatsappUrl } from './landingContent';
+import { abrirContato } from './LandingContato';
 
 // Barra fixa do celular (o CSS esconde a partir de 1024px). Aparece quando o hero
 // sai da tela e some quando o card de login (#acesso) ou o rodapé entram, para não
@@ -32,7 +33,7 @@ export function LandingDock() {
         <span className="lp-mono">{dock.kicker}</span>
         <span className="lp-dock-num">{footer.whatsappLabel}</span>
       </div>
-      <a href={whatsappUrl('dock')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-dock-cta">
+      <a href={whatsappUrl('dock')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-dock-cta" onClick={abrirContato}>
         <span>{CTA_WHATSAPP_LABEL}</span>
         <span className="lp-cta-seta" aria-hidden="true"><ArrowUpRight size={16} strokeWidth={1.75} /></span>
       </a>

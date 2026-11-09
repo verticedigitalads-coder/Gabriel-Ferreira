@@ -18,6 +18,7 @@ import { LandingDuvidas } from './landing/LandingDuvidas';
 import { LandingLoginCta } from './landing/LandingLoginCta';
 import { LandingFooter } from './landing/LandingFooter';
 import { LandingDock } from './landing/LandingDock';
+import { LandingContato } from './landing/LandingContato';
 
 // A landing pública É a tela de auth (App.tsx renderiza este componente quando
 // não há sessão). Aqui só ficam o login e a composição das seções — a copy mora
@@ -61,6 +62,7 @@ export function AuthPage({
       <LandingLoginCta onLogin={handleLogin} />
       <LandingFooter />
       <LandingDock />
+      <LandingContato />
     </div>
   );
 }

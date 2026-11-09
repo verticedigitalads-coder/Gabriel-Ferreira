@@ -19,8 +19,9 @@ Referências (só visual, NUNCA copiar texto ou números):
 3. Nada de projeto, framer-motion ou dependência nova. Animação em CSS
    + o `useScrollReveal` que já existe. `prefers-reduced-motion` desliga tudo.
 4. Toda copy em `landingContent.ts`. Componentes só cuidam de layout.
-5. **Todo CTA "Falar com a equipe" abre o WhatsApp direto** (`whatsappUrl(origem)`).
-   Não existe formulário, modal de formulário nem rolagem até o fim da página.
+5. **Todo CTA "Falar com a equipe" abre o painel de contato, que grava o lead e segue
+   para o WhatsApp** (`LandingContato.tsx`). Sem JS, o link wa.me direto
+   (`whatsappUrl(origem)`, que continua no `href` de cada CTA).
 6. Fontes da referência: Instrument Serif (itálico), Inter Tight, JetBrains Mono.
    Entram via Google Fonts com `display=swap`. Medir impacto no carregamento.
 7. CSS vars de `tokens.css`, 44px de toque, sem scroll horizontal em 320px.

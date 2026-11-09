@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, nav, whatsappUrl } from './landingContent';
+import { abrirContato } from './LandingContato';
 
 // Nav da v4.1. Links só a partir de 1024px; o botão de WhatsApp só a partir de
 // 640px (no celular o CTA do hero e a LandingDock fazem esse papel). "Entrar"
@@ -21,7 +22,7 @@ export function LandingNav() {
         </div>
         <div className="lp-nav-actions">
           <a href={nav.ctaLogin.href} className="lp-nav-link">{nav.ctaLogin.label}</a>
-          <a href={whatsappUrl('nav')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-nav-cta">
+          <a href={whatsappUrl('nav')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-nav-cta" onClick={abrirContato}>
             <span>{CTA_WHATSAPP_LABEL}</span>
             <span className="lp-cta-seta" aria-hidden="true"><ArrowUpRight size={16} strokeWidth={1.75} /></span>
           </a>

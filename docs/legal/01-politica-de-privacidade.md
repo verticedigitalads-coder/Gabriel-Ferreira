@@ -1,6 +1,6 @@
 # Política de Privacidade — CRM VRTX
 
-**Última atualização:** 15 de julho de 2026
+**Última atualização:** 9 de novembro de 2026
 
 ---
 
@@ -32,6 +32,14 @@ Ver, em especial, a **Seção 8** (papel de operador).
 - Dados de navegação (IP, navegador, páginas visitadas)
 - Cookies essenciais (ver Seção 9)
 - Dados fornecidos voluntariamente em formulários
+
+**Formulário "Falar com a equipe".** Quando você preenche o formulário do site,
+recebemos seu nome, o nome da empresa, o telefone (WhatsApp), o e-mail (opcional)
+e o segmento. Usamos esses dados apenas para o contato comercial sobre o CRM VRTX.
+A base legal é o seu consentimento, dado ao enviar o formulário, e o nosso
+legítimo interesse em responder a quem nos procurou. Os dados ficam guardados
+enquanto houver relação comercial ou até você pedir a exclusão pelo contato da
+Seção 13.
 
 ### 3.2 De assinantes / usuários do CRM
 - **Identificação:** nome, e-mail (via login Google/OAuth)

@@ -34,10 +34,39 @@ export type WhatsappOrigem =
   | 'precos'
   | 'dock'
   | 'manifesto'
-  | 'faq';
+  | 'faq'
+  | 'form';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
+  return `https://wa.me/${SALES_WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
+}
+
+// Formulário "Falar com a equipe" (LandingContato.tsx). Segmentos e limites se
+// repetem em server.js (POST /api/landing/contato), que é quem decide: o backend
+// é JS solto e não importa este arquivo. Mudou aqui, muda lá.
+export const CONTATO_SEGMENTOS: string[] = [
+  'Serralheria',
+  'Marcenaria',
+  'Metalúrgica',
+  'Drywall/Gesso',
+  'Vidraçaria/Esquadrias',
+  'Outro',
+];
+
+export const CONTATO_LIMITES = { nome: 80, empresa: 80, whatsapp: 20, email: 120 } as const;
+
+export interface ContatoCampos {
+  nome: string;
+  empresa: string;
+  whatsapp: string;
+  email: string;
+  segmento: string;
+}
+
+// Mensagem do WhatsApp depois do formulário, montada a partir dos campos.
+export function whatsappContatoUrl(c: ContatoCampos): string {
+  const texto = `Olá! Sou ${c.nome}, da ${c.empresa} (${c.segmento}). Vim pelo site do VRTX CRM (form) e quero conhecer o sistema.`;
   return `https://wa.me/${SALES_WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 }
 
@@ -753,3 +782,51 @@ export const LEGAL_PATHS = {
   termos: '/termos',
   privacidade: '/privacidade',
 } as const;
+
+// Painel do formulário (LandingContato.tsx), aberto por todo CTA "Falar com a
+// equipe". O envio grava o lead e a página segue para o WhatsApp na mesma aba.
+// Nunca "enviado/recebido": no sucesso só `abrindo`; se a gravação falhar ou
+// demorar, só `avisoFalha`, e o WhatsApp abre do mesmo jeito.
+export const contato = {
+  eyebrow: 'Falar com a equipe',
+  titulo: 'Conta um pouco da sua',
+  destaque: 'empresa.',
+  texto:
+    'Preencha os dados e siga para o WhatsApp com a mensagem pronta. A conversa continua por lá.',
+  itens: [
+    'A conversa segue no WhatsApp',
+    'A equipe configura seu acesso',
+    'Sua logo e seu PIX no orçamento',
+  ],
+  campos: {
+    nome: 'Seu nome',
+    empresa: 'Empresa',
+    whatsapp: 'WhatsApp',
+    email: 'E-mail (opcional)',
+    segmento: 'Segmento',
+  },
+  placeholders: {
+    nome: 'Nome e sobrenome',
+    empresa: 'Nome da empresa',
+    whatsapp: 'DDD + número',
+    email: 'nome@empresa.com.br',
+  },
+  segmentoVazio: 'Escolha',
+  erros: {
+    nome: 'Escreva seu nome.',
+    empresa: 'Escreva o nome da empresa.',
+    whatsapp: 'Confira o número com DDD.',
+    email: 'Confira o e-mail ou deixe em branco.',
+    segmento: 'Escolha o segmento.',
+  },
+  enviar: 'Enviar e abrir o WhatsApp',
+  enviando: 'Enviando…',
+  abrindo: 'Abrindo o WhatsApp…',
+  avisoFalha: 'Vamos continuar pelo WhatsApp.',
+  direto: 'Prefiro ir direto pro WhatsApp',
+  legalPrefix: 'Ao enviar, você concorda com a',
+  legalLink: 'Política de Privacidade',
+  fechar: 'Fechar',
+  // Rótulo do honeypot: fica fora da tela e escondido do leitor de tela.
+  honeypot: 'Site',
+};

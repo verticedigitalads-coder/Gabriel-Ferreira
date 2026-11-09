@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, LEGAL_PATHS, footer, hero, loginCta, whatsappUrl } from './landingContent';
+import { abrirContato } from './LandingContato';
 
 // Fechamento + login (visual do Closing da v4.1). À esquerda o título e o CTA do
 // WhatsApp; à direita o card #acesso, o login de quem já é cliente. O fluxo do
@@ -16,7 +17,7 @@ export function LandingLoginCta({ onLogin }: { onLogin: () => void }) {
             {loginCta.title}{' '}<span className="lp-serif">{loginCta.titleDestaque}</span>
           </h2>
           <div className="lp-inter-cta lp-reveal">
-            <a href={whatsappUrl('cta-final')} target="_blank" rel="noopener noreferrer" className="lp-cta-big">
+            <a href={whatsappUrl('cta-final')} target="_blank" rel="noopener noreferrer" className="lp-cta-big" onClick={abrirContato}>
               {CTA_WHATSAPP_LABEL}
               <ArrowUpRight size={18} strokeWidth={1.75} aria-hidden="true" />
             </a>

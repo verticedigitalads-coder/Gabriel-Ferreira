@@ -479,6 +479,104 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 /* ==========================================
+📨 LANDING — formulário "Falar com a equipe" (público, sem auth)
+========================================== */
+
+// Grava o lead do site no workspace da Vértice com service_role. O destino vem
+// SÓ do env LANDING_WORKSPACE_ID, nunca do body. Limite próprio de 20 por IP/hora:
+// operadora móvel usa CGNAT e muito cliente real sai pelo mesmo IP; robô fica com
+// o honeypot (`site`). Resposta sempre genérica ({ ok }) e log sem dado pessoal.
+// Os limites e a lista de segmentos espelham CONTATO_* em
+// src/modules/auth/landing/landingContent.ts: mudou lá, muda aqui.
+const landingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false },
+});
+
+const LANDING_SEGMENTOS = [
+  'Serralheria',
+  'Marcenaria',
+  'Metalúrgica',
+  'Drywall/Gesso',
+  'Vidraçaria/Esquadrias',
+  'Outro',
+];
+const LANDING_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post('/api/landing/contato', landingLimiter, async (req, res) => {
+  const body = req.body || {};
+  const txt = (v) => (typeof v === 'string' ? v.trim() : '');
+
+  // Honeypot: campo invisível que só robô preenche. Responde como sucesso e não grava.
+  if (txt(body.site)) return res.status(200).json({ ok: true });
+
+  const nome = txt(body.nome);
+  const empresa = txt(body.empresa);
+  const whatsapp = txt(body.whatsapp);
+  const email = txt(body.email);
+  const segmento = txt(body.segmento);
+
+  // Mesmo formato dos leads no banco: DDD + número, só dígitos, sem o 55.
+  let telefone = whatsapp.replace(/\D/g, '');
+  if (
+    (telefone.length === 12 || telefone.length === 13) &&
+    telefone.startsWith('55')
+  ) {
+    telefone = telefone.slice(2);
+  }
+
+  const valido =
+    nome.length >= 2 &&
+    nome.length <= 80 &&
+    empresa.length >= 1 &&
+    empresa.length <= 80 &&
+    whatsapp.length <= 20 &&
+    telefone.length >= 10 &&
+    telefone.length <= 11 &&
+    email.length <= 120 &&
+    (!email || LANDING_EMAIL_RE.test(email)) &&
+    LANDING_SEGMENTOS.includes(segmento);
+  if (!valido) return res.status(400).json({ ok: false });
+
+  const workspaceId = process.env.LANDING_WORKSPACE_ID;
+  if (!workspaceId) {
+    console.error('[landing/contato] falhou: LANDING_WORKSPACE_ID ausente');
+    return res.status(500).json({ ok: false });
+  }
+
+  try {
+    // Mesmos defaults do createLead do app (src/services/database/lead.service.ts).
+    const { error } = await getSupabaseAdmin()
+      .from('leads')
+      .insert({
+        workspace_id: workspaceId,
+        nome,
+        telefone,
+        email,
+        endereco: '',
+        servico: '',
+        status: 'novo',
+        temperatura: 'morno',
+        resumo: '',
+        observacoes: `Empresa: ${empresa} · Segmento: ${segmento} · via landing`,
+        origem: 'site',
+        prazo_cliente: 'nao_definido',
+        probabilidade_manual: 3,
+        orcamento_enviado: false,
+      });
+    if (error) throw error;
+    console.log('[landing/contato] lead criado');
+    return res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('[landing/contato] falhou:', err?.code || 'sem-codigo');
+    return res.status(500).json({ ok: false });
+  }
+});
+
+/* ==========================================
 📁 SERVIR IMAGENS (LOGOS / ASSETS)
 ========================================== */
 

@@ -1,5 +1,6 @@
 import { ArrowUpRight, Check } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, PRICING, precos, whatsappUrl } from './landingContent';
+import { abrirContato } from './LandingContato';
 
 // Preço (visual do Offer da v4.1, um card só). Só layout: o valor vem de
 // PRICING.basico.precoMensal e o resto da copy de `precos` (landingContent.ts).
@@ -36,7 +37,7 @@ export function LandingPrecos() {
             </div>
           </div>
           <div className="lp-preco-base">
-            <a href={whatsappUrl('precos')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-preco-cta">
+            <a href={whatsappUrl('precos')} target="_blank" rel="noopener noreferrer" className="lp-cta lp-preco-cta" onClick={abrirContato}>
               <span>{CTA_WHATSAPP_LABEL}</span>
               <span className="lp-cta-seta" aria-hidden="true"><ArrowUpRight size={16} strokeWidth={1.75} /></span>
             </a>

@@ -24,6 +24,7 @@ export type LeadOrigin =
   | 'facebook'
   | 'instagram'
   | 'google'
+  | 'site'
   | 'outro';
 
 export type LeadPrazo =

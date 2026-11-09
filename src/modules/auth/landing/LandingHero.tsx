@@ -1,6 +1,7 @@
 import { ArrowUpRight, Asterisk } from 'lucide-react';
 import { CTA_WHATSAPP_LABEL, footer, hero, whatsappUrl } from './landingContent';
 import { HeroCards } from './HeroCards';
+import { abrirContato } from './LandingContato';
 
 // Hero: tipografia da v4.1 + cards e bloco CTA lateral da ds2. O layout mora em
 // landingStyles.tsx (.lp-hero-*): a partir de 1024px fica título | cards com a barra
@@ -40,7 +41,7 @@ export function LandingHero() {
             {hero.fatos.map(f => <li key={f}>{f}</li>)}
           </ul>
           <div className="lp-hero-cta">
-            <a href={whatsappUrl('hero')} target="_blank" rel="noopener noreferrer" className="lp-cta-big">
+            <a href={whatsappUrl('hero')} target="_blank" rel="noopener noreferrer" className="lp-cta-big" onClick={abrirContato}>
               {CTA_WHATSAPP_LABEL}
               <ArrowUpRight size={18} strokeWidth={1.75} aria-hidden="true" />
             </a>
