@@ -22,3 +22,5 @@ node_modules
 load-tests/.env
  
 dev.bat
+
+_build/design-ref/
