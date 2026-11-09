@@ -3,8 +3,8 @@ import { frentes } from './landingContent';
 
 // Três frentes (visual dos cards da ds2, sem mini-tela): número, título, texto e
 // rótulos reais do app. O card do meio é claro (.lp-claro). Herda o id="features"
-// do bloco anterior: é o destino de "Produto" (nav), "Ver funcionalidades" (hero)
-// e "Funcionalidades" (rodapé).
+// do bloco anterior: é o destino de "Ver funcionalidades" (hero) e
+// "Funcionalidades" (rodapé). O "Produto" do nav aponta para #produto (R3).
 export function LandingFrentes() {
   return (
     <section id="features" className="lp-v2 lp-frentes">

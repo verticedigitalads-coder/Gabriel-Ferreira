@@ -52,7 +52,7 @@ export function LandingStyles() {
         .lp-btn:hover{text-decoration:none}
         html{scroll-behavior:smooth}
         /* Sem isso a ancora para atras do .lp-nav sticky (64px de altura). */
-        #acesso,#features,#how,#clientes,#automacoes,#precos,#celular{scroll-margin-top:80px}
+        #acesso,#produto,#features,#how,#clientes,#automacoes,#precos,#celular{scroll-margin-top:80px}
         /* Hero: linhas da v4.1 no ::before e brilho laranja no canto no ::after.
            Termina reto na faixa laranja logo abaixo. Celular: uma coluna (titulo,
            subtitulo, CTA, fatos, cards). A partir de 1024px: titulo | cards e a barra
@@ -243,6 +243,61 @@ export function LandingStyles() {
         .lp-claro .lp-frente-label,.lp-claro .lp-frente-desc,.lp-claro .lp-chip{color:var(--lp-tinta-2)}
         .lp-claro .lp-chip{border-color:var(--lp-linha)}
         @media(min-width:1024px){.lp-frentes{padding-block:calc(var(--space-12) * 2)}.lp-frentes-head{grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:end}.lp-frentes-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.lp-frente{padding:var(--space-8)}}
+        /* R3 do redesign (produto em abas, automacoes, celular). Mesmo ritmo das
+           secoes da R2: filete no topo, titulo grande com destaque serif laranja. */
+        .lp-prod,.lp-auto,.lp-cel{padding-block:calc(var(--space-8) * 2);border-top:1px solid var(--border-strong);background:var(--bg-app)}
+        .lp-prod-titulo,.lp-auto-titulo,.lp-cel-titulo{max-width:18ch;margin:var(--space-4) 0 0;color:var(--text-primary);font-size:clamp(2rem,4.6vw,4.2rem);font-weight:var(--font-semibold);line-height:.98;letter-spacing:-.045em}
+        .lp-prod-titulo .lp-serif,.lp-auto-titulo .lp-serif,.lp-cel-titulo .lp-serif{color:var(--accent);letter-spacing:-.02em}
+        @media(min-width:1024px){.lp-prod,.lp-auto,.lp-cel{padding-block:calc(var(--space-12) * 2)}}
+        /* Secao 7 (id="produto"): abas da ds2 e moldura de navegador. Celular: abas em
+           grade 2x2; a partir de 640px, uma fileira apoiada no filete de baixo. Ativa:
+           laranja com texto escuro (~6,6:1, como o .lp-cta). O numero da aba tem
+           font-family inherit porque o * do index.css trocaria a mono pela sans. */
+        .lp-prod-abas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2);margin-top:var(--space-10)}
+        .lp-prod-aba{display:flex;align-items:center;gap:var(--space-2);min-height:44px;padding:0 var(--space-3);border:1px solid var(--border-strong);background:transparent;color:var(--text-secondary);letter-spacing:.12em;text-align:left;cursor:pointer;transition:color var(--transition-base),border-color var(--transition-base),background-color var(--transition-base)}
+        .lp-prod-aba:hover{border-color:var(--text-tertiary);color:var(--text-primary)}
+        .lp-prod-aba-n{font-family:inherit;font-feature-settings:inherit;color:var(--accent)}
+        .lp-prod-aba[aria-selected="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg-app)}
+        .lp-prod-aba[aria-selected="true"] .lp-prod-aba-n{color:inherit}
+        .lp-prod-painel[hidden]{display:none}
+        .lp-prod-frase{max-width:60ch;margin:var(--space-6) 0 0;color:var(--text-primary);font-size:var(--text-md);line-height:1.6}
+        /* Moldura: barra com 3 bolinhas, endereco e a nota de dados de demonstracao
+           (quebra para a linha de baixo no celular). Cantos em L como o card do hero. */
+        .lp-prod-moldura{position:relative;margin-top:var(--space-5);border:1px solid var(--border-strong);background:var(--bg-surface);box-shadow:var(--shadow-modal)}
+        .lp-prod-moldura::before,.lp-prod-moldura::after{content:"";position:absolute;width:12px;height:12px;border:0 solid var(--accent);pointer-events:none}
+        .lp-prod-moldura::before{top:calc(var(--space-2) * -1);left:calc(var(--space-2) * -1);border-width:1px 0 0 1px}
+        .lp-prod-moldura::after{right:calc(var(--space-2) * -1);bottom:calc(var(--space-2) * -1);border-width:0 1px 1px 0}
+        .lp-prod-barra{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border-strong);background:var(--bg-sidebar)}
+        .lp-prod-bolinhas{display:flex;gap:var(--space-1)}
+        .lp-prod-bolinhas span{width:8px;height:8px;border-radius:var(--radius-full);background:var(--border-strong)}
+        .lp-prod-bolinhas span:last-child{background:var(--accent)}
+        .lp-prod-url{padding:2px var(--space-2);border:1px solid var(--border-strong);background:var(--bg-app);color:var(--text-secondary);letter-spacing:.04em;text-transform:none}
+        .lp-prod-nota{margin-left:auto;color:var(--text-secondary)}
+        .lp-prod-moldura img{display:block;width:100%;height:auto}
+        @media(min-width:640px){.lp-prod-abas{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--border-strong)}.lp-prod-aba{margin-bottom:-1px;padding:0 var(--space-5);border-bottom-color:transparent}.lp-prod-frase{font-size:var(--text-lg)}}
+        /* Secao 9 (id="automacoes"): stepper estatico. Os 4 sao gatilhos independentes:
+           numero no trilho vertical, sem barra de progresso. Cabecalho sticky a partir
+           de 1024px (64px = altura do .lp-nav). */
+        .lp-auto{background:var(--bg-sidebar)}
+        .lp-auto-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-10)}
+        .lp-auto-sub{max-width:440px;margin:var(--space-5) 0 0;color:var(--text-secondary);font-size:var(--text-md);line-height:1.6}
+        .lp-auto-trilho{margin:0;padding:0;list-style:none}
+        .lp-auto-item{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--space-5);padding-bottom:var(--space-10)}
+        .lp-auto-item:last-child{padding-bottom:0}
+        .lp-auto-item::before{content:"";position:absolute;top:var(--space-10);bottom:0;left:calc(var(--space-10) / 2);width:1px;background:var(--border-strong)}
+        .lp-auto-item:last-child::before{display:none}
+        .lp-auto-n{display:flex;align-items:center;justify-content:center;width:var(--space-10);height:var(--space-10);border:1px solid var(--border-accent);background:var(--bg-app);color:var(--accent);letter-spacing:.08em}
+        .lp-auto-corpo{padding-top:var(--space-2)}
+        .lp-auto-rotulo{display:block;color:var(--text-secondary)}
+        .lp-auto-gatilho{margin:var(--space-2) 0 0;color:var(--text-primary);font-size:clamp(1.4rem,2.2vw,2rem);font-weight:var(--font-medium);line-height:1.1;letter-spacing:-.035em}
+        .lp-auto-rotulo-vrtx{margin-top:var(--space-5);color:var(--accent)}
+        .lp-auto-acao{max-width:52ch;margin:var(--space-2) 0 0;color:var(--text-secondary);font-size:var(--text-base);line-height:1.6}
+        @media(min-width:1024px){.lp-auto-grid{grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:calc(var(--space-12) * 2);align-items:start}.lp-auto-head{position:sticky;top:calc(64px + var(--space-8))}}
+        /* Secao 10 (id="celular"): cabecalho da R2 e nota PWA em mono. A moldura do
+           aparelho e o carrossel ficam no bloco .lp-phones mais abaixo. */
+        .lp-cel-titulo{margin-bottom:var(--space-12)}
+        .lp-cel-pwa{display:flex;align-items:center;gap:var(--space-3);margin:var(--space-8) 0 0;color:var(--text-secondary)}
+        .lp-cel-pwa::before{content:"";flex-shrink:0;width:6px;height:6px;background:var(--accent)}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @keyframes lp-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .lp-fade{animation:lp-fadeUp .7s ease forwards;opacity:0}
@@ -273,7 +328,7 @@ export function LandingStyles() {
         .lp-phone{flex:0 0 min(240px,70vw);margin:0;scroll-snap-align:start}
         .lp-phone-frame{border:8px solid var(--bg-surface-3);border-radius:36px;overflow:hidden;background:var(--bg-surface);box-shadow:0 0 0 1px var(--border-strong)}
         .lp-phone-frame img{display:block;width:100%;height:auto}
-        .lp-phone figcaption{margin-top:var(--space-4);text-align:center;color:var(--text-secondary);font-size:var(--text-base);line-height:1.5}
+        .lp-phone figcaption{margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--border-strong);color:var(--text-secondary);font-size:var(--text-base);line-height:1.5}
         @media(min-width:960px){.lp-phones{justify-content:center;align-items:center;gap:var(--space-8);overflow:visible;scroll-snap-type:none;padding-bottom:0}.lp-phone{flex:0 1 250px}.lp-phone-operacional{flex-basis:310px;order:2}.lp-phone-lead{order:1}.lp-phone-orcamentos{order:3}}
         @media(max-width:720px){.lp-mockup-body{grid-template-columns:1fr!important}.lp-mockup-side{display:none!important}.lp-stat-row{grid-template-columns:repeat(2,1fr)!important}.lp-br-desk{display:none}}
         @media(max-width:600px){.lp-cta-card{padding:32px 20px!important;margin:0 12px}}
@@ -282,7 +337,7 @@ export function LandingStyles() {
         /* Movimento reduzido: sem fade de entrada, sem reveal ao rolar, sem hover que
            desloca e sem scroll suave. !important no .lp-reveal porque o
            useScrollReveal grava opacity/transform/transition inline. */
-        @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-fade{animation:none;opacity:1}.lp-reveal{opacity:1!important;transform:none!important;transition:none!important}.lp-feat,.lp-btn{transition:none}.lp-feat:hover,.lp-btn-primary:hover{transform:none}.lp-faixa-track{animation:none}.lp-dock,.lp-dock.is-on,.lp-cta,.lp-cta-big,.lp-nav-link,.lp-textlink{transition:none}}
+        @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-fade{animation:none;opacity:1}.lp-reveal{opacity:1!important;transform:none!important;transition:none!important}.lp-feat,.lp-btn{transition:none}.lp-feat:hover,.lp-btn-primary:hover{transform:none}.lp-faixa-track{animation:none}.lp-dock,.lp-dock.is-on,.lp-cta,.lp-cta-big,.lp-nav-link,.lp-textlink,.lp-prod-aba{transition:none}}
         /* Cards do hero endireitam no hover so com movimento liberado. */
         @media(prefers-reduced-motion:no-preference){.lp-card{transition:transform .7s cubic-bezier(.16,1,.3,1)}.lp-card:hover{transform:none}}
       `}</style>

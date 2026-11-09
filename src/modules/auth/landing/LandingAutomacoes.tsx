@@ -1,31 +1,34 @@
 import { automacoes } from './landingContent';
 
-// Automações reais do app, em cartões "Quando você X → o VRTX Y". Só layout:
-// a copy e a lista (somente o que está ATIVO e validado) moram em landingContent.ts.
+// Automações reais (visual do stepper do Process da v4.1, em versão estática):
+// cabeçalho à esquerda e as 4 num trilho vertical numerado. São gatilhos
+// independentes, não etapas em sequência: sem barra de progresso nem "etapa X de
+// 4". Só layout: a copy e a lista (somente o que está ATIVO e validado) moram em
+// landingContent.ts.
 export function LandingAutomacoes() {
   return (
-    <section id="automacoes" style={{ padding: 'calc(var(--space-12) * 2) 0', background: 'var(--bg-sidebar)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-      <div className="lp-container">
-        <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto var(--space-12)' }}>
-          <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 'var(--text-sm)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 'var(--space-3)', display: 'inline-block' }}>{automacoes.eyebrow}</span>
-          <h2 style={{ fontSize: 'clamp(28px,3.5vw,42px)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 'var(--space-3)' }}>{automacoes.title}</h2>
-          <p style={{ fontSize: 'var(--text-lg)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{automacoes.subtitle}</p>
+    <section id="automacoes" className="lp-v2 lp-auto">
+      <div className="lp-wrap lp-auto-grid">
+        <div className="lp-auto-head">
+          <span className="lp-mono lp-eyebrow">{automacoes.eyebrow}</span>
+          <h2 className="lp-auto-titulo">
+            {automacoes.title}{' '}<span className="lp-serif">{automacoes.titleDestaque}</span>
+          </h2>
+          <p className="lp-auto-sub">{automacoes.subtitle}</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 'var(--space-5)' }}>
-          {automacoes.items.map(a => (
-            <article key={a.quando} className="lp-reveal" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-strong)', borderRadius: 14, padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              <div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{automacoes.quandoLabel}</div>
-                <div className="lp-auto-quando" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-lg)', fontWeight: 700, lineHeight: 1.35, marginTop: 'var(--space-1)' }}>{a.quando}</div>
+        <ol className="lp-auto-trilho">
+          {automacoes.items.map((a, i) => (
+            <li key={a.quando} className="lp-auto-item lp-reveal">
+              <span className="lp-mono lp-auto-n">{String(i + 1).padStart(2, '0')}</span>
+              <div className="lp-auto-corpo">
+                <span className="lp-mono lp-auto-rotulo">{automacoes.quandoLabel}</span>
+                <h3 className="lp-auto-gatilho">{a.quando}</h3>
+                <span className="lp-mono lp-auto-rotulo lp-auto-rotulo-vrtx">{automacoes.vrtxLabel}</span>
+                <p className="lp-auto-acao">{a.vrtx}</p>
               </div>
-              <div aria-hidden="true" style={{ color: 'var(--accent)', fontSize: 'var(--text-xl)', lineHeight: 1 }}>↓</div>
-              <div>
-                <div style={{ color: 'var(--accent)', fontSize: 'var(--text-xs)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{automacoes.vrtxLabel}</div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-base)', lineHeight: 1.6, margin: 'var(--space-1) 0 0' }}>{a.vrtx}</p>
-              </div>
-            </article>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

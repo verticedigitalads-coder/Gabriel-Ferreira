@@ -8,6 +8,7 @@ import { LandingFaixa } from './landing/LandingFaixa';
 import { LandingProblema } from './landing/LandingProblema';
 import { LandingInterludio } from './landing/LandingInterludio';
 import { LandingDepoimentos } from './landing/LandingDepoimentos';
+import { LandingProduto } from './landing/LandingProduto';
 import { LandingFrentes } from './landing/LandingFrentes';
 import { LandingAutomacoes } from './landing/LandingAutomacoes';
 import { LandingCelular } from './landing/LandingCelular';
@@ -49,6 +50,7 @@ export function AuthPage({
       <LandingProblema />
       <LandingInterludio />
       <LandingDepoimentos />
+      <LandingProduto />
       <LandingFrentes />
       <LandingAutomacoes />
       <LandingCelular />

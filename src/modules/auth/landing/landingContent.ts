@@ -148,6 +148,16 @@ export interface FrenteItem {
   fluxo?: boolean;
 }
 
+// Abas da seção Produto (LandingProduto.tsx). O número 01, 02... sai da posição no
+// array: uma aba nova entra com 1 item aqui, sem mexer no JSX.
+export interface ProdutoAba {
+  id: string;
+  label: string;
+  src: string;
+  alt: string;
+  frase: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PROVA SOCIAL
 // ─────────────────────────────────────────────────────────────────────────────
@@ -191,9 +201,9 @@ export const nav = {
   brandSuffix: 'CRM',
   brandInitial: 'V',
   // Só links com seção de destino na página. Segmentos e Dúvidas entram na R4 do
-  // redesign junto com as seções; Produto passa para #produto na R3.
+  // redesign junto com as seções.
   links: [
-    { href: '#features', label: 'Produto' },
+    { href: '#produto', label: 'Produto' },
     { href: '#automacoes', label: 'Automações' },
     { href: '#precos', label: 'Preço' },
   ] as LandingLink[],
@@ -308,6 +318,51 @@ export const interludio = {
 };
 
 // Os depoimentos (LandingDepoimentos.tsx) usam TESTIMONIALS_VISIVEIS e `clientes`.
+
+// Produto em abas (LandingProduto.tsx, id="produto"). Prints reais do desktop
+// (public/landing/desk-*.webp), sem o menu lateral, com dados de demonstração do
+// workspace Vértice: por isso a `nota` na barra do navegador. Todos os prints têm
+// o mesmo corte, então largura/altura valem para todos.
+export const produto = {
+  eyebrow: 'Produto',
+  titulo: 'O VRTX',
+  destaque: 'por dentro.',
+  abasLabel: 'Telas do VRTX',
+  url: 'vrtxcrm.com.br',
+  nota: 'dados de demonstração',
+  largura: 1600,
+  altura: 1216,
+  abas: [
+    {
+      id: 'leads',
+      label: 'Leads',
+      src: '/landing/desk-leads.webp',
+      alt: 'Tela do Kanban de leads no computador: colunas Novo, Em Atendimento, Orçado e Fechado, com cards de clientes, prioridade, valor e botão de WhatsApp.',
+      frase: 'Cada cliente numa coluna, do primeiro contato ao fechamento. Arraste o card e o status muda.',
+    },
+    {
+      id: 'orcamentos',
+      label: 'Orçamentos',
+      src: '/landing/desk-orcamentos.webp',
+      alt: 'Tela de Orçamentos no computador: lista com cliente, status Aprovado ou Enviado, valor, quantidade de itens e os botões de PDF e PIX em cada orçamento.',
+      frase: 'Todos os orçamentos num lugar, com status, valor e PDF com PIX a um clique.',
+    },
+    {
+      id: 'operacional',
+      label: 'Operacional',
+      src: '/landing/desk-operacional.webp',
+      alt: 'Tela do Painel Operacional no computador: tarefas atrasadas e de hoje, cada uma com os status Pendente, Em produção, Pronto e Instalado.',
+      frase: 'O que está atrasado, o que é para hoje e o andamento de cada serviço.',
+    },
+    {
+      id: 'financeiro',
+      label: 'Financeiro',
+      src: '/landing/desk-financeiro.webp',
+      alt: 'Tela do Financeiro no computador: cards de receitas do mês, a pagar, vencidas e resultado, o resultado do mês e a lista de lançamentos, com as despesas marcadas como pagas.',
+      frase: 'Receitas, despesas e o resultado do mês numa tela só.',
+    },
+  ] as ProdutoAba[],
+};
 
 // Três frentes (LandingFrentes.tsx, id="features"). Título e subtítulo vêm do
 // bloco de funcionalidades anterior; as descrições, de frases que já estavam na
@@ -438,7 +493,9 @@ export const features = {
 // reconferidas no código). Tudo dispara a partir de uma ação do usuário no app.
 export const automacoes = {
   eyebrow: 'Automações',
-  title: 'Você faz o principal, o VRTX cuida do resto',
+  // titleDestaque sai em serif itálico, logo depois de title.
+  title: 'Você faz o principal,',
+  titleDestaque: 'o VRTX cuida do resto',
   subtitle: 'Ações que o sistema faz sozinho a partir do que você registra.',
   quandoLabel: 'Quando você',
   vrtxLabel: 'O VRTX',
@@ -468,7 +525,9 @@ export const automacoes = {
 // manifesto PWA estiver ativo em vite.config.ts.
 export const celular = {
   eyebrow: 'No celular',
-  title: 'Sua operação no bolso, até dentro da obra',
+  // titleDestaque sai em serif itálico, logo depois de title.
+  title: 'Sua operação no bolso,',
+  titleDestaque: 'até dentro da obra',
   pwa: 'Funciona como aplicativo, sem baixar da loja.',
   items: [
     {

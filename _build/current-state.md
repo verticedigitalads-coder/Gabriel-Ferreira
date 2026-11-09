@@ -4,12 +4,69 @@
 Versão: v2.39.3
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 08/11/2026)
-- Build vite: limpo (✓ 8.50s, 08/11/2026; só aviso pré-existente de bundle >500KB)
+- TypeScript: 0 erros (tsc --noEmit, 08/11/2026, R3)
+- Build vite: limpo (✓ 8.25s, 08/11/2026, R3; só aviso pré-existente de bundle >500KB)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Landing: redesign R3 — produto em abas, automações em stepper e celular reestilizado (08/11/2026) — SEM commit, aguardando aceite:**
+  - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 3 de 5).
+    - Em `src/modules/auth/landing/`: `landingContent.ts` e `landingStyles.tsx` alterados; `LandingAutomacoes.tsx` e `LandingCelular.tsx` reescritos no mesmo arquivo; novo `LandingProduto.tsx`.
+    - Novos `public/landing/desk-leads.webp`, `desk-orcamentos.webp`, `desk-operacional.webp` e `desk-financeiro.webp`.
+    - `LandingFrentes.tsx`: só o comentário do topo, que ficou falso com a R3 (o "Produto" do nav agora vai para `#produto`; `#features` segue como destino de "Ver funcionalidades" e do rodapé).
+    - `AuthPage.tsx` 🔴 só +2 −0: import e `<LandingProduto />` entre `<LandingDepoimentos />` e `<LandingFrentes />`.
+  - **Não tocados:** `tokens.css`, `index.css`, `index.html`, `vite.config.ts`, `handleLogin`, `App.tsx`, `TermsGate`, `src/lib/terms.ts`, demais seções.
+  - **Decisões do grill-me:**
+    - automações estáticas e escuras, sem barra de progresso nem "etapa X de 4" (são gatilhos independentes, não etapas);
+    - título do produto "O VRTX *por dentro.*" e a nota "dados de demonstração" na barra do navegador;
+    - prints de Leads, Orçamentos e Operacional como vieram; o Financeiro espera o print novo do Gabriel (despesas pagas, sem selo "Vencido");
+    - a moldura do celular mantém os 36px de raio; o resto da seção é reto;
+    - Dashboard entra depois com `desk-dashboard.webp` + 1 item em `produto.abas`, sem JSX (o número 01, 02... sai da posição no array).
+  - **Prints:**
+    - Os PNG eram 2880×1800, não ~2000×1250: o menu termina em x=511 (borda), não em ~355, que era a medida na imagem reduzida.
+    - Corte a partir de x=512 na altura toda e redução para 1600×1216, webp q 0,8 pelo canvas do Chrome via Puppeteer: leads 47,2 / orçamentos 47,9 / operacional 33,9 / financeiro 58,6 KB.
+    - Header do app mantido; somem "Gestão Comercial Inteligente", "IA Assistente", "Estoque" e "Sistema Online", que ficavam no menu.
+    - Financeiro: o print aprovado mostra as despesas com selo "Pago", Vencidas R$ 0,00 e A pagar R$ 0,00. O arquivo em `public/landing/` era o mesmo desde as 21:50 (mesmo hash de quando foi lido no planejamento) e já batia com o pedido. O alt foi ajustado ao print ("a pagar", rótulo do card, e "despesas marcadas como pagas").
+    - Os 4 PNG foram movidos para `_build/design-ref/prints/` (no .gitignore): o `workbox.globPatterns` precacheia `**/*.png`. Nenhum PNG em `public/landing/`.
+    - `dist/` local apagada (está no .gitignore, sem arquivo rastreado): acumulava builds desde fevereiro (3552 arquivos, 153 MB, 3 versões do workbox, 3566 entradas no precache do build local).
+  - **(7) Produto em abas** (`.lp-prod-*`, `id="produto"`):
+    - abas no padrão WAI-ARIA: `role="tablist"`, tabindex rotativo, ←/→ com volta e foco junto, sem rotação automática;
+    - os painéis inativos ficam com `hidden`, então a imagem `lazy` de cada aba só baixa quando ela abre;
+    - o número da aba é `aria-hidden`, para o nome acessível ficar "Leads" e não "01Leads";
+    - o `.lp-reveal` fica no palco, sempre visível: dentro de um painel escondido o `useScrollReveal` nunca dispara e o painel ficaria com opacity 0;
+    - abaixo de 640px as abas ficam em grade 2×2; a partir daí, numa fileira só;
+    - moldura com 3 bolinhas, `vrtxcrm.com.br` e cantos em L como o card do hero;
+    - o link "Produto" do nav agora vai para `#produto`; "Ver funcionalidades" e "Funcionalidades" seguem em `#features`.
+  - **(9) Automações** (`.lp-auto-*`, mesmo `id="automacoes"`):
+    - cabeçalho sticky a partir de 1024px e trilho vertical com número mono;
+    - "Quando você" e "O VRTX" em mono; o mesmo texto das 4 automações;
+    - classe `.lp-auto-gatilho` nova para não herdar o `min-height` do `.lp-auto-quando` antigo.
+  - **(10) No celular** (`.lp-cel-*`):
+    - cabeçalho no padrão R2 e nota PWA em mono;
+    - legendas com filete em cima, alinhadas à esquerda;
+    - prints, ordem e carrossel iguais.
+  - **Títulos:** `automacoes.title` e `celular.title` viraram `title` + `titleDestaque` (serif laranja), com as mesmas palavras.
+  - **Verificação:**
+    - `tsc --noEmit` com 0 erros. `npm run build` limpo.
+    - Puppeteer deslogado contra o dev server, a 1440/390/320 (scripts e screenshots fora do repo):
+      - LISTA PROIBIDA (68 termos: plano + textos das referências, incluindo % e "VRTXCRM" colado): zero no `innerText` e zero em alt/aria-label nas 3 larguras;
+      - abas: clique, teclado com volta, 1 painel visível, `aria-selected` e tabindex certos, abas com 44px, nada troca sozinho em 10s;
+      - nenhuma imagem `desk-*` baixa antes da seção; cada uma baixa ao abrir a aba;
+      - "Produto" (nav) para em `#produto` a 80px; "Ver funcionalidades" e "Funcionalidades" param em `#features` a 80px;
+      - zero rolagem horizontal e nenhum elemento das 3 seções fora da tela;
+      - Automações e Celular com as mesmas palavras da linha de base (só sai a seta ↓ e entram os números 01–04);
+      - nav, hero, faixa, problema, interlúdio, depoimentos, três frentes, como funciona, preços, login e rodapé com `innerText` e altura idênticos à linha de base;
+      - fontes: mono nas abas, no número, na url, na nota, nos rótulos e no PWA; serif nos 3 destaques;
+      - reduced-motion: 6 `.lp-reveal` com opacity 1 e 0s; abas sem transição;
+      - dock escondida no topo, visível no meio e escondida no `#acesso`;
+      - "Entrar com Google" ainda dispara `/auth/v1/authorize?provider=google` (interceptado).
+  - **Órfãos até a R5:** CSS `.lp-auto-quando`; `mockup`/`HeroMockup`, que já estavam órfãos.
+  - **Verificação do Financeiro:** `tsc --noEmit` com 0 erros depois do comentário e do alt. A 1440, a aba carrega o webp 1600×1216 e é o único painel visível. O build não foi rodado de novo, para não recriar a `dist/`.
+  - **Pendências do usuário:**
+    - aceite e commit;
+    - login real;
+    - push (R1, R2 e R3).
 - **Landing: redesign R2 — problema real (seção clara), interlúdio com foto, depoimentos e três frentes (08/11/2026) — commit sem push, sobe junto com a R1:**
   - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 2 de 5).
     - Em `src/modules/auth/landing/`: `landingContent.ts` e `landingStyles.tsx` alterados; novos `LandingProblema.tsx`, `LandingInterludio.tsx`, `LandingDepoimentos.tsx` e `LandingFrentes.tsx`.
