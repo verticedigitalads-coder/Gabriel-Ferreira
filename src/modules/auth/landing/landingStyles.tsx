@@ -52,7 +52,7 @@ export function LandingStyles() {
         .lp-btn:hover{text-decoration:none}
         html{scroll-behavior:smooth}
         /* Sem isso a ancora para atras do .lp-nav sticky (64px de altura). */
-        #acesso,#produto,#features,#how,#clientes,#automacoes,#precos,#celular{scroll-margin-top:80px}
+        #acesso,#produto,#features,#how,#clientes,#automacoes,#precos,#celular,#segmentos,#duvidas{scroll-margin-top:80px}
         /* Hero: linhas da v4.1 no ::before e brilho laranja no canto no ::after.
            Termina reto na faixa laranja logo abaixo. Celular: uma coluna (titulo,
            subtitulo, CTA, fatos, cards). A partir de 1024px: titulo | cards e a barra
@@ -245,10 +245,10 @@ export function LandingStyles() {
         @media(min-width:1024px){.lp-frentes{padding-block:calc(var(--space-12) * 2)}.lp-frentes-head{grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:end}.lp-frentes-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.lp-frente{padding:var(--space-8)}}
         /* R3 do redesign (produto em abas, automacoes, celular). Mesmo ritmo das
            secoes da R2: filete no topo, titulo grande com destaque serif laranja. */
-        .lp-prod,.lp-auto,.lp-cel{padding-block:calc(var(--space-8) * 2);border-top:1px solid var(--border-strong);background:var(--bg-app)}
-        .lp-prod-titulo,.lp-auto-titulo,.lp-cel-titulo{max-width:18ch;margin:var(--space-4) 0 0;color:var(--text-primary);font-size:clamp(2rem,4.6vw,4.2rem);font-weight:var(--font-semibold);line-height:.98;letter-spacing:-.045em}
-        .lp-prod-titulo .lp-serif,.lp-auto-titulo .lp-serif,.lp-cel-titulo .lp-serif{color:var(--accent);letter-spacing:-.02em}
-        @media(min-width:1024px){.lp-prod,.lp-auto,.lp-cel{padding-block:calc(var(--space-12) * 2)}}
+        .lp-prod,.lp-auto,.lp-cel,.lp-seg,.lp-preco{padding-block:calc(var(--space-8) * 2);border-top:1px solid var(--border-strong);background:var(--bg-app)}
+        .lp-prod-titulo,.lp-auto-titulo,.lp-cel-titulo,.lp-seg-titulo,.lp-preco-titulo,.lp-faq-titulo{max-width:18ch;margin:var(--space-4) 0 0;color:var(--text-primary);font-size:clamp(2rem,4.6vw,4.2rem);font-weight:var(--font-semibold);line-height:.98;letter-spacing:-.045em}
+        .lp-prod-titulo .lp-serif,.lp-auto-titulo .lp-serif,.lp-cel-titulo .lp-serif,.lp-seg-titulo .lp-serif,.lp-preco-titulo .lp-serif,.lp-faq-titulo .lp-serif{color:var(--accent);letter-spacing:-.02em}
+        @media(min-width:1024px){.lp-prod,.lp-auto,.lp-cel,.lp-seg,.lp-preco{padding-block:calc(var(--space-12) * 2)}}
         /* Secao 7 (id="produto"): abas da ds2 e moldura de navegador. Celular: abas em
            grade 2x2; a partir de 640px, uma fileira apoiada no filete de baixo. Ativa:
            laranja com texto escuro (~6,6:1, como o .lp-cta). O numero da aba tem
@@ -298,6 +298,134 @@ export function LandingStyles() {
         .lp-cel-titulo{margin-bottom:var(--space-12)}
         .lp-cel-pwa{display:flex;align-items:center;gap:var(--space-3);margin:var(--space-8) 0 0;color:var(--text-secondary)}
         .lp-cel-pwa::before{content:"";flex-shrink:0;width:6px;height:6px;background:var(--accent)}
+        /* R4 do redesign (segmentos, preco, duvidas, fechamento + login, rodape).
+           Segmentos e preco entram no ritmo da R3 (filete no topo, titulo com destaque
+           serif) pelos seletores compartilhados acima. Duvidas e rodape sao claros
+           (.lp-claro, da R2): la o titulo herda a tinta e o destaque usa o laranja de
+           texto (--accent puro daria 2,6:1 no fundo claro). */
+        .lp-faq,.lp-fecho{padding-block:calc(var(--space-8) * 2)}
+        @media(min-width:1024px){.lp-faq,.lp-fecho{padding-block:calc(var(--space-12) * 2)}}
+        .lp-claro .lp-faq-titulo{color:inherit}
+        .lp-claro .lp-faq-titulo .lp-serif{color:var(--lp-laranja-texto)}
+        /* Secao 11 (id="segmentos"): lista grande da ds2. Celular: lista estatica, sem
+           foto e sem estado. A partir de 1024px: lista | painel sticky (64px = altura do
+           .lp-nav) e a linha sob o mouse em laranja com texto escuro (~6,6:1, como o
+           .lp-cta). Painel: foto do segmento ou, sem foto, so o nome sobre a grade de
+           linhas; veu de --bg-app embaixo da legenda e cantos em L laranja. */
+        .lp-seg-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-10);margin-top:var(--space-10)}
+        .lp-seg-lista{margin:0;padding:0;list-style:none;border-top:1px solid var(--border-strong)}
+        .lp-seg-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--space-4);padding:var(--space-6) 0;border-bottom:1px solid var(--border-strong)}
+        .lp-seg-n{padding-top:var(--space-2);color:var(--accent)}
+        .lp-seg-nome{margin:0;color:inherit;font-size:clamp(1.75rem,4vw,3.2rem);font-weight:var(--font-medium);line-height:1;letter-spacing:-.045em}
+        .lp-seg-frase{max-width:46ch;margin:var(--space-3) 0 0;color:var(--text-secondary);font-size:var(--text-base);line-height:1.6}
+        .lp-seg-nota{margin:var(--space-6) 0 0;color:var(--text-secondary)}
+        .lp-seg-painel{display:none}
+        @media(min-width:1024px){
+          .lp-seg-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr);column-gap:var(--space-10);align-items:start}
+          .lp-seg-item{padding:var(--space-6) var(--space-5);transition:background-color var(--transition-base),color var(--transition-base)}
+          .lp-seg-item.is-ativo{background:var(--accent);color:var(--bg-app)}
+          .lp-seg-item.is-ativo .lp-seg-n,.lp-seg-item.is-ativo .lp-seg-frase{color:inherit}
+          .lp-seg-painel{position:sticky;top:calc(64px + var(--space-8));display:block;overflow:hidden;aspect-ratio:1/1;border:1px solid var(--border-strong);background-color:var(--bg-surface);background-image:linear-gradient(to right,var(--border) 1px,transparent 1px),linear-gradient(to bottom,var(--border) 1px,transparent 1px);background-size:12.5% 100%,100% 80px}
+          .lp-seg-painel::before,.lp-seg-painel::after{content:"";position:absolute;z-index:2;width:16px;height:16px;border:0 solid var(--accent);pointer-events:none}
+          .lp-seg-painel::before{top:var(--space-3);left:var(--space-3);border-width:1px 0 0 1px}
+          .lp-seg-painel::after{right:var(--space-3);bottom:var(--space-3);border-width:0 1px 1px 0}
+          .lp-seg-foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease}
+          .lp-seg-foto.is-ativo{opacity:1}
+          .lp-seg-legenda{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;align-items:baseline;gap:var(--space-3);padding:var(--space-12) var(--space-6) var(--space-6);background:linear-gradient(to top,var(--bg-app),transparent)}
+          .lp-seg-legenda .lp-mono{color:var(--accent)}
+          .lp-seg-legenda-nome{color:var(--text-primary);font-size:var(--text-2xl);font-weight:var(--font-medium);line-height:1;letter-spacing:-.03em}
+        }
+        /* Secao 12 (id="precos"): um card so, como o Offer da v4.1, com filete laranja
+           no topo. Preco | lista a partir de 640px; cabecalho | card (5/7) a partir de
+           1024px. A base do card e um div: a LandingDock usa o primeiro <footer>. */
+        .lp-preco-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-10)}
+        .lp-preco-card{position:relative;border:1px solid var(--border-strong);background:var(--bg-surface)}
+        .lp-preco-card::before{content:"";position:absolute;top:-1px;left:-1px;width:96px;height:3px;background:var(--accent)}
+        .lp-preco-corpo{display:grid;grid-template-columns:minmax(0,1fr)}
+        .lp-preco-valor{display:flex;flex-wrap:wrap;align-items:baseline;align-content:flex-start;gap:var(--space-2);padding:var(--space-6);border-bottom:1px solid var(--border-strong)}
+        .lp-preco-moeda{color:var(--text-secondary);font-size:var(--text-lg)}
+        .lp-preco-num{color:var(--text-primary);font-size:clamp(3.5rem,7vw,5.5rem);font-weight:var(--font-medium);line-height:.85;letter-spacing:-.06em}
+        .lp-preco-periodo{color:var(--text-secondary);font-size:var(--text-sm)}
+        .lp-preco-inclui{padding:var(--space-6)}
+        .lp-preco-rotulo{margin:0;color:var(--text-secondary)}
+        .lp-preco-lista{margin:var(--space-4) 0 0;padding:0;list-style:none}
+        .lp-preco-lista li{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--border);color:var(--text-primary);font-size:var(--text-base);line-height:1.45}
+        .lp-preco-lista li:last-child{border-bottom:0}
+        .lp-preco-lista svg{flex-shrink:0;margin-top:3px;color:var(--accent)}
+        .lp-preco-base{display:flex;flex-direction:column;gap:var(--space-5);padding:var(--space-6);border-top:1px solid var(--border-strong)}
+        .lp-preco-cta{justify-content:space-between}
+        .lp-preco-selos{display:flex;flex-direction:column;gap:var(--space-2);margin:0;padding:0;list-style:none}
+        .lp-preco-selos li{display:flex;align-items:center;gap:var(--space-2);color:var(--text-secondary)}
+        .lp-preco-selos svg{flex-shrink:0;color:var(--accent)}
+        @media(min-width:640px){.lp-preco-corpo{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}.lp-preco-valor{border-bottom:0;border-right:1px solid var(--border-strong)}.lp-preco-base{flex-direction:row;align-items:center}.lp-preco-cta{flex:1}}
+        @media(min-width:1024px){.lp-preco-grid{grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:calc(var(--space-12) * 2);align-items:start}}
+        /* Secao 13 (id="duvidas"): FAQ da v4.1, clara. <details> nativo: o marcador do
+           navegador some e o + gira 45 graus quando aberto. Cabecalho sticky a partir de
+           1024px, como nas automacoes. O foco do summary e o *:focus-visible do
+           index.css (azul, ~3,5:1 no fundo claro). */
+        .lp-faq-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-10)}
+        .lp-faq-cta{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);margin-top:var(--space-8);padding-top:var(--space-5);border-top:1px solid var(--lp-linha)}
+        .lp-faq-cta .lp-mono{color:var(--lp-tinta-2)}
+        .lp-faq-link{display:inline-flex;align-items:center;gap:var(--space-2);min-height:44px;color:inherit;font-size:var(--text-md);font-weight:var(--font-medium);text-decoration:none;transition:color var(--transition-base)}
+        .lp-faq-link>span{padding-bottom:2px;border-bottom:1px solid var(--lp-linha)}
+        .lp-faq-link:hover{color:var(--lp-laranja-texto);text-decoration:none}
+        .lp-faq-lista{border-top:1px solid var(--lp-linha)}
+        .lp-faq-item{border-bottom:1px solid var(--lp-linha)}
+        .lp-faq-item summary{display:flex;align-items:flex-start;gap:var(--space-4);min-height:44px;padding:var(--space-5) 0;list-style:none;cursor:pointer}
+        .lp-faq-item summary::-webkit-details-marker{display:none}
+        .lp-faq-n{flex-shrink:0;padding-top:var(--space-1);color:var(--lp-tinta-2)}
+        .lp-faq-pergunta{flex:1;font-size:var(--text-md);font-weight:var(--font-medium);line-height:1.3;letter-spacing:-.02em}
+        .lp-faq-mais{display:flex;flex-shrink:0;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--lp-linha);transition:transform var(--transition-slow),background-color var(--transition-slow),border-color var(--transition-slow)}
+        .lp-faq-item summary:hover .lp-faq-mais{border-color:var(--lp-laranja-texto);color:var(--lp-laranja-texto)}
+        .lp-faq-item[open] .lp-faq-n{color:var(--lp-laranja-texto)}
+        .lp-faq-item[open] .lp-faq-mais{transform:rotate(45deg);border-color:var(--accent);background:var(--accent);color:var(--bg-app)}
+        .lp-faq-resposta{max-width:62ch;margin:0;padding:0 var(--space-8) var(--space-5) var(--space-10);color:var(--lp-tinta-2);font-size:var(--text-base);line-height:1.6}
+        @media(min-width:640px){.lp-faq-pergunta{font-size:var(--text-lg)}}
+        @media(min-width:1024px){.lp-faq-grid{grid-template-columns:minmax(0,4fr) minmax(0,8fr);column-gap:calc(var(--space-12) * 2);align-items:start}.lp-faq-head{position:sticky;top:calc(64px + var(--space-8))}}
+        /* Secao 14 (id="login"): Closing da v4.1. Filete laranja no topo e brilho
+           --accent-subtle no canto, como o hero. Titulo e CTA | card #acesso (7/5) a
+           partir de 1024px; no celular empilha, com o card embaixo. O botao do Google
+           e claro (o CTA do WhatsApp esta ao lado) e os cantos em L sao os do hero. */
+        .lp-fecho{position:relative;overflow:hidden;border-top:1px solid var(--accent);background:var(--bg-app)}
+        .lp-fecho::after{content:"";position:absolute;top:0;left:0;right:0;height:520px;pointer-events:none;background:radial-gradient(70% 100% at 20% 0%,var(--accent-subtle),transparent 65%)}
+        .lp-fecho>.lp-wrap{position:relative;z-index:1}
+        .lp-fecho-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-12)}
+        .lp-fecho-titulo{max-width:16ch;margin:0 0 var(--space-10);color:var(--text-primary);font-size:clamp(2.5rem,5.6vw,5.4rem);font-weight:var(--font-medium);line-height:.92;letter-spacing:-.05em}
+        .lp-fecho-titulo .lp-serif{color:var(--accent);letter-spacing:-.02em}
+        .lp-acesso{position:relative;padding:var(--space-8) var(--space-6);border:1px solid var(--border-strong);background:var(--bg-surface);box-shadow:var(--shadow-modal)}
+        .lp-acesso::before,.lp-acesso::after{content:"";position:absolute;width:12px;height:12px;border:0 solid var(--border-accent);pointer-events:none}
+        .lp-acesso::before{top:-12px;left:-12px;border-width:1px 0 0 1px}
+        .lp-acesso::after{right:-12px;bottom:-12px;border-width:0 1px 1px 0}
+        .lp-acesso-titulo{margin:0;color:var(--text-primary);font-size:var(--text-2xl);font-weight:var(--font-semibold);letter-spacing:-.03em}
+        .lp-acesso-texto{margin:var(--space-2) 0 var(--space-6);color:var(--text-secondary);font-size:var(--text-base);line-height:1.5}
+        .lp-acesso-google{display:flex;align-items:center;justify-content:center;gap:var(--space-3);width:100%;min-height:48px;padding:0 var(--space-6);border:1px solid var(--text-primary);background:var(--text-primary);color:var(--bg-app);font-size:var(--text-md);font-weight:var(--font-semibold);cursor:pointer;transition:background-color var(--transition-base),border-color var(--transition-base)}
+        .lp-acesso-google:hover{border-color:color-mix(in srgb,var(--text-primary) 85%,var(--bg-app));background:color-mix(in srgb,var(--text-primary) 85%,var(--bg-app))}
+        .lp-acesso-google svg{flex-shrink:0}
+        .lp-acesso-legal{margin:var(--space-5) 0 0;color:var(--text-secondary);font-size:var(--text-xs);line-height:1.6}
+        .lp-acesso-legal a{color:var(--accent);text-decoration:underline}
+        .lp-acesso-trust{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-5);margin:var(--space-6) 0 0;padding:var(--space-5) 0 0;border-top:1px solid var(--border-strong);list-style:none}
+        .lp-acesso-trust li{display:flex;align-items:center;gap:var(--space-2);color:var(--text-secondary)}
+        .lp-acesso-trust li::before{content:"";flex-shrink:0;width:6px;height:6px;background:var(--accent)}
+        @media(min-width:1024px){.lp-fecho-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr);column-gap:var(--space-12);align-items:end}.lp-acesso{padding:var(--space-10) var(--space-8)}}
+        /* Secao 15 (rodape): Footer da v4.1, claro. Topo com contato e links (os do
+           nav), wordmark gigante e a base com copyright e links legais. O wordmark e
+           inline com espaco real, para o texto ser "VRTX CRM"; min(18vw,16rem) deixa
+           ~16px de folga a 320px. Tracking -.045em: o -.075em da referencia encavala
+           as letras nesta fonte. Sem token de peso extrabold: --font-bold (a Inter
+           Tight carrega ate 700). */
+        .lp-rodape{overflow:hidden;padding-top:calc(var(--space-8) * 2)}
+        .lp-rodape-topo{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-6);padding-bottom:var(--space-8);border-bottom:1px solid var(--lp-linha)}
+        .lp-rodape-contato{display:flex;flex-direction:column;align-items:flex-start;font-size:var(--text-sm)}
+        .lp-rodape-contato>span{color:var(--lp-tinta-2)}
+        .lp-rodape-nav{display:flex;flex-wrap:wrap;gap:0 var(--space-6)}
+        .lp-rodape-link{display:inline-flex;align-items:center;min-height:44px;color:inherit;font-size:var(--text-sm);font-weight:var(--font-medium);text-decoration:none;transition:color var(--transition-base)}
+        .lp-rodape-link:hover{color:var(--lp-laranja-texto);text-decoration:none}
+        .lp-rodape-marca{margin:0;padding:var(--space-8) 0 var(--space-2);color:inherit;font-size:min(18vw,16rem);font-weight:var(--font-bold);line-height:.8;letter-spacing:-.045em;white-space:nowrap}
+        .lp-rodape-marca-sufixo{color:var(--lp-laranja-texto)}
+        .lp-rodape-base{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-6);padding:var(--space-4) 0;border-top:1px solid var(--lp-linha)}
+        .lp-rodape-base .lp-mono{color:var(--lp-tinta-2)}
+        .lp-rodape-legal{display:flex;gap:var(--space-6)}
+        @media(min-width:1024px){.lp-rodape{padding-top:calc(var(--space-12) * 2)}.lp-rodape-topo{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}.lp-rodape-nav{justify-content:flex-end}}
         .lp-grad{background:linear-gradient(135deg,#ff6a00 0%,#ff9a5c 60%,#ffb37c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @keyframes lp-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .lp-fade{animation:lp-fadeUp .7s ease forwards;opacity:0}
@@ -337,7 +465,7 @@ export function LandingStyles() {
         /* Movimento reduzido: sem fade de entrada, sem reveal ao rolar, sem hover que
            desloca e sem scroll suave. !important no .lp-reveal porque o
            useScrollReveal grava opacity/transform/transition inline. */
-        @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-fade{animation:none;opacity:1}.lp-reveal{opacity:1!important;transform:none!important;transition:none!important}.lp-feat,.lp-btn{transition:none}.lp-feat:hover,.lp-btn-primary:hover{transform:none}.lp-faixa-track{animation:none}.lp-dock,.lp-dock.is-on,.lp-cta,.lp-cta-big,.lp-nav-link,.lp-textlink,.lp-prod-aba{transition:none}}
+        @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-fade{animation:none;opacity:1}.lp-reveal{opacity:1!important;transform:none!important;transition:none!important}.lp-feat,.lp-btn{transition:none}.lp-feat:hover,.lp-btn-primary:hover{transform:none}.lp-faixa-track{animation:none}.lp-dock,.lp-dock.is-on,.lp-cta,.lp-cta-big,.lp-nav-link,.lp-textlink,.lp-prod-aba,.lp-seg-item,.lp-seg-foto,.lp-faq-mais,.lp-faq-link,.lp-acesso-google,.lp-rodape-link{transition:none}}
         /* Cards do hero endireitam no hover so com movimento liberado. */
         @media(prefers-reduced-motion:no-preference){.lp-card{transition:transform .7s cubic-bezier(.16,1,.3,1)}.lp-card:hover{transform:none}}
       `}</style>

@@ -115,5 +115,6 @@ texto renderizado, e PARA antes do commit.
 
 ## Pendências do Gabriel
 
-- [ ] Termos §5: diz "garantia de 7 dias" e "sem fidelidade"? (decide selos do preço e FAQ 8)
+- [x] Termos §5: resolvido na R4. Selos do preço: "Garantia de 7 dias" + "Cancele quando quiser"
+  (Termos §5 e §5.1). Não usar "sem fidelidade". FAQ 8 virou "Posso cancelar? Tem garantia?".
 - [ ] 5 prints de desktop (rodada 3)

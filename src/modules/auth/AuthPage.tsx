@@ -12,8 +12,9 @@ import { LandingProduto } from './landing/LandingProduto';
 import { LandingFrentes } from './landing/LandingFrentes';
 import { LandingAutomacoes } from './landing/LandingAutomacoes';
 import { LandingCelular } from './landing/LandingCelular';
-import { LandingHowItWorks } from './landing/LandingHowItWorks';
+import { LandingSegmentos } from './landing/LandingSegmentos';
 import { LandingPrecos } from './landing/LandingPrecos';
+import { LandingDuvidas } from './landing/LandingDuvidas';
 import { LandingLoginCta } from './landing/LandingLoginCta';
 import { LandingFooter } from './landing/LandingFooter';
 import { LandingDock } from './landing/LandingDock';
@@ -54,8 +55,9 @@ export function AuthPage({
       <LandingFrentes />
       <LandingAutomacoes />
       <LandingCelular />
-      <LandingHowItWorks />
+      <LandingSegmentos />
       <LandingPrecos />
+      <LandingDuvidas />
       <LandingLoginCta onLogin={handleLogin} />
       <LandingFooter />
       <LandingDock />

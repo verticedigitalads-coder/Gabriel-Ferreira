@@ -33,7 +33,8 @@ export type WhatsappOrigem =
   | 'rodape'
   | 'precos'
   | 'dock'
-  | 'manifesto';
+  | 'manifesto'
+  | 'faq';
 
 export function whatsappUrl(origem: WhatsappOrigem): string {
   const texto = `Olá! Vim pelo site do VRTX CRM (${origem}) e quero conhecer o sistema.`;
@@ -158,6 +159,20 @@ export interface ProdutoAba {
   frase: string;
 }
 
+// Segmentos (LandingSegmentos.tsx). `foto` é opcional: sem ela, o painel do
+// desktop mostra só o nome sobre o fundo escuro.
+export interface SegmentoItem {
+  nome: string;
+  frase: string;
+  foto?: string;
+}
+
+// Perguntas da seção Dúvidas (LandingDuvidas.tsx).
+export interface DuvidaItem {
+  pergunta: string;
+  resposta: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PROVA SOCIAL
 // ─────────────────────────────────────────────────────────────────────────────
@@ -200,12 +215,14 @@ export const nav = {
   brand: 'VRTX',
   brandSuffix: 'CRM',
   brandInitial: 'V',
-  // Só links com seção de destino na página. Segmentos e Dúvidas entram na R4 do
-  // redesign junto com as seções.
+  // Só links com seção de destino na página, na ordem em que as seções aparecem.
+  // O rodapé (LandingFooter.tsx) usa esta mesma lista.
   links: [
     { href: '#produto', label: 'Produto' },
     { href: '#automacoes', label: 'Automações' },
+    { href: '#segmentos', label: 'Segmentos' },
     { href: '#precos', label: 'Preço' },
+    { href: '#duvidas', label: 'Dúvidas' },
   ] as LandingLink[],
   // Login é caminho secundário: link de texto, não botão.
   ctaLogin: { href: '#acesso', label: 'Entrar' } as LandingLink,
@@ -551,6 +568,44 @@ export const celular = {
   ] as CelularItem[],
 };
 
+// Segmentos (LandingSegmentos.tsx, id="segmentos"). O número 01, 02... sai da
+// posição no array. `foto` é opcional e decorativa (alt vazio), e só aparece a
+// partir de 1024px. Para pôr foto num segmento: salve o webp em public/landing/
+// (paisagem, ~1248x832, até 150 KB) e preencha `foto` aqui, sem mexer no JSX.
+// Fotos geradas por IA: workshop (galpão com perfis), forge (a mesma do interlúdio),
+// marcenaria (fresadora CNC) e drywall (operário parafusando a placa). As duas
+// últimas são retrato: o painel é quadrado e o object-fit:cover centrado já
+// enquadra o assunto, então não há campo de posição.
+export const segmentos = {
+  eyebrow: 'Segmentos',
+  // titulo + destaque (serif laranja).
+  titulo: 'Para quem vende',
+  destaque: 'por orçamento.',
+  nota: 'Também atende vidraçarias, esquadrias e serviços sob medida.',
+  items: [
+    {
+      nome: 'Serralherias',
+      frase: 'Portão, grade e guarda-corpo: cliente, orçamento e andamento do serviço no mesmo lugar.',
+      foto: '/landing/workshop.webp',
+    },
+    {
+      nome: 'Marcenarias',
+      frase: 'Móveis planejados e projetos sob medida, com orçamento em PDF saindo com a sua marca.',
+      foto: '/landing/marcenaria.webp',
+    },
+    {
+      nome: 'Metalúrgicas',
+      frase: 'Estruturas e peças por encomenda, do orçamento aprovado ao recibo.',
+      foto: '/landing/forge.webp',
+    },
+    {
+      nome: 'Drywall & Gesso',
+      frase: 'Forro, parede e divisória, com visitas e obras na agenda do Operacional.',
+      foto: '/landing/drywall.webp',
+    },
+  ] as SegmentoItem[],
+};
+
 export const howItWorks = {
   eyebrow: 'Como funciona',
   title: 'Três passos até sua operação rodar no VRTX',
@@ -578,7 +633,9 @@ export const howItWorks = {
 // O valor vem de PRICING.basico.precoMensal — não repetir o número aqui.
 export const precos = {
   eyebrow: 'Preços',
-  title: 'Quanto custa o VRTX',
+  // titleDestaque sai em serif laranja, logo depois de title.
+  title: 'Quanto custa',
+  titleDestaque: 'o VRTX',
   moeda: 'R$',
   periodo: '/mês por empresa',
   incluiTitulo: 'O que está incluso',
@@ -592,6 +649,64 @@ export const precos = {
     'Fornecedores, com preenchimento pelo CNPJ',
     'Suporte no WhatsApp e central de ajuda dentro do sistema',
   ],
+  // Termos de Uso §5 (cancelar a assinatura a qualquer momento) e §5.1 (garantia
+  // de 7 dias). Não usar "sem fidelidade": não é o que os Termos dizem.
+  selos: ['Garantia de 7 dias', 'Cancele quando quiser'],
+};
+
+// Dúvidas (LandingDuvidas.tsx, id="duvidas"). O número 01, 02... sai da posição
+// no array. Respostas conferidas: importação de leads por CSV em Settings.tsx; a
+// última pergunta tem o texto aprovado, com base nos Termos §5 e §5.1. O CTA abre
+// whatsappUrl('faq').
+export const duvidas = {
+  eyebrow: 'Dúvidas',
+  // titulo + destaque (serif laranja).
+  titulo: 'Perguntas',
+  destaque: 'frequentes.',
+  ctaTexto: 'Não achou sua pergunta?',
+  ctaLabel: 'Conversar com a equipe',
+  items: [
+    {
+      pergunta: 'Serve só para serralheria?',
+      resposta:
+        'Não. Foi feito para quem vende por orçamento: serralheria, marcenaria, metalúrgica, drywall, vidraçaria, esquadrias e serviços sob medida.',
+    },
+    {
+      pergunta: 'O orçamento sai com a minha marca?',
+      resposta:
+        'Sim. PDF com sua logo, seus dados e, se quiser, o QR Code PIX para o cliente pagar.',
+    },
+    {
+      pergunta: 'Preciso abandonar o WhatsApp?',
+      resposta:
+        'Não. Você continua conversando pelo WhatsApp; o VRTX guarda o cliente, o orçamento e o próximo contato para nada se perder.',
+    },
+    {
+      pergunta: 'Funciona no celular?',
+      resposta:
+        'Sim. Abre no navegador do celular e pode ser instalado como aplicativo, sem baixar da loja.',
+    },
+    {
+      pergunta: 'Consigo trazer meus clientes de uma planilha?',
+      resposta:
+        'Sim, dá para importar leads por planilha (CSV). A equipe ajuda na configuração inicial.',
+    },
+    {
+      pergunta: 'Como começo?',
+      resposta:
+        'Fala com a equipe no WhatsApp. A gente configura seu acesso, sua logo e seus dados de PIX.',
+    },
+    {
+      pergunta: 'Meus dados ficam separados dos outros clientes?',
+      resposta:
+        'Sim. Cada empresa tem seu espaço isolado e a conexão é criptografada.',
+    },
+    {
+      pergunta: 'Posso cancelar? Tem garantia?',
+      resposta:
+        'Pode cancelar quando quiser; o acesso continua até o fim do mês já pago. Nos primeiros 7 dias da assinatura, se não servir, você pede e recebe o valor de volta.',
+    },
+  ] as DuvidaItem[],
 };
 
 // Copy provisória — a seção só aparece quando houver depoimento com frase.
@@ -602,31 +717,30 @@ export const clientes = {
   desdeLabel: 'cliente desde',
 };
 
+// Fechamento + login (LandingLoginCta.tsx). À esquerda o título (titleDestaque em
+// serif laranja) e o CTA whatsappUrl('cta-final'); à direita o card #acesso
+// (acessoTitulo, acessoTexto, Google, linha legal e trust).
 export const loginCta = {
-  title: 'Pronto para parar de perder venda?',
-  subtitle:
-    'Acesso liberado para clientes VRTX. Ainda não é cliente? Fale com nossa equipe.',
+  title: 'O próximo grande negócio já está no seu',
+  titleDestaque: 'pipeline.',
+  acessoTitulo: 'Já é cliente?',
+  acessoTexto: 'Acesso liberado para clientes VRTX.',
   googleLabel: 'Entrar com Google',
-  dividerLabel: 'Já é cliente?',
   legalPrefix: 'Ao continuar, você concorda com nossos',
   legalAnd: 'e',
   termsLabel: 'Termos de Uso',
   privacyLabel: 'Política de Privacidade',
-  trust: ['🔒 SSL criptografado', '🏢 Dados isolados por workspace'],
+  trust: ['SSL criptografado', 'Dados isolados por workspace'],
 };
 
+// Rodapé (LandingFooter.tsx). Os links de navegação são os mesmos do nav
+// (nav.links); o wordmark usa nav.brand + nav.brandSuffix. Os hrefs de
+// Privacidade e Termos vêm de LEGAL_PATHS, no componente.
 export const footer = {
-  brand: 'VRTX CRM',
-  brandInitial: 'V',
-  links: [
-    { href: '#features', label: 'Funcionalidades' },
-    { href: '#how', label: 'Como funciona' },
-    { href: '#precos', label: 'Preços' },
-    // TODO: confirmar caixa antes de publicar
-    // { href: 'mailto:contato@verticedigital.com.br', label: 'Contato' },
-    { href: '/privacidade', label: 'Privacidade' },
-    { href: '/termos', label: 'Termos' },
-  ] as LandingLink[],
+  // TODO: confirmar caixa antes de publicar
+  // { href: 'mailto:contato@verticedigital.com.br', label: 'Contato' },
+  privacidadeLabel: 'Privacidade',
+  termosLabel: 'Termos',
   copyright: '© 2026 VRTX CRM · Vértice Digital',
   local: 'Vértice Digital · Uberaba/MG',
   // CNPJ: entra aqui (e numa linha abaixo de `local` no LandingFooter) quando existir.

@@ -1,16 +1,74 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 08/11/2026
+Última atualização: 09/11/2026
 Versão: v2.39.3
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 08/11/2026, R3)
-- Build vite: limpo (✓ 8.25s, 08/11/2026, R3; só aviso pré-existente de bundle >500KB)
+- TypeScript: 0 erros (tsc --noEmit, 09/11/2026, R4)
+- Build vite: limpo (✓ 7.86s, 09/11/2026, R4; só aviso pré-existente de bundle >500KB)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
-- **Landing: redesign R3 — produto em abas, automações em stepper e celular reestilizado (08/11/2026) — SEM commit, aguardando aceite:**
+- **Landing: redesign R4 — segmentos, preço, dúvidas, fechamento + login e rodapé (09/11/2026) — SEM commit, aguardando aceite:**
+  - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 4 de 5). Com ela, a página inteira está no visual novo.
+    - Em `src/modules/auth/landing/`: `landingContent.ts` e `landingStyles.tsx` alterados; `LandingPrecos.tsx`, `LandingLoginCta.tsx` e `LandingFooter.tsx` reescritos no mesmo arquivo; novos `LandingSegmentos.tsx` e `LandingDuvidas.tsx`.
+    - Novo `public/landing/workshop.webp`, a partir de `_build/design-ref/mimo/public/images/workshop.jpg` (galpão com perfis, gerada por IA): 1248×832, webp q 0,8 pelo canvas do Chrome, 81 KB. A forja do interlúdio (`forge.webp`) é reaproveitada. Novos também `marcenaria.webp` e `drywall.webp` (09/11/2026).
+    - A pedido do Gabriel: em `LandingFrentes.tsx`, só o comentário do topo (o rodapé não linka mais `#features`); no plano, a pendência dos Termos §5 marcada como resolvida.
+    - `AuthPage.tsx` 🔴 só +4 −2: sai `LandingHowItWorks` (import e JSX); entram `<LandingSegmentos />` depois de `<LandingCelular />` e `<LandingDuvidas />` depois de `<LandingPrecos />`. `handleLogin` e `<LandingLoginCta onLogin={handleLogin} />` intocados.
+  - **Não tocados:** `LandingDock.tsx`, `LandingNav.tsx` (já lê `nav.links`), `tokens.css`, `index.css`, `index.html`, `vite.config.ts`, `App.tsx`, `TermsGate`, `src/lib/terms.ts`, demais seções.
+  - **Decisões do grill-me:**
+    - fotos: Serralherias = workshop, Metalúrgicas = forge; Marcenarias e Drywall & Gesso entraram depois (09/11/2026, ver abaixo). `steel.jpg` não entra: é textura de metal escovado, não foto;
+    - para pôr/trocar foto: salvar o webp em `public/landing/` e preencher `foto` no item de `segmentos`, sem mexer no JSX;
+    - **Fotos de Marcenarias e Drywall (09/11/2026):** `marcenaria.webp` (912×1136, 78,7 KB, fresadora CNC) e `drywall.webp` (1122×1402, 111,7 KB, operário com furadeira), de `_build/design-ref/fotos/` (os arquivos de origem se chamam `*.jpg.jpg`), webp q 0,8 pelo canvas do Chrome. Retrato num painel quadrado: o `object-fit:cover` centrado já mantém o assunto no quadro (máquina e operário+furadeira), então não foi criado `fotoPosicao`. Só `foto` preenchido em `landingContent.ts`; `alt` vazio (decorativa). Verificado a 1440: hover em 01/02/03/04 mostra workshop/marcenaria/forge/drywall (1 visível, carregada); a 390 e 320 nenhuma das 3 fotos de segmento baixa (a forja baixa 1x, pelo interlúdio). `tsc` 0 erros, build limpo, `dist/` apagada de novo.
+    - FAQ 8 com o texto do Gabriel: "Posso cancelar? Tem garantia?" / "Pode cancelar quando quiser; o acesso continua até o fim do mês já pago. Nos primeiros 7 dias da assinatura, se não servir, você pede e recebe o valor de volta.";
+    - FAQ e rodapé claros (`.lp-claro`). Fim da página: Preço escuro → FAQ claro → Fechamento escuro → Rodapé claro;
+    - selos do preço "Garantia de 7 dias" e "Cancele quando quiser" (Termos §5 e §5.1 em `docs/legal/02-termos-de-uso.md`, o texto do `/termos`). Nada de "sem fidelidade".
+  - **(11) Segmentos** (`.lp-seg-*`, `id="segmentos"`):
+    - título "Para quem vende *por orçamento.*", 4 itens com número (posição no array), nome e frase, e a nota "Também atende vidraçarias, esquadrias e serviços sob medida.";
+    - a partir de 1024px: painel sticky quadrado com a foto do segmento sob o mouse (`onMouseEnter`), legenda número + nome, véu de `--bg-app` e cantos em L; sem foto, só a grade de linhas e o nome. A linha ativa fica laranja com texto escuro;
+    - no celular: lista estática, sem foto e sem estado; o painel tem `display:none` e as imagens (lazy) nem baixam;
+    - painel `aria-hidden` (repete o nome; foto decorativa, `alt` vazio); `.lp-reveal` só na lista.
+  - **(12) Preço** (`.lp-preco-*`, mesmo `id="precos"`):
+    - título "Quanto custa *o VRTX*"; card único com filete laranja: R$ 147 (de `PRICING.basico`) /mês por empresa | as 8 linhas de `precos.inclui`;
+    - base com `.lp-cta` → `whatsappUrl('precos')` e os 2 selos; grade 5/7 a partir de 1024px. A base é `<div>`, não `<footer>`.
+  - **(13) Dúvidas** (`.lp-faq-*`, `id="duvidas"`, clara):
+    - "Perguntas *frequentes.*", "Não achou sua pergunta?" e o link "Conversar com a equipe" → `whatsappUrl('faq')` (`'faq'` entrou no `WhatsappOrigem`);
+    - 8 `<details name="duvidas">` nativos (abre um por vez), o 1º aberto; número `aria-hidden`; o + gira 45°; cabeçalho sticky a partir de 1024px;
+    - as respostas literais do plano (a 5, importação por CSV, conferida em `Settings.tsx`).
+  - **(14) Fechamento + login** (`.lp-fecho`, `.lp-acesso-*`, mesmo `id="login"`):
+    - "O próximo grande negócio já está no seu *pipeline.*" + `.lp-cta-big` → `whatsappUrl('cta-final')` e a nota do WhatsApp (bloco `.lp-inter-cta`);
+    - card `#acesso`, visível em todas as larguras: "Já é cliente?", "Acesso liberado para clientes VRTX.", **o mesmo `<button onClick={onLogin}>` com o mesmo SVG do Google** (só a classe mudou: botão claro), a mesma linha legal (Termos e Privacidade em nova aba) e "SSL criptografado" / "Dados isolados por workspace" sem emoji;
+    - sai "Pronto para parar de perder venda?"; sem formulário.
+  - **(15) Rodapé** (`.lp-rodape-*`, claro, continua o único `<footer>`): Vértice Digital · Uberaba/MG, o comentário do lugar do CNPJ, WhatsApp (34) 98850-1702, os links do nav, o wordmark "VRTX CRM" (`aria-hidden`, inline com espaço real) e a base com © 2026 VRTX CRM · Vértice Digital + Privacidade · Termos (`LEGAL_PATHS`).
+  - **Nav:** Produto · Automações · Segmentos · Preço · Dúvidas (`nav.links`, a mesma lista do rodapé). "Como funciona" (`#how`) saiu da página.
+  - **`landingContent`:** `footer` perdeu `links`, `brand` e `brandInitial` (o único consumidor era o LandingFooter) e ganhou `privacidadeLabel`/`termosLabel`; `loginCta` trocou `subtitle`/`dividerLabel` por `acessoTexto`/`acessoTitulo` e ganhou `titleDestaque`.
+  - **Ajustes depois das screenshots:**
+    - painel de segmentos com `aspect-ratio:1/1`: o 4/5 com `max-height` estreitava o painel para 448px e sobrava vão na coluna;
+    - wordmark `min(18vw,16rem)` com tracking -.045em: o -.075em da referência encavalava as letras nesta fonte, e a 320px o 19vw deixaria 1px de folga (fica com ~16px).
+  - **Verificação:**
+    - `tsc --noEmit` com 0 erros. `npm run build` limpo (✓ 7,86s; só o aviso de bundle >500KB). A `dist/` recriada pelos builds foi apagada de novo: ela acumula builds (o precache foi de 45 para 76 entradas entre o 1º e o 2º build).
+    - Puppeteer deslogado contra o dev server, a 1440/1024/390/320 (scripts e screenshots fora do repo): 110 checagens, 0 falhas:
+      - LISTA PROIBIDA (99 termos: plano + textos das referências da R4, incluindo `%`, "VRTXCRM" colado, "fidelidade", "até 7 dias" e "Como funciona"; "7 dias" e "sob medida" sozinhos são aprovados): zero no `innerText`, `alt` e `aria-label` nas 4 larguras;
+      - wordmark com innerText "VRTX CRM" e sem corte nas 4 larguras;
+      - âncoras: nav (1440 e 1024) e rodapé (4 larguras) param a 80px em #produto, #automacoes, #segmentos, #precos e #duvidas; "Entrar" para em #acesso; toda `a[href^="#"]` tem destino; `#how` não existe mais;
+      - links legais: rodapé /privacidade e /termos; card /termos e /privacidade com `target=_blank`;
+      - "Entrar com Google" dispara `/auth/v1/authorize?provider=google` (interceptado) a 1440 e 390;
+      - dock: oculta no topo, visível no meio e nas Dúvidas, oculta com o #acesso na tela e no fim. A 390/320 (800px de altura) não existe posição com só o rodapé na tela; a 740×360 (celular deitado) existe, e a dock fica oculta. 1 `<footer>` na página;
+      - segmentos a 1440: hover 01 = workshop, 03 = forja, 02/04 sem imagem com o nome na legenda. A 390/320 o painel tem `display:none` e o workshop.webp não baixa (a forja baixa 1x, pelo interlúdio);
+      - FAQ: 8 `details`, o 1º aberto, summaries ≥44px; Tab chega no summary com foco visível (azul do index.css); Enter abre o 2º e fecha o 1º; Espaço fecha;
+      - zero rolagem horizontal e nenhum elemento das 5 seções fora da tela; nav numa linha a 1024 (113px de folga entre links e ações);
+      - alvos de toque ≥44px nas 5 seções, exceto os 2 links inline do texto legal do card (exceção de alvo inline, como antes);
+      - reduced-motion: `.lp-reveal` com opacity 1 e as transições novas zeradas;
+      - hero → celular com innerText e altura idênticos à linha de base nas 4 larguras; o nav só ganha Segmentos e Dúvidas (a 1440 e 1024).
+  - **Órfãos até a R5:**
+    - componentes e conteúdo: `LandingHowItWorks`/`howItWorks`, `LandingClientes`/`clientes`, `mockup`/`HeroMockup`, `features`/`LandingFeatures`;
+    - CSS sem uso desde a R4: `.lp-login`, `.lp-google`, `.lp-cta-card`, `.lp-btn*` e `#how` no `scroll-margin`; `.lp-container` e `.lp-step` só nos componentes órfãos; `.lp-auto-quando` (desde a R3).
+  - **Pendências do usuário:**
+    - aceite e commit da R4;
+    - login real;
+    - push (R1 a R4).
+- **Landing: redesign R3 — produto em abas, automações em stepper e celular reestilizado (08/11/2026) — commit sem push (cde3d806):**
   - **Escopo:** fechado via `/grill-me` no plano `_build/plano-redesign-landing.md` (rodada 3 de 5).
     - Em `src/modules/auth/landing/`: `landingContent.ts` e `landingStyles.tsx` alterados; `LandingAutomacoes.tsx` e `LandingCelular.tsx` reescritos no mesmo arquivo; novo `LandingProduto.tsx`.
     - Novos `public/landing/desk-leads.webp`, `desk-orcamentos.webp`, `desk-operacional.webp` e `desk-financeiro.webp`.
