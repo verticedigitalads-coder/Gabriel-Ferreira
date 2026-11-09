@@ -66,7 +66,7 @@ export interface ContatoCampos {
 
 // Mensagem do WhatsApp depois do formulário, montada a partir dos campos.
 export function whatsappContatoUrl(c: ContatoCampos): string {
-  const texto = `Olá! Sou ${c.nome}, da ${c.empresa} (${c.segmento}). Vim pelo site do VRTX CRM (form) e quero conhecer o sistema.`;
+  const texto = `Olá! Sou ${c.nome}, da ${c.empresa} (${c.segmento}). Vim pelo site do VRTX CRM e quero conhecer o sistema.`;
   return `https://wa.me/${SALES_WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 }
 
