@@ -40,19 +40,9 @@ export function LandingStyles() {
         .lp-textlink{display:inline-flex;align-items:center;gap:var(--space-2);min-height:44px;color:var(--text-primary);font-size:var(--text-sm);font-weight:var(--font-medium);text-decoration:none;transition:color var(--transition-base)}
         .lp-textlink>span{padding-bottom:2px;border-bottom:1px solid color-mix(in srgb,currentColor 35%,transparent)}
         .lp-textlink:hover{color:var(--accent);text-decoration:none}
-        .lp-container{max-width:1200px;margin:0 auto;padding:0 24px}
-        .lp-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:14px;transition:all .15s;white-space:nowrap;min-height:44px;border:none;cursor:pointer;text-decoration:none}
-        .lp-btn-primary{background:#ff6a00;color:#fff}
-        .lp-btn-primary:hover{background:#ff7a1a;transform:translateY(-1px);box-shadow:0 10px 30px -8px rgba(255,106,0,0.35)}
-        .lp-btn-ghost{color:#b8bcc7;border:1px solid #363b4a;background:transparent}
-        .lp-btn-ghost:hover{border-color:#7a7f8c;color:#f4f5f7}
-        .lp-btn-lg{padding:14px 24px;font-size:15px;border-radius:10px}
-        /* index.css:212 tem um "a:hover{text-decoration:underline}" global fora de
-           @layer (0-1-1) que vence o .lp-btn (0-1-0) e sublinha os botoes-link. */
-        .lp-btn:hover{text-decoration:none}
         html{scroll-behavior:smooth}
         /* Sem isso a ancora para atras do .lp-nav sticky (64px de altura). */
-        #acesso,#produto,#features,#how,#clientes,#automacoes,#precos,#celular,#segmentos,#duvidas{scroll-margin-top:80px}
+        #acesso,#produto,#features,#clientes,#automacoes,#precos,#celular,#segmentos,#duvidas{scroll-margin-top:80px}
         /* Hero: linhas da v4.1 no ::before e brilho laranja no canto no ::after.
            Termina reto na faixa laranja logo abaixo. Celular: uma coluna (titulo,
            subtitulo, CTA, fatos, cards). A partir de 1024px: titulo | cards e a barra
@@ -484,25 +474,6 @@ export function LandingStyles() {
         @keyframes lp-fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .lp-fade{animation:lp-fadeUp .7s ease forwards;opacity:0}
         .lp-d1{animation-delay:.08s}.lp-d2{animation-delay:.16s}.lp-d3{animation-delay:.24s}.lp-d4{animation-delay:.32s}
-        .lp-feat{display:flex;flex-direction:column;background:#1a1d27;border:1px solid #262a36;border-radius:14px;padding:28px;transition:all .2s}
-        .lp-feat:hover{border-color:#363b4a;transform:translateY(-2px);box-shadow:0 20px 40px -20px rgba(0,0,0,0.5)}
-        /* Cards da mesma altura so quando ha 2+ colunas (2*300px + gap + padding = 668px).
-           Em 1 coluna forcar a altura do maior abriria vao morto nos cards curtos. */
-        @media(min-width:668px){.lp-feat-grid{grid-auto-rows:1fr}}
-        .lp-feat.highlight{background:linear-gradient(180deg,rgba(255,106,0,0.06) 0%,#1a1d27 60%);border-color:rgba(255,106,0,0.25)}
-        .lp-step{background:#1a1d27;border:1px solid #262a36;border-radius:14px;padding:32px 28px}
-        /* CTA final: mesmo esquema do hero. O glow nasce transparente no topo da secao
-           (mask) em vez de comecar na intensidade maxima contra a secao de Precos. */
-        .lp-login::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(55% 60% at 50% 35%,rgba(255,106,0,0.26) 0%,transparent 70%);mask-image:linear-gradient(180deg,transparent 0%,#000 35%)}
-        .lp-login>.lp-container{position:relative;z-index:1}
-        /* Titulo "Quando voce" com 2 linhas de altura minima para as setas das
-           automacoes alinharem entre cards da mesma linha. So a partir de 589px: abaixo
-           disso o grid e de 1 coluna e o vao seria so espaco sobrando. */
-        @media(min-width:589px){.lp-auto-quando{min-height:calc(1.35em*2)}}
-        /* Secundario: o WhatsApp e o CTA primario do card. Mantem o logo do Google
-           para reconhecimento, mas para de competir com o botao laranja. */
-        .lp-google{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:10px;background:transparent;color:#b8bcc7;font-weight:600;font-size:15px;transition:all .15s;min-height:48px;border:1px solid #363b4a;cursor:pointer}
-        .lp-google:hover{border-color:#7a7f8c;color:#f4f5f7}
         /* Secao #celular. Mobile: carrossel horizontal contido (o scroll-snap roda
            dentro do proprio .lp-phones, a pagina nao rola de lado). Desktop: 3
            colunas, Operacional no centro e maior (order, o DOM segue a ordem de leitura). */
@@ -512,14 +483,12 @@ export function LandingStyles() {
         .lp-phone-frame img{display:block;width:100%;height:auto}
         .lp-phone figcaption{margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--border-strong);color:var(--text-secondary);font-size:var(--text-base);line-height:1.5}
         @media(min-width:960px){.lp-phones{justify-content:center;align-items:center;gap:var(--space-8);overflow:visible;scroll-snap-type:none;padding-bottom:0}.lp-phone{flex:0 1 250px}.lp-phone-operacional{flex-basis:310px;order:2}.lp-phone-lead{order:1}.lp-phone-orcamentos{order:3}}
-        @media(max-width:720px){.lp-mockup-body{grid-template-columns:1fr!important}.lp-mockup-side{display:none!important}.lp-stat-row{grid-template-columns:repeat(2,1fr)!important}.lp-br-desk{display:none}}
-        @media(max-width:600px){.lp-cta-card{padding:32px 20px!important;margin:0 12px}}
         /* Gutter de 16px no celular nos blocos novos. */
         @media(max-width:480px){.lp-wrap{padding-left:var(--space-4);padding-right:var(--space-4)}}
         /* Movimento reduzido: sem fade de entrada, sem reveal ao rolar, sem hover que
            desloca e sem scroll suave. !important no .lp-reveal porque o
            useScrollReveal grava opacity/transform/transition inline. */
-        @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-fade{animation:none;opacity:1}.lp-reveal{opacity:1!important;transform:none!important;transition:none!important}.lp-feat,.lp-btn{transition:none}.lp-feat:hover,.lp-btn-primary:hover{transform:none}.lp-faixa-track{animation:none}.lp-dock,.lp-dock.is-on,.lp-cta,.lp-cta-big,.lp-nav-link,.lp-textlink,.lp-prod-aba,.lp-seg-item,.lp-seg-foto,.lp-faq-mais,.lp-faq-link,.lp-acesso-google,.lp-rodape-link{transition:none}}
+        @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-fade{animation:none;opacity:1}.lp-reveal{opacity:1!important;transform:none!important;transition:none!important}.lp-faixa-track{animation:none}.lp-dock,.lp-dock.is-on,.lp-cta,.lp-cta-big,.lp-nav-link,.lp-textlink,.lp-prod-aba,.lp-seg-item,.lp-seg-foto,.lp-faq-mais,.lp-faq-link,.lp-acesso-google,.lp-rodape-link{transition:none}}
         /* Cards do hero endireitam no hover so com movimento liberado. */
         @media(prefers-reduced-motion:no-preference){.lp-card{transition:transform .7s cubic-bezier(.16,1,.3,1)}.lp-card:hover{transform:none}}
       `}</style>

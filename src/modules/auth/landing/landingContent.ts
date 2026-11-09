@@ -93,43 +93,6 @@ export interface LandingLink {
   label: string;
 }
 
-export interface MockupStat {
-  l: string;
-  v: string;
-  c: string;
-}
-
-export interface MockupLead {
-  n: string;
-  p: string;
-  c: string;
-  bc: string;
-}
-
-// Chave do ícone; o componente (LandingFeatures.tsx) mapeia chave → ícone lucide,
-// para este arquivo seguir sem import de React.
-export type FeatureIconKey =
-  | 'leads'
-  | 'orcamentos'
-  | 'dashboard'
-  | 'operacional'
-  | 'financeiro'
-  | 'workspace';
-
-export interface LandingFeature {
-  icon: FeatureIconKey;
-  title: string;
-  desc: string;
-  tag: string;
-  hi?: boolean;
-}
-
-export interface LandingStep {
-  n: string;
-  t: string;
-  d: string;
-}
-
 export interface AutomacaoItem {
   quando: string;
   vrtx: string;
@@ -449,92 +412,6 @@ export const frentes = {
   ] as FrenteItem[],
 };
 
-export const mockup = {
-  url: 'vrtxcrm.com.br',
-  sidebarItems: [
-    '⊞ Dashboard',
-    '👥 Leads',
-    '📄 Orçamentos',
-    '📅 Operacional',
-    '💰 Financeiro',
-  ],
-  title: 'Dashboard Executivo',
-  subtitle: 'Receita prevista, foco do dia e saúde do CRM em tempo real',
-  stats: [
-    { l: 'Receita prevista', v: 'R$ 84.250', c: '#ff6a00' },
-    { l: 'Leads críticos', v: '7', c: '#f87171' },
-    { l: 'Tarefas hoje', v: '12', c: '#f4f5f7' },
-    { l: 'Conversão', v: '28%', c: '#22c55e' },
-  ] as MockupStat[],
-  focusLabel: 'Foco hoje · 3 leads',
-  leads: [
-    {
-      n: 'João Almeida — Portão automático',
-      p: 'Crítico',
-      c: '#ff6a00',
-      bc: 'rgba(255,106,0,0.12)',
-    },
-    {
-      n: 'Marcenaria Souza — Móveis sob medida',
-      p: 'Médio',
-      c: '#60a5fa',
-      bc: 'rgba(96,165,250,0.12)',
-    },
-    {
-      n: 'Construtora Lima — Estruturas metálicas',
-      p: 'Baixo',
-      c: '#7a7f8c',
-      bc: '#1f2330',
-    },
-  ] as MockupLead[],
-};
-
-export const features = {
-  eyebrow: 'Funcionalidades',
-  title: 'Tudo que sua operação precisa, sem amarrar 5 ferramentas',
-  subtitle:
-    'De primeiro contato a recebimento — uma plataforma única, pensada para quem vende serviços de alto valor.',
-  items: [
-    {
-      icon: 'leads',
-      title: 'Gestão de Leads com priorização automática',
-      desc: 'O sistema classifica cada lead em crítico, alto, médio ou baixo com base no valor, no tempo sem contato e no estágio do orçamento. Quem está esfriando aparece primeiro na lista.',
-      tag: 'Priorização automática',
-      hi: true,
-    },
-    {
-      icon: 'orcamentos',
-      title: 'Orçamentos profissionais',
-      desc: 'PDF com sua identidade visual, QR Code PIX integrado e assinatura digital.',
-      tag: 'PDF · PIX · Assinatura',
-    },
-    {
-      icon: 'dashboard',
-      title: 'Dashboard executivo',
-      desc: 'Receita prevista, foco do dia e saúde do CRM.',
-      tag: 'Visão estratégica',
-    },
-    {
-      icon: 'operacional',
-      title: 'Painel operacional',
-      desc: 'Agenda semanal e mensal, tarefas por prioridade, alertas de atraso.',
-      tag: 'Agenda semanal e mensal',
-    },
-    {
-      icon: 'financeiro',
-      title: 'Financeiro completo',
-      desc: 'Receitas, despesas, contas a receber e resultado do mês com fluxo de caixa visual.',
-      tag: 'Fluxo de caixa',
-    },
-    {
-      icon: 'workspace',
-      title: 'Multi-workspace',
-      desc: 'Cada empresa com dados isolados: leads, financeiro, branding e documentos separados.',
-      tag: 'Isolamento total',
-    },
-  ] as LandingFeature[],
-};
-
 // Só automação ATIVA e validada (_build/automacoes-reais.md: F1, F2, F7, F10,
 // reconferidas no código). Tudo dispara a partir de uma ação do usuário no app.
 export const automacoes = {
@@ -633,28 +510,6 @@ export const segmentos = {
       foto: '/landing/drywall.webp',
     },
   ] as SegmentoItem[],
-};
-
-export const howItWorks = {
-  eyebrow: 'Como funciona',
-  title: 'Três passos até sua operação rodar no VRTX',
-  steps: [
-    {
-      n: '1',
-      t: 'Fale com a equipe',
-      d: 'A gente entende sua operação e configura seu workspace: logo, dados PIX e o modelo de orçamento do seu jeito.',
-    },
-    {
-      n: '2',
-      t: 'Cadastre seus leads',
-      d: 'Cadastro rápido de lead e orçamento. O sistema já começa a priorizar por valor, tempo sem contato e estágio do orçamento.',
-    },
-    {
-      n: '3',
-      t: 'Time usando no mesmo dia',
-      d: 'Suporte humano, direto no WhatsApp. E dentro do sistema tem uma central de ajuda que responde dúvida na hora, sem abrir chamado.',
-    },
-  ] as LandingStep[],
 };
 
 // Só módulos VISÍVEIS no menu (Sidebar.tsx; WhatsApp e Notas ocultos por flag).

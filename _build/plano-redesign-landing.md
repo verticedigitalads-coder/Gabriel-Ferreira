@@ -108,8 +108,8 @@ Workspace Vértice, só dados de demonstração, janela 1440×900, DPR 2:
 - **R2** — Problema real (clara) + Interlúdio + Depoimentos + Três frentes.
 - **R3** — Produto em abas (prints reais) + Automações (stepper) + No celular reestilizado.
 - **R4** — Segmentos (imagens) + Preço + FAQ + Fechamento/login + Rodapé.
-- **R5** — Revisão: remover componentes antigos órfãos, Lighthouse mobile, varredura da LISTA PROIBIDA
-  no `innerText`, teste de login real.
+- **R5** — ✅ Concluída em 09/11/2026 (sem push). Revisão: remover componentes antigos órfãos, Lighthouse mobile, varredura da LISTA PROIBIDA
+  no `innerText`. Resultados em `_build/current-state.md`. Falta só o teste de login real (do Gabriel).
 
 Cada rodada termina com: tsc, build, screenshots 1440/390/320, grep da lista proibida no
 texto renderizado, e PARA antes do commit.
