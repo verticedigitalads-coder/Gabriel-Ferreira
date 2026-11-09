@@ -2,9 +2,14 @@ import { supabase } from './supabase'
 
 const ACTIVE_WORKSPACE_KEY = 'vrtx_active_workspace_id'
 
+// Falha de rede/consulta LANÇA (o catch do init em App.tsx trata como
+// 'erro-init'). null fica reservado para "usuário sem empresa": quando o
+// cadastro self-service existir, null abre o cadastro, e um erro não pode cair
+// lá (o cliente criaria uma segunda empresa). Ver _build/plano-assinatura.md.
 export async function ensureWorkspaceForUser() {
-  const { data: userData } = await supabase.auth.getUser()
+  const { data: userData, error: userError } = await supabase.auth.getUser()
 
+  if (userError) throw userError
   if (!userData?.user) return null
 
   const userId = userData.user.id
@@ -15,7 +20,9 @@ export async function ensureWorkspaceForUser() {
     .eq('user_id', userId)
     .order('created_at', { ascending: true })
 
-  if (error || !memberships || memberships.length === 0) {
+  if (error) throw error
+
+  if (!memberships || memberships.length === 0) {
     console.error('Usuário não pertence a nenhum workspace')
     return null
   }

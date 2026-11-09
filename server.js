@@ -2043,6 +2043,18 @@ function getSupabaseAdmin() {
 }
 
 /* ==========================================
+🏢 GET /api/admin/me — O usuário logado é admin?
+========================================== */
+
+// Usado pelo useIsAdmin (menu "Empresas" da Sidebar). Responde pela mesma
+// whitelist ADMIN_USER_IDS das outras rotas /api/admin/*: o role 'owner' do
+// workspace não conta, porque todo cliente é owner da própria empresa.
+// 200 = admin; 401/403 (requireAuth/requireAdmin) = não é.
+app.get('/api/admin/me', requireAuth, requireAdmin, (_req, res) =>
+  res.json({ admin: true }),
+);
+
+/* ==========================================
 🏢 GET /api/admin/workspaces — Lista todas as empresas
 ========================================== */
 
