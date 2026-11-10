@@ -20,8 +20,8 @@ export function CrmHealthReasons({ reasons }: { reasons: HealthReason[] }) {
 
   return (
     <div
-      className="mt-1 rounded-lg overflow-hidden"
-      style={{ border: '1px solid var(--border)', background: 'var(--bg-surface)' }}
+      className="overflow-hidden"
+      style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-surface)' }}
     >
       {reasons.map((r, i) => {
         const Icon = ICON_MAP[r.icon];
@@ -37,7 +37,7 @@ export function CrmHealthReasons({ reasons }: { reasons: HealthReason[] }) {
             }}
           >
             <div
-              className="flex items-center justify-center rounded-md shrink-0"
+              className="flex items-center justify-center shrink-0"
               style={{ width: 28, height: 28, background: subtleColor }}
             >
               <Icon style={{ width: 14, height: 14, color }} />
@@ -55,11 +55,11 @@ export function CrmHealthReasons({ reasons }: { reasons: HealthReason[] }) {
                 e.stopPropagation();
                 r.onAction();
               }}
-              className="text-xs font-semibold shrink-0 px-3 py-1 rounded-md transition-colors"
+              className="text-xs font-semibold shrink-0 px-3 transition-colors"
               style={{
                 color: 'var(--accent)',
                 background: 'var(--accent-subtle)',
-                minHeight: 28,
+                minHeight: 44,
               }}
             >
               {r.actionLabel}

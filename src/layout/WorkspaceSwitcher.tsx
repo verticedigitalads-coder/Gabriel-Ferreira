@@ -89,7 +89,7 @@ export function WorkspaceSwitcher({ variant = 'desktop' }: WorkspaceSwitcherProp
           aria-label="Trocar empresa"
           aria-haspopup="dialog"
           aria-expanded={open}
-          className="flex items-center gap-1 min-w-0 max-w-full min-h-[44px] px-1 rounded-md text-xs text-[var(--text-tertiary)] transition-colors"
+          className="flex items-center gap-1 min-w-0 max-w-full min-h-[44px] px-1 text-xs text-[var(--text-tertiary)] transition-colors"
         >
           <span className="truncate min-w-0">{activeNome}</span>
           <ChevronDown className="w-3 h-3 shrink-0" />
@@ -128,7 +128,7 @@ export function WorkspaceSwitcher({ variant = 'desktop' }: WorkspaceSwitcherProp
 
   if (!multi) {
     return (
-      <div className="hidden md:flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)]">
+      <div className="hidden md:flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border-strong)] px-3 py-1.5 text-sm text-[var(--text-secondary)]">
         <Building2 className="w-4 h-4" />
         {activeNome}
       </div>
@@ -141,7 +141,7 @@ export function WorkspaceSwitcher({ variant = 'desktop' }: WorkspaceSwitcherProp
         onClick={() => setOpen((v) => !v)}
         aria-label="Trocar empresa"
         aria-expanded={open}
-        className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-3)] transition-colors min-h-[44px] min-w-0 max-w-full"
+        className="flex items-center gap-2 bg-[var(--bg-surface-2)] border border-[var(--border-strong)] px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-surface-3)] transition-colors min-h-[44px] min-w-0 max-w-full"
       >
         <Building2 className="w-4 h-4 shrink-0" />
         <span className="truncate">{activeNome}</span>
@@ -158,9 +158,8 @@ export function WorkspaceSwitcher({ variant = 'desktop' }: WorkspaceSwitcherProp
             marginTop: 8,
             minWidth: 'min(220px, calc(100vw - 32px))',
             maxWidth: 'calc(100vw - 32px)',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
+            background: 'var(--bg-surface-2)',
+            border: '1px solid var(--border-strong)',
             boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
             animation: 'fadeSlideDown 0.15s ease-out',
             overflow: 'hidden',
@@ -180,7 +179,7 @@ export function WorkspaceSwitcher({ variant = 'desktop' }: WorkspaceSwitcherProp
                   onClick={() => handleSelect(w.id)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors min-h-[44px]"
                   style={{ borderTop: i > 0 ? '1px solid var(--border)' : undefined }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-surface-2)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-surface-3)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
                   <span

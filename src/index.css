@@ -107,6 +107,23 @@ body {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+/* Barra que cresce da esquerda (redesign D1, meta da Previsão de Receita) */
+@keyframes ed-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.ed-grow {
+  transform-origin: left center;
+  animation: ed-grow 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-grow {
+    animation: none;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    BASE STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
