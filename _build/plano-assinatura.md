@@ -194,7 +194,7 @@ Privacidade (`docs/legal/01-politica-de-privacidade.md`):
 
 Ordem de deploy obrigatória: a migration (R1) aplicada e conferida **antes** de qualquer front que chame a `rpc`; backend antes do front em R0, R3 e R6. Regra de ouro do `server.js` (ler inteiro, mapear consumidores) em R0, R2 e R3.
 
-**Andamento:** R0 ✅ concluída em 09/11/2026 (commit local, sem push; falta deploy do backend e do front — detalhes em `_build/current-state.md`).
+**Andamento:** R0 ✅ concluída em 09/11/2026 e testada no navegador em 10/11/2026 (admin vê "Empresas", inclusive onde é `admin` e não `owner`; owner comum simulado não vê; erro de rede no init → `'erro-init'`). Push feito em 10/11/2026; falta o deploy do backend na VPS e a conferência em produção (detalhes em `_build/current-state.md`).
 
 ## Reaproveitar
 
