@@ -198,7 +198,7 @@ export function Dashboard() {
   const topOportunidades = useMemo(() => {
 
     return leads
-      .filter(l => l.status !== "fechado")
+      .filter(l => l.status !== "fechado" && l.status !== "perdido")
       .sort((a, b) => (b.valorOrcado || 0) - (a.valorOrcado || 0))
       .slice(0, 5)
 
@@ -522,13 +522,13 @@ export function Dashboard() {
                   Sem projeções ainda
                 </p>
                 <p className="text-xs text-[var(--text-tertiary)] max-w-[280px]">
-                  Adicione valor e data de fechamento nos leads quentes para gerar previsões de receita.
+                  Marque leads como orçados com valor para ver a previsão de receita.
                 </p>
                 <button
                   onClick={() => setActiveModule('leads')}
                   className="ed-mono min-h-[44px] px-4 border border-[var(--border-accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
                 >
-                  Ver leads quentes
+                  Ver leads
                 </button>
               </div>
             </div>
