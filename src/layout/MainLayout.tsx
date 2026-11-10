@@ -48,14 +48,15 @@ export function MainLayout({ children }: MainLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen bg-[var(--bg-app)] overflow-hidden">
+    <div className="app-shell flex h-screen bg-[var(--bg-app)] overflow-hidden">
 
       <Sidebar mobileOpen={sidebarOpen} setMobileOpen={setSidebarOpen} onOpenHelp={() => setHelpOpen(true)} />
 
       <div className="flex flex-col flex-1 overflow-hidden">
 
-        {/* Header Global */}
-        <div className="flex flex-col bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
+        {/* Header Global — filete laranja editorial sobre a borda de baixo (absoluto: não soma altura) */}
+        <div className="relative flex flex-col bg-[var(--bg-sidebar)] border-b border-[var(--border)]">
+          <span aria-hidden="true" className="absolute left-0 -bottom-px h-[2px] w-24 bg-[var(--accent)]" />
         <div className="flex items-center justify-between gap-2.5 px-3 py-2 md:px-6 md:py-3">
 
   <button
@@ -83,11 +84,11 @@ export function MainLayout({ children }: MainLayoutProps) {
             >
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ background: 'var(--accent)', color: '#fff' }}
+                style={{ background: 'var(--accent)', color: 'var(--bg-app)' }}
               >
                 {(userName || userEmail || 'U').charAt(0).toUpperCase()}
               </div>
-              <span className="hidden md:block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              <span className="hidden md:block text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {userName || userEmail?.split('@')[0] || 'Usuário'}
               </span>
             </button>
@@ -96,14 +97,14 @@ export function MainLayout({ children }: MainLayoutProps) {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                 <div
-                  className="absolute right-0 top-full mt-1 w-56 rounded-lg shadow-lg border z-50 py-2"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                  className="absolute right-0 top-full mt-1 w-56 shadow-lg border z-50 py-2"
+                  style={{ background: 'var(--bg-surface-2)', borderColor: 'var(--border-strong)' }}
                 >
                   <div className="px-3 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {userName || userEmail?.split('@')[0] || 'Usuário'}
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }}>
                       {userEmail}
                     </p>
                   </div>

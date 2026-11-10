@@ -19,6 +19,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { CrmHealthReasons, type HealthReason } from './CrmHealthReasons';
+import { PageMasthead } from '@/components/editorial/PageMasthead';
 
 export function Dashboard() {
 
@@ -227,6 +228,16 @@ export function Dashboard() {
   return (
 
     <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+
+      {/* Redesign D0 — piloto do cabeçalho editorial. Número = mesmo do card "Tarefas Críticas" */}
+      <PageMasthead
+        kicker="Gestão · 01 / Dashboard"
+        title="Prioridades"
+        italic="do dia"
+        ghost="DA"
+        stat={stats.tarefasCriticas}
+        statLabel="tarefas críticas · hoje e atrasadas"
+      />
 
       {showNotifBanner && !permissionGranted && (
         <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--accent)] bg-[var(--accent-subtle)]">

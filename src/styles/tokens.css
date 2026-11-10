@@ -45,7 +45,10 @@
 
   /* --- TIPOGRAFIA --- */
   --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
-  --font-mono: 'Berkeley Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Redesign D0: Inter Tight vale só no app logado (classe .app-shell no index.css) */
+  --font-app: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
 
   --text-xs: 11px;
   --text-sm: 13px;

@@ -67,6 +67,47 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   REDESIGN D0 — tipografia editorial do app logado
+   O * acima aplica font-family:var(--font-sans) em todo elemento, então
+   font-family no pai não chega aos filhos. Por isso:
+   - .app-shell (raiz do MainLayout) redefine a VARIÁVEL, e aí todo filho herda;
+   - serif e mono são classe no próprio elemento que tem o texto (nunca no pai);
+   - font-feature-settings:normal porque o * liga cv01/ss03 do Inter.
+   Ficam fora de layer de propósito: dentro de @layer o * (sem layer) venceria.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.app-shell {
+  --font-sans: var(--font-app);
+}
+
+.ed-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: var(--font-normal);
+  font-feature-settings: normal;
+  letter-spacing: normal;
+}
+
+.ed-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: normal;
+  font-size: var(--text-xs);
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Letra-fantasma: só o contorno, na cor da borda padrão */
+.ed-ghost {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--border);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    BASE STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
 

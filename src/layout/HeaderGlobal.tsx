@@ -53,13 +53,32 @@ export function HeaderGlobal({ onOpenHelp }: HeaderGlobalProps) {
   const today = format(new Date(), "dd 'de' MMMM yyyy", { locale: ptBR });
   const subtitle = moduleSubtitles[activeModule];
 
+  // Redesign D0: a última palavra do nome sai em serif itálico laranja.
+  // Nome de uma palavra só ("Orçamentos", "Estoque") fica todo em sans.
+  const name = moduleNames[activeModule] ?? 'CRM';
+  const cut = name.lastIndexOf(' ');
+  const nameStart = cut > 0 ? name.slice(0, cut) : name;
+  const nameEnd = cut > 0 ? name.slice(cut + 1) : '';
+
   return (
     <header className="flex-1 min-w-0 min-h-[64px] bg-[var(--bg-sidebar)] flex items-center justify-between px-2 md:px-6 py-2">
 
       {/* ESQUERDA */}
       <div className="min-w-0">
-        <h1 className="text-sm! md:text-lg font-semibold text-[var(--text-primary)] tracking-tight truncate">
-          {moduleNames[activeModule] ?? 'CRM'}
+        {/* Data em mono acima do título — só desktop, como a data de antes */}
+        <div className="hidden md:flex items-center gap-2 mb-1 min-w-0">
+          <span aria-hidden="true" className="w-1.5 h-1.5 shrink-0 bg-[var(--accent)]" />
+          <p className="ed-mono text-[var(--text-tertiary)] truncate">{today}</p>
+        </div>
+
+        <h1 className="text-sm! md:text-2xl! md:leading-tight font-semibold text-[var(--text-primary)] tracking-tight truncate">
+          <span>{nameStart}</span>
+          {nameEnd && (
+            <>
+              {' '}
+              <span className="ed-serif text-[var(--accent)]">{nameEnd}</span>
+            </>
+          )}
         </h1>
 
         {/* Empresa (workspace selector) — mobile: info secundária sob o título,
@@ -68,9 +87,6 @@ export function HeaderGlobal({ onOpenHelp }: HeaderGlobalProps) {
           <WorkspaceSwitcher variant="mobile" />
         </div>
 
-        <p className="hidden md:block text-xs text-[var(--text-tertiary)] mt-0.5 truncate">
-          {today}
-        </p>
         {subtitle && (
           <p className="hidden md:block text-xs text-[var(--text-tertiary)] mt-0.5 md:max-w-xl">
             {subtitle}
