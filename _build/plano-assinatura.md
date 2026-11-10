@@ -1,6 +1,6 @@
 # Plano — Cadastro self-service + cobrança recorrente (VRTX CRM)
 
-Data: 09/11/2026 · Escopo fechado via `/grill-me` · **Aprovado em 09/11/2026.** Nenhuma rodada executada ainda: nenhum código, nenhuma tabela criada.
+Data: 09/11/2026 · Escopo fechado via `/grill-me` · **Aprovado em 09/11/2026.** Execução: ver **Andamento**, no fim de Rodadas.
 
 ## Contexto
 
@@ -19,6 +19,7 @@ Objetivo: cliente novo entra com Google, aceita os termos, cadastra a empresa, a
 | GPP Móveis Planejados | Segue isento por enquanto | Confirmado pelo Gabriel na aprovação (09/11/2026) |
 | `APP_URL` | `https://www.vrtxcrm.com.br` | Origem do front para o retorno do checkout |
 | Gateway | Decidido pelo Gabriel antes da R2 | R0 e R1 não dependem dele |
+| AdminEmpresas | `criar-empresa` grava a linha em `assinaturas` junto, `isento = true` por padrão (entra na R2) | Cliente fechado manualmente não cai no checkout. Decidido em 10/11/2026 |
 
 Assumidas (propostas no grill-me, não contestadas):
 - Acesso só depois do 1º pagamento confirmado. Sem teste grátis (LISTA PROIBIDA; Termos §5.1 é garantia, não teste).
@@ -39,7 +40,7 @@ Assumidas (propostas no grill-me, não contestadas):
    - **O cadastro entra no lugar do ramo "sem empresa"** e renderiza depois do TermsGate (aceite antes de contratar). Hoje 6/6 usuários têm empresa: o ramo só pega gente nova.
 2. **criar-empresa** — `server.js:2075`: insere `workspaces` (nome, segment) → `auth.admin.createUser` (e-mail/senha) → `workspace_members` role `owner`. Não atômico (falha no vínculo deixa empresa órfã, :2141).
    - Reaproveitar: `getSupabaseAdmin`, `requireAuth`, a sequência workspace → member `owner`.
-   - Não reaproveitar: `createUser` (o usuário Google já existe) e o padrão não atômico. `criar-empresa` **não muda**.
+   - Não reaproveitar: `createUser` (o usuário Google já existe) e o padrão não atômico. `criar-empresa` só muda na R2: passa a gravar a linha em `assinaturas` (isento por padrão, ver Decisões fechadas).
 3. **Grants** (MCP): `anon`/`authenticated` só têm `SELECT` em `workspaces` e `workspace_members`; `service_role` tem tudo → criar empresa **tem** que ser pelo backend. Sem triggers em `public` nem `auth`. `workspace_members`: `UNIQUE(workspace_id, user_id)`, role ∈ owner/admin/member. `workspaces.owner_id` → `auth.users ON DELETE CASCADE` → **não preencher no cadastro**.
 4. **Gate** — dentro do efeito de init, entre `ensureWorkspaceForUser` e `initialize`. Nenhum efeito novo: TermsGate e o padrão `session?.user?.id` ficam intactos.
 
@@ -50,7 +51,7 @@ Achados que mudam o plano:
 - `Settings.tsx:16` já tem a aba "Pagamentos" (PIX do próprio cliente). A nova aba é "Assinatura".
 - `feature-flags.json` já é lido pelo backend (`server.js:253`) e pelo front (`Sidebar.tsx:5`) → kill switch.
 
-## Banco (proposta — criar só na R1)
+## Banco (criado na R1, 10/11/2026)
 
 ### `public.assinaturas` (1 linha por workspace)
 
@@ -70,7 +71,7 @@ RLS ligado + 1 policy `FOR SELECT TO authenticated USING (workspace_id IN (SELEC
 
 ### `public.assinatura_eventos` (idempotência + auditoria do webhook)
 
-`id` uuid PK · `gateway` text · `evento_id` text · `tipo` text · `workspace_id` uuid null → `workspaces` ON DELETE SET NULL · `payload` jsonb · `recebido_em` timestamptz default now() · `processado_em` timestamptz null · `erro` text null. `UNIQUE(gateway, evento_id)`. RLS ligado **sem policy** + `REVOKE ALL FROM anon, authenticated`. O payload tem dado pessoal → retenção entra na Privacidade (R5).
+`id` uuid PK · `gateway` text · `evento_id` text · `tipo` text · `workspace_id` uuid null → `workspaces` ON DELETE SET NULL · `payload` jsonb · `recebido_em` timestamptz default now() · `processado_em` timestamptz null · `erro` text null. `UNIQUE(gateway, evento_id)`. RLS ligado + policy de recusa `no_client_access` (`USING (false)`; sem ela o advisor acusa "RLS sem policy") + `REVOKE ALL FROM anon, authenticated`. O payload tem dado pessoal → retenção entra na Privacidade (R5).
 
 ### Funções
 
@@ -185,7 +186,7 @@ Privacidade (`docs/legal/01-politica-de-privacidade.md`):
 |---|---|---|---|
 | R0 | Pré-requisitos invisíveis: erro ≠ sem empresa; `useIsAdmin` pelo backend | `supabaseWorkspace.ts`, `useIsAdmin.ts`, `server.js` (`/api/admin/me`) | Baixo. Se o id do Gabriel não estiver em `ADMIN_USER_IDS` na VPS, ele perde o menu — conferir antes |
 | R1 | Banco: tabelas, RLS, grants, funções, seed | migration (SQL aprovado antes de aplicar) | Médio. Nada lê ainda: impacto zero se os grants estiverem certos |
-| R2 | Gateway (sandbox) + webhook + rotas de assinatura + `/api/onboarding/empresa` | `utils/billing/`, `server.js`, envs na VPS | Médio. O front ainda não chama nada. Falha de webhook pausa a fila do gateway (sandbox) |
+| R2 | Gateway (sandbox) + webhook + rotas de assinatura + `/api/onboarding/empresa` + `criar-empresa` grava `assinaturas` (isento) | `utils/billing/`, `server.js`, envs na VPS | Médio. O front ainda não chama nada. Falha de webhook pausa a fila do gateway (sandbox) |
 | R3 | Gate no app + telas Checkout/Bloqueio + bloqueio no backend + flag (sai **desligada**) | `App.tsx`, `src/lib/assinatura.ts`, `src/modules/assinatura/*`, `server.js`, `feature-flags.json` | **Alto**: erro no gate trava todo mundo. Mitigação: retry em vez de bloqueio no erro, seed conferido, flag |
 | R4 | Configurações > Assinatura | `Settings.tsx`, `formatters.ts` | Médio (cancelar é irreversível no gateway → confirmação) |
 | R5 | Termos + Privacidade + `TERMS_VERSION` | `docs/legal/*`, `src/lib/terms.ts` | Baixo técnico, alto jurídico. Revisão do Gabriel antes |
@@ -194,7 +195,9 @@ Privacidade (`docs/legal/01-politica-de-privacidade.md`):
 
 Ordem de deploy obrigatória: a migration (R1) aplicada e conferida **antes** de qualquer front que chame a `rpc`; backend antes do front em R0, R3 e R6. Regra de ouro do `server.js` (ler inteiro, mapear consumidores) em R0, R2 e R3.
 
-**Andamento:** R0 ✅ concluída em 09/11/2026 e testada no navegador em 10/11/2026 (admin vê "Empresas", inclusive onde é `admin` e não `owner`; owner comum simulado não vê; erro de rede no init → `'erro-init'`). Push feito em 10/11/2026; falta o deploy do backend na VPS e a conferência em produção (detalhes em `_build/current-state.md`).
+Migrations sempre via MCP (`apply_migration`), uma por vez. **NUNCA `supabase db push`**: `supabase/migrations/` e `schema_migrations` divergem (ver Dívida Técnica no `current-state.md`).
+
+**Andamento:** R0 ✅ concluída em 09/11/2026 e testada no navegador em 10/11/2026 (admin vê "Empresas", inclusive onde é `admin` e não `owner`; owner comum simulado não vê; erro de rede no init → `'erro-init'`). Push feito em 10/11/2026; falta o deploy do backend na VPS e a conferência em produção (detalhes em `_build/current-state.md`). R1 ✅ aplicada em 10/11/2026: `supabase/migrations/20261110000000_create_assinaturas.sql`, registrada no banco como `20261110194050`; as 3 funções ficaram `SECURITY INVOKER`; testes como anon, authenticated e service_role, ramo de criação (bloco abortado, contagens iguais) e advisor de segurança ok; commit sem push.
 
 ## Reaproveitar
 

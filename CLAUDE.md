@@ -27,14 +27,18 @@
 
 ## Multi-Tenant
 
-- RLS Supabase (auditado em 23/09/2026): 17 tabelas em `public`, todas com RLS ligado e 1 policy `FOR ALL` cada
-  - 14 isolam por `workspace_id IN (SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid())`: leads, orcamentos, recibos, transactions, notas, materiais, fornecedores, cotacoes_materiais, consumo_materiais, operacional_tasks, workspace_settings, contas_receber, whatsapp_instances, whatsapp_messages
-  - `workspaces` isola por `id IN (...)` (mesma subquery)
-  - `workspace_members` e `terms_acceptance` isolam por `user_id = auth.uid()` (`self_access`)
+- RLS Supabase (auditado em 23/09/2026; tabelas de cobrança em 10/11/2026): 19 tabelas em `public`, todas com RLS ligado
+  - 17 com 1 policy `FOR ALL` cada:
+    - 14 isolam por `workspace_id IN (SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid())`: leads, orcamentos, recibos, transactions, notas, materiais, fornecedores, cotacoes_materiais, consumo_materiais, operacional_tasks, workspace_settings, contas_receber, whatsapp_instances, whatsapp_messages
+    - `workspaces` isola por `id IN (...)` (mesma subquery)
+    - `workspace_members` e `terms_acceptance` isolam por `user_id = auth.uid()` (`self_access`)
+  - `assinaturas`: 1 policy `FOR SELECT TO authenticated`, com a mesma subquery das 14
+  - `assinatura_eventos`: 1 policy de recusa (`no_client_access`, `FOR ALL USING (false)`)
 - **RLS NÃO auto-filtra mais para usuário com múltiplas memberships.** Desde a migration `20260711000000` (registrada no banco como `20260712010744`) as policies passaram de `= (SELECT ... LIMIT 1)` para `IN (SELECT ...)`. Nenhuma policy ficou no formato antigo
 - **Consequência obrigatória:** toda query nova em tabela multi-tenant leva `.eq('workspace_id', workspaceId)` explícito no frontend. Sem exceção, sem "a policy já filtra"
 - **`workspaces` e `workspace_members` são somente leitura para o cliente.** A migration `20260923210256` revogou INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER e MAINTAIN de `authenticated` e `anon` nas duas. Escrita nelas só pelo backend via `service_role` (`getSupabaseAdmin()` em server.js)
 - As policies dessas duas tabelas continuam `FOR ALL`, mas são inertes para escrita — quem bloqueia é o grant, não a policy. Não "corrigir" isso achando que está aberto
+- **`assinaturas` e `assinatura_eventos`: escrita só pelo backend** (`service_role`; migration `20261110000000`, registrada no banco como `20261110194050`). O cliente tem só SELECT em `assinaturas` (RLS: as próprias empresas) e nada em `assinatura_eventos` (payload do gateway com dado pessoal); `anon` não tem grant em nenhuma das duas. **Nunca criar policy nem grant de escrita nelas** para `anon`/`authenticated`: status e "pago até" vêm do gateway (webhook ou sincronizar), nunca do cliente
 
 ## Regras de Comportamento do Agente
 
