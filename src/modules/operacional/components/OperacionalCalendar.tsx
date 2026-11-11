@@ -12,22 +12,22 @@ import { Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react';
 
 import { calculateOperationalUrgency } from '@/domain/operacional/calculateOperationalUrgency';
 import { getStatusLabel } from '@/lib/priority';
+import { cn } from '@/utils/cn';
 import { statusConfig } from '../statusConfig';
-
-const prioridadeStyle: Record<string, React.CSSProperties> = {
-  baixa: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',    color: 'var(--info)' },
-  media: { background: 'var(--warning-subtle)', borderLeftColor: 'var(--warning)', color: 'var(--warning)' },
-  alta:  { background: 'var(--danger-subtle)',  borderLeftColor: 'var(--danger)',  color: 'var(--danger)' },
-};
-
-const statusStyle: Record<string, React.CSSProperties> = {
-  pendente:    { background: 'var(--bg-surface-3)',   borderLeftColor: 'var(--text-disabled)', color: 'var(--text-secondary)' },
-  em_producao: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',          color: 'var(--info)' },
-  pronto:      { background: 'var(--success-subtle)', borderLeftColor: 'var(--success)',       color: 'var(--success)' },
-  instalado:   { background: 'var(--ia-subtle)',      borderLeftColor: 'var(--ia)',            color: 'var(--ia)' },
-};
+import { FAIXA_PRIORIDADE } from './faixaPrioridade';
 
 type FilterMode = 'all' | 'critical' | 'urgent' | 'delayed';
+
+// Chips da agenda (redesign D2): mesmos valores de filterMode de antes
+const FILTROS: { id: FilterMode; label: string }[] = [
+  { id: 'all', label: 'Todas' },
+  { id: 'critical', label: 'Críticas' },
+  { id: 'urgent', label: 'Urgentes' },
+  { id: 'delayed', label: 'Atrasadas' },
+];
+
+// Botões do card: 44px em 1 coluna (abaixo de lg), tamanho anterior em lg+ (para caber nas 7 colunas)
+const BOTAO_CARD = 'flex min-h-[44px] min-w-[44px] items-center justify-center p-1.5 transition-colors lg:min-h-0 lg:min-w-0';
 
 function DraggableTask({ task, onDelete, onEdit }: any) {
   const updateTask = useStore((state: any) => state.updateOperacionalTask);
@@ -65,45 +65,51 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
   return (
     <div
       ref={setNodeRef}
-      className={`w-full max-w-full border-l-4 p-3 rounded-lg text-xs transition-all duration-200 hover:shadow-md ${task.concluido ? 'opacity-60' : ''}`}
+      className={`relative w-full max-w-full border bg-[var(--bg-surface-2)] py-2 pl-3 pr-1.5 text-xs transition-all duration-200 hover:shadow-md motion-reduce:transition-none ${task.concluido ? 'opacity-60' : ''}`}
       style={{
         ...style,
-        ...(statusStyle[task.status] || prioridadeStyle[task.prioridade] || prioridadeStyle.media),
-        ...(isCritical ? { outline: '2px solid var(--danger)', outlineOffset: '1px' } : {}),
+        borderColor: isCritical ? 'var(--danger)' : 'var(--border)',
       }}
     >
+      {/* Faixa da prioridade da tarefa */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-[3px]"
+        style={{ background: FAIXA_PRIORIDADE[task.prioridade] ?? FAIXA_PRIORIDADE.media }}
+      />
+
       {/* Área arrastável */}
       <div
         {...listeners}
         {...attributes}
         className="cursor-grab active:cursor-grabbing mb-2"
       >
-        <p className={`font-semibold text-xs leading-tight break-words ${task.concluido ? 'line-through italic' : ''}`} title={task.titulo}>
+        <p className={`font-semibold text-xs leading-tight break-words text-[var(--text-primary)] ${task.concluido ? 'line-through italic' : ''}`} title={task.titulo}>
           {task.titulo}
         </p>
-        <p className="text-[10px] opacity-70 mt-0.5">
+        <p className="text-[10px] mt-0.5" style={{ color: statusConfig[task.status || 'pendente']?.color }}>
           Status: {statusConfig[task.status || 'pendente']?.label}
         </p>
         {lead && (
-          <p className="text-[10px] opacity-70 truncate">
+          <p className="text-[10px] text-[var(--text-tertiary)] truncate">
             {lead.nome} • {getStatusLabel(lead.status)}
           </p>
         )}
         {isCritical && (
-          <span className="inline-block text-[9px] bg-[var(--danger)] text-white px-1 rounded mt-1">
+          <span className="inline-block text-[9px] bg-[var(--danger)] text-white px-1 mt-1">
             CRÍTICA
           </span>
         )}
       </div>
 
-      {/* Botões de ação — linha separada no fundo do card */}
-      <div className="flex items-center justify-end gap-1 pt-1 border-t border-current/10">
+      {/* Botões de ação — fora da área arrastável; quebram linha em coluna estreita */}
+      <div className="flex flex-wrap items-center justify-end gap-1 pt-1 border-t border-[var(--border)]">
         <button
           onClick={(e) => {
             e.stopPropagation();
             updateTask(task.id, { concluido: !task.concluido });
           }}
-          className={`p-1.5 rounded transition-colors ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
+          className={`${BOTAO_CARD} ${task.concluido ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)] hover:text-[var(--success)]'}`}
           title={task.concluido ? 'Marcar como pendente' : 'Concluir'}
         >
           {task.concluido ? <CheckCircle2 size={14} /> : <Circle size={14} />}
@@ -111,7 +117,7 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
 
         <button
           onClick={handleEdit}
-          className="p-1.5 rounded text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+          className={`${BOTAO_CARD} text-[var(--text-tertiary)] hover:text-[var(--accent)]`}
           title="Editar"
         >
           <Pencil size={14} />
@@ -119,7 +125,7 @@ function DraggableTask({ task, onDelete, onEdit }: any) {
 
         <button
           onClick={handleDelete}
-          className="p-1.5 rounded text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+          className={`${BOTAO_CARD} text-[var(--text-tertiary)] hover:text-[var(--danger)]`}
           title="Excluir"
         >
           <Trash2 size={14} />
@@ -134,7 +140,7 @@ const DAY_ABBREV: Record<string, string> = {
   'quinta-feira': 'Qui', 'sexta-feira': 'Sex', 'sábado': 'Sáb', 'domingo': 'Dom',
 };
 
-function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
+function DroppableDay({ day, tasks, onDelete, onEdit, isToday }: any) {
   const { setNodeRef } = useDroppable({
     id: day.dateString,
   });
@@ -164,21 +170,31 @@ function DroppableDay({ day, tasks, onDelete, onEdit }: any) {
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border overflow-hidden border-[var(--border)] ${isEmpty ? 'py-2 px-3 min-h-[48px]' : 'p-4 min-h-[160px] bg-[var(--bg-surface)]'}`}
-      style={isEmpty ? { background: 'transparent' } : undefined}
+      className={cn('relative min-w-0', isEmpty ? 'px-3 py-2 min-h-[48px] lg:px-2 lg:py-3 lg:min-h-[160px]' : 'px-3 pt-3 pb-4 min-h-[160px] lg:px-2')}
     >
-      <div className={`flex items-center ${isEmpty ? 'justify-between' : 'flex-col items-start mb-3'}`}>
-        <p className={`text-sm font-semibold capitalize ${isEmpty ? 'text-[var(--text-disabled)]' : 'text-[var(--text-primary)]'}`}>
-          <span className="lg:hidden">{DAY_ABBREV[day.label] ?? day.label}</span>
-          <span className="hidden lg:block">{day.label}</span>
-        </p>
-        <p className={`text-xs ${isEmpty ? 'text-[var(--text-disabled)]' : 'text-[var(--text-tertiary)]'}`}>
-          {format(day.date, 'dd/MM', { locale: ptBR })}
-        </p>
+      {isToday && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] bg-[var(--accent)]" />}
+
+      <div className={cn('flex flex-wrap items-baseline gap-x-2', isEmpty ? 'min-h-[32px]' : 'mb-3')}>
+        <span
+          className={cn(
+            'ed-mono',
+            isToday ? 'text-[var(--accent)]' : isEmpty ? 'text-[var(--text-disabled)]' : 'text-[var(--text-tertiary)]'
+          )}
+        >
+          {DAY_ABBREV[day.label] ?? day.label}
+        </span>
+        <span
+          className={cn(
+            'ed-serif text-[26px] leading-none',
+            isToday ? 'text-[var(--text-primary)]' : isEmpty ? 'text-[var(--text-disabled)]' : 'text-[var(--text-secondary)]'
+          )}
+        >
+          {format(day.date, 'dd', { locale: ptBR })}
+        </span>
       </div>
 
       {!isEmpty && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {sortedTasks.map((task: any) => (
             <DraggableTask
               key={task.id}
@@ -264,50 +280,34 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border)] p-6">
-        <div className="flex gap-2 mb-6 text-sm flex-wrap">
-          <button
-            onClick={() => setFilterMode('all')}
-            className="px-3 py-1 bg-[var(--bg-surface-2)] text-[var(--text-secondary)] rounded"
-          >
-            Todas
-          </button>
-          <button
-            onClick={() => setFilterMode('critical')}
-            className="px-3 py-1 bg-[var(--danger-subtle)] text-[var(--danger)] rounded"
-          >
-            Críticas
-          </button>
-          <button
-            onClick={() => setFilterMode('urgent')}
-            className="px-3 py-1 bg-[var(--warning-subtle)] text-[var(--warning)] rounded"
-          >
-            Urgentes
-          </button>
-          <button
-            onClick={() => setFilterMode('delayed')}
-            className="px-3 py-1 bg-[var(--bg-surface-3)] text-[var(--text-secondary)] rounded"
-          >
-            Atrasadas
-          </button>
+      <div className="mt-4">
+        <div className="flex flex-wrap gap-2 px-5 md:px-6">
+          {FILTROS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilterMode(f.id)}
+              aria-pressed={filterMode === f.id}
+              className={cn(
+                'ed-mono min-h-[44px] border px-3 transition-colors lg:min-h-0 lg:py-1',
+                filterMode === f.id
+                  ? 'border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]'
+                  : 'border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => setWeekOffset(prev => prev - 1)}
-            className="px-4 py-2 min-h-[44px] text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
-          >
-            ← Semana anterior
-          </button>
-
-          <div className="text-center">
-            <span className="text-sm font-semibold text-[var(--text-primary)]">
+        <div className="mt-4 grid grid-cols-2 items-center gap-2 px-5 md:flex md:justify-between md:px-6">
+          <div className="col-span-2 flex flex-wrap items-center justify-center gap-x-3 text-center md:order-2">
+            <span className="ed-mono text-[var(--text-primary)]">
               {format(weekDays[0].date, "dd 'de' MMM", { locale: ptBR })} — {format(weekDays[6].date, "dd 'de' MMM", { locale: ptBR })}
             </span>
             {weekOffset !== 0 && (
               <button
                 onClick={() => setWeekOffset(0)}
-                className="ml-3 text-xs text-[var(--accent)] hover:underline"
+                className="ed-mono min-h-[44px] text-[var(--accent)] hover:underline"
               >
                 Voltar pra semana atual
               </button>
@@ -315,14 +315,22 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
           </div>
 
           <button
+            onClick={() => setWeekOffset(prev => prev - 1)}
+            className="min-h-[44px] border border-[var(--border)] px-2 text-xs text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] md:order-1 md:px-4 md:text-sm"
+          >
+            ← Semana anterior
+          </button>
+
+          <button
             onClick={() => setWeekOffset(prev => prev + 1)}
-            className="px-4 py-2 min-h-[44px] text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
+            className="min-h-[44px] border border-[var(--border)] px-2 text-xs text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] md:order-3 md:px-4 md:text-sm"
           >
             Próxima semana →
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-5">
+        {/* 7 colunas só a partir de lg (1024): abaixo disso, 1 coluna como no celular */}
+        <div className="mt-4 grid grid-cols-1 divide-y divide-[var(--border)] border-t border-[var(--border)] lg:grid-cols-7 lg:divide-x lg:divide-y-0">
           {weekDays.map((day) => (
             <DroppableDay
               key={day.dateString}
@@ -330,6 +338,7 @@ function OperacionalCalendar({ onDelete, onEdit }: Props) {
               tasks={getTasksForDay(day.dateString)}
               onDelete={onDelete}
               onEdit={onEdit}
+              isToday={day.dateString === hoje}
             />
           ))}
         </div>

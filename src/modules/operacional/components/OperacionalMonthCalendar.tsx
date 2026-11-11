@@ -12,12 +12,8 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Pencil, Trash2 } from 'lucide-react';
+import { FAIXA_PRIORIDADE } from './faixaPrioridade';
 
-const prioridadeStyle: Record<string, React.CSSProperties> = {
-  baixa: { background: 'var(--info-subtle)',    borderLeftColor: 'var(--info)',    color: 'var(--info)' },
-  media: { background: 'var(--warning-subtle)', borderLeftColor: 'var(--warning)', color: 'var(--warning)' },
-  alta:  { background: 'var(--danger-subtle)',  borderLeftColor: 'var(--danger)',  color: 'var(--danger)' },
-};
 type Props = {
   onDelete: (task: any) => void;
   onEdit: (task: any) => void;
@@ -50,30 +46,30 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
     });
 
   return (
-    <div className="bg-[var(--bg-surface)] rounded-xl shadow-sm border border-[var(--border)] p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="px-5 pt-4 pb-5 md:px-6">
+      <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1 rounded transition-colors"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
         >
           ←
         </button>
 
-        <h2 className="text-lg font-bold capitalize text-[var(--text-primary)]">
+        <h3 className="ed-serif text-2xl! capitalize text-[var(--text-primary)]">
           {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-        </h2>
+        </h3>
 
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="text-sm bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1 rounded transition-colors"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
         >
           →
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-xs font-semibold text-center mb-2 text-[var(--text-secondary)]">
+      <div className="grid grid-cols-7 gap-2 text-center mb-2">
         {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((d) => (
-          <div key={d}>{d}</div>
+          <div key={d} className="ed-mono text-[var(--text-tertiary)]">{d}</div>
         ))}
       </div>
 
@@ -88,12 +84,12 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
             <div
               key={index}
               className={`
-                min-h-[110px] border rounded p-1 text-xs
+                min-h-[110px] border p-1 text-xs
                 ${isToday ? 'bg-[var(--accent-subtle)] border-[var(--accent)]' : 'border-[var(--border)]'}
                 ${!isCurrentMonth ? 'opacity-40' : ''}
               `}
             >
-              <div className="font-semibold mb-1 text-right text-[var(--text-primary)]">
+              <div className="tnum font-semibold mb-1 text-right text-[var(--text-primary)]">
                 {format(date, 'd')}
               </div>
 
@@ -108,9 +104,13 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
                   <div
                     key={task.id}
                     title={task.titulo}
-                    className={`border-l-4 px-1 rounded text-[10px] ${task.concluido ? 'line-through opacity-50' : ''}`}
-                    style={prioridadeStyle[task.prioridade] || prioridadeStyle.media}
+                    className={`relative border border-[var(--border)] bg-[var(--bg-surface-2)] pl-1.5 pr-0.5 text-[10px] text-[var(--text-primary)] ${task.concluido ? 'line-through opacity-50' : ''}`}
                   >
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-0 left-0 w-[2px]"
+                      style={{ background: FAIXA_PRIORIDADE[task.prioridade] ?? FAIXA_PRIORIDADE.media }}
+                    />
                     <div className="flex justify-between items-center gap-1">
                       <span className="truncate">{task.titulo}</span>
 
@@ -125,7 +125,7 @@ function OperacionalMonthCalendar({ onDelete, onEdit, onCreate }: Props) {
 
                         <button
                           onClick={() => onDelete(task)}
-                          className="text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
+                          className="text-[var(--text-tertiary)] hover:text-[var(--danger)] transition-colors"
                           title="Excluir"
                         >
                           <Trash2 size={9} />
