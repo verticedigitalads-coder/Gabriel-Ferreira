@@ -12,6 +12,10 @@ Organize as atividades da equipe, acompanhe o andamento das tarefas e mantenha t
 - Na seção **Hoje**, mudar o andamento de cada tarefa com um toque: Pendente → Em produção → Pronto → Instalado.
 - Concluir tarefas, editar e excluir. Se você concluir sem querer, dá para desfazer em **Concluídas hoje** e na visão **Semana**; na seção **Atrasadas** não.
 - Ver as tarefas futuras na seção **Próximos Dias**.
+- Ver a **Linha de produção**: quantos serviços em andamento estão em cada etapa (Pendente, Em produção, Pronto, Instalado). Serviço é a tarefa "Executar serviço" que o sistema cria quando você marca um negócio como Fechado, enquanto não for concluída. Toque numa etapa para ver só os serviços dela; toque de novo ou em **Limpar filtro ×** para ver todos.
+- Ver a **Fila de prioridade**: as 5 tarefas abertas que mais pedem atenção. A ordem soma a data (atrasada, hoje ou nos próximos 2 dias), a prioridade da tarefa e o peso do cliente vinculado (lead quente, orçado ou de valor alto). É a mesma conta do selo CRÍTICA. Toque numa linha para editar a tarefa.
+- Acompanhar os **Serviços em acompanhamento**: do mais antigo para o mais novo, com cliente, etapa, prioridade, valor orçado e data. Mudar a etapa aqui é o mesmo que mudar o status em **Hoje**. Para tirar um serviço da lista, conclua a tarefa.
+- Usar os atalhos **Hoje (N)** e **Atrasadas (N)** no topo para ir direto à seção.
 
 ## Passo a passo
 
