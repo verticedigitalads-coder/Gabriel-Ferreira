@@ -84,6 +84,7 @@ export function Operacional() {
   const [editPrioridade, setEditPrioridade] = useState<'baixa' | 'media' | 'alta'>('media');
   const [editStatus, setEditStatus] = useState('pendente');
   const [editDescricao, setEditDescricao] = useState('');
+  const [erroEditData, setErroEditData] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
   // 🔥 TOGGLE SEMANA / MÊS
@@ -96,6 +97,8 @@ export function Operacional() {
   const [prioridade, setPrioridade] = useState<'baixa' | 'media' | 'alta'>(
     'media',
   );
+  const [erroTitulo, setErroTitulo] = useState(false);
+  const [erroData, setErroData] = useState(false);
 
   const hoje = format(new Date(), 'yyyy-MM-dd');
 
@@ -114,6 +117,11 @@ export function Operacional() {
 
   const confirmEdit = async () => {
     if (!taskToEdit) return;
+
+    if (!editData) {
+      setErroEditData(true);
+      return;
+    }
 
     const ok = await updateTask(taskToEdit.id, {
       titulo: editTitle,
@@ -145,6 +153,8 @@ export function Operacional() {
   };
 
   const handleAdd = async () => {
+    setErroTitulo(!titulo);
+    setErroData(!data);
     if (!titulo || !data) return;
 
     const ok = await addTask({
@@ -181,6 +191,7 @@ export function Operacional() {
     setEditPrioridade(task.prioridade || 'media');
     setEditStatus(task.status || 'pendente');
     setEditDescricao(task.descricao || '');
+    setErroEditData(false);
     setShowEditModal(true);
   };
 
@@ -345,20 +356,44 @@ export function Operacional() {
         <div className="space-y-3 border border-[var(--border-accent)] bg-[var(--bg-surface)] p-4 md:p-5">
           <h2 className="ed-mono text-[var(--text-primary)]">Nova Tarefa</h2>
 
-          <input
-            type="text"
-            placeholder="Título da tarefa"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            className="border border-[var(--border)] p-2 w-full bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-h-[44px]"
-          />
+          <div>
+            <input
+              type="text"
+              placeholder="Título da tarefa"
+              value={titulo}
+              onChange={(e) => {
+                setTitulo(e.target.value);
+                setErroTitulo(false);
+              }}
+              aria-invalid={erroTitulo}
+              aria-describedby={erroTitulo ? 'nova-tarefa-titulo-erro' : undefined}
+              className="border border-[var(--border)] p-2 w-full bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-h-[44px]"
+            />
+            {erroTitulo && (
+              <p id="nova-tarefa-titulo-erro" className="text-xs text-[var(--danger)] mt-1">
+                Escreva o título da tarefa.
+              </p>
+            )}
+          </div>
 
-          <input
-            type="date"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="border border-[var(--border)] p-2 w-full bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
-          />
+          <div>
+            <input
+              type="date"
+              value={data}
+              onChange={(e) => {
+                setData(e.target.value);
+                setErroData(false);
+              }}
+              aria-invalid={erroData}
+              aria-describedby={erroData ? 'nova-tarefa-data-erro' : undefined}
+              className="border border-[var(--border)] p-2 w-full bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
+            />
+            {erroData && (
+              <p id="nova-tarefa-data-erro" className="text-xs text-[var(--danger)] mt-1">
+                Escolha a data da tarefa.
+              </p>
+            )}
+          </div>
 
           <select
             value={prioridade}
@@ -603,9 +638,19 @@ export function Operacional() {
             <input
               type="date"
               value={editData}
-              onChange={(e) => setEditData(e.target.value)}
+              onChange={(e) => {
+                setEditData(e.target.value);
+                setErroEditData(false);
+              }}
+              aria-invalid={erroEditData}
+              aria-describedby={erroEditData ? 'editar-tarefa-data-erro' : undefined}
               className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
             />
+            {erroEditData && (
+              <p id="editar-tarefa-data-erro" className="text-xs text-[var(--danger)] mt-1">
+                Escolha a data da tarefa.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

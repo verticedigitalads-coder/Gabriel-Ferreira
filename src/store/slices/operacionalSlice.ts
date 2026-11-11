@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuid } from 'uuid';
 import { formatOperacionalTask } from '@/store/formatters';
+import { isValidDateInput } from '@/utils/date';
 import type { OperacionalTask } from '@/types';
 
 // TODO: tipar com StateCreator<StoreState> quando exportar StoreState (dependência circular)
@@ -9,6 +10,13 @@ export const createOperacionalSlice = (set: any, get: any) => ({
 
   // ================= ADD =================
   addOperacionalTask: async (taskData: Partial<OperacionalTask>) => {
+    // Tarefa sem data derruba o sino do header e o calendário (parseISO na data):
+    // recusa antes de tocar no estado ou no banco.
+    if (!isValidDateInput(taskData.data)) {
+      get().addToast({ type: 'error', message: 'A tarefa precisa de uma data válida.' });
+      return false;
+    }
+
     const { workspaceId } = get();
     const now = new Date().toISOString();
 
@@ -80,6 +88,12 @@ export const createOperacionalSlice = (set: any, get: any) => ({
     taskId: string,
     updates: Partial<OperacionalTask>,
   ) => {
+    // Editar não pode apagar a data nem gravar fora de yyyy-MM-dd (mesmo motivo do add).
+    if (updates.data !== undefined && !isValidDateInput(updates.data)) {
+      get().addToast({ type: 'error', message: 'A tarefa precisa de uma data válida.' });
+      return false;
+    }
+
     const now = new Date().toISOString();
 
     const payload: Record<string, unknown> = {

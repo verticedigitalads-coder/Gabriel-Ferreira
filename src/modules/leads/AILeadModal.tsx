@@ -1,6 +1,7 @@
 import { AIAnalysisResult } from '@/services/ai/ai.service';
 import React, { useState } from 'react';
 import { format } from 'date-fns';
+import { isValidDateInput } from '@/utils/date';
 import {
   Bot,
   X,
@@ -120,11 +121,12 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
     }
 
     const visitaSugerida = Boolean(analysis.visitaSugerida);
+    // Sem data da IA, a visita fica para hoje; data fora de yyyy-MM-dd não vira tarefa.
+    const dataVisita =
+      analysis.dataVisitaSugerida || format(new Date(), 'yyyy-MM-dd');
+    const dataVisitaValida = isValidDateInput(dataVisita);
 
-    if (visitaSugerida) {
-      const dataVisita =
-        analysis.dataVisitaSugerida || format(new Date(), 'yyyy-MM-dd');
-
+    if (visitaSugerida && dataVisitaValida) {
       await addOperacionalTask({
         titulo: `Visita orçamento - ${analysis.nome || 'Cliente'}`,
         descricao: analysis.endereco ? `Endereço: ${analysis.endereco}` : 'Endereço não identificado',
@@ -137,7 +139,11 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
 
     addToast({
       type: 'success',
-      message: visitaSugerida ? 'Lead criado! Tarefa de visita agendada no Operacional.' : 'Lead criado! Nenhuma visita detectada na conversa.',
+      message: !visitaSugerida
+        ? 'Lead criado! Nenhuma visita detectada na conversa.'
+        : dataVisitaValida
+          ? 'Lead criado! Tarefa de visita agendada no Operacional.'
+          : 'Lead criado! A data da visita não foi reconhecida. Agende em Marcar Visita, na ficha do lead.',
     });
 
     onClose();

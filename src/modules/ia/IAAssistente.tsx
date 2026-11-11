@@ -3,7 +3,9 @@ import type { HistoricoEntry } from '@/types'
 import type { StrategicDiagnosis } from './strategicDiagnosisService'
 import { generateFullStrategicDiagnosisWithAI } from './strategicDiagnosisService'
 import { useState, useMemo, useEffect } from 'react'
+import { format } from 'date-fns'
 import { useStore } from '@/store/useStore'
+import { isValidDateInput } from '@/utils/date'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -156,10 +158,12 @@ export function IAAssistente() {
 })
 
     if (analysis.nivelDeUrgencia >= 3) {
+      // A tarefa exige yyyy-MM-dd; o diagnóstico manda ISO em UTC, então vira o dia local.
+      const v = analysis.dataIdealFollowUp
       await addOperacionalTask({
         leadId: selectedLead.id,
         titulo: `Follow-up - ${selectedLead.nome}`,
-        data: analysis.dataIdealFollowUp,
+        data: isValidDateInput(v) ? v : format(new Date(v), 'yyyy-MM-dd'),
         prioridade:
           analysis.riscoDePerda === 'critico'
             ? 'alta'

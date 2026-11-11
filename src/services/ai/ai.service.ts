@@ -732,7 +732,7 @@ export class AIService {
 
     if (match) {
       const year = new Date().getFullYear();
-      return `${year}-${match[0].split('/').reverse().join('-')}`;
+      return `${year}-${match[0].split('/').reverse().map((p) => p.padStart(2, '0')).join('-')}`;
     }
 
     return null;
