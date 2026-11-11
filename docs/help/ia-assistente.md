@@ -26,12 +26,12 @@ Análise inteligente dos seus leads: quem priorizar, qual estratégia usar e sug
 ### Aplicar o plano no lead
 1. Revise o diagnóstico com calma.
 2. Toque em **Executar Plano Estratégico**.
-3. O lead é atualizado (temperatura, status, resumo, observações e próximo contato) e, se o caso for urgente, uma tarefa de follow-up entra no Painel Operacional.
+3. O lead é atualizado (resumo, próximo contato e observações) e, se o caso for urgente, uma tarefa de follow-up entra no Painel Operacional.
 
 ## Perguntas frequentes
 
 **O que acontece exatamente quando executo o plano?**
-O sistema grava a estratégia no lead: atualiza temperatura, status, resumo, a data do próximo contato e **substitui o campo Observações** pela estratégia da IA. Se você tem anotações importantes nas Observações, copie-as antes (o histórico de contatos não é apagado).
+O sistema grava a estratégia no lead: atualiza o resumo e a data do próximo contato e **acrescenta** a estratégia da IA no fim do campo Observações, com a data da análise. O que já estava escrito continua lá. Temperatura e status não mudam; se quiser, ajuste na ficha do lead. A análise também entra no histórico do lead.
 
 **A análise é confiável?**
 É uma recomendação, não uma certeza. Ela combina os dados do lead (tempo sem contato, temperatura, status, valor) com inteligência artificial. Use como apoio à sua leitura do cliente — a decisão final é sua.

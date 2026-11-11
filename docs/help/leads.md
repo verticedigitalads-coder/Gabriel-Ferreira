@@ -34,7 +34,7 @@ Gerencie clientes e oportunidades, acompanhe negociações e mantenha todo o his
 ## Perguntas frequentes
 
 **O botão de WhatsApp abre as conversas de dentro do CRM?**
-Não — ele abre o aplicativo WhatsApp do seu celular/computador com uma saudação pronta. As conversas dentro do CRM ficam na tela WhatsApp do menu.
+Não — ele abre o aplicativo WhatsApp do seu celular/computador com uma saudação pronta.
 
 **Qual a diferença entre o telefoninho verde do card e o Registrar Contato da ficha?**
 O botão do card só marca "falei com ele agora" (atualiza a data do último contato, sem anotação). O da ficha pede uma descrição e guarda tudo no histórico. Para manter o histórico completo, prefira o da ficha.
