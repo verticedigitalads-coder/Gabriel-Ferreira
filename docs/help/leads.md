@@ -40,7 +40,7 @@ Não — ele abre o aplicativo WhatsApp do seu celular/computador com uma sauda�
 O botão do card só marca "falei com ele agora" (atualiza a data do último contato, sem anotação). O da ficha pede uma descrição e guarda tudo no histórico. Para manter o histórico completo, prefira o da ficha.
 
 **A IA detecta visita marcada na conversa?**
-Sim. Se a conversa colada mencionar uma visita com data, o sistema cria a tarefa de visita no Painel Operacional e avisa na tela.
+Sim. Se a conversa colada mencionar uma visita com data, o sistema cria a tarefa de visita no Painel Operacional e avisa na tela. Se a conversa falar de visita mas sem data, a tarefa é criada para hoje; para mudar, edite a data da tarefa no Painel Operacional. Se a data da visita não for reconhecida, o lead é criado sem a tarefa e o aviso diz "A data da visita não foi reconhecida". Nesse caso, abra a ficha do lead e toque em **Marcar Visita** para agendar.
 
 **Por que alguns cards ficam com fundo avermelhado?**
 São leads há 5 dias ou mais sem contato — o sistema destaca para a negociação não esfriar.

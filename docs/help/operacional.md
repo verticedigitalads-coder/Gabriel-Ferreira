@@ -42,14 +42,22 @@ Organize as atividades da equipe, acompanhe o andamento das tarefas e mantenha t
 
 ## Perguntas frequentes
 
-**Toquei em "Adicionar Tarefa" e nada aconteceu.**
-Título e data são obrigatórios. Se um deles estiver vazio, a tarefa não é criada — preencha os dois e tente de novo.
+**Apareceu um aviso embaixo do título ou da data ao criar a tarefa.**
+Título e data são obrigatórios. Se um deles estiver vazio, a tarefa não é criada e o campo mostra o aviso: "Escreva o título da tarefa." ou "Escolha a data da tarefa.". Preencha e toque em **Adicionar Tarefa** de novo. Ao editar uma tarefa, a data também não pode ficar vazia.
 
 **Apareceu uma tarefa chamada "Nova tarefa" que eu não digitei.**
 O atalho "+ adicionar" do calendário do mês cria uma tarefa pronta com esse nome, para você ganhar tempo. Toque no lápis para renomear e ajustar.
 
 **Qual a diferença entre concluir e mudar o status?**
 São controles separados. O status (Pendente/Em produção/Pronto/Instalado) mostra o andamento da produção; concluir tira a tarefa da lista de pendentes. Marcar "Instalado" não conclui sozinho — conclua no círculo quando encerrar.
+
+**Por que está tudo em Pendente na Linha de produção?**
+A Linha de produção conta os serviços (as tarefas "Executar serviço" que o sistema cria quando você marca um negócio como Fechado) em cada etapa. Todo serviço começa em Pendente, e a etapa só muda quando alguém troca na tarefa. Se ninguém trocou, tudo fica em Pendente — é normal, não é erro. Para mudar a etapa:
+1. Vá até **Serviços em acompanhamento**.
+2. No serviço, toque na etapa: Pendente, Em produção, Pronto ou Instalado.
+3. O número da Linha de produção muda na hora.
+
+Também dá para trocar nas seções **Hoje** e **Atrasadas**, quando o serviço aparece nelas, ou no campo **Status** de **Editar tarefa** (lápis na visão Semana ou Mês). Quando o serviço terminar, conclua a tarefa: ela sai da Linha de produção.
 
 **Minha tarefa de hoje aparece também em "Próximos Dias"?**
 Não. "Próximos Dias" mostra só as tarefas de amanhã em diante. A tarefa de hoje aparece apenas em "Hoje" (e no calendário).
