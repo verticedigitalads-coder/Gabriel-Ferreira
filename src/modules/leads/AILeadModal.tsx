@@ -126,8 +126,9 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
       analysis.dataVisitaSugerida || format(new Date(), 'yyyy-MM-dd');
     const dataVisitaValida = isValidDateInput(dataVisita);
 
+    let tarefaOk = true;
     if (visitaSugerida && dataVisitaValida) {
-      await addOperacionalTask({
+      tarefaOk = await addOperacionalTask({
         titulo: `Visita orçamento - ${analysis.nome || 'Cliente'}`,
         descricao: analysis.endereco ? `Endereço: ${analysis.endereco}` : 'Endereço não identificado',
         data: dataVisita,
@@ -137,14 +138,22 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
       });
     }
 
-    addToast({
-      type: 'success',
-      message: !visitaSugerida
-        ? 'Lead criado! Nenhuma visita detectada na conversa.'
-        : dataVisitaValida
-          ? 'Lead criado! Tarefa de visita agendada no Operacional.'
-          : 'Lead criado! A data da visita não foi reconhecida. Agende em Marcar Visita, na ficha do lead.',
-    });
+    // Tarefa recusada pelo banco: o slice já mostrou o erro; aqui não diz "agendada".
+    addToast(
+      !tarefaOk
+        ? {
+            type: 'warning',
+            message: 'Lead criado! A tarefa de visita não foi criada. Agende em Marcar Visita, na ficha do lead.',
+          }
+        : {
+            type: 'success',
+            message: !visitaSugerida
+              ? 'Lead criado! Nenhuma visita detectada na conversa.'
+              : dataVisitaValida
+                ? 'Lead criado! Tarefa de visita agendada no Operacional.'
+                : 'Lead criado! A data da visita não foi reconhecida. Agende em Marcar Visita, na ficha do lead.',
+          },
+    );
 
     onClose();
     resetState();

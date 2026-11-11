@@ -7,6 +7,7 @@ import { useStore } from '@/store/useStore';
 import { apiFetch } from '@/lib/apiFetch';
 import { buildSupportWhatsappUrl } from '@/lib/support';
 import { cn } from '@/utils/cn';
+import featureFlags from '../../feature-flags.json';
 
 interface HelpMessage {
   id: string;
@@ -17,7 +18,8 @@ interface HelpMessage {
 const SUGGESTION_CHIPS = [
   'Como criar meu primeiro orçamento?',
   'Como configurar meu PIX?',
-  'Como conectar o WhatsApp?',
+  // Some com o módulo oculto (mesma flag do Sidebar).
+  ...(featureFlags.MODULO_WHATSAPP_VISIVEL ? ['Como conectar o WhatsApp?'] : []),
 ];
 
 interface HelpPanelProps {

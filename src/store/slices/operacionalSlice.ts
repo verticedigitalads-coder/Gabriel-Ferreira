@@ -32,6 +32,8 @@ export const createOperacionalSlice = (set: any, get: any) => ({
       concluido: false,
       created_at: now,
       updated_at: now,
+      // Só entra quando quem chama manda (endereço da visita, mensagem sugerida da IA).
+      ...(taskData.descricao !== undefined ? { descricao: taskData.descricao } : {}),
     };
 
     const { data, error } = await supabase
