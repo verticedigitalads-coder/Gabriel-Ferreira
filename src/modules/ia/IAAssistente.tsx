@@ -157,10 +157,11 @@ export function IAAssistente() {
   ],
 })
 
+    let tarefaOk = true
     if (analysis.nivelDeUrgencia >= 3) {
       // A tarefa exige yyyy-MM-dd; o diagnóstico manda ISO em UTC, então vira o dia local.
       const v = analysis.dataIdealFollowUp
-      await addOperacionalTask({
+      tarefaOk = await addOperacionalTask({
         leadId: selectedLead.id,
         titulo: `Follow-up - ${selectedLead.nome}`,
         data: isValidDateInput(v) ? v : format(new Date(v), 'yyyy-MM-dd'),
@@ -175,7 +176,13 @@ export function IAAssistente() {
       })
     }
 
-    addToast({ type: 'success', message: 'Estratégia aplicada com sucesso!' })
+    // O lead já foi gravado: fecha o preview mesmo se a tarefa falhar (o slice já mostrou o erro),
+    // para não aplicar de novo e duplicar o bloco "[Plano IA]" nas observações.
+    addToast(
+      tarefaOk
+        ? { type: 'success', message: 'Estratégia aplicada com sucesso!' }
+        : { type: 'warning', message: 'Estratégia aplicada! A tarefa de follow-up não foi criada. Crie no Operacional.' }
+    )
     setShowPreview(false)
     setAnalysis(null)
     setSelectedLeadId('')

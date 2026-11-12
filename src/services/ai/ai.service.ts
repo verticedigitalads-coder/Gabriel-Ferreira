@@ -1,7 +1,9 @@
 import { Lead, LeadStatus, LeadTemperature, LeadOrigin, LeadPrazo, HISTORICO_TIPO } from '@/types';
 import { calculatePriority } from '@/lib/priority';
 import { apiFetch } from '@/lib/apiFetch';
-import { format } from 'date-fns';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { isValidDateInput } from '@/utils/date';
 
 export interface AIAnalysisResult {
   nome: string | null;
@@ -31,6 +33,10 @@ export interface AIAnalysisResult {
 }
 
 function buildExtractionPrompt(conversation: string): string {
+  const agora = new Date();
+  const hoje = format(agora, 'yyyy-MM-dd');
+  const diaSemana = format(agora, 'EEEE', { locale: ptBR });
+
   return `
 Extraia os dados abaixo de uma conversa de WhatsApp entre uma empresa de serralheria/marcenaria/reformas e um cliente.
 Nunca invente. Se não tiver certeza de um campo, retorne null para ele.
@@ -38,6 +44,11 @@ Nunca invente. Se não tiver certeza de um campo, retorne null para ele.
 ===== CONVERSA =====
 ${conversation}
 ===== FIM DA CONVERSA =====
+
+Hoje é ${diaSemana}, ${hoje}. Para dataVisitaSugerida, converta datas relativas a partir de hoje:
+- "amanhã", "sexta", "segunda que vem": o próximo dia correspondente depois de hoje;
+- "dia 5" sem mês: o próximo dia 5 a partir de hoje;
+- dia e mês sem ano ("12/11"): o ano atual, ou o próximo ano se essa data já passou há mais de 30 dias.
 
 Responda SOMENTE em JSON válido com estas chaves (use null quando não tiver certeza):
 
@@ -731,8 +742,15 @@ export class AIService {
     const match = text.match(/\d{1,2}\/\d{1,2}/);
 
     if (match) {
-      const year = new Date().getFullYear();
-      return `${year}-${match[0].split('/').reverse().map((p) => p.padStart(2, '0')).join('-')}`;
+      const [dia, mes] = match[0].split('/').map((p) => p.padStart(2, '0'));
+      const ano = new Date().getFullYear();
+      const data = `${ano}-${mes}-${dia}`;
+      // Sem ano: data que já passou há mais de 30 dias é do ano que vem ("5/1" dito em novembro).
+      // Dia que não existe ("31/02") sai como está; o convertToLead não o grava no lead.
+      if (isValidDateInput(data) && differenceInCalendarDays(new Date(), parseISO(data)) > 30) {
+        return `${ano + 1}-${mes}-${dia}`;
+      }
+      return data;
     }
 
     return null;
@@ -785,7 +803,10 @@ export class AIService {
       prazoCliente: analysis.prazoCliente || 'nao_definido',
       probabilidadeManual: 3,
 
-      visitaOrcamentoData: analysis.dataVisitaSugerida || undefined,
+      // Data que não existe ("2026-02-31") ou texto livre da IA não vai para a coluna date do lead.
+      visitaOrcamentoData: isValidDateInput(analysis.dataVisitaSugerida)
+        ? analysis.dataVisitaSugerida
+        : undefined,
       visitaOrcamentoPeriodo: analysis.visitaOrcamentoPeriodo || undefined,
 
       ultimoContato: analysis.ultimoContato || format(new Date(), 'yyyy-MM-dd'),
