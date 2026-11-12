@@ -12,6 +12,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { pixPayload } from './utils/pixPayload.js';
+import {
+  GATEWAYS,
+  gatewayAtual,
+  VALOR_MENSAL,
+  soDigitos,
+  validarCpfCnpj,
+  validarCelular,
+  hojeSaoPaulo,
+  periodoFimDe,
+} from './utils/billing/index.js';
 
 dotenv.config({ path: './.env' });
 
@@ -2121,6 +2131,21 @@ app.post(
           .json({ error: 'Erro ao criar workspace: ' + wsError.message });
       }
 
+      // 1b. Linha de assinatura isenta (cliente fechado pelo Admin não cai no
+      // checkout; mesmo formato do seed da R1). Empresa nunca fica sem ela: se o
+      // insert falhar, o workspace é apagado (a cascata leva o que dependeria dele).
+      const { error: assError } = await supabaseAdmin
+        .from('assinaturas')
+        .insert({ workspace_id: workspace.id, status: 'ativa', isento: true });
+
+      if (assError) {
+        console.error('[Admin] Erro ao criar assinatura isenta:', assError.code);
+        await supabaseAdmin.from('workspaces').delete().eq('id', workspace.id);
+        return res
+          .status(500)
+          .json({ error: 'Erro ao criar assinatura isenta: ' + assError.message });
+      }
+
       // 2. Criar usuário via admin API
       const { data: userResult, error: userError } =
         await supabaseAdmin.auth.admin.createUser({
@@ -2169,6 +2194,517 @@ app.post(
     }
   },
 );
+
+/* ==========================================
+💳 COBRANÇA — onboarding, assinatura e webhook do gateway (R2)
+========================================== */
+
+// Plano: _build/plano-assinatura.md. Escrita em assinaturas/assinatura_eventos só
+// por aqui (service_role). Logs sem dado pessoal, sem chave, sem token:
+// [assinatura/<rota>] <gateway> ok|duplicado|erro <code>.
+
+// Porta fechada até a R3 ligar a flag ASSINATURA_ATIVA junto com o gate do app.
+// ASSINATURA_ROTAS_TESTE=true só no .env LOCAL, nunca na VPS. O webhook fica fora
+// da porta (sempre ativo, validado pelo token).
+function portaAssinaturaAberta(res) {
+  if (featureFlags.ASSINATURA_ATIVA === true) return true;
+  if (process.env.ASSINATURA_ROTAS_TESTE === 'true') return true;
+  res.status(404).json({ error: 'Não encontrado' });
+  return false;
+}
+
+// Trava de dinheiro real: fora do sandbox, as rotas de assinatura só respondem com
+// ASAAS_PRODUCAO_LIBERADA=true (a R6 liga, junto com as chaves de produção).
+const ASAAS_SANDBOX_URL = 'https://api-sandbox.asaas.com/v3';
+function dinheiroRealLiberado(res) {
+  if (process.env.ASAAS_API_URL === ASAAS_SANDBOX_URL) return true;
+  if (process.env.ASAAS_PRODUCAO_LIBERADA === 'true') return true;
+  res.status(503).json({ error: 'Cobrança indisponível no momento' });
+  return false;
+}
+
+const logAssinatura = (rota, resultado, codigo) =>
+  console.log(
+    `[assinatura/${rota}] asaas ${resultado}${codigo ? ' ' + codigo : ''}`,
+  );
+
+const codigoErro = (err) =>
+  err?.codigo || err?.status || err?.code || 'sem-codigo';
+
+// Dono = membership 'owner' conferida via service_role com filtro explícito de
+// user_id (o service_role ignora a RLS; mesmo padrão do assertInstanceOwnership).
+async function ehDonoDoWorkspace(admin, workspaceId, userId) {
+  if (typeof workspaceId !== 'string' || !workspaceId || !userId) return false;
+  const { data, error } = await admin
+    .from('workspace_members')
+    .select('user_id')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .eq('role', 'owner')
+    .maybeSingle();
+  if (error) throw error;
+  return !!data;
+}
+
+// Trava em memória por workspace: duplo clique, duas abas ou retry do mesmo
+// workspace rodam um de cada vez (o backend é 1 processo PM2 em fork). A busca por
+// externalReference no gateway cobre queda no meio do checkout.
+const travasAssinatura = new Map();
+function comTravaAssinatura(chave, fn) {
+  const anterior = travasAssinatura.get(chave) || Promise.resolve();
+  const atual = anterior.catch(() => {}).then(fn);
+  travasAssinatura.set(chave, atual);
+  const limpar = () => {
+    if (travasAssinatura.get(chave) === atual) travasAssinatura.delete(chave);
+  };
+  atual.then(limpar, limpar);
+  return atual;
+}
+
+async function lerAssinatura(admin, workspaceId) {
+  const { data, error } = await admin
+    .from('assinaturas')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Aplica a consulta do gateway (webhook e sincronizar). O status vem sempre da
+// consulta; o periodo_fim só SOBE (update condicional), então evento fora de ordem
+// não faz regredir. Linha cancelada com cancelada_em fica congelada: sem isso, um
+// evento depois de um estorno religaria o acesso. Só o nosso cancelar e o estorno
+// gravam cancelada_em: assinatura pausada (INACTIVE) ou removida pelo painel vira
+// "cancelada" SEM cancelada_em, para que, reativada no painel e paga, volte a
+// "ativa". O estorno é a única escrita que baixa o periodo_fim e não passa por aqui.
+async function aplicarConsultaAssinatura(admin, linha, consulta) {
+  if (linha.status === 'cancelada' && linha.cancelada_em) return 'congelada';
+  const agora = new Date().toISOString();
+  const { error: e1 } = await admin
+    .from('assinaturas')
+    .update({ status: consulta.status, updated_at: agora })
+    .eq('workspace_id', linha.workspace_id);
+  if (e1) throw e1;
+
+  const novoFim = periodoFimDe(consulta.vencimentoUltimaPaga);
+  if (novoFim) {
+    const { error: e2 } = await admin
+      .from('assinaturas')
+      .update({ periodo_fim: novoFim, updated_at: agora })
+      .eq('workspace_id', linha.workspace_id)
+      .or(`periodo_fim.is.null,periodo_fim.lt."${novoFim}"`);
+    if (e2) throw e2;
+  }
+  return 'aplicada';
+}
+
+// Estorno: cancela a renovação no gateway e corta o acesso agora. Única escrita que
+// pode baixar o periodo_fim (só baixa: se já estiver no passado, fica). O corte usa
+// 1 minuto de margem para trás: o acesso_workspace compara com o now() do Postgres,
+// e um relógio do servidor adiantado deixaria o acesso aberto por alguns instantes.
+async function aplicarEstornoAssinatura(admin, gateway, linha, timeoutMs) {
+  await gateway.cancelar({ assinaturaId: linha.gateway_assinatura_id, timeoutMs });
+  const agora = new Date().toISOString();
+  const corte = new Date(Date.now() - 60000).toISOString();
+  const { error: e1 } = await admin
+    .from('assinaturas')
+    .update({
+      status: 'cancelada',
+      cancelada_em: linha.cancelada_em || agora,
+      updated_at: agora,
+    })
+    .eq('workspace_id', linha.workspace_id);
+  if (e1) throw e1;
+  const { error: e2 } = await admin
+    .from('assinaturas')
+    .update({ periodo_fim: corte, updated_at: agora })
+    .eq('workspace_id', linha.workspace_id)
+    .or(`periodo_fim.is.null,periodo_fim.gt."${corte}"`);
+  if (e2) throw e2;
+}
+
+/* ---------- POST /api/onboarding/empresa ---------- */
+
+// Cria a empresa de quem entrou com Google sem empresa. Idempotente pela própria
+// função (advisory lock + "já tem membership → devolve a mais antiga"). Segmento:
+// "Marcenaria" → marcenaria; o resto → metalurgica (os dois valores que o app lê).
+app.post(
+  '/api/onboarding/empresa',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    if (!portaAssinaturaAberta(res)) return;
+    const nome = typeof req.body?.nome === 'string' ? req.body.nome.trim() : '';
+    const segmento =
+      typeof req.body?.segmento === 'string' ? req.body.segmento.trim() : '';
+    if (
+      nome.length < 2 ||
+      nome.length > 80 ||
+      !LANDING_SEGMENTOS.includes(segmento)
+    ) {
+      return res.status(400).json({ error: 'Dados inválidos' });
+    }
+    try {
+      const { data, error } = await getSupabaseAdmin().rpc(
+        'criar_empresa_onboarding',
+        {
+          p_user_id: req.user.id,
+          p_nome: nome,
+          p_segment: segmento === 'Marcenaria' ? 'marcenaria' : 'metalurgica',
+        },
+      );
+      if (error) throw error;
+      logAssinatura('onboarding', 'ok');
+      return res.status(201).json({ workspace_id: data });
+    } catch (err) {
+      logAssinatura('onboarding', 'erro', codigoErro(err));
+      return res.status(500).json({ error: 'Erro ao criar empresa' });
+    }
+  },
+);
+
+/* ---------- POST /api/assinatura/checkout ---------- */
+
+// Ordem das regras: isento → 409; ativa/atrasada → 409 (o caminho é o
+// Regularizar); cancelada ainda dentro do período pago → 409 sem mexer em nada;
+// pendente com assinatura viva → devolve a mesma URL; resto → cria assinatura nova
+// (cancelando a velha no gateway, se ainda existir). CPF/CNPJ e celular só são
+// repassados ao gateway: não vão para o banco nem para o log.
+app.post(
+  '/api/assinatura/checkout',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    if (!portaAssinaturaAberta(res) || !dinheiroRealLiberado(res)) return;
+    const workspaceId = req.body?.workspace_id;
+    const cpfCnpj = soDigitos(req.body?.cpf_cnpj);
+    const celular = soDigitos(req.body?.celular);
+    if (!validarCpfCnpj(cpfCnpj) || !validarCelular(celular)) {
+      return res.status(400).json({ error: 'Dados inválidos' });
+    }
+    if (!process.env.APP_URL) {
+      logAssinatura('checkout', 'erro', 'APP_URL ausente');
+      return res.status(500).json({ error: 'Cobrança indisponível no momento' });
+    }
+    try {
+      const admin = getSupabaseAdmin();
+      if (!(await ehDonoDoWorkspace(admin, workspaceId, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
+      const gateway = gatewayAtual();
+      const resultado = await comTravaAssinatura(workspaceId, async () => {
+        const linha = await lerAssinatura(admin, workspaceId);
+        if (!linha) return { http: 409, corpo: { error: 'sem_assinatura' } };
+        if (linha.isento) return { http: 409, corpo: { error: 'isento' } };
+        if (linha.status === 'ativa' || linha.status === 'atrasada') {
+          return { http: 409, corpo: { error: 'ja_assinada' } };
+        }
+        if (
+          linha.status === 'cancelada' &&
+          linha.periodo_fim &&
+          Date.now() < new Date(linha.periodo_fim).getTime()
+        ) {
+          return { http: 409, corpo: { error: 'periodo_pago_vigente' } };
+        }
+        if (linha.status === 'pendente' && linha.gateway_assinatura_id) {
+          const url = await gateway.urlAssinaturaViva(linha.gateway_assinatura_id);
+          if (url) return { http: 200, corpo: { url }, resultado: 'mesma' };
+        }
+        if (linha.status === 'cancelada' && linha.gateway_assinatura_id) {
+          await gateway.cancelar({ assinaturaId: linha.gateway_assinatura_id });
+        }
+
+        const { data: ws, error: wsErr } = await admin
+          .from('workspaces')
+          .select('nome')
+          .eq('id', workspaceId)
+          .single();
+        if (wsErr) throw wsErr;
+
+        const criado = await gateway.criarCheckout({
+          workspaceId,
+          nomeEmpresa: ws.nome,
+          email: req.user.email,
+          cpfCnpj,
+          celular,
+          valor: VALOR_MENSAL,
+          vencimentoHoje: hojeSaoPaulo(),
+          urlRetorno: `${process.env.APP_URL}/?assinatura=retorno`,
+          clienteId: linha.gateway_cliente_id,
+        });
+        const { error: upErr } = await admin
+          .from('assinaturas')
+          .update({
+            gateway: 'asaas',
+            gateway_cliente_id: criado.clienteId,
+            gateway_assinatura_id: criado.assinaturaId,
+            status: 'pendente',
+            cancelada_em: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('workspace_id', workspaceId);
+        if (upErr) throw upErr;
+        return { http: 200, corpo: { url: criado.url }, resultado: 'criada' };
+      });
+      logAssinatura(
+        'checkout',
+        resultado.http === 200 ? 'ok' : 'erro',
+        resultado.resultado || resultado.corpo.error,
+      );
+      return res.status(resultado.http).json(resultado.corpo);
+    } catch (err) {
+      logAssinatura('checkout', 'erro', codigoErro(err));
+      return res.status(502).json({ error: 'Erro ao iniciar a assinatura' });
+    }
+  },
+);
+
+/* ---------- POST /api/assinatura/regularizar ---------- */
+
+// Link da fatura em aberto (a vencida mais antiga primeiro). Pagar com outro cartão
+// nessa página troca o cartão da renovação (visto no sandbox) e ela volta sozinha
+// para o app (o callback da assinatura vale para todas as cobranças).
+app.post(
+  '/api/assinatura/regularizar',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    if (!portaAssinaturaAberta(res) || !dinheiroRealLiberado(res)) return;
+    const workspaceId = req.body?.workspace_id;
+    try {
+      const admin = getSupabaseAdmin();
+      if (!(await ehDonoDoWorkspace(admin, workspaceId, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
+      const linha = await lerAssinatura(admin, workspaceId);
+      if (!linha?.gateway_assinatura_id || linha.isento) {
+        return res.status(409).json({ error: 'sem_assinatura' });
+      }
+      const url = await GATEWAYS[linha.gateway].linkRegularizar({
+        assinaturaId: linha.gateway_assinatura_id,
+      });
+      if (!url) return res.status(409).json({ error: 'nada_em_aberto' });
+      logAssinatura('regularizar', 'ok');
+      return res.json({ url });
+    } catch (err) {
+      logAssinatura('regularizar', 'erro', codigoErro(err));
+      return res.status(502).json({ error: 'Erro ao abrir a fatura' });
+    }
+  },
+);
+
+/* ---------- POST /api/assinatura/cancelar ---------- */
+
+// Cancela a renovação no gateway. O acesso segue até o fim do período pago
+// (periodo_fim fica). Nunca pagou (pendente) → continua pendente.
+app.post(
+  '/api/assinatura/cancelar',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    if (!portaAssinaturaAberta(res) || !dinheiroRealLiberado(res)) return;
+    const workspaceId = req.body?.workspace_id;
+    try {
+      const admin = getSupabaseAdmin();
+      if (!(await ehDonoDoWorkspace(admin, workspaceId, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
+      const resultado = await comTravaAssinatura(workspaceId, async () => {
+        const linha = await lerAssinatura(admin, workspaceId);
+        if (!linha?.gateway_assinatura_id || linha.isento) {
+          return { http: 409, corpo: { error: 'sem_assinatura' } };
+        }
+        if (linha.status === 'cancelada') {
+          return { http: 200, corpo: { status: 'cancelada' } };
+        }
+        await GATEWAYS[linha.gateway].cancelar({
+          assinaturaId: linha.gateway_assinatura_id,
+        });
+        const agora = new Date().toISOString();
+        const novoStatus = linha.status === 'pendente' ? 'pendente' : 'cancelada';
+        const { error } = await admin
+          .from('assinaturas')
+          .update({
+            status: novoStatus,
+            cancelada_em: novoStatus === 'cancelada' ? agora : null,
+            updated_at: agora,
+          })
+          .eq('workspace_id', workspaceId);
+        if (error) throw error;
+        return { http: 200, corpo: { status: novoStatus } };
+      });
+      logAssinatura('cancelar', resultado.http === 200 ? 'ok' : 'erro', resultado.corpo.error);
+      return res.status(resultado.http).json(resultado.corpo);
+    } catch (err) {
+      logAssinatura('cancelar', 'erro', codigoErro(err));
+      return res.status(502).json({ error: 'Erro ao cancelar a assinatura' });
+    }
+  },
+);
+
+/* ---------- POST /api/assinatura/sincronizar ---------- */
+
+// Consulta o gateway e aplica (cobre webhook perdido): volta do checkout e "Já paguei".
+app.post(
+  '/api/assinatura/sincronizar',
+  requireAuth,
+  strictLimiter,
+  async (req, res) => {
+    if (!portaAssinaturaAberta(res) || !dinheiroRealLiberado(res)) return;
+    const workspaceId = req.body?.workspace_id;
+    try {
+      const admin = getSupabaseAdmin();
+      if (!(await ehDonoDoWorkspace(admin, workspaceId, req.user.id))) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
+      const linha = await lerAssinatura(admin, workspaceId);
+      if (!linha) return res.status(409).json({ error: 'sem_assinatura' });
+      if (!linha.isento && linha.gateway_assinatura_id) {
+        const consulta = await GATEWAYS[linha.gateway].consultar({
+          assinaturaId: linha.gateway_assinatura_id,
+        });
+        await aplicarConsultaAssinatura(admin, linha, consulta);
+      }
+      const atual = await lerAssinatura(admin, workspaceId);
+      logAssinatura('sincronizar', 'ok');
+      return res.json({
+        status: atual.status,
+        isento: atual.isento,
+        periodo_fim: atual.periodo_fim,
+      });
+    } catch (err) {
+      logAssinatura('sincronizar', 'erro', codigoErro(err));
+      return res.status(502).json({ error: 'Erro ao sincronizar a assinatura' });
+    }
+  },
+);
+
+/* ---------- POST /webhook/assinatura/:gateway ---------- */
+
+// 1) gateway desconhecido → 404; token inválido → 401. 2) Grava o evento (sem o
+// creditCardToken); repetido e já processado → 200 "duplicado"; repetido sem
+// processado_em → reprocessa. 3) Assinatura desconhecida ou referência divergente
+// → grava o erro e responde 200 (o Asaas pausa a fila após 15 falhas). 4) Estorno →
+// cancela e corta o acesso; 1ª cobrança vencida de assinatura que nunca foi paga
+// (checkout abandonado) → remove a assinatura e o workspace segue "pendente";
+// demais → consulta e aplica. 5) 500 só em falha de banco ou do gateway (reenvia).
+// Chamadas ao gateway com timeout curto para responder em menos de 10s.
+const TIMEOUT_WEBHOOK = 4000;
+
+app.post('/webhook/assinatura/:gateway', async (req, res) => {
+  const nomeGateway = req.params.gateway;
+  const gateway = Object.hasOwn(GATEWAYS, nomeGateway) ? GATEWAYS[nomeGateway] : null;
+  if (!gateway) return res.status(404).json({ error: 'Não encontrado' });
+  if (!gateway.validarWebhook(req, safeEqual)) {
+    logAssinatura('webhook', 'erro', 401);
+    return res.status(401).json({ error: 'Não autorizado' });
+  }
+
+  const ev = gateway.extrairEvento(req.body);
+  if (!ev.eventoId || !ev.tipo) {
+    logAssinatura('webhook', 'erro', 'sem_id');
+    return res.status(200).json({ status: 'ignorado' });
+  }
+
+  try {
+    const admin = getSupabaseAdmin();
+    let eventoRowId;
+    const { data: novo, error: insErr } = await admin
+      .from('assinatura_eventos')
+      .insert({
+        gateway: nomeGateway,
+        evento_id: ev.eventoId,
+        tipo: ev.tipo,
+        payload: gateway.payloadParaGuardar(req.body),
+      })
+      .select('id')
+      .single();
+    if (insErr) {
+      if (insErr.code !== '23505') throw insErr;
+      const { data: existente, error: selErr } = await admin
+        .from('assinatura_eventos')
+        .select('id, processado_em')
+        .eq('gateway', nomeGateway)
+        .eq('evento_id', ev.eventoId)
+        .single();
+      if (selErr) throw selErr;
+      if (existente.processado_em) {
+        logAssinatura('webhook', 'duplicado');
+        return res.status(200).json({ status: 'duplicado' });
+      }
+      eventoRowId = existente.id;
+    } else {
+      eventoRowId = novo.id;
+    }
+
+    const fechar = async (erro, workspaceId) => {
+      const campos = { processado_em: new Date().toISOString(), erro: erro || null };
+      if (workspaceId) campos.workspace_id = workspaceId;
+      const { error } = await admin
+        .from('assinatura_eventos')
+        .update(campos)
+        .eq('id', eventoRowId);
+      if (error) throw error;
+    };
+
+    if (!ev.assinaturaId) {
+      await fechar('sem_assinatura');
+      logAssinatura('webhook', 'erro', 'sem_assinatura');
+      return res.status(200).json({ status: 'sem_assinatura' });
+    }
+    const { data: linha, error: linhaErr } = await admin
+      .from('assinaturas')
+      .select('*')
+      .eq('gateway', nomeGateway)
+      .eq('gateway_assinatura_id', ev.assinaturaId)
+      .maybeSingle();
+    if (linhaErr) throw linhaErr;
+    if (!linha) {
+      await fechar('assinatura_desconhecida');
+      logAssinatura('webhook', 'erro', 'assinatura_desconhecida');
+      return res.status(200).json({ status: 'assinatura_desconhecida' });
+    }
+    if (ev.externalReference && ev.externalReference !== linha.workspace_id) {
+      await fechar('referencia_divergente', linha.workspace_id);
+      logAssinatura('webhook', 'erro', 'referencia_divergente');
+      return res.status(200).json({ status: 'referencia_divergente' });
+    }
+
+    if (ev.estorno) {
+      await aplicarEstornoAssinatura(admin, gateway, linha, TIMEOUT_WEBHOOK);
+      await fechar(null, linha.workspace_id);
+      logAssinatura('webhook', 'ok', 'estorno');
+      return res.status(200).json({ status: 'ok' });
+    }
+
+    let consulta = await gateway.consultar({
+      assinaturaId: ev.assinaturaId,
+      timeoutMs: TIMEOUT_WEBHOOK,
+    });
+    if (ev.vencida && consulta.nuncaPaga && !consulta.removida) {
+      await gateway.cancelar({ assinaturaId: ev.assinaturaId, timeoutMs: TIMEOUT_WEBHOOK });
+      consulta = { ...consulta, removida: true, status: 'pendente' };
+    }
+    await aplicarConsultaAssinatura(admin, linha, consulta);
+
+    // 'pago_no_debito' no campo erro é AVISO, não falha de processamento: o evento
+    // foi processado (processado_em preenchido) e o status não muda. Marca quem pagou
+    // a última cobrança no cartão de débito: sem renovação automática, cada mês vira
+    // fatura manual. 'sem_vencimento' = paga sem data: o periodo_fim não foi mexido.
+    const aviso = consulta.semVencimento
+      ? 'sem_vencimento'
+      : consulta.pagoNoDebito
+        ? 'pago_no_debito'
+        : null;
+    await fechar(aviso, linha.workspace_id);
+    logAssinatura('webhook', 'ok', aviso);
+    return res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    logAssinatura('webhook', 'erro', codigoErro(err));
+    return res.status(500).json({ status: 'erro' });
+  }
+});
 
 /* ==========================================
 📲 WEBHOOK EVOLUTION API (WhatsApp)
