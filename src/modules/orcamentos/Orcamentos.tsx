@@ -187,6 +187,11 @@ export function Orcamentos() {
           cliente_telefone: primeiro.clienteTelefone || lead?.telefone || '',
           cliente_endereco: primeiro.clienteEndereco || lead?.endereco || '',
           mostrar_total_geral: true,
+          // Condição de validade única no PDF agrupado: vale a menor entre os selecionados
+          // (mesma regra do PDF simples por orçamento).
+          validade: Math.min(
+            ...orcsSelecionados.map((o) => o.validadeEmDias ?? defaultSettings.validadePadraoOrcamento),
+          ),
           template_version: 'v2',
           empresa_nome: defaultSettings.empresaNome,
           empresa_telefone: defaultSettings.empresaTelefone,

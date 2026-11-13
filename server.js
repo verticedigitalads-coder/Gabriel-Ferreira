@@ -114,8 +114,13 @@ function itemCardHtml(item, idx) {
 }
 
 // Tabela-resumo compacta (v3): itens + desconto opcional + TOTAL GERAL.
-function resumoTabelaHtml(itensParaExibir, descontoNum, total) {
-  if (!itensParaExibir.length) return '';
+// A faixa TOTAL GERAL fica fora da tabela, presa ao quadro de observações
+// (obsBox) num bloco que não quebra: o TOTAL GERAL nunca termina uma página
+// sem a observação logo abaixo. As linhas da tabela correm entre páginas.
+function resumoTabelaHtml(itensParaExibir, descontoNum, total, obsBox = '') {
+  if (!itensParaExibir.length) {
+    return obsBox ? `<div class="secao no-break">${obsBox}</div>` : '';
+  }
   const linhas = itensParaExibir
     .map(
       (item) => `
@@ -132,7 +137,7 @@ function resumoTabelaHtml(itensParaExibir, descontoNum, total) {
       ? `<tr><td colspan="3" class="right">Desconto</td><td class="right">- R$ ${fmtBRL(descontoNum)}</td></tr>`
       : '';
   return `
-    <div class="secao resumo no-break">
+    <div class="secao resumo">
       <div class="secao-titulo"><span class="icon">🧾</span> Resumo do orçamento</div>
       <table>
         <thead>
@@ -146,9 +151,12 @@ function resumoTabelaHtml(itensParaExibir, descontoNum, total) {
         <tbody>
           ${linhas}
           ${descontoRow}
-          <tr class="total-geral"><td colspan="3">TOTAL GERAL</td><td class="right">R$ ${fmtBRL(total)}</td></tr>
         </tbody>
       </table>
+      <div class="no-break">
+        <div class="total-geral-faixa"><span>TOTAL GERAL</span><span>R$ ${fmtBRL(total)}</span></div>
+        ${obsBox}
+      </div>
     </div>`;
 }
 
@@ -162,9 +170,10 @@ function caixaTotalHtml(total, label = 'Valor total do orçamento') {
       </div>`;
 }
 
-// Bloco de observações (v3) — combina observações do usuário + itens de valor 0.
+// Quadro de observações (v3) — combina observações do usuário + itens de valor 0.
 // Com observação escrita: quadro em destaque "Importante". Só itens de valor 0:
-// quadro cinza "Observações", como antes.
+// quadro cinza "Observações", como antes. Devolve só o quadro, sem .secao:
+// quem chama decide onde ele entra.
 function observacoesHtml(observacoesUsuario, zerados) {
   const partes = [];
   const temObsUsuario = !!(
@@ -185,12 +194,10 @@ function observacoesHtml(observacoesUsuario, zerados) {
   const boxClass = temObsUsuario ? 'obs-box obs-destaque' : 'obs-box';
   const titulo = temObsUsuario ? '📌 Importante' : 'Observações';
   return `
-    <div class="secao no-break">
       <div class="${boxClass}">
         <div class="obs-title">${titulo}</div>
         <div class="obs-body">${corpo}</div>
-      </div>
-    </div>`;
+      </div>`;
 }
 
 // Rodapé de contato (v3): WhatsApp + Instagram/site (só o que existir).
@@ -355,14 +362,18 @@ async function gerarQrCodePixHtml({
       margin: 1,
       color: { dark: '#000000', light: '#FFFFFF' },
     });
+    // Uma linha só: QR (110px, gerado em 180px) à esquerda; chave e copia e
+    // cola (texto inteiro, selecionável) à direita.
     return `
-      <div style="text-align: center; margin-top: 20px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; page-break-inside: avoid;">
-        <img src="${qrDataUrl}" alt="QR Code PIX" style="width: 150px; height: 150px; margin: 0 auto; display: block;" />
-        <p style="font-size: 12px; color: #333; margin-top: 10px; font-weight: 700;">Pague via PIX</p>
-        <p style="font-size: 9px; color: #999; margin-top: 2px;">Chave: ${chavePix}</p>
-        <div style="margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 6px; border: 1px dashed #ccc;">
-          <p style="font-size: 8px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">PIX Copia e Cola</p>
-          <p style="font-size: 7px; color: #555; word-break: break-all; font-family: monospace; line-height: 1.4; margin: 0;">${payload}</p>
+      <div style="display: flex; align-items: center; gap: 14px; margin: 12px 24px 0; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; page-break-inside: avoid;">
+        <img src="${qrDataUrl}" alt="QR Code PIX" style="width: 110px; height: 110px; flex-shrink: 0; display: block;" />
+        <div style="flex: 1; min-width: 0;">
+          <p style="font-size: 12px; color: #333; margin: 0; font-weight: 700;">Pague via PIX</p>
+          <p style="font-size: 9px; color: #777; margin: 2px 0 6px;">Chave: ${escapeHtml(chavePix)}</p>
+          <div style="padding: 6px 8px; background: #f0f0f0; border-radius: 6px; border: 1px dashed #ccc;">
+            <p style="font-size: 8px; color: #888; margin: 0 0 3px; text-transform: uppercase; letter-spacing: 0.5px;">PIX Copia e Cola</p>
+            <p style="font-size: 7px; color: #555; word-break: break-all; font-family: monospace; line-height: 1.4; margin: 0;">${payload}</p>
+          </div>
         </div>
       </div>`;
   } catch (err) {
@@ -959,9 +970,9 @@ app.post(
           itensParaExibir,
           descontoNum,
           total,
+          observacoesHtml(dados.observacoes, zerados),
         );
         const caixaTotal = caixaTotalHtml(total);
-        const obsHtml = observacoesHtml(dados.observacoes, zerados);
         const footerContato = footerContatoHtml(
           empresa_telefone,
           dados.empresa_instagram,
@@ -1053,7 +1064,6 @@ app.post(
           .replace('{{itens_cards}}', itensCards)
           .replace('{{resumo_tabela}}', resumoTabela)
           .replace('{{caixa_total}}', caixaTotal)
-          .replace(/{{observacoes_bloco}}/g, obsHtml)
           .replace('{{secao_metodos_pagamento}}', secaoMetodos)
           .replace('{{secao_condicoes}}', secaoCondicoes)
           .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
@@ -1221,6 +1231,7 @@ app.post(
         cliente_telefone,
         cliente_endereco,
         mostrar_total_geral,
+        validade,
         empresa_telefone,
         empresa_email,
         template_version,
@@ -1419,9 +1430,9 @@ app.post(
               itensExibirOrc,
               descontoOrc,
               totalOrc,
+              observacoesHtml(orc.observacoes, zerados),
             );
             const caixaOrc = caixaTotalHtml(totalOrc, 'Total deste orçamento');
-            const obsOrc = observacoesHtml(orc.observacoes, zerados);
 
             return `
           <div ${pageBreak}>
@@ -1431,11 +1442,8 @@ app.post(
               </div>
             </div>
             <div class="secao">${cardsOrc}</div>
-            <div class="no-break">
-              ${resumoOrc}
-              <div class="secao">${caixaOrc}</div>
-              ${obsOrc}
-            </div>
+            ${resumoOrc}
+            <div class="secao no-break">${caixaOrc}</div>
             <div class="divider"></div>
           </div>
         `;
@@ -1481,9 +1489,12 @@ app.post(
         const condicoesItemsAgrp = (condicoes_contrato || '')
           .split('\n')
           .filter((l) => l.trim())
-          .map(
-            (l) => `<li>${escapeHtml(l.replace(/^\s*\d+[\.\)]\s*/, ''))}</li>`,
-          )
+          .map((l) => {
+            const texto = l
+              .replace(/\{\{validade\}\}/g, String(validade || 7))
+              .replace(/^\s*\d+[\.\)]\s*/, '');
+            return `<li>${escapeHtml(texto)}</li>`;
+          })
           .join('');
         const secaoCondicoesAgrp = condicoesItemsAgrp
           ? `<div class="secao"><div class="secao-titulo"><span class="icon">📜</span> Condições de contrato</div><ol class="condicoes-lista">${condicoesItemsAgrp}</ol></div>`
@@ -1522,10 +1533,9 @@ app.post(
     ${totalGeralBlocoV2}
     ${secaoMetodosAgrp}
     ${secaoCondicoesAgrp}
-    ${await gerarQrCodePixHtml({ chavePix: chave_pix || '', nomeRecebedor: nome_recebedor_pix || empresa_nome || 'EMPRESA', cidadeRecebedor: cidade_pix || 'UBERABA', valor: totalGeralV2, txid: 'PROPOSTA' })}
-    <div class="footer-v3">
-      ${footerContatoAgrp}
-      <div class="criado">Criado em ${new Date().toLocaleDateString('pt-BR')}</div>
+    <div class="no-break">
+      ${await gerarQrCodePixHtml({ chavePix: chave_pix || '', nomeRecebedor: nome_recebedor_pix || empresa_nome || 'EMPRESA', cidadeRecebedor: cidade_pix || 'UBERABA', valor: totalGeralV2, txid: 'PROPOSTA' })}
+      <div class="footer-v3">${footerContatoAgrp}<span class="criado">Criado em ${new Date().toLocaleDateString('pt-BR')}</span></div>
     </div>
   </div>
 </body>
@@ -1843,9 +1853,15 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
     📝 OBSERVAÇÕES (bloco opcional)
     ========================================== */
 
-    const obsHtml =
+    const obsBoxRecibo =
       templateVersion === 'v2'
         ? observacoesHtml(dados.observacoes, itensZeradosV2)
+        : '';
+    const obsHtml =
+      templateVersion === 'v2'
+        ? obsBoxRecibo
+          ? `<div class="secao no-break">${obsBoxRecibo}</div>`
+          : ''
         : dados.observacoes
           ? `<div class="conditions">
            <div class="conditions-title">Observações</div>

@@ -217,12 +217,15 @@
 
     .resumo tbody tr:nth-child(even) { background: #fafafa; }
 
-    .resumo tr.total-geral td {
+    /* TOTAL GERAL fora da tabela, preso ao quadro de observações */
+    .total-geral-faixa {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 10px;
       background: {{cor_primaria}};
       color: #fff;
       font-weight: 700;
       font-size: 14px;
-      border: none;
     }
 
     /* ===== CAIXA DE TOTAL ===== */
@@ -258,6 +261,7 @@
       border-left: 4px solid {{cor_primaria}};
       border-radius: 6px;
       padding: 9px 14px;
+      margin-top: 8px;
     }
 
     .obs-box .obs-title {
@@ -328,8 +332,10 @@
       margin-top: 6px;
     }
 
-    .footer-v3 .contato { font-weight: 600; color: #333; }
-    .footer-v3 .criado { font-size: 10px; color: #aaa; margin-top: 4px; }
+    /* Contato e "Criado em" na mesma linha */
+    .footer-v3 .contato { display: inline; font-weight: 600; color: #333; }
+    .footer-v3 .criado { font-size: 10px; color: #aaa; }
+    .footer-v3 .contato + .criado::before { content: "\2022"; margin: 0 8px; color: #666; }
 
     /* page-break helpers */
     .page-break { page-break-before: always; }
@@ -378,15 +384,12 @@
       {{itens_cards}}
     </div>
 
-    <!-- RESUMO + CAIXA TOTAL + OBSERVAÇÃO: não quebram entre páginas -->
-    <div class="no-break">
-      {{resumo_tabela}}
+    <!-- RESUMO (TOTAL GERAL + observação presos no fim) -->
+    {{resumo_tabela}}
 
-      <div class="secao">
-        {{caixa_total}}
-      </div>
-
-      {{observacoes_bloco}}
+    <!-- CAIXA TOTAL -->
+    <div class="secao no-break">
+      {{caixa_total}}
     </div>
 
     {{secao_condicoes}}
@@ -395,23 +398,23 @@
 
     {{QR_CODE_PIX}}
 
-    <div class="secao no-break" style="display:flex;justify-content:space-between;gap:32px;">
-      <div style="flex:1;text-align:center;">
-        {{ASSINATURA_CLIENTE}}
-        <hr style="border:none;border-top:1px solid #333;margin:4px 0;" />
-        <p style="font-size:10px;color:#555;margin:0;">Assinatura do Cliente</p>
-        {{DATA_ASSINATURA}}
+    <!-- ASSINATURA + RODAPÉ: não quebram (nunca página só com rodapé) -->
+    <div class="no-break">
+      <div class="secao" style="display:flex;justify-content:space-between;gap:32px;">
+        <div style="flex:1;text-align:center;">
+          {{ASSINATURA_CLIENTE}}
+          <hr style="border:none;border-top:1px solid #333;margin:4px 0;" />
+          <p style="font-size:10px;color:#555;margin:0;">Assinatura do Cliente</p>
+          {{DATA_ASSINATURA}}
+        </div>
+        <div style="flex:1;text-align:center;">
+          {{ASSINATURA_EMPRESA}}
+          <hr style="border:none;border-top:1px solid #333;margin:4px 0;" />
+          <p style="font-size:10px;color:#555;margin:0;">{{empresa_nome}}</p>
+        </div>
       </div>
-      <div style="flex:1;text-align:center;">
-        {{ASSINATURA_EMPRESA}}
-        <hr style="border:none;border-top:1px solid #333;margin:4px 0;" />
-        <p style="font-size:10px;color:#555;margin:0;">{{empresa_nome}}</p>
-      </div>
-    </div>
 
-    <div class="footer-v3">
-      {{footer_contato}}
-      <div class="criado">Criado em {{data}}</div>
+      <div class="footer-v3">{{footer_contato}}<span class="criado">Criado em {{data}}</span></div>
     </div>
   </div>
 </body>
