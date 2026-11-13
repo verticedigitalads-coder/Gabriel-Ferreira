@@ -45,4 +45,4 @@ Arraste de volta para a coluna original. A mudança de status é imediata nas du
 O valor orçado dos leads daquela coluna. Leads sem valor preenchido não entram na soma.
 
 **Mover para "Fechado" pelo Kanban faz o mesmo que "Fechar Negócio" na ficha?**
-O status final é o mesmo. A diferença é que a ação "Fechar Negócio" da ficha também cria a tarefa de execução no Painel Operacional — se fechar pelo Kanban, crie a tarefa por lá se precisar.
+Sim. Os dois mudam o status para Fechado e criam a tarefa de execução no Painel Operacional. Se o lead já tem uma tarefa de execução aberta (por exemplo, saiu de Fechado e voltou), nenhuma tarefa nova é criada.

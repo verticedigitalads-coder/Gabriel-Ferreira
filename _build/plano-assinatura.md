@@ -41,7 +41,7 @@ Assumidas (propostas no grill-me, não contestadas):
 2. **criar-empresa** — `server.js:2075`: insere `workspaces` (nome, segment) → `auth.admin.createUser` (e-mail/senha) → `workspace_members` role `owner`. Não atômico (falha no vínculo deixa empresa órfã, :2141).
    - Reaproveitar: `getSupabaseAdmin`, `requireAuth`, a sequência workspace → member `owner`.
    - Não reaproveitar: `createUser` (o usuário Google já existe) e o padrão não atômico. `criar-empresa` só muda na R2: passa a gravar a linha em `assinaturas` (isento por padrão, ver Decisões fechadas).
-3. **Grants** (MCP): `anon`/`authenticated` só têm `SELECT` em `workspaces` e `workspace_members`; `service_role` tem tudo → criar empresa **tem** que ser pelo backend. Sem triggers em `public` nem `auth`. `workspace_members`: `UNIQUE(workspace_id, user_id)`, role ∈ owner/admin/member. `workspaces.owner_id` → `auth.users ON DELETE CASCADE` → **não preencher no cadastro**.
+3. **Grants** (MCP): `anon`/`authenticated` só têm `SELECT` em `workspaces` e `workspace_members`; `service_role` tem tudo → criar empresa **tem** que ser pelo backend. Sem triggers em `public` nem `auth`. `workspace_members`: `UNIQUE(workspace_id, user_id)`, role ∈ owner/admin/member. `workspaces.owner_id` → `auth.users ON DELETE SET NULL` desde a migration `20261113000000` (antes era `CASCADE`, por isso a orientação de não preencher no cadastro). Ninguém lê `owner_id`; "dono" no app é `workspace_members.role = 'owner'`.
 4. **Gate** — dentro do efeito de init, entre `ensureWorkspaceForUser` e `initialize`. Nenhum efeito novo: TermsGate e o padrão `session?.user?.id` ficam intactos.
 
 Achados que mudam o plano:
