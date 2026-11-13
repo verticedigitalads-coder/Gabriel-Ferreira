@@ -26,7 +26,8 @@ export function useCountUp(alvo: number): number {
     let frame = 0;
 
     const passo = (agora: number) => {
-      const t = Math.min((agora - t0) / DURACAO_MS, 1);
+      // O carimbo do 1º quadro pode vir antes do t0: sem o piso, t < 0 dá valor abaixo do início
+      const t = Math.min(Math.max((agora - t0) / DURACAO_MS, 0), 1);
       const suave = t === 1 ? 1 : 1 - Math.pow(2, -10 * t); // easeOutExpo
       const proximo = inicio + (alvo - inicio) * suave;
       atual.current = proximo;
