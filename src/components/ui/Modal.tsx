@@ -52,6 +52,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
             <button
               onClick={onClose}
+              aria-label="Fechar"
               className="p-2 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5 text-[var(--text-tertiary)]" />
@@ -106,7 +107,8 @@ export function SlidePanel({ isOpen, onClose, title, children }: SlidePanelProps
             <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors"
+              aria-label="Fechar"
+              className="p-2 hover:bg-[var(--bg-surface-3)] rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5 text-[var(--text-tertiary)]" />
             </button>
