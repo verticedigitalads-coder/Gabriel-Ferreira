@@ -128,6 +128,9 @@ export function Kanban() {
         <DndContext
           sensors={sensors}
           collisionDetection={rectIntersection}
+          // Rolagem automática mais lenta e com zona lateral menor: no padrão do dnd-kit (20%, até 2000px/s)
+          // a 390 a coluna vizinha inteira ficava na zona e o card passava dela (até cair em Fechado)
+          autoScroll={{ acceleration: 2, threshold: { x: 0.1, y: 0.2 } }}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
@@ -306,11 +309,12 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
         style={{ background: FAIXA_PRIORIDADE_LEAD[nivel] }}
       />
 
-      {/* Alça (ícone de pontinhos): coluna inteira da esquerda, 44px de largura */}
+      {/* Alça (ícone de pontinhos): coluna inteira da esquerda, 44px de largura.
+          touch-none só aqui: sem ele o Chrome do Android assume o gesto como rolagem e cancela o arrasto */}
       <button
         {...attributes}
         {...listeners}
-        className="flex w-11 shrink-0 justify-center pt-3 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] cursor-grab active:cursor-grabbing"
+        className="flex w-11 shrink-0 justify-center pt-3 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] cursor-grab active:cursor-grabbing touch-none"
         onClick={e => e.stopPropagation()}
       >
         <GripVertical className="w-4 h-4" />
