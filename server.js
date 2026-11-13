@@ -364,6 +364,13 @@ async function gerarQrCodePixHtml({
     });
     // Uma linha só: QR (110px, gerado em 180px) à esquerda; chave e copia e
     // cola (texto inteiro, selecionável) à direita.
+    // Copia e cola sem quebra de linha (leitor de PDF cola a quebra junto e o
+    // banco recusa): fonte cabe em ~560px, até 7px, com 0.62em por caractere
+    // (folga para as monoespaçadas do Linux da VPS).
+    const fonteCopiaECola = Math.min(
+      7,
+      Math.floor((560 / (payload.length * 0.62)) * 10) / 10,
+    );
     return `
       <div style="display: flex; align-items: center; gap: 14px; margin: 12px 24px 0; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; page-break-inside: avoid;">
         <img src="${qrDataUrl}" alt="QR Code PIX" style="width: 110px; height: 110px; flex-shrink: 0; display: block;" />
@@ -372,7 +379,7 @@ async function gerarQrCodePixHtml({
           <p style="font-size: 9px; color: #777; margin: 2px 0 6px;">Chave: ${escapeHtml(chavePix)}</p>
           <div style="padding: 6px 8px; background: #f0f0f0; border-radius: 6px; border: 1px dashed #ccc;">
             <p style="font-size: 8px; color: #888; margin: 0 0 3px; text-transform: uppercase; letter-spacing: 0.5px;">PIX Copia e Cola</p>
-            <p style="font-size: 7px; color: #555; word-break: break-all; font-family: monospace; line-height: 1.4; margin: 0;">${payload}</p>
+            <p style="font-size: ${fonteCopiaECola}px; color: #555; white-space: nowrap; font-family: monospace; line-height: 1.4; margin: 0;">${payload}</p>
           </div>
         </div>
       </div>`;

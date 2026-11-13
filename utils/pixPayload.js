@@ -4,16 +4,28 @@
  */
 
 export function pixPayload({ chavePix, nomeRecebedor, cidadeRecebedor, valor, txid }) {
-  const normalize = (str) =>
-    str
+  // Nome e cidade: sem acento, maiúsculas, só A-Z, 0-9 e espaço.
+  const normalize = (str, max) =>
+    String(str || '')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toUpperCase()
+      .replace(/\s+/g, ' ')
+      .replace(/[^A-Z0-9 ]/g, '')
+      .replace(/ +/g, ' ')
+      .trim()
+      .slice(0, max)
       .trim();
 
-  const nome = normalize(nomeRecebedor || 'EMPRESA').slice(0, 25);
-  const cidade = normalize(cidadeRecebedor || 'CIDADE').slice(0, 15);
-  const identificador = (txid || '***').slice(0, 25);
+  const nome = normalize(nomeRecebedor, 25) || 'EMPRESA';
+  const cidade = normalize(cidadeRecebedor, 15) || 'CIDADE';
+  // PIX estático: txid só [A-Za-z0-9], até 25; vazio vira ***.
+  const identificador =
+    String(txid || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Za-z0-9]/g, '')
+      .slice(0, 25) || '***';
 
   const merchantAccountInfo = emvField(
     '26',
