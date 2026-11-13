@@ -4,13 +4,21 @@ import { useStore } from '@/store/useStore'
 import { useFilteredLeads } from '@/store/selectors/leadSelectors'
 import { useDebounce } from '@/hooks/useDebounce';
 import { useLeadActions } from '@/hooks/useLeadActions';
+import { useCountUp } from '@/hooks/useCountUp';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
 import { Modal, SlidePanel } from '@/components/ui/Modal';
 import { StatusBadge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/editorial/EmptyState';
+import { Colophon } from '@/components/editorial/Colophon';
 import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
+import {
+  FAIXA_PRIORIDADE_LEAD,
+  ROTULO_PRIORIDADE_LEAD,
+  TEMPERATURA_LEAD,
+  nivelPrioridade,
+} from './visualLead';
 import { parseISO, differenceInDays } from 'date-fns';
 import {
   Plus,
@@ -22,7 +30,25 @@ import {
 } from 'lucide-react';
 import { AILeadModal } from './AILeadModal';
 import { HISTORICO_TIPO } from '@/types';
-import type { Lead } from '@/types';
+import type { Lead, LeadTemperature } from '@/types';
+import { cn } from '@/utils/cn';
+
+// Redesign D3: número grande com contagem. Componente próprio para a contagem
+// não re-renderizar a lista inteira a cada quadro (padrão da D2).
+function TotalContado({ valor }: { valor: number }) {
+  const animado = useCountUp(valor);
+  return (
+    <p
+      className="tnum leading-[0.8] text-[44px] md:text-[56px] text-[var(--text-primary)]"
+      style={{ fontWeight: 'var(--font-bold)', letterSpacing: '-0.06em' }}
+    >
+      <span className="sr-only">{valor}</span>
+      <span aria-hidden="true">{String(Math.round(animado)).padStart(2, '0')}</span>
+    </p>
+  );
+}
+
+const CHIP = 'ed-mono shrink-0 flex items-center gap-1.5 border px-3 min-h-[44px] whitespace-nowrap transition-colors';
 
 export function LeadsList() {
   const leads = useStore(state => state.leads);
@@ -56,26 +82,34 @@ export function LeadsList() {
     filters.prioridadeLevel !== 'all' ||
     filters.search !== '';
 
+  // ── Redesign D3: só pele. A lógica acima é a mesma de antes. ──
+  const setActiveModule = useStore(state => state.setActiveModule);
+
   return (
     <div className="flex flex-col md:h-full">
-      {/* Header */}
-      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-          <p className="text-sm text-[var(--text-secondary)]">
-            {filteredLeads.length} de {leads.length} leads
-          </p>
+      {/* Topo compacto: total com contagem, botões e filtros */}
+      <section className="relative border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 pt-4 pb-4 md:px-6 md:pt-5">
+        <span aria-hidden="true" className="absolute bottom-0 left-0 h-[2px] w-32 bg-[var(--accent)]" />
+
+        <div className="flex items-end justify-between flex-wrap gap-3 mb-4">
+          <div className="min-w-0 border-l-2 border-[var(--accent)] pl-3">
+            <TotalContado valor={leads.length} />
+            <p className="ed-mono mt-2 text-[var(--text-tertiary)]">
+              {filteredLeads.length} de {leads.length} leads
+            </p>
+          </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               variant="ghost"
               onClick={() => setShowAIModal(true)}
-              className="gap-1.5"
+              className="gap-1.5 rounded-none"
               style={{ color: 'var(--ia)' }}
             >
               <Sparkles className="w-4 h-4" />
               <span className="hidden sm:inline">Criar com IA</span>
               <span className="sm:hidden">IA</span>
             </Button>
-            <Button onClick={() => setShowAddModal(true)} className="gap-1.5">
+            <Button onClick={() => setShowAddModal(true)} className="gap-1.5 rounded-none text-[var(--bg-app)]">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Novo Lead</span>
               <span className="sm:hidden">Novo</span>
@@ -94,7 +128,7 @@ export function LeadsList() {
                 placeholder="Buscar nome, telefone ou serviço..."
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 border border-[var(--border)] bg-[var(--bg-surface-2)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[40px] overflow-hidden text-ellipsis"
+                className="w-full pl-9 pr-3 py-2 border border-[var(--border-strong)] bg-[var(--bg-app)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm focus:outline-none focus:border-[var(--accent)] min-h-[44px] overflow-hidden text-ellipsis"
               />
             </div>
 
@@ -102,6 +136,7 @@ export function LeadsList() {
               <Select
                 value={filters.status}
                 onChange={e => setFilter({ status: e.target.value as any })}
+                className="rounded-none min-h-[44px] bg-[var(--bg-app)]"
                 options={[
                   { value: 'all', label: 'Status' },
                   { value: 'novo', label: 'Novo' },
@@ -114,7 +149,7 @@ export function LeadsList() {
             </div>
 
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} title="Limpar filtros" className="shrink-0">
+              <Button variant="ghost" size="sm" onClick={clearFilters} title="Limpar filtros" className="shrink-0 min-w-[44px] rounded-none">
                 <X className="w-4 h-4" />
               </Button>
             )}
@@ -123,29 +158,27 @@ export function LeadsList() {
           {/* Linha 2: temperatura + prioridade como chips com scroll */}
           <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {([
-              { value: 'all',    label: 'Temperatura', emoji: '' },
-              { value: 'quente', label: 'Quente',      emoji: '🔥' },
-              { value: 'morno',  label: 'Morno',       emoji: '☀️' },
-              { value: 'frio',   label: 'Frio',        emoji: '❄️' },
+              { value: 'all',    label: 'Temperatura' },
+              { value: 'quente', label: 'Quente' },
+              { value: 'morno',  label: 'Morno' },
+              { value: 'frio',   label: 'Frio' },
             ] as const).map(opt => {
               const isActive = filters.temperatura === opt.value;
+              const temp = opt.value !== 'all' ? TEMPERATURA_LEAD[opt.value] : null;
               return (
                 <button
                   key={`temp-${opt.value}`}
                   type="button"
                   onClick={() => setFilter({ temperatura: opt.value })}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors min-h-[32px] whitespace-nowrap"
+                  className={CHIP}
                   style={{
-                    background: isActive && opt.value !== 'all'
-                      ? (opt.value === 'quente' ? 'var(--danger-subtle)' : opt.value === 'morno' ? 'var(--warning-subtle)' : 'var(--info-subtle)')
-                      : isActive ? 'var(--accent-subtle)' : 'transparent',
-                    color: isActive && opt.value !== 'all'
-                      ? (opt.value === 'quente' ? 'var(--danger)' : opt.value === 'morno' ? 'var(--warning)' : 'var(--info)')
-                      : isActive ? 'var(--accent)' : 'var(--text-tertiary)',
-                    borderColor: isActive ? 'transparent' : 'var(--border)',
+                    color: isActive ? (temp ? temp.cor : 'var(--accent)') : 'var(--text-tertiary)',
+                    borderColor: isActive ? (temp ? temp.cor : 'var(--accent)') : 'var(--border)',
+                    background: isActive && !temp ? 'var(--accent-subtle)' : 'transparent',
                   }}
                 >
-                  {opt.emoji ? `${opt.emoji} ${opt.label}` : opt.label}
+                  {temp && <temp.Icone aria-hidden="true" className="w-3.5 h-3.5" style={{ color: temp.cor }} />}
+                  {opt.label}
                 </button>
               );
             })}
@@ -153,11 +186,11 @@ export function LeadsList() {
             <div className="w-px shrink-0 self-stretch" style={{ background: 'var(--border)' }} />
 
             {([
-              { value: 'all',     label: 'Prioridade'  },
-              { value: 'critico', label: '🔴 Crítico'  },
-              { value: 'alto',    label: '🟠 Alto'     },
-              { value: 'medio',   label: '🟡 Médio'    },
-              { value: 'baixo',   label: '🟢 Baixo'    },
+              { value: 'all',     label: 'Prioridade' },
+              { value: 'critico', label: 'Crítico' },
+              { value: 'alto',    label: 'Alto' },
+              { value: 'medio',   label: 'Médio' },
+              { value: 'baixo',   label: 'Baixo' },
             ] as const).map(opt => {
               const isActive = filters.prioridadeLevel === opt.value;
               return (
@@ -165,46 +198,44 @@ export function LeadsList() {
                   key={`prio-${opt.value}`}
                   type="button"
                   onClick={() => setFilter({ prioridadeLevel: opt.value })}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors min-h-[32px] whitespace-nowrap"
+                  className={CHIP}
                   style={{
                     background: isActive && opt.value !== 'all' ? 'var(--accent-subtle)' : 'transparent',
                     color: isActive ? 'var(--accent)' : 'var(--text-tertiary)',
                     borderColor: isActive ? 'var(--accent)' : 'var(--border)',
                   }}
                 >
+                  {opt.value !== 'all' && (
+                    <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0" style={{ background: ROTULO_PRIORIDADE_LEAD[opt.value].cor }} />
+                  )}
                   {opt.label}
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* List */}
-      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
+      <div className="pt-4 md:pt-5 md:flex-1 md:overflow-y-auto">
         {filteredLeads.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="flex flex-col items-center gap-4">
             {hasActiveFilters ? (
               <>
-                <div className="text-3xl mb-3 opacity-30">🔍</div>
-                <p className="text-sm text-[var(--text-tertiary)] mb-1">
-                  Nenhum lead encontrado com esses filtros
-                </p>
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="mt-3 gap-1">
+                <div className="w-full">
+                  <EmptyState title="Nenhum lead encontrado com esses filtros" note="Ajuste a busca ou os filtros" />
+                </div>
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 rounded-none">
                   <X className="w-4 h-4" />
                   Limpar filtros
                 </Button>
               </>
             ) : (
               <>
-                <div className="text-3xl mb-3 opacity-30">👥</div>
-                <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">
-                  Nenhum lead cadastrado
-                </p>
-                <p className="text-xs text-[var(--text-tertiary)] mb-4">
-                  Adicione seu primeiro lead para começar
-                </p>
-                <Button onClick={() => setShowAddModal(true)} className="gap-1">
+                <div className="w-full">
+                  <EmptyState title="Nenhum lead cadastrado" note="Adicione seu primeiro lead para começar" />
+                </div>
+                <Button onClick={() => setShowAddModal(true)} className="gap-1 rounded-none text-[var(--bg-app)]">
                   <Plus className="w-4 h-4" />
                   Novo Lead
                 </Button>
@@ -225,6 +256,10 @@ export function LeadsList() {
             ))}
           </div>
         )}
+
+        <div className="mt-6">
+          <Colophon label="VRTX CRM · Gestão de Leads" onBack={() => setActiveModule('dashboard')} />
+        </div>
       </div>
 
       <Modal
@@ -275,99 +310,61 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
   const alertaContato =
     diasSemContato !== null && diasSemContato >= 5;
 
+  // Só visual: o nível já vem calculado (formatLead → src/lib/priority.ts).
+  // Temperatura fora das 3 conhecidas cai em Frio, como o texto de antes.
+  const nivel = nivelPrioridade(lead.prioridadeLevel);
+  const temperatura = lead.temperatura
+    ? (TEMPERATURA_LEAD[lead.temperatura as LeadTemperature] ?? TEMPERATURA_LEAD.frio)
+    : null;
+
   return (
-    <Card
-      className="p-4 transition overflow-hidden"
-      style={{
-        borderTopWidth: '3px',
-        borderTopStyle: 'solid',
-        borderTopColor:
-          lead.prioridadeLevel === 'critico' ? 'var(--danger)' :
-          lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
-          lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
-          'var(--bg-surface-3)',
-        ...(isSelected ? {
-          outline: '2px solid var(--accent)',
-          outlineOffset: '0px',
-          borderRightColor: 'var(--accent)',
-          borderBottomColor: 'var(--accent)',
-          borderLeftColor: 'var(--accent)',
-          boxShadow: '0 0 0 3px var(--accent-subtle)',
-        } : {}),
-        ...(alertaContato ? {
-          borderRightColor: 'rgba(239, 68, 68, 0.3)',
-          borderBottomColor: 'rgba(239, 68, 68, 0.3)',
-          borderLeftColor: 'rgba(239, 68, 68, 0.3)',
-          background: 'var(--danger-subtle)',
-        } : {}),
-      }}
-      hoverable
+    <div
+      className={cn(
+        'relative overflow-hidden border px-4 pt-4 pb-3 cursor-pointer transition-colors',
+        alertaContato ? 'bg-[var(--danger-subtle)]' : 'bg-[var(--bg-surface)]',
+        isSelected
+          ? 'border-[var(--accent)] shadow-[0_0_0_3px_var(--accent-subtle)]'
+          : alertaContato
+            ? 'border-[var(--danger-subtle)] hover:border-[var(--border-strong)]'
+            : 'border-[var(--border)] hover:border-[var(--border-strong)]',
+      )}
       onClick={onClick}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      {/* Faixa da prioridade: crítico, alto, médio, baixo */}
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px]" style={{ background: FAIXA_PRIORIDADE_LEAD[nivel] }} />
+
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 overflow-hidden">
-            <h3 className="text-base font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <h3 className="text-[length:var(--text-lg)]! font-bold! tracking-tight text-[var(--text-primary)] truncate flex-1 min-w-0">
               {lead.nome}
             </h3>
 
             {jaAnalisado && (
               <span
-                className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                className="ed-mono shrink-0 px-1.5 py-0.5"
                 style={{ background: 'var(--ia-subtle)', color: 'var(--ia)' }}
               >
                 ✦ IA
               </span>
             )}
 
-            <span
-              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[99px] shrink-0"
-              style={{
-                background: lead.prioridadeLevel === 'critico' ? 'var(--danger-subtle)' :
-                            lead.prioridadeLevel === 'alto'    ? 'var(--warning-subtle)' :
-                            lead.prioridadeLevel === 'medio'   ? 'var(--info-subtle)' :
-                            'var(--bg-surface-3)',
-                color: lead.prioridadeLevel === 'critico' ? 'var(--danger)' :
-                       lead.prioridadeLevel === 'alto'    ? 'var(--warning)' :
-                       lead.prioridadeLevel === 'medio'   ? 'var(--info)' :
-                       'var(--text-secondary)',
-                border: `1px solid ${
-                  lead.prioridadeLevel === 'critico' ? 'rgba(248,113,113,0.2)' :
-                  lead.prioridadeLevel === 'alto'    ? 'rgba(245,158,11,0.2)' :
-                  lead.prioridadeLevel === 'medio'   ? 'rgba(96,165,250,0.2)' :
-                  'var(--border)'
-                }`,
-              }}
-            >
-              {lead.prioridadeLevel === 'critico' ? 'Crítico' :
-               lead.prioridadeLevel === 'alto'    ? 'Alto' :
-               lead.prioridadeLevel === 'medio'   ? 'Médio' : 'Baixo'}
+            <span className="ed-mono shrink-0" style={{ color: ROTULO_PRIORIDADE_LEAD[nivel].cor }}>
+              {ROTULO_PRIORIDADE_LEAD[nivel].texto}
             </span>
           </div>
 
-          <p className="text-xs text-[var(--text-disabled)] truncate">
+          <p className="text-xs text-[var(--text-tertiary)] truncate mt-0.5">
             {lead.servico}
           </p>
 
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center flex-wrap gap-2 mt-2.5">
             <StatusBadge status={lead.status} />
 
-            {lead.temperatura && (
-              <span
-                className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                style={{
-                  background:
-                    lead.temperatura === 'quente' ? 'var(--danger-subtle)'  :
-                    lead.temperatura === 'morno'  ? 'var(--warning-subtle)' :
-                    'var(--info-subtle)',
-                  color:
-                    lead.temperatura === 'quente' ? 'var(--danger)'  :
-                    lead.temperatura === 'morno'  ? 'var(--warning)' :
-                    'var(--info)',
-                }}
-              >
-                {lead.temperatura === 'quente' ? '🔥 Quente' :
-                 lead.temperatura === 'morno'  ? '☀️ Morno' : '❄️ Frio'}
+            {temperatura && (
+              <span className="ed-mono shrink-0 flex items-center gap-1.5 border border-[var(--border)] px-2 py-0.5 text-[var(--text-secondary)]">
+                <temperatura.Icone aria-hidden="true" className="w-3 h-3" style={{ color: temperatura.cor }} />
+                {temperatura.rotulo}
               </span>
             )}
 
@@ -379,13 +376,13 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
           </div>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
-          <div className="text-right max-w-[110px]">
+        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+          <div className="min-w-0 sm:text-right">
             {(lead.valorOrcado ?? 0) > 0
-              ? <p className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
-              : <p className="text-sm text-[var(--text-tertiary)]">Sem valor</p>
+              ? <p className="tnum text-base font-bold text-[var(--text-primary)]">{formatCurrency(lead.valorOrcado ?? 0)}</p>
+              : <p className="ed-serif text-[length:var(--text-md)] text-[var(--text-tertiary)]">Sem valor</p>
             }
-            <p className="text-xs text-[var(--text-tertiary)] mt-1 truncate">
+            <p className="ed-mono mt-0.5 truncate text-[var(--text-tertiary)]">
               {formatPhone(lead.telefone)}
             </p>
           </div>
@@ -399,8 +396,9 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
               size="sm"
               onClick={onWhatsApp}
               title="Abrir WhatsApp"
+              className="min-w-[44px] rounded-none border-[var(--border)]"
             >
-              <MessageCircle className="w-4 h-4 text-green-600" />
+              <MessageCircle className="w-4 h-4" style={{ color: 'var(--success)' }} />
             </Button>
 
             <Button
@@ -408,12 +406,13 @@ function LeadRow({ lead, onClick, onWhatsApp, onRegisterContact, isSelected }: L
               size="sm"
               onClick={onRegisterContact}
               title="Registrar Contato"
+              className="min-w-[44px] rounded-none"
             >
               <Phone size={16} style={{ color: 'var(--success)' }} />
             </Button>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

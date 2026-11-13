@@ -3,14 +3,17 @@ import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { useLeadActions } from '@/hooks/useLeadActions';
 import { Button } from '@/components/ui/Button';
-import {
-  StatusBadge,
-  TemperatureBadge,
-  PriorityBadge,
-} from '@/components/ui/Badge';
+import { StatusBadge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { SectionHeading } from '@/components/editorial/SectionHeading';
 import { LeadForm } from './LeadForm';
+import {
+  FAIXA_PRIORIDADE_LEAD,
+  ROTULO_PRIORIDADE_LEAD,
+  TEMPERATURA_LEAD,
+  nivelPrioridade,
+} from './visualLead';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -25,10 +28,13 @@ import {
   CheckCircle,
   FileText,
   Clock,
-  History,
 } from 'lucide-react';
-import type { Lead } from '@/types';
+import type { Lead, LeadTemperature } from '@/types';
 import { HISTORICO_TIPO } from '@/types';
+
+// Redesign D3: célula da grade de informações e rótulo em mono (só visual)
+const CELULA = 'bg-[var(--bg-surface)] p-4 min-w-0';
+const ROTULO = 'ed-mono flex items-center gap-2 text-[var(--text-tertiary)] mb-1.5';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -141,34 +147,50 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
     setDataProximoContato('');
   };
 
+  // ── Redesign D3: só pele. A lógica acima é a mesma de antes. ──
+  // O nível já vem calculado (formatLead → src/lib/priority.ts).
+  const nivel = nivelPrioridade(lead.prioridadeLevel);
+  const temperatura = TEMPERATURA_LEAD[lead.temperatura as LeadTemperature];
+  // Numeração contínua só das seções que aparecem (Resumo e Observações são opcionais)
+  let secao = 0;
+  const proxima = () => String(++secao).padStart(2, '0');
+
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">{lead.nome}</h2>
+      {/* Header: faixa da prioridade, nome, serviço, status, temperatura e prioridade */}
+      <div className="relative p-4 pt-5 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+        <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px]" style={{ background: FAIXA_PRIORIDADE_LEAD[nivel] }} />
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-[length:var(--text-2xl)]! font-bold! leading-tight break-words text-[var(--text-primary)]">{lead.nome}</h2>
             <p className="text-sm text-[var(--text-secondary)] mt-1">{lead.servico}</p>
           </div>
-          <PriorityBadge
-            level={lead.prioridadeLevel}
-            score={lead.prioridadeScore}
-          />
+          <span className="ed-mono shrink-0 pt-1.5" style={{ color: ROTULO_PRIORIDADE_LEAD[nivel].cor }}>
+            {ROTULO_PRIORIDADE_LEAD[nivel].texto}
+            {lead.prioridadeScore !== undefined && (
+              <span className="tnum ml-1 opacity-80">({lead.prioridadeScore})</span>
+            )}
+          </span>
         </div>
-        <div className="flex items-center gap-2 mt-4">
+        <div className="flex flex-wrap items-center gap-2 mt-4">
           <StatusBadge status={lead.status} />
-          <TemperatureBadge temperatura={lead.temperatura} />
+          {temperatura && (
+            <span className="ed-mono flex items-center gap-1.5 border border-[var(--border)] px-2 py-0.5 text-[var(--text-secondary)]">
+              <temperatura.Icone aria-hidden="true" className="w-3 h-3" style={{ color: temperatura.cor }} />
+              {temperatura.rotulo}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 md:space-y-6">
         {/* Ações Rápidas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button
             variant="primary"
             onClick={() => setShowContatoModal(true)}
-            className="gap-2"
+            className="gap-2 rounded-none text-[var(--bg-app)]"
           >
             <Phone className="w-4 h-4" />
             Registrar Contato
@@ -176,9 +198,9 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           <Button
             variant="secondary"
             onClick={() => openWhatsApp(lead.telefone, lead.nome)}
-            className="gap-2"
+            className="gap-2 rounded-none"
           >
-            <MessageCircle className="w-4 h-4" />
+            <MessageCircle className="w-4 h-4" style={{ color: 'var(--success)' }} />
             WhatsApp
           </Button>
           {lead.status !== 'fechado' && lead.status !== 'perdido' && (
@@ -186,7 +208,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               <Button
                 variant="secondary"
                 onClick={() => setShowVisitModal(true)}
-                className="gap-2"
+                className="gap-2 rounded-none"
               >
                 <Calendar className="w-4 h-4" />
                 Marcar Visita
@@ -195,7 +217,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               <Button
                 variant="secondary"
                 onClick={() => setShowOrcamentoModal(true)}
-                className="gap-2"
+                className="gap-2 rounded-none"
               >
                 <FileText className="w-4 h-4" />
                 Marcar Orçado
@@ -205,7 +227,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
                 variant="success"
                 onClick={handleFechamento}
                 disabled={isClosing}
-                className="gap-2"
+                className="gap-2 rounded-none sm:col-span-2"
               >
                 <CheckCircle className="w-4 h-4" />
                 {isClosing ? 'Fechando...' : 'Fechar Negócio'}
@@ -214,44 +236,46 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           )}
         </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
-            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
-              <Phone className="w-4 h-4" />
-              <span className="text-xs font-medium">Telefone</span>
+        {/* Info: grade com fios */}
+        <div className="grid grid-cols-2 gap-px border border-[var(--border)] bg-[var(--border)]">
+          <div className={CELULA}>
+            <div className={ROTULO}>
+              <Phone className="w-3.5 h-3.5" />
+              <span>Telefone</span>
             </div>
-            <p
-              className="text-sm font-medium text-[var(--text-primary)] cursor-pointer hover:text-[var(--accent)] transition-colors truncate"
+            <button
+              type="button"
+              className="-mx-1 px-1 min-h-[44px] max-w-full text-left text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors truncate"
               onClick={() => copyPhone(lead.telefone)}
+              title="Copiar telefone"
             >
               {formatPhone(lead.telefone)}
-            </p>
+            </button>
           </div>
-          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
-            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
-              <Mail className="w-4 h-4" />
-              <span className="text-xs font-medium">Email</span>
+          <div className={CELULA}>
+            <div className={ROTULO}>
+              <Mail className="w-3.5 h-3.5" />
+              <span>Email</span>
             </div>
             {lead.email
               ? <p className="text-sm font-medium text-[var(--text-primary)] truncate">{lead.email}</p>
-              : <p className="text-sm italic text-[var(--text-tertiary)]">Não informado</p>
+              : <p className="ed-serif text-[length:var(--text-md)] text-[var(--text-tertiary)]">Não informado</p>
             }
           </div>
-          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md col-span-2">
-            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
-              <MapPin className="w-4 h-4" />
-              <span className="text-xs font-medium">Endereço</span>
+          <div className={`${CELULA} col-span-2`}>
+            <div className={ROTULO}>
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Endereço</span>
             </div>
             {lead.endereco
               ? <p className="text-sm font-medium text-[var(--text-primary)]">{lead.endereco}</p>
-              : <p className="text-sm italic text-[var(--text-tertiary)]">Não informado</p>
+              : <p className="ed-serif text-[length:var(--text-md)] text-[var(--text-tertiary)]">Não informado</p>
             }
           </div>
-          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
-            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
-              <Clock className="w-4 h-4" />
-              <span className="text-xs font-medium">Último Contato</span>
+          <div className={CELULA}>
+            <div className={ROTULO}>
+              <Clock className="w-3.5 h-3.5" />
+              <span>Último Contato</span>
             </div>
             <p className="text-sm font-medium text-[var(--text-primary)]">
               {lead.ultimoContato
@@ -266,10 +290,10 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               </p>
             )}
           </div>
-          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md">
-            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
-              <Calendar className="w-4 h-4" />
-              <span className="text-xs font-medium">Próximo Contato</span>
+          <div className={CELULA}>
+            <div className={ROTULO}>
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Próximo Contato</span>
             </div>
             <p className="text-sm font-medium text-[var(--text-primary)]">
               {lead.proximoContato
@@ -279,12 +303,12 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
                 : 'Não agendado'}
             </p>
           </div>
-          <div className="p-4 bg-[var(--bg-surface-2)] rounded-md col-span-2">
-            <div className="flex items-center gap-2 text-[var(--text-tertiary)] mb-1">
-              <DollarSign className="w-4 h-4" />
-              <span className="text-xs font-medium">Valor Orçado</span>
+          <div className={`${CELULA} col-span-2`}>
+            <div className={ROTULO}>
+              <DollarSign className="w-3.5 h-3.5" />
+              <span>Valor Orçado</span>
             </div>
-            <p className="text-lg font-bold text-[var(--text-primary)]">
+            <p className="tnum text-[length:var(--text-xl)] font-bold text-[var(--text-primary)]">
               {formatCurrency(lead.valorOrcado ?? 0)}
             </p>
             {lead.orcamentoEnviado && (
@@ -298,8 +322,8 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         {/* Resumo */}
         {lead.resumo && (
           <div>
-            <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">Resumo</h3>
-            <p className="text-sm text-[var(--text-secondary)] p-3 bg-[var(--bg-surface-2)] rounded-md">
+            <SectionHeading index={proxima()} label="Resumo" />
+            <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)] border-l-2 border-[var(--border-strong)] pl-3">
               {lead.resumo}
             </p>
           </div>
@@ -308,46 +332,39 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         {/* Observações */}
         {lead.observacoes && (
           <div>
-            <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">
-              Observações
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] p-3 bg-[var(--bg-surface-2)] rounded-md">
+            <SectionHeading index={proxima()} label="Observações" />
+            <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)] border-l-2 border-[var(--border-strong)] pl-3">
               {lead.observacoes}
             </p>
           </div>
         )}
 
-        {/* Histórico */}
+        {/* Histórico: linha do tempo, do mais novo para o mais antigo */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2 flex items-center gap-2">
-            <History className="w-4 h-4" />
-            Histórico
-          </h3>
-          <div className="space-y-2">
+          <SectionHeading index={proxima()} label="Histórico" />
+          <ol className="mt-3 ml-1 border-l border-[var(--border)]">
             {(Array.isArray(lead.historico) ? lead.historico : [])
               .slice()
               .reverse()
               .map((entry) => (
-                <div
+                <li
                   key={entry.id}
-                  className="flex items-start gap-3 p-3 bg-[var(--bg-surface-2)] rounded-md"
+                  className="relative pl-5 pb-4 last:pb-0"
                 >
-                  <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--accent)]" />
-                  <div className="flex-1">
-                    <p className="text-sm text-[var(--text-primary)]">{entry.descricao}</p>
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                      {entry.createdAt
-                        ? format(
-                            parseISO(entry.createdAt),
-                            "dd/MM/yyyy 'às' HH:mm",
-                            { locale: ptBR },
-                          )
-                        : ''}
-                    </p>
-                  </div>
-                </div>
+                  <span aria-hidden="true" className="absolute -left-[4px] top-1.5 h-2 w-2 bg-[var(--accent)]" />
+                  <p className="text-sm text-[var(--text-primary)]">{entry.descricao}</p>
+                  <p className="ed-mono mt-1 text-[var(--text-tertiary)]">
+                    {entry.createdAt
+                      ? format(
+                          parseISO(entry.createdAt),
+                          "dd/MM/yyyy 'às' HH:mm",
+                          { locale: ptBR },
+                        )
+                      : ''}
+                  </p>
+                </li>
               ))}
-          </div>
+          </ol>
         </div>
       </div>
 
@@ -357,7 +374,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
           variant="ghost"
           size="sm"
           onClick={() => setShowDeleteConfirm(true)}
-          className="gap-1"
+          className="gap-1 rounded-none"
           style={{ color: 'var(--danger)' }}
         >
           <Trash2 className="w-4 h-4" />
@@ -366,7 +383,7 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
         <Button
           variant="primary"
           onClick={() => setShowEditModal(true)}
-          className="gap-1"
+          className="gap-1 rounded-none text-[var(--bg-app)]"
         >
           <Edit className="w-4 h-4" />
           Editar

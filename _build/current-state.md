@@ -4,13 +4,52 @@
 Versão: v2.39.4
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 13/11/2026, redesign D3 Kanban)
-- Build vite: limpo (13/11/2026, redesign D3 Kanban; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 13/11/2026, redesign D3 Leads)
+- Build vite: limpo (13/11/2026, redesign D3 Leads; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
-- **Redesign do app D3 — Kanban (13/11/2026) — commit sem push; aguardando aceite do Gabriel no celular:** primeira tela da rodada 3 de `_build/plano-redesign-app.md` (linha "Kanban"). Plano aprovado com 4 decisões:
+- **Redesign do app D3 — Leads + ficha (13/11/2026) — commit sem push; aguardando aceite do Gabriel no celular:** segunda tela da rodada 3 (linha "Leads" de `_build/plano-redesign-app.md`), depois do commit do Kanban (`29c21d3f`). Só pele: nenhum slice, formatter, selector, `src/lib/priority.ts`, `useLeadActions`, `LeadForm`, `AILeadModal`, componente de `ui`/`editorial` ou doc de ajuda mudou (`git diff` vazio).
+  - **Arquivos:** `src/modules/leads/LeadsList.tsx` e `src/modules/leads/LeadDetail.tsx`. Os dois usam o `visualLead.ts` do commit do Kanban (faixa, rótulo da prioridade e ícone da temperatura), sem repetir as cores. Status continua no `StatusBadge`.
+  - **Lista:**
+    - **Topo compacto (decisão do Gabriel):** número grande com o total de leads (`useCountUp`, num componente próprio; com "reduzir movimento" sai direto no valor final), e embaixo dele "N de N leads" (mesmo texto). "Criar com IA" e "Novo Lead" ficam na mesma linha a partir de ~360px; a 320 descem para a linha de baixo.
+    - **Filtros:** mesmos valores e mesmos `setFilter`. Busca, status e chips com 44px (antes 40 e 32) e cantos retos. Nos chips, os emojis viram ícones: 🔥☀️❄️ → fogo/sol/gelo; 🔴🟠🟡🟢 → quadradinho na cor do rótulo, porque o 🟡 de médio e o 🟢 de baixo brigavam com a faixa azul/cinza. Os textos não mudam.
+    - **Linha:** o `Card` vira `div` com o mesmo `onClick`.
+      - Faixa de 3px no topo pela prioridade (já existia; baixo passa a `--border-strong`). Seleção com contorno laranja.
+      - 5+ dias sem contato: o fundo `--danger-subtle` continua; as bordas `rgba(...)` fixas viram token.
+      - Nome em 17px; selo "✦ IA" e rótulo da prioridade em mono.
+      - Serviço em `--text-tertiary` (antes `--text-disabled`, quase ilegível).
+      - Status (`StatusBadge`), temperatura com ícone + texto e "Xd sem contato".
+      - Valor em `tnum`, ou "Sem valor" em serif; telefone em mono.
+      - WhatsApp e telefoninho com 44×44, os dois ícones em `--success` (antes o do WhatsApp era `text-green-600`).
+      - Temperatura fora das 3 conhecidas cai em Frio, como o texto de antes. A lista perdeu o recuo duplo no celular (+32px de largura nas linhas).
+    - **Vazios:** `EmptyState` da D0, com o botão embaixo. Filtro: "Nenhum lead encontrado com esses filtros" + nota **nova** "Ajuste a busca ou os filtros" + "Limpar filtros". Sem leads: "Nenhum lead cadastrado" / "Adicione seu primeiro lead para começar" + "Novo Lead".
+    - **Colophon:** "VRTX CRM · Gestão de Leads" com voltar ao painel no fim da lista, em todas as larguras (a lista rola, então não tira altura de nada).
+  - **Ficha (os 4 modais ficam intocados; são da D11):**
+    - **Cabeçalho:** faixa de prioridade no topo, nome em 24px, rótulo da prioridade em mono com o score "(N)" e temperatura com ícone + texto. Antes era uma bolinha (`TemperatureBadge`, que quebraria com temperatura nula; hoje 0 casos no banco).
+    - **Ações:** os mesmos 5 botões, textos, variantes e condição, com cantos retos; "Fechar Negócio" ocupa a linha inteira a partir de 640px.
+    - **Informações:** grade com fios, rótulos em mono e os mesmos textos ("Não informado", "Nunca", "Não agendado", "⚠️ N dias atrás", "✓ Orçamento enviado"). O telefone vira `<button>` de 44px com o mesmo `copyPhone` e `title="Copiar telefone"`.
+    - **Seções:** Resumo, Observações e Histórico com `SectionHeading`, numerados só quando aparecem. O histórico vira uma linha do tempo, com a data em mono.
+  - **Medidas (harness, 1440/390/320):**
+    - sem rolagem horizontal da página;
+    - alvos <44px no `<main>`: 154 → 1 (o X do `SlidePanel`, já registrado);
+    - topo até a 1ª linha: 1440 368 → 391px; 390 309 → 339px; 320 309 → 395px (filtros e busca maiores; a 320 os botões descem). Na 1ª tela a 390 cabem 3 leads (antes 4);
+    - chunks: `LeadsList` 33,0 → 32,9 kB, `LeadDetail` 15,5 → 17,2 kB (o `visualLead` foi para ele; o Kanban caiu 16,6 → 15,1 kB), CSS 62,2 → 63,3 kB.
+  - **Verificação.** Mesmo harness do Kanban, com o cenário misto ganhando o "Lead Mínimo": sem os campos opcionais, como os casos reais. Contagem no banco em 13/11 (94 leads): nome, telefone, status e temperatura nunca vazios; serviço `''` em 7, sem e-mail 84, sem endereço 17, sem último contato 48, sem valor 12, sem resumo 88, sem histórico 89.
+    - **Controle antes de editar:** roteiro de 58 passos rodado 2× no HEAD e 1× na árvore ainda sem mudança, 0 diferenças.
+    - **Depois:** os 58 passos com as **mesmas chamadas, toasts, `window.open`, clipboard, estado, ordem da lista e conteúdo da ficha**. Cobrem:
+      - busca por nome, telefone e serviço; cada status, temperatura e prioridade; combinação; os dois "limpar"; vazio com filtro;
+      - Novo Lead salvo (insert + automação); Criar com IA (abre/fecha);
+      - WhatsApp e telefoninho da linha, com sucesso e falha;
+      - na ficha: copiar telefone; Registrar Contato (vazio desabilitado, com data, com falha); Marcar Visita (sem data, falha, sucesso); Marcar Orçado (update + insert em `orcamentos`); Editar; Fechar Negócio com e sem execução aberta; lead perdido só com Registrar Contato e WhatsApp; Lead Mínimo; Excluir (Cancelar, falha, sucesso);
+      - celular (390); lista vazia.
+    - **Lógica (56 verificações por script):** `LeadsList()` até `hasActiveFilters`, os cálculos do `LeadRow`, o bloco do `LeadDetail` até o fim do `handleRegistrarContato` e os 4 modais **byte a byte iguais**; handlers e expressões de exibição iguais sem contar indentação e `className`; valores dos filtros na mesma ordem.
+    - **Rótulos:** os 25 de `docs/help/leads.md` com o mesmo texto ("Analisar Conversa", "Criar Novo Lead" e "Atualizar Existente" estão no `AILeadModal`, que não mudou).
+    - **Regressão do Kanban (abre a mesma ficha):** 22 passos iguais. O passo do celular foi refeito com a rolagem lateral fixa (Helena: Em Atendimento → Novo) e caiu em Novo nas 4 rodadas.
+    - **Reduzir movimento:** número final no 1º quadro.
+    - **Build:** `tsc --noEmit` 0 erros; build limpo.
+- **Redesign do app D3 — Kanban (13/11/2026) — commit `29c21d3f`, sem push; aguardando aceite do Gabriel no celular:** primeira tela da rodada 3 de `_build/plano-redesign-app.md` (linha "Kanban"). Plano aprovado com 4 decisões:
   1. topo fino no Kanban e compacto em Leads;
   2. `StatusBadge` roxo fica para a D12;
   3. arrasto por toque só relatado;
@@ -52,7 +91,7 @@ Versão: v2.39.4
       - nota com falha (o popover fica + "Erro ao atualizar lead"), nota com sucesso, clique fora;
       - WhatsApp do card: `wa.me` sem texto;
       - clique no card: abre a ficha com as 7 ações;
-      - arrasto com mouse a 390.
+      - arrasto com mouse a 390. **Correção (13/11, na rodada de Leads):** o passo dizia "Novo → Em Atendimento", mas o card caiu em **Perdido** nos dois lados. A coluna vizinha fica fora da tela a 390, e a rolagem automática do `@dnd-kit` levava o card adiante. As chamadas eram iguais, então a prova valia; a descrição não. O passo foi refeito com a rolagem lateral fixa (ver a entrada de Leads, acima).
     - **Controle feito antes de editar:** o mesmo roteiro duas vezes no código sem mudança deu igual.
     - **Medidas:** sem rolagem horizontal da página a 1440/390/320. Alvos <44px no `<main>`: 143 → 1 (o X do `SlidePanel`, componente de `ui`).
     - **Rótulos:** os 18 de `docs/help/kanban.md` ficam com o mesmo texto.
@@ -635,6 +674,12 @@ Versão: v2.39.4
 - **Comparador de Preços** (`src/modules/suprimentos/ComparadorPrecos.tsx`): item comentado em `Sidebar.tsx:59`. Import lazy em `App.tsx` e entrada no `ModuleRouter` mantidos. Reativar: descomentar a linha em Sidebar.tsx.
 
 ## Dívida Técnica Conhecida
+- **`useCountUp` pode mostrar número negativo no 1º quadro** (registrado em 13/11/2026, redesign D3): na contagem do total de Leads apareceu "-8" num quadro antes de subir até 71.
+  - **Causa provável** (`src/hooks/useCountUp.ts`, `passo`): o carimbo de tempo do 1º `requestAnimationFrame` pode vir antes do `t0` (`performance.now()` no efeito). Aí `t` fica negativo e o easeOutExpo dá um valor abaixo de zero.
+  - **Correção provável:** `Math.max(0, …)` no `t`.
+  - Vale também para Dashboard (D1) e Operacional (D2). Com "reduzir movimento" não acontece. O hook estava fora do escopo da D3. Vai para a rodada de celular/acabamento depois da D3 (decisão do Gabriel, 13/11).
+- **Kanban a 390: arrastar com mouse para a coluna vizinha leva o card adiante** (registrado em 13/11/2026, redesign D3). A coluna de destino fica quase toda fora da tela. Soltar perto da borda dispara a rolagem automática do `@dnd-kit`, e o card cai onde a rolagem parar (no harness, Perdido ou Fechado em vez de Em Atendimento). Igual antes e depois da D3. Vai para a rodada de celular/acabamento depois da D3 (decisão do Gabriel, 13/11).
+- **`StatusBadge` pinta "Em Atendimento" de roxo** (`src/components/ui/Badge.tsx`, `--ia`/`--ia-subtle`), contra a regra 6 do plano do redesign: o roxo é só da IA. Decisão do Gabriel em 13/11: fica como está na D3 e vai para a D12. Aparece na lista de Leads, na ficha e onde mais o `StatusBadge` for usado.
 - **Kanban: arrastar pelo toque não move o card** (registrado em 13/11/2026, redesign D3).
   - **Visto:** no harness a 390, com toque emulado, o gesto na alça não gera chamada, antes e depois da D3. Não testado em aparelho real.
   - **Provável causa:** a alça não tem `touch-action: none`, e o `PointerSensor` do `@dnd-kit` perde o gesto para a rolagem. Na emulação, o gesto para a direita com a rolagem lateral no começo ainda vira "voltar" do navegador.
