@@ -4,12 +4,60 @@
 Versão: v2.39.4
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 13/11/2026, fix do PIX)
-- Build vite: limpo (13/11/2026, fix do PIX; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 13/11/2026, redesign D3 Kanban)
+- Build vite: limpo (13/11/2026, redesign D3 Kanban; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Redesign do app D3 — Kanban (13/11/2026) — commit sem push; aguardando aceite do Gabriel no celular:** primeira tela da rodada 3 de `_build/plano-redesign-app.md` (linha "Kanban"). Plano aprovado com 4 decisões:
+  1. topo fino no Kanban e compacto em Leads;
+  2. `StatusBadge` roxo fica para a D12;
+  3. arrasto por toque só relatado;
+  4. a frase de `docs/help/kanban.md:47-48` é corrigida num commit de docs à parte.
+
+  Só pele: nenhum slice, formatter, selector, `src/lib/priority.ts`, `statusConfig`, `HeaderGlobal`, `server.js` ou doc de ajuda mudou (`git diff` vazio).
+  - **Arquivos:**
+    - `src/modules/kanban/Kanban.tsx`;
+    - novo `src/modules/leads/visualLead.ts`: faixa e rótulo da prioridade, ícone da temperatura e `nivelPrioridade` (cai em "baixo", como o `PriorityBadge`). O Kanban usa agora; a lista de Leads e a ficha vão usar no próximo commit.
+  - **Visual:**
+    - **Topo:** faixa mono de 1 linha no lugar do `h1` "Kanban", que repetia o header. Diz "Arraste pela alça" no celular, a frase inteira a partir de 640px, e o total de leads.
+    - **Cabeçalho da coluna:** nº 01–05 em laranja, título em mono, contagem em serif itálico, soma dos valores (mesma regra `valorTotal > 0`) e barrinha laranja. Saem as bordas `border-t-blue/purple/yellow/green/gray-*`, que eram Tailwind direto.
+    - **Card:**
+      - faixa de 3px pela prioridade: crítico `--danger`, alto `--warning`, médio `--info`, baixo `--border-strong`;
+      - fogo/sol/gelo pela temperatura, sem ícone se a temperatura vier vazia;
+      - rótulo da prioridade em mono e "Sem valor" em serif;
+      - a alça vira uma coluna de 44px de largura; o botão de nota passa a 44×44;
+      - WhatsApp: `text-green-500` → `--success`.
+    - **Popover da nota:** passa a ter a largura do card. Antes saía da tela a 390 e a 320 (borda direita em 405 e 370).
+    - **`Colophon` "voltar ao painel" só a partir de `md` (aprovado pelo Gabriel em 13/11).** Abaixo de `md`, o BottomNav já tem "Início" (mesmo destino), e o Colophon quebrava em 2 linhas (~95px tirados das colunas).
+  - **Altura (defeito corrigido, medido antes):**
+    - **Antes:** a lista da coluna tinha `min-h-[600px]` e passava da coluna em todas as larguras. A área das colunas rolava nos dois sentidos; a 320×568 eram 680px de conteúdo em 223px visíveis.
+    - **Agora:** a lista é `flex-1 min-h-0 overflow-y-auto` e a área só rola de lado.
+    - **Lista visível da coluna:** 1440 = 545px; 390 = 495px (antes ~458px úteis, com rolagem dupla); 320 = 219px (antes ~163px). A coluna termina na mesma altura de antes: 692px a 390 e 416px a 320.
+    - A rolagem lateral das 5 colunas fica. O protótipo empilha em 3 colunas; não adotado.
+  - **Lógica (17 verificações por script, contra o HEAD):**
+    - **Byte a byte iguais:** de `export function Kanban()` até o fim do `handleDragEnd`, e o topo do `SortableLeadCard` até a borda de contato.
+    - **Iguais sem contar indentação e `className`:** DndContext, SlidePanel, `useDroppable`, SortableContext, clique do card, alça, "⚠ Follow-up atrasado", dias sem contato, WhatsApp e nota (abrir, textarea, Salvar com `if (ok)`).
+    - **Também iguais:** as classes do follow-up atrasado e os ids/títulos das colunas.
+  - **Verificação.** Harness no scratchpad: slice real, Supabase em stub que grava `{tabela, op, payload, filtros}`, realtime simulado com o `formatLead`, `localStorage` limpo a cada página. Nada foi ao banco.
+    - **Roteiro de 22 passos:** mesmas chamadas, toasts, `window.open`, estado e colunas no HEAD e na árvore, com uuid, ISO e `ORC-<ms>` normalizados:
+      - arrastar Novo → Em Atendimento;
+      - Bianca (sem execução) → Fechado: update + insert da execução + "Negócio fechado! Tarefa de execução criada.";
+      - Bianca volta para Orçado e de novo para Fechado: guarda, "…Já existe tarefa de execução aberta.", sem insert;
+      - Renato (com execução) → Fechado: sem insert;
+      - soltar na mesma coluna e fora: 0 chamadas;
+      - falha simulada: "Erro ao atualizar status";
+      - clique curto na alça: a ficha não abre;
+      - nota com falha (o popover fica + "Erro ao atualizar lead"), nota com sucesso, clique fora;
+      - WhatsApp do card: `wa.me` sem texto;
+      - clique no card: abre a ficha com as 7 ações;
+      - arrasto com mouse a 390.
+    - **Controle feito antes de editar:** o mesmo roteiro duas vezes no código sem mudança deu igual.
+    - **Medidas:** sem rolagem horizontal da página a 1440/390/320. Alvos <44px no `<main>`: 143 → 1 (o X do `SlidePanel`, componente de `ui`).
+    - **Rótulos:** os 18 de `docs/help/kanban.md` ficam com o mesmo texto.
+    - **Build:** `tsc --noEmit` 0 erros; build limpo (chunk do Kanban 13,6 → 16,6 kB).
+  - **Arrasto por toque (só relatado, decisão do Gabriel):** a 390, com toque emulado, arrastar pela alça não move o card, antes e depois (0 chamadas). Ver Dívida Técnica.
 - **Banco: excluir usuário não apaga mais a empresa (13/11/2026) — migration `supabase/migrations/20261113000000_workspaces_owner_id_set_null.sql`, registrada no banco como `20261113191233` (aplicada via `apply_migration`); commit único (migration + este registro), push em 13/11/2026; sem deploy (nenhum código muda):** fecha a Dívida Técnica ALTA do `owner_id`. Plano auditado e aprovado em outra sessão (o conector do Supabase dela recusa escrita); a execução no banco foi feita nesta.
   - **Mudança:** `workspaces_owner_id_fkey` passou de `ON DELETE CASCADE` para `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE SET NULL`, numa instrução só (`DROP CONSTRAINT` + `ADD CONSTRAINT`, mesmo nome). **Regra nova:** excluir o usuário dono deixa a empresa sem dono e tira o acesso dele (a membership em `workspace_members` continua saindo em cascata), mas não apaga dado.
   - **Auditoria (só leitura, 13/11):** 13 FKs apontam para `auth.users`. 10 no schema `auth` (do Supabase Auth: identities, sessions, mfa_factors, mfa_recovery_code_sets, one_time_tokens, oauth_authorizations, oauth_consents, webauthn_challenges e webauthn_credentials em CASCADE; scim_users em SET NULL) e 2 de `workspace_members.user_id` (`fk_user` e `workspace_members_user_id_fkey`, CASCADE: só o vínculo). A única que apagava dado de negócio era a do `owner_id`; a coluna aceita nulo. Ninguém lê `owner_id` (front, `server.js`, função, policy, view, trigger); "dono" no app é `workspace_members.role = 'owner'`. 5 dos 7 workspaces já tinham `owner_id` nulo.
@@ -587,6 +635,13 @@ Versão: v2.39.4
 - **Comparador de Preços** (`src/modules/suprimentos/ComparadorPrecos.tsx`): item comentado em `Sidebar.tsx:59`. Import lazy em `App.tsx` e entrada no `ModuleRouter` mantidos. Reativar: descomentar a linha em Sidebar.tsx.
 
 ## Dívida Técnica Conhecida
+- **Kanban: arrastar pelo toque não move o card** (registrado em 13/11/2026, redesign D3).
+  - **Visto:** no harness a 390, com toque emulado, o gesto na alça não gera chamada, antes e depois da D3. Não testado em aparelho real.
+  - **Provável causa:** a alça não tem `touch-action: none`, e o `PointerSensor` do `@dnd-kit` perde o gesto para a rolagem. Na emulação, o gesto para a direita com a rolagem lateral no começo ainda vira "voltar" do navegador.
+  - **Decisão do Gabriel (13/11):** vai para a **rodada pequena de celular depois da D3**, junto com os 72px vazios do `<main>` e o X de 36px do `SlidePanel` (abaixo). Não corrigido na D3.
+- **`<main>` do `MainLayout` com `pb-[calc(72px_+_safe-area)]` no celular, mas o `BottomNav` não é `fixed`** (registrado em 13/11/2026, redesign D3): sobram 72px vazios no fim de toda tela do celular. No Kanban, essa altura sai das colunas. O `MainLayout` estava fora do escopo da D3. Vai para a rodada pequena de celular depois da D3 (decisão do Gabriel, 13/11).
+- **Faixa de prioridade de lead duplicada:** `Dashboard.tsx:32` (`FAIXA_PRIORIDADE`, local, não exportado) e `src/modules/leads/visualLead.ts` (`FAIXA_PRIORIDADE_LEAD`). Registrado em 13/11/2026, redesign D3. Unificar na D12.
+- **X do `SlidePanel` com 36×36px** (`src/components/ui/Modal.tsx`, botão de fechar com `p-2`): fica abaixo dos 44px. É o único alvo pequeno que sobra no `<main>` do Kanban. Registrado em 13/11/2026, redesign D3. Vai para a rodada pequena de celular depois da D3 (decisão do Gabriel, 13/11).
 - **`leads` tem duas FKs idênticas para `workspaces`** (registrado em 13/11/2026, na auditoria do `owner_id`): `fk_workspace_leads` e `leads_workspace_id_fkey`, as duas `FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE`, não adiáveis e validadas. Mesmo caso das duplicadas de `workspace_members` (achado da R1). Remover uma delas é migration própria.
 - **Chave PIX sem normalização** (registrado em 13/11/2026, fix do txid): `pixPayload` usa a chave como foi digitada. Hoje as 3 chaves em produção estão só com dígitos (1 CPF, 2 CNPJ). **Fazer antes do primeiro cliente com chave de telefone ou e-mail:** normalizar pela escolha do usuário em Configurações (`tipo_chave_pix` em `workspace_settings`), de preferência ao salvar a chave: CPF/CNPJ só dígitos, telefone `+55` + dígitos, e-mail em minúsculas, aleatória como está. **Não deduzir pelo formato:** um telefone digitado sem +55 tem 11 dígitos, vira "CPF" e o PIX vai para outra pessoa. Hoje o tipo não chega ao backend (o front não manda), e o Settings tem dois seletores com valores diferentes (`cpf`/`cnpj` e `cpf_cnpj`).
 - **PDF agrupado com página quase vazia** (registrado em 13/11/2026, rodada 2 do PDF): no caso de teste, a p2 fica só com a caixa "Total deste orçamento" do 1º orçamento (3 linhas), porque cada orçamento depois do primeiro começa em página nova (`class="page-break"` em `blocosV2`, `server.js`). No `d1995da8` já era assim (caixa + observação, 5 linhas). **Proposta para depois:** orçamentos em sequência, sem quebra forçada, com o cabeçalho de cada um preso ao primeiro item.
