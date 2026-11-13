@@ -1,13 +1,36 @@
-import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react';
+import { forwardRef, useCallback, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, ForwardedRef } from 'react';
 import { cn } from '@/utils/cn';
+import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
+import type { ModoMaiuscula } from '@/utils/maiusculaAuto';
+
+// Com a prop maiuscula, junta a ref de quem usa o componente com a da maiúscula automática.
+function useRefComMaiuscula<T extends HTMLInputElement | HTMLTextAreaElement>(ref: ForwardedRef<T>, maiuscula?: ModoMaiuscula) {
+  const refMaiuscula = useMaiusculaAuto(maiuscula);
+  const juntas = useCallback(
+    (el: T) => {
+      const limpar = refMaiuscula(el);
+      if (typeof ref === 'function') ref(el);
+      else if (ref) ref.current = el;
+      return () => {
+        limpar?.();
+        if (typeof ref === 'function') ref(null);
+        else if (ref) ref.current = null;
+      };
+    },
+    [ref, refMaiuscula],
+  );
+  return maiuscula ? juntas : ref;
+}
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  maiuscula?: ModoMaiuscula;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, ...props }, ref) => {
+  ({ className, label, error, maiuscula, ...props }, ref) => {
+    const refFinal = useRefComMaiuscula(ref, maiuscula);
     return (
       <div className="w-full">
         {label && (
@@ -16,7 +39,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <input
-          ref={ref}
+          ref={refFinal}
+          autoCapitalize={maiuscula === 'palavras' ? 'words' : maiuscula ? 'sentences' : undefined}
           className={cn(
             // Dark surface input style
             'w-full px-3 py-2 border border-[var(--border-strong)] rounded-md text-sm',
@@ -41,10 +65,12 @@ Input.displayName = 'Input';
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  maiuscula?: ModoMaiuscula;
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ className, label, error, ...props }, ref) => {
+  ({ className, label, error, maiuscula, ...props }, ref) => {
+    const refFinal = useRefComMaiuscula(ref, maiuscula);
     return (
       <div className="w-full">
         {label && (
@@ -53,7 +79,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           </label>
         )}
         <textarea
-          ref={ref}
+          ref={refFinal}
+          autoCapitalize={maiuscula === 'palavras' ? 'words' : maiuscula ? 'sentences' : undefined}
           className={cn(
             // Dark surface textarea style
             'w-full px-3 py-2 border border-[var(--border-strong)] rounded-md text-sm',

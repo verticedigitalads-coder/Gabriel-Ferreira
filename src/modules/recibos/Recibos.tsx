@@ -550,6 +550,7 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
       )}
 
       <Input
+        maiuscula="palavras"
         label="Nome do Cliente *"
         value={clienteNome}
         onChange={(e) => setClienteNome(e.target.value)}
@@ -557,6 +558,7 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
       />
 
       <TextArea
+        maiuscula="frase"
         label="Descrição dos Serviços *"
         value={descricao}
         onChange={(e) => setDescricao(e.target.value)}
@@ -582,6 +584,7 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
       </div>
 
       <TextArea
+        maiuscula="frase"
         label="Observações"
         value={observacoes}
         onChange={(e) => setObservacoes(e.target.value)}

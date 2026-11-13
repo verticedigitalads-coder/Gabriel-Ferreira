@@ -2,6 +2,7 @@ import { formatPhone, formatCurrency } from '@/utils/formatters';
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { useLeadActions } from '@/hooks/useLeadActions';
+import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
@@ -43,6 +44,7 @@ interface LeadDetailProps {
 
 export function LeadDetail({ lead, onClose }: LeadDetailProps) {
   const deleteLead = useStore((state) => state.deleteLead);
+  const refFrase = useMaiusculaAuto('frase');
   const addOperacionalTask = useStore((state) => state.addOperacionalTask);
   const updateLead = useStore((state) => state.updateLead);
   const handleMarkAsOrcado = useStore((state: any) => state.handleMarkAsOrcado);
@@ -503,6 +505,8 @@ export function LeadDetail({ lead, onClose }: LeadDetailProps) {
               O que foi tratado? *
             </label>
             <textarea
+              ref={refFrase}
+              autoCapitalize="sentences"
               value={textoContato}
               onChange={e => setTextoContato(e.target.value)}
               rows={3}

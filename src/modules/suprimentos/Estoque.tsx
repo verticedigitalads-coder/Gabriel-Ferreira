@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useStore } from "@/store/useStore"
+import { useMaiusculaAuto } from "@/hooks/useMaiusculaAuto"
 import {
   Package,
   PackagePlus,
@@ -167,6 +168,7 @@ interface ModalCadastroProps {
 
 function ModalCadastro({ material, onClose, onSave }: ModalCadastroProps) {
   const [nome, setNome] = useState(material?.nome ?? '')
+  const refInicio = useMaiusculaAuto('inicio')
   const [categoria, setCategoria] = useState(material?.categoria ?? '')
   const [unidade, setUnidade] = useState(material?.unidade ?? '')
   const [estoque, setEstoque] = useState(String(material?.estoque ?? ''))
@@ -211,7 +213,7 @@ function ModalCadastro({ material, onClose, onSave }: ModalCadastroProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <label style={labelStyle}>Nome *</label>
-            <input style={inputStyle} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Tinta acrílica" />
+            <input ref={refInicio} autoCapitalize="sentences" style={inputStyle} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Tinta acrílica" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -273,6 +275,7 @@ function ModalMovimentacao({ material, onClose, onConfirm }: ModalMovimentacaoPr
   const [tipo, setTipo] = useState<'entrada' | 'saida'>(material._tipoInicial ?? 'entrada')
   const [quantidade, setQuantidade] = useState('')
   const [motivo, setMotivo] = useState('')
+  const refInicio = useMaiusculaAuto('inicio')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
@@ -358,6 +361,8 @@ function ModalMovimentacao({ material, onClose, onConfirm }: ModalMovimentacaoPr
           <div>
             <label style={labelStyle}>Motivo (opcional)</label>
             <input
+              ref={refInicio}
+              autoCapitalize="sentences"
               style={inputStyle}
               value={motivo}
               onChange={e => setMotivo(e.target.value)}

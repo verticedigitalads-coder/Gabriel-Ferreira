@@ -17,6 +17,7 @@ import { FAIXA_PRIORIDADE, ROTULO_PRIORIDADE } from './components/faixaPrioridad
 import { SectionHeading } from '@/components/editorial/SectionHeading';
 import { Colophon } from '@/components/editorial/Colophon';
 import { useCountUp } from '@/hooks/useCountUp';
+import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
 import { cn } from '@/utils/cn';
 
 // ── Redesign D2: peças visuais (só UI; os números chegam prontos) ──
@@ -64,6 +65,8 @@ const LIMITE_ATRASADAS = 5;
 export function Operacional() {
   const tasks = useStore((state) => state.operacionalTasks) || [];
   const addTask = useStore((state) => state.addOperacionalTask);
+  const refInicio = useMaiusculaAuto('inicio');
+  const refFrase = useMaiusculaAuto('frase');
   const handleCreateTask = (date: string) => {
     addTask({
       titulo: 'Nova tarefa',
@@ -358,6 +361,8 @@ export function Operacional() {
 
           <div>
             <input
+              ref={refInicio}
+              autoCapitalize="sentences"
               type="text"
               placeholder="Título da tarefa"
               value={titulo}
@@ -626,6 +631,8 @@ export function Operacional() {
           <div>
             <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Título</label>
             <input
+              ref={refInicio}
+              autoCapitalize="sentences"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               className="w-full border border-[var(--border)] p-2 rounded bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px]"
@@ -685,6 +692,8 @@ export function Operacional() {
           <div>
             <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1">Descrição (opcional)</label>
             <textarea
+              ref={refFrase}
+              autoCapitalize="sentences"
               value={editDescricao}
               onChange={(e) => setEditDescricao(e.target.value)}
               rows={3}

@@ -2,6 +2,7 @@ import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database,
 import { SignaturePad } from '@/components/ui/SignaturePad';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +21,7 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
 export function Settings() {
   const workspaceId = useStore(s => s.workspaceId);
   const settings = useStore(s => s.settings);
+  const refPalavras = useMaiusculaAuto('palavras');
   const updateSettings = useStore(s => s.updateSettings);
   const updateSetting = useStore(s => s.updateSetting);
   const initialize = useStore(s => s.initialize);
@@ -365,6 +367,7 @@ export function Settings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <Input
+                maiuscula="palavras"
                 label="Nome da Empresa"
                 value={empresaNome}
                 onChange={e => setEmpresaNome(e.target.value)}
@@ -411,6 +414,7 @@ export function Settings() {
             </div>
             <div className="md:col-span-2">
               <TextArea
+                maiuscula="palavras"
                 label="Endereço"
                 rows={2}
                 value={empresaEndereco}
@@ -660,6 +664,7 @@ export function Settings() {
 
             <div className="md:col-span-2">
               <TextArea
+                maiuscula="frase"
                 label="Observação padrão do orçamento"
                 rows={3}
                 value={obsPadraoOrcamento}
@@ -671,6 +676,7 @@ export function Settings() {
 
             <div className="md:col-span-2">
               <TextArea
+                maiuscula="frase"
                 label="Observação padrão do recibo"
                 rows={3}
                 value={obsPadraoRecibo}
@@ -686,6 +692,7 @@ export function Settings() {
 
             <div className="md:col-span-2">
               <TextArea
+                maiuscula="frase"
                 label="Texto de apresentação (Relatório inicial)"
                 rows={4}
                 value={textoApresentacao}
@@ -697,6 +704,7 @@ export function Settings() {
 
             <div className="md:col-span-2">
               <TextArea
+                maiuscula="frase"
                 label="Condições de contrato"
                 rows={6}
                 value={condicoesContrato}
@@ -758,6 +766,8 @@ export function Settings() {
             <div>
               <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Cidade (max 15 caracteres)</label>
               <input
+                ref={refPalavras}
+                autoCapitalize="words"
                 type="text"
                 value={cidadePix}
                 onChange={e => setCidadePix(e.target.value.slice(0, 15))}

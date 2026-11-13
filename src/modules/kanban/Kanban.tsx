@@ -2,6 +2,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { useDroppable } from '@dnd-kit/core';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
 import {
   DndContext,
   DragOverlay,
@@ -250,6 +251,7 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
 
   const [showObs, setShowObs] = useState(false);
   const [obsText, setObsText] = useState(lead.observacoes || '');
+  const refFrase = useMaiusculaAuto('frase');
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -410,6 +412,8 @@ function SortableLeadCard({ lead, onClick, formatCurrency }: any) {
                 onClick={e => e.stopPropagation()}
               >
                 <textarea
+                  ref={refFrase}
+                  autoCapitalize="sentences"
                   value={obsText}
                   onChange={e => setObsText(e.target.value)}
                   rows={3}

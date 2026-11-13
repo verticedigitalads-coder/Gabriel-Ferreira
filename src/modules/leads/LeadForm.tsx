@@ -84,6 +84,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
     <form onSubmit={handleSubmit} className="p-6 space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
+          maiuscula="palavras"
           label="Nome *"
           value={formData.nome}
           onChange={e => handleChange('nome', e.target.value)}
@@ -91,6 +92,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
           required
         />
 	<Input
+  	 maiuscula="palavras"
   	 label="Endereço da Obra"
   	 value={formData.endereco}
   	 onChange={e => handleChange('endereco', e.target.value)}
@@ -111,6 +113,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
           placeholder="email@exemplo.com"
         />
         <Input
+          maiuscula="inicio"
           label="Serviço *"
           value={formData.servico}
           onChange={e => handleChange('servico', e.target.value)}
@@ -162,6 +165,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
       </div>
 
       <TextArea
+        maiuscula="frase"
         label="Resumo"
         value={formData.resumo}
         onChange={e => handleChange('resumo', e.target.value)}
@@ -170,6 +174,7 @@ export function LeadForm({ lead, onClose }: LeadFormProps) {
       />
 
       <TextArea
+        maiuscula="frase"
         label="Observações"
         value={formData.observacoes}
         onChange={e => handleChange('observacoes', e.target.value)}

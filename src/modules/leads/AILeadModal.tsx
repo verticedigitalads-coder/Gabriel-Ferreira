@@ -15,6 +15,7 @@ import {
 import { AIService } from '@/services/ai/ai.service';
 import { HISTORICO_TIPO, Lead } from '../../types';
 import { useStore } from '../../store/useStore';
+import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 
@@ -31,6 +32,9 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AIAnalysisResult | null>(null);
   const [duplicateLead, setDuplicateLead] = useState<Lead | null>(null);
+  const refInicio = useMaiusculaAuto('inicio');
+  const refPalavras = useMaiusculaAuto('palavras');
+  const refFrase = useMaiusculaAuto('frase');
   const {
     leads,
     workspaceId,
@@ -283,6 +287,8 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                 <div className="space-y-1">
                   <label className={labelClass}>Nome</label>
                   <input
+                    ref={refPalavras}
+                    autoCapitalize="words"
                     value={analysis.nome || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, nome: e.target.value })
@@ -316,6 +322,8 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                 <div className="space-y-1">
                   <label className={labelClass}>Endereço da Obra</label>
                   <input
+                    ref={refPalavras}
+                    autoCapitalize="words"
                     value={analysis.endereco || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, endereco: e.target.value })
@@ -327,6 +335,8 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                 <div className="space-y-1">
                   <label className={labelClass}>Serviço</label>
                   <input
+                    ref={refInicio}
+                    autoCapitalize="sentences"
                     value={analysis.servico || ''}
                     onChange={(e) =>
                       setAnalysis({ ...analysis, servico: e.target.value })
@@ -421,6 +431,8 @@ export const AILeadModal: React.FC<AILeadModalProps> = ({
                 </label>
 
                 <textarea
+                  ref={refFrase}
+                  autoCapitalize="sentences"
                   value={analysis.resumo || ''}
                   onChange={(e) =>
                     setAnalysis({ ...analysis, resumo: e.target.value })

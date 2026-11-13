@@ -736,6 +736,7 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
         options={tipoOptions}
       />
       <Input
+        maiuscula="inicio"
         label="Descrição"
         value={descricao}
         onChange={(e) => setDescricao(e.target.value)}
@@ -791,6 +792,7 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
       />
 
       <TextArea
+        maiuscula="frase"
         label="Observações"
         value={observacoes}
         onChange={(e) => setObservacoes(e.target.value)}

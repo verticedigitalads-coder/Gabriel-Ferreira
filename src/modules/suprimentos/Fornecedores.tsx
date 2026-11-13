@@ -235,6 +235,7 @@ function FornecedorForm({ onClose, initialData }: FornecedorFormProps) {
       {/* Razão Social + Nome Fantasia */}
       <div className="grid grid-cols-2 gap-3">
         <Input
+          maiuscula="palavras"
           label="Razão Social *"
           value={nome}
           onChange={e => setNome(e.target.value)}
@@ -242,6 +243,7 @@ function FornecedorForm({ onClose, initialData }: FornecedorFormProps) {
           required
         />
         <Input
+          maiuscula="palavras"
           label="Nome Fantasia"
           value={nomeFantasia}
           onChange={e => setNomeFantasia(e.target.value)}
@@ -286,6 +288,7 @@ function FornecedorForm({ onClose, initialData }: FornecedorFormProps) {
       <div className="grid grid-cols-3 gap-3">
         <div className="col-span-2">
           <Input
+            maiuscula="palavras"
             label="Logradouro"
             value={logradouro}
             onChange={e => setLogradouro(e.target.value)}
@@ -304,6 +307,7 @@ function FornecedorForm({ onClose, initialData }: FornecedorFormProps) {
       <div className="grid grid-cols-3 gap-3">
         <div className="col-span-2">
           <Input
+            maiuscula="palavras"
             label="Cidade"
             value={cidade}
             onChange={e => setCidade(e.target.value)}
@@ -330,6 +334,7 @@ function FornecedorForm({ onClose, initialData }: FornecedorFormProps) {
           placeholder="Ex: 7"
         />
         <Input
+          maiuscula="inicio"
           label="Condição de pagamento"
           value={condicaoPagamento}
           onChange={e => setCondicaoPagamento(e.target.value)}
@@ -339,6 +344,7 @@ function FornecedorForm({ onClose, initialData }: FornecedorFormProps) {
 
       {/* Observações */}
       <TextArea
+        maiuscula="frase"
         label="Observações"
         value={observacoes}
         onChange={e => setObservacoes(e.target.value)}

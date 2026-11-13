@@ -52,3 +52,6 @@ Comece pelo **Dashboard** (visão geral e leads urgentes) ou pelo **Modo Execuç
 
 **Tenho uma equipe. Todos usam o mesmo acesso?**
 Cada pessoa entra com a própria conta Google, liberada pela equipe do VRTX no workspace da empresa. Fale com o suporte para incluir novos usuários.
+
+**Por que a primeira letra fica maiúscula sozinha?**
+O app coloca maiúscula no começo das frases e em cada palavra de nomes, empresas e endereços (menos da, de, do, dos, e) enquanto você digita. Para deixar minúscula, aperte Ctrl+Z logo depois ou apague e digite de novo. E-mail, telefone, valores e chave PIX nunca mudam.

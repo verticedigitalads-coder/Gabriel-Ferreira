@@ -447,6 +447,7 @@ function ContaReceberForm({
   return (
     <form onSubmit={handleSubmit} className="p-6 space-y-4">
       <Input
+        maiuscula="inicio"
         label="Descrição"
         value={descricao}
         onChange={(e) => setDescricao(e.target.value)}
@@ -495,6 +496,7 @@ function ContaReceberForm({
       </div>
 
       <TextArea
+        maiuscula="frase"
         label="Observação"
         value={observacao}
         onChange={(e) => setObservacao(e.target.value)}

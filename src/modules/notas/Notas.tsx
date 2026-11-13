@@ -272,6 +272,7 @@ function NotaForm({ nota, onClose }: NotaFormProps) {
         ]}
       />
       <TextArea
+        maiuscula="frase"
         label="Observações"
         value={observacoes}
         onChange={e => setObservacoes(e.target.value)}

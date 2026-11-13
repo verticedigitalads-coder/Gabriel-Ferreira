@@ -1080,6 +1080,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-[var(--text-secondary)] w-6">{index + 1}.</span>
                 <Input
+                  maiuscula="inicio"
                   placeholder="Descrição"
                   value={item.descricao}
                   onChange={(e) =>
@@ -1089,6 +1090,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
                 />
                 {isMarcenaria && (
                   <Input
+                    maiuscula="inicio"
                     placeholder="Ambiente"
                     value={item.ambiente || ''}
                     onChange={(e) =>
@@ -1282,6 +1284,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
       </div>
 
       <TextArea
+        maiuscula="frase"
         label="Observações"
         value={observacoes}
         onChange={(e) => setObservacoes(e.target.value)}
