@@ -33,7 +33,7 @@ Crie e envie orçamentos profissionais em PDF, com sua logo, suas cores e QR Cod
 ## Perguntas frequentes
 
 **Coloquei um item com valor 0 e ele não apareceu na tabela do PDF.**
-É proposital: itens de valor zero (cortesias, itens inclusos) saem na seção de **Observações** do PDF, marcados como "sem custo". Atenção: item sem descrição não sai no PDF de jeito nenhum — sempre dê um nome ao item.
+É proposital: itens de valor zero (cortesias, itens inclusos) saem no quadro de observações do PDF, logo abaixo do valor total, marcados como "sem custo". Quando o orçamento tem observação escrita, esse quadro aparece em destaque, com o título **Importante**. Atenção: item sem descrição não sai no PDF de jeito nenhum — sempre dê um nome ao item.
 
 **A comissão aparece para o cliente?**
 Não. Ela é embutida no valor total e fica visível só para você, no card do orçamento. O PDF do cliente não menciona comissão.

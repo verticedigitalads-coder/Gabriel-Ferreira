@@ -146,6 +146,17 @@
 
     .obs-box .obs-body { font-size: 12px; color: #444; line-height: 1.6; white-space: pre-wrap; }
 
+    /* Observação escrita pelo usuário: destaque de aviso */
+    .obs-box.obs-destaque {
+      background: #fff8e1;
+      border: 1px solid #e6c65c;
+      border-left: 5px solid {{cor_destaque}};
+      padding: 10px 16px;
+    }
+
+    .obs-box.obs-destaque .obs-title { font-size: 13px; font-weight: 800; color: #222; margin-bottom: 6px; }
+    .obs-box.obs-destaque .obs-body { font-size: 14px; color: #222; }
+
     /* ASSINATURA */
     .assinatura { margin-top: 8px; display: flex; justify-content: space-between; gap: 40px; }
     .assinatura-bloco { flex: 1; text-align: center; }
@@ -165,7 +176,7 @@
     .footer-v3 .contato { font-weight: 600; color: #333; }
     .footer-v3 .data-local { font-size: 11px; color: #888; margin-top: 4px; }
 
-    table, .client-box, .bottom-block, .total-box { page-break-inside: avoid; }
+    table, .client-box, .bottom-block, .total-box, .no-break { page-break-inside: avoid; }
 
     @media print {
       body { font-size: 11px; }
@@ -235,18 +246,24 @@
           {{itens}}
         </tbody>
       </table>
-      <div class="totals" style="margin-top: 10px;">
-        <div class="total-box">
-          <div class="total-label">Valor total recebido</div>
-          <div class="total-value">R$ {{valor_total}}</div>
-          <div class="total-extenso">{{valor_por_extenso}}</div>
+    </div>
+
+    <!-- TOTAL + OBSERVAÇÃO: não quebram entre páginas -->
+    <div class="no-break">
+      <div class="secao">
+        <div class="totals">
+          <div class="total-box">
+            <div class="total-label">Valor total recebido</div>
+            <div class="total-value">R$ {{valor_total}}</div>
+            <div class="total-extenso">{{valor_por_extenso}}</div>
+          </div>
         </div>
       </div>
+
+      {{observacoes_bloco}}
     </div>
 
     <div class="bottom-block">
-      {{observacoes_bloco}}
-
       {{QR_CODE_PIX}}
 
       <div class="secao">

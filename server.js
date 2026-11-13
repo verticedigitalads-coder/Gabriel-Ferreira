@@ -55,6 +55,15 @@ function resolveCorDestaque(corDestaque, corPrimaria) {
 const fmtBRL = (v) =>
   Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
+// Primeira letra maiúscula só na exibição do PDF (o dado salvo não muda).
+// Não mexe em texto que começa com unidade (m, m², m³, kg, cm, mm, un, pç);
+// número não tem maiúscula, então "10 telhas" já fica igual.
+function maiusculaInicial(texto) {
+  const s = String(texto || '');
+  if (/^\s*(kg|cm|mm|un|p\u00e7|m)(?![a-z\u00e0-\u00ff])/i.test(s)) return s;
+  return s.replace(/^(\s*)(\S)/, (_, esp, c) => esp + c.toLocaleUpperCase('pt-BR'));
+}
+
 // Separa itens exibíveis (com valor) dos de valor 0 (vão p/ observações).
 // Descarta itens sem nome / placeholder "item".
 function separarItens(itens) {
@@ -92,7 +101,7 @@ function itemCardHtml(item, idx) {
       <div class="item-card">
         <div class="item-card-head">
           <span class="item-num">${idx}</span>
-          <span class="item-name">${escapeHtml(item.descricao) || 'Item'}</span>
+          <span class="item-name">${escapeHtml(maiusculaInicial(item.descricao)) || 'Item'}</span>
         </div>
         <div class="item-body">
           <div class="item-desc">Qtde. ${qtd} un${ambiente}</div>
@@ -111,7 +120,7 @@ function resumoTabelaHtml(itensParaExibir, descontoNum, total) {
     .map(
       (item) => `
         <tr>
-          <td>${escapeHtml(item.descricao) || 'Item'}</td>
+          <td>${escapeHtml(maiusculaInicial(item.descricao)) || 'Item'}</td>
           <td class="right">${item.quantidade || 1}</td>
           <td class="right">R$ ${fmtBRL(item.valorUnitario)}</td>
           <td class="right">R$ ${fmtBRL(item.valorTotal)}</td>
@@ -154,24 +163,31 @@ function caixaTotalHtml(total, label = 'Valor total do orçamento') {
 }
 
 // Bloco de observações (v3) — combina observações do usuário + itens de valor 0.
+// Com observação escrita: quadro em destaque "Importante". Só itens de valor 0:
+// quadro cinza "Observações", como antes.
 function observacoesHtml(observacoesUsuario, zerados) {
   const partes = [];
-  if (observacoesUsuario && String(observacoesUsuario).trim()) {
-    partes.push(escapeHtml(observacoesUsuario));
+  const temObsUsuario = !!(
+    observacoesUsuario && String(observacoesUsuario).trim()
+  );
+  if (temObsUsuario) {
+    partes.push(escapeHtml(maiusculaInicial(observacoesUsuario)));
   }
   const zeroLinhas = (zerados || [])
     .map((it) => {
       const ambiente = it.ambiente ? ` (${escapeHtml(it.ambiente)})` : '';
-      return `• ${escapeHtml(it.descricao) || 'Item'}${ambiente} — sem custo`;
+      return `• ${escapeHtml(maiusculaInicial(it.descricao)) || 'Item'}${ambiente} — sem custo`;
     })
     .join('\n');
   if (zeroLinhas) partes.push(zeroLinhas);
   const corpo = partes.join('\n');
   if (!corpo) return '';
+  const boxClass = temObsUsuario ? 'obs-box obs-destaque' : 'obs-box';
+  const titulo = temObsUsuario ? '📌 Importante' : 'Observações';
   return `
     <div class="secao no-break">
-      <div class="obs-box">
-        <div class="obs-title">Observações</div>
+      <div class="${boxClass}">
+        <div class="obs-title">${titulo}</div>
         <div class="obs-body">${corpo}</div>
       </div>
     </div>`;
@@ -1415,9 +1431,11 @@ app.post(
               </div>
             </div>
             <div class="secao">${cardsOrc}</div>
-            ${resumoOrc}
-            <div class="secao no-break">${caixaOrc}</div>
-            ${obsOrc}
+            <div class="no-break">
+              ${resumoOrc}
+              <div class="secao">${caixaOrc}</div>
+              ${obsOrc}
+            </div>
             <div class="divider"></div>
           </div>
         `;
@@ -1812,7 +1830,7 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
       .map(
         (item) => `
         <tr>
-          <td>${escapeHtml(item.descricao) || ''}</td>
+          <td>${escapeHtml(templateVersion === 'v2' ? maiusculaInicial(item.descricao) : item.descricao) || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
           <td class="right">R$ ${formatar(item.valorUnitario)}</td>
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
