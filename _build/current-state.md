@@ -4,8 +4,8 @@
 Versão: v2.39.5
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, redesign D4)
-- Build vite: limpo (14/11/2026, redesign D4; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, rodada da logo, entrega 2)
+- Build vite: limpo (14/11/2026, rodada da logo, entrega 2; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
@@ -64,7 +64,10 @@ Versão: v2.39.5
     4. "Contas atrasadas" leva a `financeiro` no Dashboard (`Dashboard.tsx:268`) e a `contas-receber` no sino (`NotificationsDropdown.tsx:44`).
     5. Há dois scores de "o que fazer hoje": o `executionScore` da Central e o `calculateActionScore` do Foco hoje (`Dashboard.tsx:311`).
     6. O `now` fica fora do `useMemo` da Central (`Central.tsx:37` e `:66`, deps `[leads]`): com a aba aberta depois da meia-noite, a lista não se recalcula até algum lead mudar.
-- **Rodada da logo (14/11/2026): entrega 1 (redução no servidor) com commit `cbc5b4d7`, sem push, aguardando o ok do Gabriel. Entregas 2 (prévia e avisos) e 3 (Storage + "Enviar imagem", com migration) pendentes.** Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
+- **Rodada da logo (14/11/2026):**
+  - **Entrega 1** (redução no servidor, `cbc5b4d7`): no ar, segundo o Gabriel.
+  - **Entrega 2** (prévia e avisos, `73ea5c70`): commit feito, sem push. O push e a VPS ficam com o Gabriel.
+  - **Entrega 3** (Storage + "Enviar imagem", com migration): pendente, só depois do push das duas primeiras. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
   - **Diagnóstico:**
     - Não há nem nunca houve ImageMagick no repositório (`git log --all -S magick`: nada; o `server.js` não importa `child_process`).
     - O `urlToBase64` embutia os bytes originais da imagem. Pior: o `filter: grayscale(100%)` do `.watermark` fazia o Chrome rasterizar a marca d'água a 300 dpi do tamanho exibido (1565x1566) em cada página. Isso dava 1,5 a 1,7 MB por página, qualquer que fosse a imagem.
@@ -84,7 +87,28 @@ Versão: v2.39.5
     - O passo de renderizar os PDFs pelo pdf.js foi bloqueado pelo modo automático (carregava o script de uma CDN); no lugar dele foram usados os screenshots em mídia print.
     - `node --check server.js` ok.
   - **Mudança visível conhecida:** marca d'água em formato que não é reduzido (SVG, GIF) ou cuja redução falha passa a sair colorida a 6%, em vez de cinza. Nenhum workspace está nesse caso hoje (os 3 com logo usam PNG ou JPEG).
-  - **Deploy (só com o ok do Gabriel, junto com a entrega 2):** push + VPS `git pull origin main && pm2 restart crm-backend`, sem dependência nova. Validar o PDF do orçamento e do recibo da Serralheria abaixo de 1 MB e a linha `[PDF][logo_bg] reduzida …` no `pm2 logs`.
+  - **Deploy da entrega 1:** no ar (Gabriel, 14/11), sem dependência nova. Validar em produção:
+    - PDF do orçamento e do recibo da Serralheria abaixo de 1 MB;
+    - a linha `[PDF][logo_bg] reduzida …` no `pm2 logs`.
+  - **Entrega 2: `73ea5c70`** (`Settings.tsx`, `tokens.css`, `docs/help/configuracoes.md`). Sem push; o push sai pela Vercel, e a VPS só precisa do restart para o chat de ajuda reler `docs/help`.
+    - **Prévias na aba Empresa:**
+      - Logo: sobre o papel branco, no tamanho máximo do topo do PDF (230x140).
+      - Marca d'água: como sai no PDF (cinza, opacidade 0,06, numa caixa branca de 200 px, com a legenda "Prévia como sai no PDF").
+    - **Link que não abre:** aviso vermelho no lugar da prévia ("Não conseguimos abrir essa imagem. Do jeito que está, o PDF sai sem logo…"). Vale enquanto o campo tiver aquela URL.
+    - **Atraso de 700 ms** (ajuste pedido pelo Gabriel): a prévia, imagem e aviso, segue o campo 700 ms depois da última mudança. Digitando, fica a prévia anterior e nenhuma URL pela metade é pedida.
+    - **Aviso fixo no campo do fundo:** "Use PNG com fundo transparente. Fundo preto ou colorido vira um quadrado cinza no PDF." Substitui "Use uma imagem grande…". O plano dizia "preto, branco ou colorido"; tirei "branco" porque fundo branco some no papel branco.
+    - **Tokens:** `--pdf-papel` e `--pdf-marca-dagua-opacidade` (espelha o 0,06 dos templates v2) são novos. 230, 140 e 200 px vão direto no código, sem token.
+    - **Ajuda:**
+      - o passo 2 cita a prévia;
+      - "a logo não aparece no PDF" manda olhar o aviso e a extensão que o Windows esconde;
+      - pergunta nova: o quadrado cinza.
+    - **Provas** (harness do front no scratchpad: Vite fora do repo, Supabase em stub, espiões no store, rede externa bloqueada exceto as fontes do Google):
+      - prints em 1280 e 390 (FL, Ítalo, Serralheria, link quebrado, link corrigido, vazio);
+      - log do "Salvar Alterações" idêntico antes e depois (11 chamadas, nenhuma ao Supabase);
+      - link digitado letra por letra (5,2 s, 120 ms por letra): o aviso não aparece nenhuma vez e só a URL final é pedida;
+      - link quebrado colado: a imagem é pedida em 720 ms e o aviso aparece 10 ms depois da falha;
+      - link corrigido: o aviso some e a imagem carrega;
+      - `tsc --noEmit` 0 erros; build limpo.
 - **Teste ponta a ponta, parte 2 (Serralheria Exemplo, 14/11/2026) — entregas 1 e 2 em produção e validadas pelo Gabriel; rodada fechada. Pendente só repetir o `UPDATE` da migration em 16/11 (ver Pendências Manuais):** corrige o que o teste de 14/11 achou no ciclo lead → orçamento → PDF → recibo. Plano aprovado em `C:\Users\gabri\.claude\plans\rodada-corre-es-do-teste-dynamic-summit.md` (itens 1 a 8 e acréscimos A a E).
   - **Duas entregas (decisão do Gabriel, 14/11):**
     1. **Entrega 1 = commits 1 a 11:** push em 14/11 (`b6cc7052`), deploy na Vercel e na VPS, validada pelo Gabriel em produção (PDF do orçamento e do recibo com e sem PIX: conta fecha, extenso, CPF/telefone, data, assinatura e PIX com CRC ok).
