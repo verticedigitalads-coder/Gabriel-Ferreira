@@ -1,15 +1,61 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 13/11/2026
+Última atualização: 14/11/2026
 Versão: v2.39.4
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 13/11/2026, maiúscula automática)
-- Build vite: limpo (13/11/2026, maiúscula automática; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, rodada de celular)
+- Build vite: limpo (14/11/2026, rodada de celular; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Rodada pequena de celular e acabamento, pós-D3 (13-14/11/2026) — 4 commits de código + este registro, sem push (vai junto com a maiúscula); aguardando teste do Gabriel no iPhone (PWA e aba do Safari) e confirmação em Android real:** fecha os 5 itens que a D3 deixou na Dívida Técnica. Nenhum arquivo 🔴, nenhum slice/formatter, sem banco. Só frontend: sai pela Vercel no push, nada na VPS.
+  - **Commits (ordem):**
+    1. `8d45deae` `useCountUp` (`src/hooks/useCountUp.ts`): piso de 0 no `t`. O carimbo do 1º `requestAnimationFrame` vinha antes do `t0` do efeito, e o easeOutExpo dava negativo.
+    2. `cc86b747` X do `SlidePanel` (`src/components/ui/Modal.tsx`): 36 → 44px, com a mesma classe do X do `Modal`. Os dois X ganharam `aria-label="Fechar"`. O cabeçalho do painel cresce 8px (69 → 77) na ficha do Kanban, na ficha de Leads e na Central de Ajuda.
+    3. `a1c77d25` Kanban (`src/modules/kanban/Kanban.tsx`), duas mudanças:
+       - `autoScroll={{ acceleration: 2, threshold: { x: 0.1, y: 0.2 } }}` no `DndContext`. No padrão do dnd-kit 6.3.1 a zona é 20% da largura e a velocidade vai até 10px a cada 5ms: a 390 a parte visível da coluna vizinha inteira caía na zona;
+       - `touch-none` **só na alça**: no Chromium (Chrome do Android) o toque na alça recebia `pointercancel` no 1º movimento e o arrasto não começava. No iPhone/Safari já funcionava (teste do Gabriel, 13/11).
+    4. `3e45e002` `MainLayout` (`src/layout/MainLayout.tsx`), saída B, aprovada pelo Gabriel contra a A ("menu `fixed` mantendo o espaço"), com prints HEAD | A | B a 390 e 320:
+       - o `<main>` perde o `pb-[calc(72px + safe-area)]` e fica com o `p-4`. O `BottomNav` é irmão do `<main>` no fluxo e quem rola é o `<main>`: o menu já ficava parado, e os 72px eram só vazio;
+       - a raiz passa a `h-screen supports-[height:100dvh]:h-dvh`: numa aba do Safari, 100vh é a altura com a barra recolhida, e o menu ficava embaixo da barra aberta.
+  - **Defeito real encontrado no HEAD:** com mouse a 390, arrastar Em Atendimento → Orçado soltando na parte visível de Orçado **caía em Fechado e criava a tarefa de execução** ("Negócio fechado! Tarefa de execução criada."). Corrigido no `a1c77d25`.
+  - **Provas.** Harness da D3 no scratchpad, com Dashboard e Operacional acrescentados. O Supabase fica em stub que grava as chamadas, e nada vai ao banco. Controle antes de editar: roteiro da D3 2× no HEAD e 1× na árvore, 0 diferenças.
+    - **Passos K-\*** (cada um numa página nova, com mouse e com toque, sem CSS injetado):
+
+      | Passo | HEAD, mouse | Depois, mouse = toque |
+      |---|---|---|
+      | 390, Novo → Em Atendimento (soltando na parte visível) | Orçado | Em Atendimento |
+      | 390, Em Atendimento → Orçado (idem) | Fechado + execução | Orçado |
+      | 320, Novo → Em Atendimento (solta 150ms depois de o card ficar sobre o alvo) | Orçado (rolou 176px até soltar) | Em Atendimento (rolou 31px) |
+      | Fechado sem execução, a 390 e a 320 | Perdido | Fechado + insert + toast |
+      | Fechado com execução, a 390 | Perdido | Fechado, sem insert, "…Já existe tarefa de execução aberta." |
+      | Mesma coluna / toque curto na alça | 0 chamadas | 0 chamadas, a ficha não abre |
+      | Velocidade a 10px da borda (390 / 320 / 1440) | ~1270 / ~1110 / ~1900 px/s | ~170 / ~200 / ~380 px/s |
+
+      - Depois, mouse × toque: 0 diferenças nesses passos.
+      - Toque no HEAD: `down → move → cancel` e 0 chamadas em todos os arrastos; 3 gestos para a direita viraram "voltar" do navegador.
+      - Depois, o dedo fora da alça ainda rola as colunas de lado e a lista para cima. Na alça, o dedo arrasta o card.
+      - **Passo que depende do tempo:** "4s na borda" termina na divisa Fechado/Perdido e cai num ou noutro conforme milissegundos (o mesmo código deu Perdido em 13/11 e Fechado em 14/11). Não é prova de igualdade: mostra que a rolagem continua existindo.
+    - **Roteiro da D3** (Kanban 22, Leads 58):
+      - depois dos commits 1 a 3, igual ao controle, menos o KT1 (toque a 390), que agora move o card com a mesma chamada do mouse;
+      - depois do commit 4, comparado no mesmo dia com o `HEAD` `a1c77d25`: Leads 58/58, Kanban 21/22. A diferença é 3 contra 4px de sobra da rolagem no KT1, com a mesma coluna e a mesma chamada;
+      - o controle de 13/11 não serve de base em 14/11: o cenário usa datas relativas a hoje.
+    - **Relógio falso do `useCountUp`** (`performance.now` e `requestAnimationFrame` controlados, 1º quadro 20ms antes do `t0`):
+      - antes: "-9" em Leads e "R$-R$ 7.837,57" no Dashboard;
+      - depois: 00 e R$ 0,00;
+      - os 81 quadros depois do `t0` ficaram iguais em Leads, Operacional e Dashboard. "Reduzir movimento" continua no valor final.
+    - **Medidas:**
+      - alvos <44px: 1 → 0 nas duas fichas e na Ajuda, a 390 e 320;
+      - faixa vazia acima do menu: 72 → 16px;
+      - lista da coluna do Kanban: 390 495 → 551px, 320 219 → 275px;
+      - 1440 sem mudança;
+      - sem rolagem horizontal da página.
+    - **Build:** `tsc --noEmit` 0 erros a cada commit; build limpo (Kanban 15,1 → 15,2 kB, CSS 63,3 → 63,4 kB); a regra `@supports (height:100dvh)` sai no CSS.
+  - **Teste no aparelho antes do push:**
+    - iPhone, PWA e aba: arrasto pela alça (vizinha, Orçado e Fechado de propósito, o arrasto não cancela quando a barra do Safari abre ou fecha), Fechado com e sem execução no workspace Teste, rolagem com o dedo fora da alça, fim de Dashboard/Leads/Kanban sem faixa vazia e com o menu à vista, X dos painéis;
+    - Android com Chrome: os mesmos passos de arrasto.
 - **Maiúscula automática ao digitar (13/11/2026) — pedido da Mariana (FL), que usa notebook; testes manuais de frase, início e palavras aprovados pelo Gabriel (inclui crase no começo da frase); commit sem push:** `autoCapitalize` só age no teclado do celular, então a regra roda no próprio campo. Nenhum arquivo 🔴, nenhum slice/formatter, sem migration e sem backfill: só a letra digitada daqui em diante muda.
   - **Peças:** `src/utils/maiusculaAuto.ts` (regra pura: `posicaoParaMaiuscula` e `posicaoParaDesfazer`); `src/hooks/useMaiusculaAuto.ts` (callback ref com cleanup, React 19, que liga `beforeinput`/`input`/`compositionend`; a mesma ref serve a vários campos e o estado fica por elemento); prop `maiuscula?: 'frase' | 'inicio' | 'palavras'` em `Input`/`TextArea` (`src/components/ui/Input.tsx`; sem a prop, o componente não muda nada). Campo marcado ganha `autoCapitalize="sentences"` (frase e início) ou `"words"` (palavras).
   - **Regra:** só a letra recém-digitada (`insertText` de 1 caractere, ou fim de composição de tecla morta), minúscula, com o cursor no fim do texto. "início" = só espaço antes; "frase" = começo, `. ! ?` + espaço, ou quebra de linha; "palavras" = começo do campo, depois de espaço ou de quebra de linha (hífen e ponto sem espaço não abrem palavra). A troca usa `execCommand('insertText')`: o `onChange` recebe o valor já trocado, o cursor não pula, Ctrl+Z volta à minúscula (o Chrome deixa a letra desfeita selecionada; o hook põe o cursor de volta onde estava na troca, inclusive depois de desfazer "Da " ou "m²"). Backspace na maiúscula que o campo colocou + redigitar = respeita a minúscula (decidido no `beforeinput`; selecionar tudo e apagar não conta). Colar, recortar e editar no meio não mudam nada.
@@ -683,19 +729,15 @@ Versão: v2.39.4
 - **Comparador de Preços** (`src/modules/suprimentos/ComparadorPrecos.tsx`): item comentado em `Sidebar.tsx:59`. Import lazy em `App.tsx` e entrada no `ModuleRouter` mantidos. Reativar: descomentar a linha em Sidebar.tsx.
 
 ## Dívida Técnica Conhecida
-- **`useCountUp` pode mostrar número negativo no 1º quadro** (registrado em 13/11/2026, redesign D3): na contagem do total de Leads apareceu "-8" num quadro antes de subir até 71.
-  - **Causa provável** (`src/hooks/useCountUp.ts`, `passo`): o carimbo de tempo do 1º `requestAnimationFrame` pode vir antes do `t0` (`performance.now()` no efeito). Aí `t` fica negativo e o easeOutExpo dá um valor abaixo de zero.
-  - **Correção provável:** `Math.max(0, …)` no `t`.
-  - Vale também para Dashboard (D1) e Operacional (D2). Com "reduzir movimento" não acontece. O hook estava fora do escopo da D3. Vai para a rodada de celular/acabamento depois da D3 (decisão do Gabriel, 13/11).
-- **Kanban a 390: arrastar com mouse para a coluna vizinha leva o card adiante** (registrado em 13/11/2026, redesign D3). A coluna de destino fica quase toda fora da tela. Soltar perto da borda dispara a rolagem automática do `@dnd-kit`, e o card cai onde a rolagem parar (no harness, Perdido ou Fechado em vez de Em Atendimento). Igual antes e depois da D3. Vai para a rodada de celular/acabamento depois da D3 (decisão do Gabriel, 13/11).
 - **`StatusBadge` pinta "Em Atendimento" de roxo** (`src/components/ui/Badge.tsx`, `--ia`/`--ia-subtle`), contra a regra 6 do plano do redesign: o roxo é só da IA. Decisão do Gabriel em 13/11: fica como está na D3 e vai para a D12. Aparece na lista de Leads, na ficha e onde mais o `StatusBadge` for usado.
-- **Kanban: arrastar pelo toque não move o card** (registrado em 13/11/2026, redesign D3).
-  - **Visto:** no harness a 390, com toque emulado, o gesto na alça não gera chamada, antes e depois da D3. Não testado em aparelho real.
-  - **Provável causa:** a alça não tem `touch-action: none`, e o `PointerSensor` do `@dnd-kit` perde o gesto para a rolagem. Na emulação, o gesto para a direita com a rolagem lateral no começo ainda vira "voltar" do navegador.
-  - **Decisão do Gabriel (13/11):** vai para a **rodada pequena de celular depois da D3**, junto com os 72px vazios do `<main>` e o X de 36px do `SlidePanel` (abaixo). Não corrigido na D3.
-- **`<main>` do `MainLayout` com `pb-[calc(72px_+_safe-area)]` no celular, mas o `BottomNav` não é `fixed`** (registrado em 13/11/2026, redesign D3): sobram 72px vazios no fim de toda tela do celular. No Kanban, essa altura sai das colunas. O `MainLayout` estava fora do escopo da D3. Vai para a rodada pequena de celular depois da D3 (decisão do Gabriel, 13/11).
+- **Kanban: arrasto por toque — corrigido, falta confirmar em Android real** (registrado em 13/11/2026 na D3, corrigido no `a1c77d25` em 14/11).
+  - Causa: sem `touch-action: none` na alça, o Chromium manda `pointercancel` quando assume a rolagem, e o `PointerSensor` cancela o arrasto.
+  - Correção: `touch-none` só na alça. Provado na emulação do Chromium, sem CSS injetado: mesmas chamadas do mouse.
+  - No iPhone/Safari já funcionava antes (Gabriel, 13/11). **Falta testar num Android com Chrome**; se passar, esta entrada sai.
 - **Faixa de prioridade de lead duplicada:** `Dashboard.tsx:32` (`FAIXA_PRIORIDADE`, local, não exportado) e `src/modules/leads/visualLead.ts` (`FAIXA_PRIORIDADE_LEAD`). Registrado em 13/11/2026, redesign D3. Unificar na D12.
-- **X do `SlidePanel` com 36×36px** (`src/components/ui/Modal.tsx`, botão de fechar com `p-2`): fica abaixo dos 44px. É o único alvo pequeno que sobra no `<main>` do Kanban. Registrado em 13/11/2026, redesign D3. Vai para a rodada pequena de celular depois da D3 (decisão do Gabriel, 13/11).
+- **Viewport sem `viewport-fit=cover`** (`index.html:5`; registrado em 14/11/2026, rodada de celular). Sem ele, `env(safe-area-inset-bottom)` vale 0 no iPhone, e os `paddingBottom` de safe-area não fazem nada hoje: `BottomNav`, `BottomSheet` e o painel de contato da landing. Ligar o `viewport-fit` muda o layout de todas as telas: rodada própria, com print no iPhone.
+- **`BottomNav` com `height: 72` e o safe-area dentro** (`src/layout/BottomNav.tsx:28-29`, border-box; registrado em 14/11/2026). Se o safe-area passar a valer (dívida acima), ele come a altura dos botões em vez de somar. Resolver junto com o `viewport-fit`.
+- **Cor `#52525b` direto no `BottomNav`** (`src/layout/BottomNav.tsx:40`, cor dos itens inativos; registrado em 14/11/2026). Sem token, contra a regra 8. Trocar por token na D12.
 - **`leads` tem duas FKs idênticas para `workspaces`** (registrado em 13/11/2026, na auditoria do `owner_id`): `fk_workspace_leads` e `leads_workspace_id_fkey`, as duas `FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE`, não adiáveis e validadas. Mesmo caso das duplicadas de `workspace_members` (achado da R1). Remover uma delas é migration própria.
 - **Chave PIX sem normalização** (registrado em 13/11/2026, fix do txid): `pixPayload` usa a chave como foi digitada. Hoje as 3 chaves em produção estão só com dígitos (1 CPF, 2 CNPJ). **Fazer antes do primeiro cliente com chave de telefone ou e-mail:** normalizar pela escolha do usuário em Configurações (`tipo_chave_pix` em `workspace_settings`), de preferência ao salvar a chave: CPF/CNPJ só dígitos, telefone `+55` + dígitos, e-mail em minúsculas, aleatória como está. **Não deduzir pelo formato:** um telefone digitado sem +55 tem 11 dígitos, vira "CPF" e o PIX vai para outra pessoa. Hoje o tipo não chega ao backend (o front não manda), e o Settings tem dois seletores com valores diferentes (`cpf`/`cnpj` e `cpf_cnpj`).
 - **PDF agrupado com página quase vazia** (registrado em 13/11/2026, rodada 2 do PDF): no caso de teste, a p2 fica só com a caixa "Total deste orçamento" do 1º orçamento (3 linhas), porque cada orçamento depois do primeiro começa em página nova (`class="page-break"` em `blocosV2`, `server.js`). No `d1995da8` já era assim (caixa + observação, 5 linhas). **Proposta para depois:** orçamentos em sequência, sem quebra forçada, com o cabeçalho de cada um preso ao primeiro item.
