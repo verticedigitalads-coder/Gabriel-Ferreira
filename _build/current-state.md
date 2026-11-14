@@ -4,12 +4,66 @@
 Versão: v2.39.5
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, teste ponta a ponta parte 2, entrega 2)
-- Build vite: limpo (14/11/2026, teste ponta a ponta parte 2, entrega 2; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, redesign D4)
+- Build vite: limpo (14/11/2026, redesign D4; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Redesign do app D4 — Central / Modo Execução (14/11/2026) — commit `37d4a476`, sem push; aguardando aceite do Gabriel no celular:** rodada 4 de `_build/plano-redesign-app.md` (linha "Central"). Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-96d8-redesign-d4-shimmering-brooks.md`. Só pele: só `src/modules/central/Central.tsx` mudou. Nenhum slice, formatter, selector, `HeaderGlobal`, componente de `editorial`/`ui`, `visualLead.ts` ou doc de ajuda mudou. Sai pela Vercel no push; nada na VPS (a ajuda não mudou).
+  - **Decisões do Gabriel (14/11):**
+    1. O feed são as **Prioridades de Hoje** (os até 7 leads de sempre), com a severidade pela prioridade do lead. O plano dizia que o feed sairia da Saúde do CRM, dos críticos e das contas atrasadas, mas a Central não tem esses alertas: eles ficam no Dashboard (calculados dentro do `Dashboard.tsx`, sem export) e no sino.
+    2. O nome continua "Modo Execução" (sem "Sala de comando"); `HeaderGlobal.tsx` e `docs/help/central.md` ficam iguais.
+    3. O número grande do masthead é Execução Hoje (%).
+    4. A linha do feed vira `<button type="button">` com o mesmo `onClick` (acesso pelo teclado, sem lógica nova).
+    5. Depois do comparar: sai a célula "Execução Hoje" repetida; a frase "Baseado na quantidade de ações pendentes" fica embaixo do masthead (à direita no desktop, sob o número) e a Receita Travada ocupa a faixa sozinha.
+  - **Visual:**
+    - Raiz sem o `p-8`: o `<main>` já tem o recuo, e a 320 sobravam 224px de conteúdo.
+    - `PageMasthead`, no primeiro uso no app: kicker "Gestão · Central", "Modo *Execução*", "O que você precisa fazer agora", "CE" ao fundo e o número com `useCountUp`. O número fica num componente local, `ExecucaoContada`, com `sr-only` no valor real; com "reduzir movimento" sai direto o valor final. Rótulo: "Execução Hoje".
+    - Receita Travada em faixa própria, com o valor em `--success` (antes `text-emerald-600`).
+    - Feed com `SectionHeading` "01 Prioridades de Hoje". Cada linha leva:
+      - faixa de 3px à esquerda e o rótulo da prioridade do `visualLead.ts`, no lugar do `PriorityBadge` (mesmo fallback "baixo");
+      - nº 01–07 em todas as larguras;
+      - nome quebrando linha, sem corte;
+      - serviço em `--text-tertiary`;
+      - valor em `tnum`, ou "Sem valor" em serif;
+      - seta só a partir de 640px: a 320 ela tirava 28px do nome e "Empreendimentos" quebrava no meio.
+    - Vazio com o `EmptyState`: "Nenhuma ação crítica no momento." e a nota "Aproveite para prospectar ou adiantar a produção", frase de `docs/help/central.md:37`.
+    - `Colophon` "VRTX CRM · Modo Execução" com voltar ao painel, em todas as larguras.
+    - Fora do protótipo: chips Todas/Alta/Média, quadrados de ícone, atalhos com números fictícios, `anim-rise`, "Sala de comando" e o roxo.
+  - **Provas.** Harness no scratchpad: o "antes" é o `git archive ebb78c6d`, e o "depois" é a mesma cópia com o `Central.tsx` novo. Supabase em stub; nada foi ao banco.
+    - **Controle antes de editar:** roteiro 2× no HEAD e 1× na cópia sem mudança. Deu 10 passos, 0 diferenças e 0 falhas.
+    - **Roteiro:** 10 passos com o mesmo estado, chamadas, toasts, números (100%, 60% e 0%; R$ 88.400,00, 14.800,00 e 0,00) e lista do HEAD; 0 diferenças, também depois da decisão 5. Cobre:
+      - cenários cheio (30 leads, 20 com score), misto (10 casos de borda), vazio e só fechados;
+      - clique na 1ª e na 7ª linha e numa linha "Sem valor";
+      - toque a 390;
+      - tempo real, com o 1º lead virando fechado.
+    - **Lógica (20 verificações):** de `export function Central()` até `executionScoreTotal` (46 linhas) byte a byte; `onClick` e expressões de exibição iguais; `PriorityBadge` e `nivelPrioridade` dão o mesmo nível em 9 casos.
+    - **Rótulos:** os 5 de `docs/help/central.md` aparecem no fonte e na tela, nas duas versões; a lista segue numerada de 1 a 7, com o selo.
+    - **Só no depois:**
+      - voltar ao painel leva ao Dashboard;
+      - a contagem passa por 82% e termina em 100%;
+      - com "reduzir movimento", 100% no 1º quadro;
+      - Tab+Enter e Tab+Espaço abrem o lead certo, com 0 chamadas e foco visível.
+    - **Medidas (1440/390/320 × cheio/misto/vazio):**
+      - sem rolagem horizontal, 0 alvos <44px e nada passando do `<main>`;
+      - linhas de 63 a 125px (antes 72 a 125);
+      - a 390 cabem 2 a 3 linhas na 1ª tela (antes 1).
+    - **Build:**
+      - `tsc --noEmit` 0 erros; build limpo (os 2 avisos de sempre);
+      - `index` 1.209,64 → 1.213,80 kB (gzip 347,72 → 349,02): `Colophon`, `EmptyState`, `SectionHeading` e `visualLead` passam ao bundle principal, porque a Central é import estático;
+      - `LeadDetail` 17,41 → 15,72 kB; `Card` vira chunk próprio; CSS 63,29 → 63,15 kB.
+    - O commit `cbc5b4d7`, da rodada da logo, entrou no meio. Ele mexe só em `server.js` e nos templates, e o `src/` é igual entre `ebb78c6d` e ele, então as provas valem.
+  - **Reportado, não corrigido:**
+    1. O subtítulo da Central no header (`HeaderGlobal.tsx:39`) promete "cobranças, orçamentos, leads e outras pendências", mas a tela só lista leads.
+    2. `_build/plano-redesign-app.md:43` diz que o feed sai da Saúde do CRM, dos críticos e das contas atrasadas; vale a decisão 1.
+    3. Há três regras de "lead crítico":
+       - `Dashboard.tsx:234` usa `ultimoContato ?? createdAt` e 5 dias ou mais;
+       - `NotificationsDropdown.tsx:31` exige `ultimoContato`;
+       - `Sidebar.tsx:114` não olha os dias.
+    4. "Contas atrasadas" leva a `financeiro` no Dashboard (`Dashboard.tsx:268`) e a `contas-receber` no sino (`NotificationsDropdown.tsx:44`).
+    5. Há dois scores de "o que fazer hoje": o `executionScore` da Central e o `calculateActionScore` do Foco hoje (`Dashboard.tsx:311`).
+    6. O `now` fica fora do `useMemo` da Central (`Central.tsx:37` e `:66`, deps `[leads]`): com a aba aberta depois da meia-noite, a lista não se recalcula até algum lead mudar.
 - **Rodada da logo (14/11/2026): entrega 1 (redução no servidor) com commit `cbc5b4d7`, sem push, aguardando o ok do Gabriel. Entregas 2 (prévia e avisos) e 3 (Storage + "Enviar imagem", com migration) pendentes.** Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
   - **Diagnóstico:**
     - Não há nem nunca houve ImageMagick no repositório (`git log --all -S magick`: nada; o `server.js` não importa `child_process`).
