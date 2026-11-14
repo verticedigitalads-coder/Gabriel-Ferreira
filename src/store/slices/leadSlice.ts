@@ -29,8 +29,10 @@ export const createLeadSlice = (_set: any, get: any) => ({
 
     if (!inserted) return;
 
+    const leadFormatado = formatLead(inserted);
+
     _set((state: any) => ({
-      leads: [formatLead(inserted), ...state.leads],
+      leads: [leadFormatado, ...state.leads],
     }));
 
     const { addOperacionalTask } = get();
@@ -40,6 +42,9 @@ export const createLeadSlice = (_set: any, get: any) => ({
     const temperatura = inserted.temperatura || 'frio';
 
     const hoje = format(new Date(), 'yyyy-MM-dd');
+    // Tarefas de contato (morno e frio) vão para o próximo contato do lead;
+    // sem próximo contato, hoje. Mesmo "yyyy-MM-dd" de hoje (toDateInput).
+    const dataContato = leadFormatado.proximoContato || hoje;
 
     // ================= AUTOMAÇÃO =================
 
@@ -58,7 +63,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     if (temperatura === 'morno') {
       await addOperacionalTask({
         titulo: `Entrar em contato - ${nome}`,
-        data: hoje,
+        data: dataContato,
         tipo: 'followup',
         prioridade: 'media',
         leadId: inserted.id,
@@ -69,7 +74,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     if (temperatura === 'frio') {
       await addOperacionalTask({
         titulo: `Reativar lead - ${nome}`,
-        data: hoje,
+        data: dataContato,
         tipo: 'followup',
         prioridade: 'baixa',
         leadId: inserted.id,
