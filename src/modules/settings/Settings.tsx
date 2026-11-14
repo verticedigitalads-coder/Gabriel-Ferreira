@@ -748,7 +748,7 @@ export function Settings() {
                     <button
                       type="button"
                       onClick={() =>
-                        updateSetting('assinaturaEmpresa', '').catch(() =>
+                        updateSetting('assinatura_empresa', '').catch(() =>
                           addToast({ type: 'error', message: 'Erro ao remover assinatura' }),
                         )
                       }
@@ -761,7 +761,7 @@ export function Settings() {
               ) : (
                 <SignaturePad
                   onSave={(dataUrl) =>
-                    updateSetting('assinaturaEmpresa', dataUrl).catch(() =>
+                    updateSetting('assinatura_empresa', dataUrl).catch(() =>
                       addToast({ type: 'error', message: 'Erro ao salvar assinatura' }),
                     )
                   }
