@@ -3,9 +3,13 @@
 Última atualização: 14/11/2026
 Versão: v2.39.5
 
+> **ATENÇÃO: NÃO fazer push antes de aplicar a migration da entrega 3; sem a policy, o botão falha.**
+> - O `main` local já tem a migration (`9fe5303b`, não aplicada) e o botão "Enviar imagem" (`753096e0`). Qualquer push publica o botão, e sem a policy todo envio dá erro.
+> - Ordem: bloco DO de teste → migration aplicada (modo Manual, com autorização do Gabriel) → push → VPS. Ver "Rodada da logo" e Pendências Manuais.
+
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, rodada da logo, entrega 2)
-- Build vite: limpo (14/11/2026, rodada da logo, entrega 2; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, rodada da logo, entrega 3)
+- Build vite: limpo (14/11/2026, rodada da logo, entrega 3; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
@@ -66,8 +70,8 @@ Versão: v2.39.5
     6. O `now` fica fora do `useMemo` da Central (`Central.tsx:37` e `:66`, deps `[leads]`): com a aba aberta depois da meia-noite, a lista não se recalcula até algum lead mudar.
 - **Rodada da logo (14/11/2026):**
   - **Entrega 1** (redução no servidor, `cbc5b4d7`): no ar, segundo o Gabriel.
-  - **Entrega 2** (prévia e avisos, `73ea5c70`): commit feito, sem push. O push e a VPS ficam com o Gabriel.
-  - **Entrega 3** (Storage + "Enviar imagem", com migration): pendente, só depois do push das duas primeiras. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
+  - **Entrega 2** (prévia e avisos, `73ea5c70`): no ar e testada pelo Gabriel (prévias, quadrado cinza e aviso de link quebrado).
+  - **Entrega 3** (Storage + "Enviar imagem"): migration (`9fe5303b`) e front (`753096e0`) com commit local, **sem push e com a migration NÃO aplicada**. O bloco DO de teste, a aplicação e o push ficam para segunda (16/11), em modo Manual. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
   - **Diagnóstico:**
     - Não há nem nunca houve ImageMagick no repositório (`git log --all -S magick`: nada; o `server.js` não importa `child_process`).
     - O `urlToBase64` embutia os bytes originais da imagem. Pior: o `filter: grayscale(100%)` do `.watermark` fazia o Chrome rasterizar a marca d'água a 300 dpi do tamanho exibido (1565x1566) em cada página. Isso dava 1,5 a 1,7 MB por página, qualquer que fosse a imagem.
@@ -109,6 +113,29 @@ Versão: v2.39.5
       - link quebrado colado: a imagem é pedida em 720 ms e o aviso aparece 10 ms depois da falha;
       - link corrigido: o aviso some e a imagem carrega;
       - `tsc --noEmit` 0 erros; build limpo.
+  - **Entrega 3, parte sem banco (14/11/2026). NÃO publicar antes da migration:**
+    - **`9fe5303b` — migration `supabase/migrations/20261115000000_logos_upload_por_workspace.sql` (não aplicada; nenhum SQL rodou nesta etapa):**
+      - bucket `logos` com `allowed_mime_types` PNG, JPEG e WebP e `file_size_limit` de 5 MB;
+      - policy `logos_insert_pasta_do_workspace` (INSERT, `authenticated`): só na pasta `<workspace_id>/` dos workspaces do usuário, pela subquery de `workspace_members`;
+      - sem UPDATE, sem DELETE e sem SELECT (a leitura segue pela URL pública).
+    - **`753096e0` — front** (`src/utils/reduzirImagem.ts` novo, `Settings.tsx`, `docs/help/configuracoes.md`, `docs/help/primeiros-passos.md`):
+      - **`reduzirImagem(file, maxPx)`:** canvas com o lado maior até o máximo, sem ampliar. JPEG continua JPEG (0,9); PNG e WebP viram PNG, que mantém a transparência.
+      - **Botão "Enviar imagem"** (secondary, 44 px) embaixo de cada campo, com o mesmo input dinâmico do `handleImport` e `accept="image/png,image/jpeg,image/webp"`.
+      - **Recusas:** tipo fora da lista ("Use uma imagem PNG, JPEG ou WebP.") e arquivo acima de 15 MB.
+      - **Envio:** reduz (topo 800, fundo 1000) e sobe com `upload('<workspace_id>/<topo|fundo>-<Date.now()>.<png|jpg>', blob, { contentType, upsert: false })`. Depois pega o `getPublicUrl`, preenche o campo e salva a aba Empresa.
+      - **`handleSaveEmpresa(extra, mensagem)`:** o envio salva a aba inteira com o link novo, e o reset do `useEffect` não apaga o que estiver digitado. O "Salvar Alterações" passou a `onClick={() => handleSaveEmpresa()}`.
+      - **Textos:** os placeholders "upload de arquivo será futuro" e "watermark no PDF" viraram "Cole o link ou toque em Enviar imagem", e a dica da logo cita o envio.
+      - **Ajuda:** passo 2 com o botão; perguntas "Que imagem posso enviar?" e "logo não aparece" (usar o botão); `primeiros-passos.md` com o botão.
+    - **Provas** (harness do front com stub do Storage, que guarda o arquivo enviado e simula falha; o espião do `updateSetting` atualiza o store como o slice real, para o reset do `useEffect` acontecer):
+      - **Caminho e opções:** `<workspace_id>/topo-<timestamp>.png`, com `contentType` igual ao tipo e `upsert: false`.
+      - **Tamanhos:** PNG 2000x2000 vira 800x800 no topo (968 KB) e 1000x1000 no fundo (1,4 MB); JPEG 2048x1423 vira JPEG 800x556 (73 KB); WebP 1280 vira PNG 1000x1000 (1,4 MB); PNG transparente segue transparente (alfa 0 no canto). Tudo abaixo do limite de 5 MB.
+      - **Recusas:** SVG, GIF e 16 MB recusados com o aviso, sem chamar o upload.
+      - **Falha no upload:** toast de erro, sem `updateSetting`, campo intacto.
+      - **Telefone digitado e não salvo:** foi gravado junto e continuou na tela depois do reset.
+      - **Sucesso:** toast "Logo enviada e dados da empresa salvos." / "Marca d'água enviada…", e a prévia carrega a imagem enviada.
+      - **Regressão:** "Salvar Alterações" com o mesmo log do HEAD (11 chamadas, nenhuma ao Supabase); o atraso de 700 ms da prévia segue valendo; nenhum erro de console.
+      - `tsc --noEmit` 0 erros; build limpo.
+    - **Segunda (16/11), em modo Manual:** ver Pendências Manuais.
 - **Teste ponta a ponta, parte 2 (Serralheria Exemplo, 14/11/2026) — entregas 1 e 2 em produção e validadas pelo Gabriel; rodada fechada. Pendente só repetir o `UPDATE` da migration em 16/11 (ver Pendências Manuais):** corrige o que o teste de 14/11 achou no ciclo lead → orçamento → PDF → recibo. Plano aprovado em `C:\Users\gabri\.claude\plans\rodada-corre-es-do-teste-dynamic-summit.md` (itens 1 a 8 e acréscimos A a E).
   - **Duas entregas (decisão do Gabriel, 14/11):**
     1. **Entrega 1 = commits 1 a 11:** push em 14/11 (`b6cc7052`), deploy na Vercel e na VPS, validada pelo Gabriel em produção (PDF do orçamento e do recibo com e sem PIX: conta fecha, extenso, CPF/telefone, data, assinatura e PIX com CRC ok).
@@ -871,6 +898,21 @@ Versão: v2.39.5
 - ✅ Migração backend para VPS Hetzner (178.104.236.222) — PM2 (`crm-backend`) + Nginx reverse proxy, API pública `https://api.vrtxcrm.com.br` (supera decisão anterior "backend local via ngrok")
 
 ## Pendências Manuais
+- **Rodada da logo, entrega 3, em 16/11/2026, em modo Manual. NÃO fazer push antes do passo 2:**
+  1. **Bloco DO de teste da migration** `20261115000000_logos_upload_por_workspace.sql`, que sempre termina em `RAISE EXCEPTION`, com `lock_timeout` de 3s. Antes e depois, contar `storage.objects` do bucket `logos` (hoje 5) e tirar o md5 da linha do bucket. Como `authenticated` membro da Serralheria:
+     - própria pasta passa;
+     - pasta da FL dá 42501;
+     - raiz do bucket dá 42501;
+     - `INSERT … RETURNING` (informativo);
+     - UPDATE e DELETE afetam 0 linhas;
+     - `anon` e usuário sem membership são recusados.
+  2. **Aplicar a migration** com autorização do Gabriel (`apply_migration`) e registrar a versão gravada no banco. Conferir por SELECT a policy, os limites do bucket e os 5 arquivos intactos.
+  3. **Push** (Vercel) + VPS `git pull origin main && pm2 restart crm-backend`, para o chat de ajuda reler `docs/help`.
+  4. **Teste do Gabriel na Serralheria:**
+     - enviar a logo e a marca d'água pelo computador e pelo celular;
+     - os arquivos caem em `logos/1b246275-…/`, e o campo fica preenchido e salvo;
+     - PDF do orçamento e do recibo com logo, abaixo de 1 MB;
+     - opcional: subir um `.svg` no bucket pelo painel tem que ser recusado.
 - **Repetir o `UPDATE` do `numero_documento` em 16/11/2026** (entrega 2 do teste ponta a ponta parte 2): pega orçamento criado por app antigo em cache (PWA) depois da migration. Antes, contar `numero ~ '^ORC-[0-9]{13}$' AND numero_documento IS NULL` e tirar o md5 da tabela; rodar só o `UPDATE` do arquivo `supabase/migrations/20261114000000_orcamentos_numero_documento.sql` (`SET numero_documento = 'ORC-2026-001' WHERE numero ~ '^ORC-[0-9]{13}$' AND numero_documento IS NULL`); depois, 0 nulos e os `ORC-2026-NNN` intactos (`numero = numero_documento`). Em 14/11 pós-deploy deu 0 linhas.
 - **Cobrança R0: deploy do backend e conferência em produção (10/11/2026):** o push já foi feito. (1) VPS: `cd /opt/crm-backend && git pull origin main && pm2 restart crm-backend`. Enquanto o backend não for reiniciado, o front novo recebe 404 em `/api/admin/me` e o menu "Empresas" some só para o Gabriel. (2) `curl -i https://api.vrtxcrm.com.br/api/admin/me` sem token → 401 (404 = backend velho). (3) Login em `www.vrtxcrm.com.br` → "Empresas" aparece.
 - **Formulário da landing: deploy e aceite (09/11/2026):** (1) VPS: acrescentar `LANDING_WORKSPACE_ID=001843dd-97fc-42a6-88ee-08c7a404903a` no `.env` de `/opt/crm-backend`, depois `git pull origin main && pm2 restart crm-backend`. (2) Mandar 1 envio real pela landing, ver o lead em Leads do workspace Vértice (chega por Realtime) e apagar. Sem o env, ou com o frontend no ar antes do backend, o envio dá 500/404 e o visitante vê "Vamos continuar pelo WhatsApp." e segue para o WhatsApp do mesmo jeito: nada quebra, só não grava.
