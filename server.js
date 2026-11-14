@@ -1665,7 +1665,7 @@ app.post(
 );
 
 /* ==========================================
-🧾 VALOR POR EXTENSO (pt-BR, até 999.999,99)
+🧾 VALOR POR EXTENSO (pt-BR, até 999.999.999,99)
 ========================================== */
 
 function valorPorExtenso(valor) {
@@ -1737,18 +1737,49 @@ function valorPorExtenso(valor) {
 
   if (reais === 0 && centavos === 0) return 'zero reais';
 
-  let resultado = '';
-
-  if (reais >= 1000) {
-    const mil = Math.floor(reais / 1000);
-    const resto = reais % 1000;
-    resultado += mil === 1 ? 'mil' : grupo(mil) + ' mil';
-    if (resto > 0) resultado += ' e ' + grupo(resto);
-  } else if (reais > 0) {
-    resultado += grupo(reais);
+  // Classes: milhões, milhares e unidades. O " e " só entra antes da última
+  // classe quando ela é menor que 100 ou centena redonda ("mil e cem",
+  // "dois mil e cinquenta"); nos outros casos, só espaço ("três mil
+  // trezentos e oitenta e dois").
+  const milhoes = Math.floor(reais / 1000000);
+  const milhares = Math.floor(reais / 1000) % 1000;
+  const unidadesReais = reais % 1000;
+  const classes = [];
+  if (milhoes > 0) {
+    classes.push({
+      valor: milhoes,
+      texto: grupo(milhoes) + (milhoes === 1 ? ' milhão' : ' milhões'),
+    });
+  }
+  if (milhares > 0) {
+    classes.push({
+      valor: milhares,
+      texto: milhares === 1 ? 'mil' : grupo(milhares) + ' mil',
+    });
+  }
+  if (unidadesReais > 0) {
+    classes.push({ valor: unidadesReais, texto: grupo(unidadesReais) });
   }
 
-  if (reais > 0) resultado += reais === 1 ? ' real' : ' reais';
+  let resultado = '';
+  classes.forEach((classe, i) => {
+    if (i === 0) {
+      resultado = classe.texto;
+    } else if (
+      i === classes.length - 1 &&
+      (classe.valor < 100 || classe.valor % 100 === 0)
+    ) {
+      resultado += ' e ' + classe.texto;
+    } else {
+      resultado += ' ' + classe.texto;
+    }
+  });
+
+  // Milhão exato leva "de": "um milhão de reais".
+  if (reais === 1) resultado += ' real';
+  else if (reais > 0 && milhares === 0 && unidadesReais === 0)
+    resultado += ' de reais';
+  else if (reais > 0) resultado += ' reais';
 
   if (centavos > 0) {
     if (reais > 0) resultado += ' e ';
