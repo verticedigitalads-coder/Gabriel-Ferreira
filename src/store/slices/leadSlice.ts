@@ -215,7 +215,7 @@ export const createLeadSlice = (_set: any, get: any) => ({
     };
 
     // 🔥 3. Gera orçamento automático correto
-    const orcamentoGerado = criarOrcamentoFromLead(leadReal);
+    const orcamentoGerado = criarOrcamentoFromLead(leadReal, get().settings);
 
     if (!orcamentoGerado) {
       console.warn('⚠️ Falha ao gerar orçamento automático');

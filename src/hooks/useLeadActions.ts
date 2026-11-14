@@ -51,7 +51,7 @@ export function useLeadActions() {
         valorOrcado: valor,
       };
 
-      const orcamento = criarOrcamentoFromLead(leadAtualizado);
+      const orcamento = criarOrcamentoFromLead(leadAtualizado, useStore.getState().settings);
 
       if (!orcamento) return;
 

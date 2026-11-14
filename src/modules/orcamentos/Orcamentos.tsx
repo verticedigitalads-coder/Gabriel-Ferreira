@@ -872,7 +872,13 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const movimentarEstoque = useStore((state) => state.movimentarEstoque);
   const addToast = useStore((state: any) => state.addToast);
 
-  const { percentualComissao: percentualPadrao } = useDefaultSettings();
+  // Orçamento novo vem com os padrões da empresa; na edição, vale o gravado
+  const {
+    percentualComissao: percentualPadrao,
+    validadePadraoOrcamento,
+    observacaoPadraoOrcamento,
+    multiplicadorPadrao,
+  } = useDefaultSettings();
 
   const [leadId, setLeadId] = useState(orcamento?.leadId || '');
   const [status, setStatus] = useState<OrcamentoStatus>(
@@ -881,16 +887,18 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const [itens, setItens] = useState<OrcamentoItem[]>(orcamento?.itens || []);
   const [desconto, setDesconto] = useState(orcamento?.desconto || 0);
   const [multiplicador, setMultiplicador] = useState(
-    orcamento?.multiplicador || 1,
+    orcamento ? orcamento.multiplicador || 1 : multiplicadorPadrao,
   );
   const [percentualComissao, setPercentualComissao] = useState(
     orcamento?.percentualComissao ?? percentualPadrao,
   );
 
   const [validadeEmDias, setValidadeEmDias] = useState(
-    orcamento?.validadeEmDias || 15,
+    orcamento?.validadeEmDias || validadePadraoOrcamento,
   );
-  const [observacoes, setObservacoes] = useState(orcamento?.observacoes || '');
+  const [observacoes, setObservacoes] = useState(
+    orcamento ? orcamento.observacoes || '' : observacaoPadraoOrcamento,
+  );
 
   const [showBaixaModal, setShowBaixaModal] = useState(false);
   const [pendingData, setPendingData] = useState<any>(null);
