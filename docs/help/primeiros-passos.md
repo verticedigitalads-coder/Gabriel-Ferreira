@@ -13,7 +13,7 @@ Bem-vindo ao VRTX CRM! Este guia mostra o caminho recomendado para deixar o sist
 ### 1. Configurações → identidade da empresa
 1. Abra **Configurações** no menu (aba Empresa).
 2. Preencha nome, CNPJ, telefone, e-mail e endereço.
-3. Cole o link da sua logo (.png ou .jpg, link direto) e escolha a cor principal.
+3. Envie a sua logo pelo botão **Enviar imagem** (do computador ou do celular), ou cole o link direto da imagem, e escolha a cor principal.
 Tudo isso aparece nos PDFs de orçamento e recibo que seus clientes recebem.
 
 ### 2. Configurações → PIX

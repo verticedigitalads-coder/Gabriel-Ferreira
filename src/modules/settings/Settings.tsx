@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, TextArea } from '@/components/ui/Input';
 import { FieldHint } from '@/components/ui/FieldHint';
 import { normalizarChavePix } from '@/utils/chavePix';
+import { reduzirImagem } from '@/utils/reduzirImagem';
 
 type Tab = 'empresa' | 'documentos' | 'pagamentos' | 'dados';
 
@@ -31,6 +32,7 @@ export function Settings() {
 
   const [activeTab, setActiveTab] = useState<Tab>('empresa');
   const [savingEmpresa, setSavingEmpresa] = useState(false);
+  const [enviandoImagem, setEnviandoImagem] = useState<'' | 'topo' | 'fundo'>('');
   const [savingDocs, setSavingDocs] = useState(false);
   const [loadingDemo, setLoadingDemo] = useState(false);
   const [confirmReset, setConfirmReset] = useState('');
@@ -108,7 +110,11 @@ export function Settings() {
   }, [empresaLogoBgUrl]);
 
   // ─── Salvar Empresa ───────────────────────────────────────
-  const handleSaveEmpresa = async () => {
+  // extra: o link da imagem recém-enviada, que ainda não está no estado
+  const handleSaveEmpresa = async (
+    extra: { empresaLogoUrl?: string; empresaLogoBgUrl?: string } = {},
+    mensagem = 'Dados da empresa salvos!',
+  ) => {
     setSavingEmpresa(true);
     try {
       await updateSettings({
@@ -122,13 +128,59 @@ export function Settings() {
         empresaInstagram,
         corPrimaria,
         corDestaque,
+        ...extra,
       });
-      addToast({ type: 'success', message: 'Dados da empresa salvos!' });
+      addToast({ type: 'success', message: mensagem });
     } catch {
       addToast({ type: 'error', message: 'Erro ao salvar dados da empresa' });
     } finally {
       setSavingEmpresa(false);
     }
+  };
+
+  // ─── Enviar imagem (logo ou marca d'água) ─────────────────
+  // Reduz no aparelho, sobe para logos/<workspace>/ com nome novo e salva a aba
+  // Empresa junto: assim o reset do useEffect não apaga o que estiver digitado.
+  const handleEnviarImagem = (slot: 'topo' | 'fundo') => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png,image/jpeg,image/webp';
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file || !workspaceId) return;
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+        addToast({ type: 'error', message: 'Use uma imagem PNG, JPEG ou WebP.' });
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        addToast({ type: 'error', message: 'Imagem muito grande (máximo 15 MB).' });
+        return;
+      }
+      setEnviandoImagem(slot);
+      try {
+        const blob = await reduzirImagem(file, slot === 'topo' ? 800 : 1000);
+        const caminho = `${workspaceId}/${slot}-${Date.now()}.${blob.type === 'image/jpeg' ? 'jpg' : 'png'}`;
+        const { error } = await supabase.storage
+          .from('logos')
+          .upload(caminho, blob, { contentType: blob.type, upsert: false });
+        if (error) throw error;
+        const url = supabase.storage.from('logos').getPublicUrl(caminho).data.publicUrl;
+        if (slot === 'topo') {
+          setEmpresaLogoUrl(url);
+          await handleSaveEmpresa({ empresaLogoUrl: url }, 'Logo enviada e dados da empresa salvos.');
+        } else {
+          setEmpresaLogoBgUrl(url);
+          await handleSaveEmpresa({ empresaLogoBgUrl: url }, "Marca d'água enviada e dados da empresa salvos.");
+        }
+      } catch {
+        addToast({ type: 'error', message: 'Não foi possível enviar a imagem. Tente de novo.' });
+      } finally {
+        setEnviandoImagem('');
+      }
+    };
+
+    input.click();
   };
 
   // ─── Salvar Documentos ────────────────────────────────────
@@ -457,9 +509,20 @@ export function Settings() {
                 label="Logo Principal URL"
                 value={empresaLogoUrl}
                 onChange={e => setEmpresaLogoUrl(e.target.value)}
-                placeholder="URL da logo (upload de arquivo será futuro)"
+                placeholder="Cole o link ou toque em Enviar imagem"
               />
-              <FieldHint>Sua logo, exibida no topo de todos os PDFs. Cole o link direto da imagem (.png ou .jpg), sem espaços no nome do arquivo.</FieldHint>
+              <FieldHint>Sua logo, exibida no topo de todos os PDFs. Envie do computador ou do celular (PNG, JPEG ou WebP) ou cole o link direto da imagem.</FieldHint>
+              <div className="mt-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => handleEnviarImagem('topo')}
+                  disabled={enviandoImagem !== ''}
+                  className="gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  {enviandoImagem === 'topo' ? 'Enviando...' : 'Enviar imagem'}
+                </Button>
+              </div>
               {/* Prévia no tamanho máximo do topo do PDF (230x140) */}
               {previaTopo && (logoTopoQuebrada === previaTopo ? (
                 <div className="flex items-start gap-2 mt-2 p-2.5 rounded-md text-xs font-medium bg-[var(--danger-subtle)] text-[var(--danger)]">
@@ -482,13 +545,24 @@ export function Settings() {
                 label="Logo de fundo / Mascote URL"
                 value={empresaLogoBgUrl}
                 onChange={e => setEmpresaLogoBgUrl(e.target.value)}
-                placeholder="URL da logo de fundo (watermark no PDF)"
+                placeholder="Cole o link ou toque em Enviar imagem"
               />
               <FieldHint>Aparece como marca d'água, bem clara e em cinza, atrás do conteúdo dos PDFs.</FieldHint>
               <p className="flex items-start gap-1.5 mt-1 text-xs font-medium text-[var(--warning)]">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" />
                 <span>Use PNG com fundo transparente. Fundo preto ou colorido vira um quadrado cinza no PDF.</span>
               </p>
+              <div className="mt-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => handleEnviarImagem('fundo')}
+                  disabled={enviandoImagem !== ''}
+                  className="gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  {enviandoImagem === 'fundo' ? 'Enviando...' : 'Enviar imagem'}
+                </Button>
+              </div>
               {/* Prévia como no PDF: cinza, com a mesma opacidade, sobre o papel branco */}
               {previaFundo && (logoFundoQuebrada === previaFundo ? (
                 <div className="flex items-start gap-2 mt-2 p-2.5 rounded-md text-xs font-medium bg-[var(--danger-subtle)] text-[var(--danger)]">
@@ -666,7 +740,7 @@ export function Settings() {
           </div>
 
           <div className="pt-2">
-            <Button onClick={handleSaveEmpresa} disabled={savingEmpresa}>
+            <Button onClick={() => handleSaveEmpresa()} disabled={savingEmpresa}>
               {savingEmpresa ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>

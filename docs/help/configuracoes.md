@@ -15,7 +15,7 @@ A tela tem 4 abas:
 
 ### Configurar a identidade dos seus PDFs
 1. Na aba **Empresa**, preencha nome, CNPJ, telefone, e-mail e endereço — tudo isso aparece nos PDFs.
-2. Cole o link da sua logo (arquivo .png ou .jpg) e, se quiser, o da marca d'água de fundo. Embaixo de cada campo aparece a prévia; a da marca d'água mostra como ela fica no PDF (bem clara e em cinza).
+2. Toque em **Enviar imagem**, embaixo do campo da logo, e escolha a imagem no computador ou no celular: o link entra sozinho e já fica salvo. Se já tiver o link de uma imagem, pode colar no campo. Faça o mesmo, se quiser, com a marca d'água de fundo. Embaixo de cada campo aparece a prévia; a da marca d'água mostra como ela fica no PDF (bem clara e em cinza).
 3. Escolha a **cor principal** (e a cor de destaque, se quiser) — a pré-visualização mostra como fica.
 4. Toque em **Salvar Alterações**.
 
@@ -31,7 +31,10 @@ A tela tem 4 abas:
 ## Perguntas frequentes
 
 **Coloquei o link da logo e ela não aparece no PDF.**
-Olhe embaixo do campo: se aparecer o aviso vermelho "Não conseguimos abrir essa imagem", o link não abre a imagem e o PDF sai sem ela. O campo precisa de um **link direto** para a imagem (.png ou .jpg), sem espaços no nome do arquivo. Link de página (Google Drive, site) não funciona — tem que ser o endereço que abre a imagem sozinha no navegador. Confira também a extensão: o Windows pode esconder o final do nome, e um arquivo que parece "logo.jpg" pode ser "logo.jpg.png".
+Olhe embaixo do campo: se aparecer o aviso vermelho "Não conseguimos abrir essa imagem", o link não abre a imagem e o PDF sai sem ela. O campo precisa de um **link direto** para a imagem (.png ou .jpg), sem espaços no nome do arquivo. Link de página (Google Drive, site) não funciona — tem que ser o endereço que abre a imagem sozinha no navegador. Confira também a extensão: o Windows pode esconder o final do nome, e um arquivo que parece "logo.jpg" pode ser "logo.jpg.png". O jeito mais fácil é usar **Enviar imagem**: o link entra certo sozinho.
+
+**Que imagem posso enviar?**
+PNG, JPEG ou WebP, de até 15 MB, do computador ou do celular. SVG não é aceito. O app diminui a imagem antes de enviar (a logo até 800 pixels, a marca d'água até 1000) e mantém a transparência do PNG. Ao enviar, os outros dados da aba Empresa que estiverem na tela também são salvos.
 
 **A marca d'água saiu como um quadrado cinza.**
 A imagem tem fundo preto ou colorido: no PDF a marca d'água fica bem clara e em cinza, e o fundo aparece junto, como um quadrado. Use um PNG com fundo transparente; assim só o desenho aparece. A prévia embaixo do campo já mostra como vai ficar.
