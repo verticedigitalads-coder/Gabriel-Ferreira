@@ -178,7 +178,7 @@ export function AdminEmpresas() {
                   type="text"
                   value={form.nome}
                   onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
-                  placeholder="Ex: GPP Móveis Planejados"
+                  placeholder="Ex: Empresa Exemplo Ltda"
                   className="w-full px-3 py-2 min-h-[44px] rounded-[var(--radius-md)] bg-[var(--bg-input)] border border-[var(--border)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent)]"
                   required
                 />

@@ -881,7 +881,7 @@ export function Settings() {
                 value={nomeRecebedorPix}
                 onChange={e => setNomeRecebedorPix(e.target.value.slice(0, 25))}
                 maxLength={25}
-                placeholder="Ex: FL ART METAL"
+                placeholder="Ex: SUA EMPRESA LTDA"
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
               />
               <FieldHint>Nome que aparece pro cliente ao escanear o QR Code no banco dele. Máximo 25 caracteres (limite do padrão PIX).</FieldHint>
