@@ -47,8 +47,10 @@ export function MainLayout({ children }: MainLayoutProps) {
     window.location.reload();
   };
 
+  // dvh: numa aba do Safari a altura acompanha a barra do navegador e o BottomNav fica à vista;
+  // sem suporte a dvh, fica o h-screen
   return (
-    <div className="app-shell flex h-screen bg-[var(--bg-app)] overflow-hidden">
+    <div className="app-shell flex h-screen supports-[height:100dvh]:h-dvh bg-[var(--bg-app)] overflow-hidden">
 
       <Sidebar mobileOpen={sidebarOpen} setMobileOpen={setSidebarOpen} onOpenHelp={() => setHelpOpen(true)} />
 
@@ -125,7 +127,8 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 pb-[calc(72px_+_env(safe-area-inset-bottom,0px))] md:p-6">
+        {/* Sem reserva para o BottomNav: ele é irmão do <main> no fluxo, não fica por cima do conteúdo */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
 
