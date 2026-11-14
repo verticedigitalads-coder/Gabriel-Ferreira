@@ -14,8 +14,9 @@ export const createLeadSlice = (_set: any, get: any) => ({
   addLead: async (data: Partial<Lead>) => {
     const { workspaceId } = get();
 
-    const nomeNormalizado =
-      data.nome && data.nome.trim() !== '' ? data.nome : 'Novo Lead';
+    // Sem espaço sobrando nas pontas: o nome vai para o título da tarefa e para
+    // as mensagens ("Olá Fulano, tudo bem?")
+    const nomeNormalizado = data.nome?.trim() || 'Novo Lead';
 
     const inserted = await createLead(
       {
@@ -87,14 +88,18 @@ export const createLeadSlice = (_set: any, get: any) => ({
       updated_at: now,
     };
 
-    if (updates.nome !== undefined) payload.nome = updates.nome;
-    if (updates.telefone !== undefined) payload.telefone = updates.telefone;
-    if (updates.email !== undefined) payload.email = updates.email;
-    if (updates.endereco !== undefined) payload.endereco = updates.endereco;
-    if (updates.servico !== undefined) payload.servico = updates.servico;
-    if (updates.resumo !== undefined) payload.resumo = updates.resumo;
+    // Textos sem espaço sobrando nas pontas (o meio não muda)
+    if (updates.nome !== undefined) payload.nome = updates.nome?.trim() ?? updates.nome;
+    if (updates.telefone !== undefined)
+      payload.telefone = updates.telefone?.trim() ?? updates.telefone;
+    if (updates.email !== undefined) payload.email = updates.email?.trim() ?? updates.email;
+    if (updates.endereco !== undefined)
+      payload.endereco = updates.endereco?.trim() ?? updates.endereco;
+    if (updates.servico !== undefined)
+      payload.servico = updates.servico?.trim() ?? updates.servico;
+    if (updates.resumo !== undefined) payload.resumo = updates.resumo?.trim() ?? updates.resumo;
     if (updates.observacoes !== undefined)
-      payload.observacoes = updates.observacoes;
+      payload.observacoes = updates.observacoes?.trim() ?? updates.observacoes;
     if (updates.valorOrcado !== undefined)
       payload.valor_orcado = updates.valorOrcado;
     if (updates.orcamentoEnviado !== undefined)

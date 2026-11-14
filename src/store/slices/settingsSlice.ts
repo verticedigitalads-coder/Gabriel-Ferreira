@@ -120,12 +120,15 @@ export const createSettingsSlice = (set: any, get: any) => ({
   },
 
   // ================= UPDATE SINGLE =================
-  updateSetting: async (key: string, value: string) => {
+  updateSetting: async (key: string, valorDigitado: string) => {
     const { workspaceId } = get();
     if (!workspaceId) {
       console.error('[SettingsSlice] workspaceId está null');
       return;
     }
+
+    // Sem espaço sobrando nas pontas (o meio não muda)
+    const value = valorDigitado.trim();
 
     const { error } = await supabase
       .from('workspace_settings')

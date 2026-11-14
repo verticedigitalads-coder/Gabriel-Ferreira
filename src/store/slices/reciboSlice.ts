@@ -5,6 +5,10 @@ import type { Recibo, ReciboStatus } from '@/types';
 
 const VALID_RECIBO_STATUS: ReciboStatus[] = ['pendente', 'emitido', 'cancelado'];
 
+// Descrição dos itens sem espaço sobrando nas pontas (o meio não muda)
+const apararItens = (itens: Recibo['itens']) =>
+  itens.map((it) => ({ ...it, descricao: it.descricao?.trim() ?? it.descricao }));
+
 function formatRecibo(r: any): Recibo {
   return {
     id: r.id,
@@ -69,15 +73,16 @@ export const createReciboSlice = (set: any, get: any) => ({
       orcamento_id: data.orcamentoId,
       lead_id: data.leadId ?? null,
       numero_recibo: null,
-      cliente_nome: data.clienteNome || 'Cliente',
-      cliente_telefone: data.clienteTelefone ?? null,
-      cliente_endereco: data.clienteEndereco ?? null,
-      descricao: data.descricao || '',
-      itens: data.itens ?? [],
+      // Textos sem espaço sobrando nas pontas (o meio não muda)
+      cliente_nome: data.clienteNome?.trim() || 'Cliente',
+      cliente_telefone: data.clienteTelefone?.trim() ?? null,
+      cliente_endereco: data.clienteEndereco?.trim() ?? null,
+      descricao: (data.descricao || '').trim(),
+      itens: apararItens(data.itens ?? []),
       valor_total: data.valorTotal ?? 0,
       data_emissao: data.dataEmissao ?? null,
       status: data.status || 'pendente',
-      observacoes: data.observacoes ?? null,
+      observacoes: data.observacoes?.trim() ?? null,
       created_at: now,
       updated_at: now,
     };
@@ -110,15 +115,20 @@ export const createReciboSlice = (set: any, get: any) => ({
 
     const payload: Record<string, unknown> = { updated_at: now };
 
-    if (data.clienteNome !== undefined) payload.cliente_nome = data.clienteNome;
-    if (data.clienteTelefone !== undefined) payload.cliente_telefone = data.clienteTelefone;
-    if (data.clienteEndereco !== undefined) payload.cliente_endereco = data.clienteEndereco;
-    if (data.descricao !== undefined) payload.descricao = data.descricao;
-    if (data.itens !== undefined) payload.itens = data.itens;
+    // Textos sem espaço sobrando nas pontas (o meio não muda)
+    if (data.clienteNome !== undefined)
+      payload.cliente_nome = data.clienteNome?.trim() ?? data.clienteNome;
+    if (data.clienteTelefone !== undefined)
+      payload.cliente_telefone = data.clienteTelefone?.trim() ?? data.clienteTelefone;
+    if (data.clienteEndereco !== undefined)
+      payload.cliente_endereco = data.clienteEndereco?.trim() ?? data.clienteEndereco;
+    if (data.descricao !== undefined) payload.descricao = data.descricao?.trim() ?? data.descricao;
+    if (data.itens !== undefined) payload.itens = apararItens(data.itens);
     if (data.valorTotal !== undefined) payload.valor_total = data.valorTotal;
     if (data.dataEmissao !== undefined) payload.data_emissao = data.dataEmissao;
     if (data.status !== undefined) payload.status = data.status;
-    if (data.observacoes !== undefined) payload.observacoes = data.observacoes;
+    if (data.observacoes !== undefined)
+      payload.observacoes = data.observacoes?.trim() ?? data.observacoes;
     if (data.numeroRecibo !== undefined) payload.numero_recibo = data.numeroRecibo;
 
     const { data: updated, error } = await supabase

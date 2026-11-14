@@ -5,16 +5,17 @@ export async function createLead(data: Partial<Lead>, workspaceId: string) {
 
   const now = new Date().toISOString()
 
+  // Textos sem espaço sobrando nas pontas (o meio não muda)
   const payload = {
-    nome: data.nome || '',
-    telefone: data.telefone || '',
-    email: data.email || '',
-    endereco: data.endereco || '',
-    servico: data.servico || '',
+    nome: (data.nome || '').trim(),
+    telefone: (data.telefone || '').trim(),
+    email: (data.email || '').trim(),
+    endereco: (data.endereco || '').trim(),
+    servico: (data.servico || '').trim(),
     status: data.status || 'novo',
     temperatura: data.temperatura || 'frio',
-    resumo: data.resumo || '',
-    observacoes: data.observacoes || '',
+    resumo: (data.resumo || '').trim(),
+    observacoes: (data.observacoes || '').trim(),
     origem: data.origem || 'outro',
     prazo_cliente: data.prazoCliente || 'nao_definido',
     probabilidade_manual: data.probabilidadeManual ?? 3,

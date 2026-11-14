@@ -11,6 +11,9 @@ function normalizarItens(itens: OrcamentoItem[]) {
 
     return {
       ...item,
+      // Textos sem espaço sobrando nas pontas (o meio não muda)
+      descricao: item.descricao?.trim() ?? item.descricao,
+      ambiente: item.ambiente?.trim() ?? item.ambiente,
       quantidade,
       valorUnitario,
       valorTotal: quantidade * valorUnitario,
@@ -66,7 +69,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       status: data.status || 'rascunho',
 
-      observacoes: data.observacoes || '',
+      observacoes: (data.observacoes || '').trim(),
       validade_em_dias: data.validadeEmDias ?? 7,
 
       created_at: now,
@@ -155,7 +158,8 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     if (data.valorComissao !== undefined)
       payload.valor_comissao = data.valorComissao;
     if (data.status !== undefined) payload.status = data.status;
-    if (data.observacoes !== undefined) payload.observacoes = data.observacoes;
+    if (data.observacoes !== undefined)
+      payload.observacoes = data.observacoes?.trim() ?? data.observacoes;
     if (data.validadeEmDias !== undefined)
       payload.validade_em_dias = data.validadeEmDias;
 
