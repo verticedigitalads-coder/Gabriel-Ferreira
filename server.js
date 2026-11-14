@@ -91,6 +91,38 @@ function maoDeObraItem(subtotal, multiplicador) {
   };
 }
 
+// Comissão embutida no total, diluída proporcionalmente nos valores das
+// linhas: o cliente não vê a comissão, e linhas − desconto = total. Tudo em
+// centavos. A sobra do arredondamento vai para a última linha com qtd 1
+// (com mão de obra é sempre ela); se nenhuma tiver qtd 1, vai para a última,
+// com unitário = total ÷ qtd. Devolve cópias, sem alterar as linhas recebidas.
+function diluirComissao(linhas, total, desconto) {
+  const alvo = Math.round((Number(total || 0) + Number(desconto || 0)) * 100);
+  const base = linhas.reduce(
+    (soma, l) => soma + Math.round(Number(l.valorTotal || 0) * 100),
+    0,
+  );
+  if (!(base > 0)) return linhas;
+
+  const qtds = linhas.map((l) => Number(l.quantidade) || 1);
+  const unitarios = linhas.map((l) =>
+    Math.round((Number(l.valorUnitario || 0) * 100 * alvo) / base),
+  );
+  const totais = unitarios.map((u, i) => Math.round(u * qtds[i]));
+
+  const sobra = alvo - totais.reduce((soma, t) => soma + t, 0);
+  let k = qtds.lastIndexOf(1);
+  if (k < 0) k = linhas.length - 1;
+  totais[k] += sobra;
+  unitarios[k] = qtds[k] === 1 ? totais[k] : Math.round(totais[k] / qtds[k]);
+
+  return linhas.map((l, i) => ({
+    ...l,
+    valorUnitario: unitarios[i] / 100,
+    valorTotal: totais[i] / 100,
+  }));
+}
+
 // Card numerado de um item (v3). idx é 1-based.
 function itemCardHtml(item, idx) {
   const qtd = item.quantidade || 1;
@@ -993,13 +1025,18 @@ app.post(
         // Itens: separa válidos (viram cards) dos de valor 0 (vão p/ observações)
         const { validos, zerados } = separarItens(dados.itens);
         const mdo = maoDeObraItem(subtotal, multiplicador);
-        const itensParaExibir = mdo ? [...validos, mdo] : validos;
+        const linhasBase = mdo ? [...validos, mdo] : validos;
+        const descontoNum = Number(dados.desconto) || 0;
+        // Com comissão, ela entra diluída nas linhas para a conta fechar
+        const itensParaExibir =
+          Number(dados.valor_comissao) > 0
+            ? diluirComissao(linhasBase, total, descontoNum)
+            : linhasBase;
 
         const itensCards =
           itensParaExibir.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
           '<div class="item-desc" style="padding:8px 0;">Nenhum item com valor lançado.</div>';
 
-        const descontoNum = Number(dados.desconto) || 0;
         const resumoTabela = resumoTabelaHtml(
           itensParaExibir,
           descontoNum,
@@ -1455,7 +1492,11 @@ app.post(
 
             const { validos, zerados } = separarItens(orc.itens);
             const mdoOrc = maoDeObraItem(subtotalOrc, multiplicadorOrc);
-            const itensExibirOrc = mdoOrc ? [...validos, mdoOrc] : validos;
+            const linhasBaseOrc = mdoOrc ? [...validos, mdoOrc] : validos;
+            const itensExibirOrc =
+              Number(orc.valor_comissao) > 0
+                ? diluirComissao(linhasBaseOrc, totalOrc, descontoOrc)
+                : linhasBaseOrc;
 
             const cardsOrc =
               itensExibirOrc.map((it, i) => itemCardHtml(it, i + 1)).join('') ||
