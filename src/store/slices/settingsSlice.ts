@@ -136,7 +136,8 @@ export const createSettingsSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[SettingsSlice] Erro ao salvar setting:', error);
-      return;
+      // Quem chama mostra o erro: a tela não pode dizer que salvou sem ter salvo
+      throw error;
     }
 
     // Atualiza estado local

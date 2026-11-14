@@ -747,7 +747,11 @@ export function Settings() {
                   <div>
                     <button
                       type="button"
-                      onClick={() => updateSetting('assinaturaEmpresa', '')}
+                      onClick={() =>
+                        updateSetting('assinaturaEmpresa', '').catch(() =>
+                          addToast({ type: 'error', message: 'Erro ao remover assinatura' }),
+                        )
+                      }
                       className="text-xs text-[var(--danger)] hover:underline"
                     >
                       Remover assinatura
@@ -756,7 +760,11 @@ export function Settings() {
                 </div>
               ) : (
                 <SignaturePad
-                  onSave={(dataUrl) => updateSetting('assinaturaEmpresa', dataUrl)}
+                  onSave={(dataUrl) =>
+                    updateSetting('assinaturaEmpresa', dataUrl).catch(() =>
+                      addToast({ type: 'error', message: 'Erro ao salvar assinatura' }),
+                    )
+                  }
                   height={150}
                 />
               )}
