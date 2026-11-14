@@ -991,16 +991,15 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  // Dados do formulário para gravar (usado pelo Enviar/Salvar e pelo Salvar Rascunho)
+  const montarDados = () => {
     const leadSelecionado = leads.find((l: Lead) => l.id === leadId);
 
     const clienteNome = leadSelecionado?.nome || 'Cliente';
     const clienteTelefone = leadSelecionado?.telefone || '';
     const clienteEndereco = leadSelecionado?.endereco || '';
 
-    const data = {
+    return {
       leadId,
       clienteNome,
       clienteTelefone,
@@ -1016,6 +1015,12 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
       subtotal,
       total,
     };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const data = montarDados();
 
     // Interceptar somente quando TRANSICIONANDO para 'aprovado'
     const transicionandoParaAprovado =
@@ -1308,12 +1313,15 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => {
-            if (!orcamento) {
-              setStatus('rascunho');
+          onClick={async () => {
+            if (orcamento) {
+              onClose();
+              return;
             }
-            onClose();
+            // Orçamento novo: grava como rascunho (saveOrcamento fecha a tela)
+            await saveOrcamento({ ...montarDados(), status: 'rascunho' });
           }}
+          disabled={!orcamento && (!leadId || itens.length === 0)}
           className="flex-1 min-h-[48px] text-sm"
         >
           {orcamento ? 'Cancelar' : 'Salvar Rascunho'}
