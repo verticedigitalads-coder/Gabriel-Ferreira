@@ -1,4 +1,4 @@
-import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, QrCode, PenTool, CreditCard } from 'lucide-react';
+import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, PenTool, CreditCard } from 'lucide-react';
 import { SignaturePad } from '@/components/ui/SignaturePad';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, TextArea } from '@/components/ui/Input';
 import { FieldHint } from '@/components/ui/FieldHint';
+import { normalizarChavePix } from '@/utils/chavePix';
 
 type Tab = 'empresa' | 'documentos' | 'pagamentos' | 'dados';
 
@@ -57,6 +58,7 @@ export function Settings() {
   const [metodosPagamento, setMetodosPagamento] = useState('');
   const [chavePix, setChavePix] = useState('');
   const [tipoChavePix, setTipoChavePix] = useState('');
+  const [erroChavePix, setErroChavePix] = useState('');
   const [nomeRecebedorPix, setNomeRecebedorPix] = useState('');
   const [cidadePix, setCidadePix] = useState('');
   const [savingPagamentos, setSavingPagamentos] = useState(false);
@@ -83,7 +85,8 @@ export function Settings() {
     setCondicoesContrato(settings.condicoesContrato || '');
     setMetodosPagamento(settings.metodosPagamento || '');
     setChavePix(settings.chavePix || '');
-    setTipoChavePix(settings.tipoChavePix || '');
+    // cpf e cnpj: valores antigos do seletor que ficava em Documentos (hoje é cpf_cnpj).
+    setTipoChavePix(settings.tipoChavePix === 'cpf' || settings.tipoChavePix === 'cnpj' ? 'cpf_cnpj' : settings.tipoChavePix || '');
     setNomeRecebedorPix(settings.nomeRecebedorPix || '');
     setCidadePix(settings.cidadePix || '');
   }, [settings]);
@@ -125,10 +128,6 @@ export function Settings() {
         textoApresentacao,
         condicoesContrato,
         metodosPagamento,
-        chavePix,
-        tipoChavePix: tipoChavePix as any,
-        nomeRecebedorPix,
-        cidadePix,
       });
       addToast({ type: 'success', message: 'Configurações de documentos salvas!' });
     } catch {
@@ -140,12 +139,26 @@ export function Settings() {
 
   // ─── Salvar Pagamentos ────────────────────────────────────────
   const handleSavePagamentos = async () => {
+    // Chave no formato do DICT pelo tipo escolhido; fora do formato, avisa e não salva nada.
+    let chave = chavePix.trim();
+    if (chave) {
+      const r = normalizarChavePix(chave, tipoChavePix);
+      if (r.erro) {
+        setErroChavePix(r.erro);
+        addToast({ type: 'error', message: 'Chave PIX não salva. Confira o campo da chave.' });
+        return;
+      }
+      chave = r.chave;
+    }
+    setChavePix(chave);
     setSavingPagamentos(true);
     try {
       await updateSettings({
         metodosPagamento,
-        chavePix,
+        chavePix: chave,
         tipoChavePix,
+        nomeRecebedorPix,
+        cidadePix,
       } as any);
       addToast({ type: 'success', message: 'Configurações de pagamento salvas!' });
     } catch {
@@ -715,70 +728,6 @@ export function Settings() {
             </div>
 
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-[var(--accent)]" />
-                Dados PIX (QR Code nos documentos)
-              </h3>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Tipo da Chave</label>
-              <select
-                value={tipoChavePix}
-                onChange={e => setTipoChavePix(e.target.value)}
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
-              >
-                <option value="">Selecione...</option>
-                <option value="cpf">CPF</option>
-                <option value="cnpj">CNPJ</option>
-                <option value="email">E-mail</option>
-                <option value="telefone">Telefone</option>
-                <option value="aleatoria">Chave Aleatória</option>
-              </select>
-              <FieldHint>Tipo da sua chave PIX. Usado para montar o QR Code de pagamento nos PDFs.</FieldHint>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Chave PIX</label>
-              <input
-                type="text"
-                value={chavePix}
-                onChange={e => setChavePix(e.target.value)}
-                placeholder="Ex: 12345678900, email@empresa.com..."
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
-              />
-              <FieldHint>Sua chave PIX. Gera o QR Code de pagamento nos orçamentos e recibos. Deixe em branco para não exibir.</FieldHint>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Nome do Recebedor (max 25 caracteres)</label>
-              <input
-                type="text"
-                value={nomeRecebedorPix}
-                onChange={e => setNomeRecebedorPix(e.target.value.slice(0, 25))}
-                maxLength={25}
-                placeholder="Ex: FL ART METAL"
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
-              />
-              <FieldHint>Nome que aparece pro cliente ao escanear o QR Code no banco dele. Máximo 25 caracteres (limite do padrão PIX).</FieldHint>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Cidade (max 15 caracteres)</label>
-              <input
-                ref={refPalavras}
-                autoCapitalize="words"
-                type="text"
-                value={cidadePix}
-                onChange={e => setCidadePix(e.target.value.slice(0, 15))}
-                maxLength={15}
-                placeholder="Ex: Uberaba"
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
-              />
-              <FieldHint>Cidade da empresa, exigida pelo padrão PIX para gerar o QR Code. Máximo 15 caracteres.</FieldHint>
-            </div>
-
-            <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-2">
                 <PenTool className="w-4 h-4 text-[var(--accent)]" />
                 Assinatura da Empresa
@@ -869,10 +818,10 @@ export function Settings() {
             </div>
           </Card>
 
-          {/* Chave PIX */}
+          {/* Dados PIX: tipo, chave, recebedor e cidade (único lugar onde se editam) */}
           <Card className="p-4 md:p-6 space-y-4">
             <h2 className="text-base font-semibold text-[var(--text-primary)]">
-              Chave PIX
+              Dados PIX
             </h2>
             <p className="text-sm text-[var(--text-tertiary)]">
               Exibida nos documentos para pagamentos via PIX. Deixe em branco para não exibir.
@@ -894,7 +843,7 @@ export function Settings() {
                   <button
                     key={t.value}
                     type="button"
-                    onClick={() => setTipoChavePix(t.value)}
+                    onClick={() => { setTipoChavePix(t.value); setErroChavePix(''); }}
                     className={`px-3 py-1.5 rounded-full text-sm border min-h-[44px] transition-colors ${
                       tipoChavePix === t.value
                         ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
@@ -908,17 +857,50 @@ export function Settings() {
               <FieldHint>Tipo da sua chave PIX. Usado para montar o QR Code de pagamento nos PDFs.</FieldHint>
             </div>
 
-            <Input
-              label="Chave PIX"
-              value={chavePix}
-              onChange={e => setChavePix(e.target.value)}
-              placeholder={
-                tipoChavePix === 'cpf_cnpj'  ? '00.000.000/0000-00 ou 000.000.000-00' :
-                tipoChavePix === 'telefone'   ? '+55 (34) 99999-9999' :
-                tipoChavePix === 'email'      ? 'pix@empresa.com.br' :
-                'Chave aleatória UUID'
-              }
-            />
+            <div>
+              <Input
+                label="Chave PIX"
+                value={chavePix}
+                onChange={e => { setChavePix(e.target.value); setErroChavePix(''); }}
+                error={erroChavePix}
+                className="min-h-[44px]"
+                placeholder={
+                  tipoChavePix === 'cpf_cnpj'  ? '00.000.000/0000-00 ou 000.000.000-00' :
+                  tipoChavePix === 'telefone'   ? '(34) 99999-9999' :
+                  tipoChavePix === 'email'      ? 'pix@empresa.com.br' :
+                  'Cole como aparece no app do banco'
+                }
+              />
+              <FieldHint>Pode digitar com pontos, traços ou espaços. Ao salvar, a chave fica no formato que o banco usa.</FieldHint>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Nome do Recebedor (max 25 caracteres)</label>
+              <input
+                type="text"
+                value={nomeRecebedorPix}
+                onChange={e => setNomeRecebedorPix(e.target.value.slice(0, 25))}
+                maxLength={25}
+                placeholder="Ex: FL ART METAL"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
+              />
+              <FieldHint>Nome que aparece pro cliente ao escanear o QR Code no banco dele. Máximo 25 caracteres (limite do padrão PIX).</FieldHint>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">Cidade (max 15 caracteres)</label>
+              <input
+                ref={refPalavras}
+                autoCapitalize="words"
+                type="text"
+                value={cidadePix}
+                onChange={e => setCidadePix(e.target.value.slice(0, 15))}
+                maxLength={15}
+                placeholder="Ex: Uberaba"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface-2)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] min-h-[44px]"
+              />
+              <FieldHint>Cidade da empresa, exigida pelo padrão PIX para gerar o QR Code. Máximo 15 caracteres.</FieldHint>
+            </div>
 
             <div className="pt-2">
               <Button onClick={handleSavePagamentos} disabled={savingPagamentos}>

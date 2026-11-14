@@ -7,8 +7,8 @@ Dados e identidade da sua empresa: logo, cores, PIX e textos padrão que aparece
 A tela tem 4 abas:
 
 - **Empresa** — nome, CNPJ, telefone, e-mail, endereço, Instagram/site, logos e as cores dos seus PDFs (com pré-visualização).
-- **Documentos** — padrões dos orçamentos e recibos: validade, multiplicador de mão de obra, comissão, observações padrão, texto de apresentação, condições de contrato, dados PIX e a assinatura da empresa.
-- **Pagamentos** — métodos de pagamento exibidos no rodapé dos PDFs e a chave PIX.
+- **Documentos** — padrões dos orçamentos e recibos: validade, multiplicador de mão de obra, comissão, observações padrão, texto de apresentação, condições de contrato e a assinatura da empresa.
+- **Pagamentos** — métodos de pagamento exibidos no rodapé dos PDFs e os dados PIX: tipo da chave, chave, nome do recebedor e cidade.
 - **Dados** — backup, importação de leads por planilha e ações de limpeza.
 
 ## Passo a passo
@@ -20,8 +20,8 @@ A tela tem 4 abas:
 4. Toque em **Salvar Alterações**.
 
 ### Ativar o PIX nos documentos
-1. Na aba **Documentos**, vá até "Dados PIX".
-2. Escolha o tipo da chave, digite a chave, o nome do recebedor (máx. 25 caracteres) e a cidade (máx. 15).
+1. Na aba **Pagamentos**, vá até "Dados PIX".
+2. Escolha o tipo da chave, digite a chave, o nome do recebedor (máx. 25 caracteres) e a cidade (máx. 15). Pode digitar a chave com pontos, traços ou espaços: ao salvar, ela fica no formato que o banco usa. Se a chave não bater com o tipo escolhido, o app avisa e não salva.
 3. Salve. O QR Code de pagamento passa a poder sair nos orçamentos e recibos.
 
 ### Fazer um backup

@@ -17,7 +17,7 @@ Bem-vindo ao VRTX CRM! Este guia mostra o caminho recomendado para deixar o sist
 Tudo isso aparece nos PDFs de orçamento e recibo que seus clientes recebem.
 
 ### 2. Configurações → PIX
-1. Na aba Documentos, preencha os dados PIX: tipo da chave, chave, nome do recebedor e cidade.
+1. Na aba Pagamentos, preencha os dados PIX: tipo da chave, chave, nome do recebedor e cidade.
 2. Com isso, seus orçamentos e recibos podem sair com QR Code de pagamento.
 
 ### 3. Primeiro lead
