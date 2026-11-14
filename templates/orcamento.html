@@ -32,7 +32,7 @@
         width: 500px;
         z-index: 0;
         pointer-events: none;
-        filter: grayscale(100%);
+        /* Sem filter: o cinza vem pronto do servidor (resolveWorkspaceLogo). Com filter, o Chrome rasteriza a marca d'água em cada página e o PDF pesa MB. */
       }
 
       .container {

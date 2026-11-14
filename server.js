@@ -296,8 +296,87 @@ async function urlToBase64(url) {
   }
 }
 
+// Lado maior (px) da logo e da marca d'água no PDF. Topo: ~300 dpi no maior
+// tamanho exibido (até 230x140 px no v2, 260 px de largura no v1). Fundo:
+// exibido com 500 px a 6% de opacidade.
+const LOGO_PDF_MAX_PX = { logo_header: 800, logo_bg: 1000 };
+
+// Imagens já reduzidas, por `${logLabel}|${url}`: valem 1 h, no máximo 50.
+// Falha não entra no cache.
+const LOGO_CACHE_VALIDADE_MS = 60 * 60 * 1000;
+const LOGO_CACHE_MAX = 50;
+const logoCache = new Map();
+
+// Só PNG, JPEG e WebP são reduzidos, pela assinatura dos bytes (não pela
+// extensão). Outro formato (SVG, GIF...) vai para o PDF como veio.
+function formatoReduzivel(dataUrl) {
+  const inicio = dataUrl.indexOf(',') + 1;
+  const b = Buffer.from(dataUrl.slice(inicio, inicio + 24), 'base64');
+  const png = b[0] === 0x89 && b.toString('latin1', 1, 4) === 'PNG';
+  const jpeg = b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+  const webp =
+    b.toString('latin1', 0, 4) === 'RIFF' &&
+    b.toString('latin1', 8, 12) === 'WEBP';
+  return png || jpeg || webp;
+}
+
+const kbDoDataUrl = (dataUrl) =>
+  Math.round(((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75) / 1024);
+
+// Reduz no Chrome (canvas): lado maior até o máximo, sem ampliar, achatada no
+// branco (o papel do PDF é branco e nada fica atrás da logo) e em JPEG, que o
+// PDF embute como está. A marca d'água sai em cinza com o mesmo
+// grayscale(100%) que o CSS dos templates aplicava. O Chrome aplica a
+// orientação EXIF, como no PDF.
+async function reduzirLogoParaPdf(dataUrl, logLabel) {
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+    ],
+  });
+  try {
+    const page = await browser.newPage();
+    return await page.evaluate(
+      async (src, max, cinza) => {
+        const img = new Image();
+        img.src = src;
+        await img.decode();
+        const escala = Math.min(
+          1,
+          max / Math.max(img.naturalWidth, img.naturalHeight),
+        );
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.naturalWidth * escala);
+        canvas.height = Math.round(img.naturalHeight * escala);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingQuality = 'high';
+        if (cinza) ctx.filter = 'grayscale(100%)';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        return {
+          dataUrl: canvas.toDataURL('image/jpeg', 0.85),
+          de: `${img.naturalWidth}x${img.naturalHeight}`,
+          para: `${canvas.width}x${canvas.height}`,
+        };
+      },
+      dataUrl,
+      LOGO_PDF_MAX_PX[logLabel],
+      logLabel === 'logo_bg',
+    );
+  } finally {
+    await browser.close();
+  }
+}
+
 // Resolve a logo/marca d'água configurada no workspace. Ausente ou falha no
 // download → retorna '' (NUNCA cai num fallback estático de outro cliente).
+// PNG, JPEG e WebP vão reduzidos para o PDF; se a redução falhar, vai a
+// imagem original, como antes.
 async function resolveWorkspaceLogo(rawUrl, logLabel, noun) {
   if (!rawUrl) {
     console.warn(
@@ -305,14 +384,42 @@ async function resolveWorkspaceLogo(rawUrl, logLabel, noun) {
     );
     return '';
   }
+  if (rawUrl.startsWith('data:')) return rawUrl;
+
+  const chave = `${logLabel}|${rawUrl}`;
+  const emCache = logoCache.get(chave);
+  if (emCache && Date.now() - emCache.em < LOGO_CACHE_VALIDADE_MS) {
+    return emCache.dataUrl;
+  }
+
   const converted = await urlToBase64(rawUrl);
   if (!converted) {
     console.error(
       `[PDF][${logLabel}] urlToBase64 retornou vazio — resposta HTTP não-ok ou body vazio. URL:`,
       rawUrl,
     );
+    return converted;
   }
-  return converted;
+  if (!formatoReduzivel(converted)) return converted;
+
+  try {
+    const reduzida = await reduzirLogoParaPdf(converted, logLabel);
+    console.log(
+      `[PDF][${logLabel}] reduzida ${reduzida.de} → ${reduzida.para}, ${kbDoDataUrl(converted)} KB → ${kbDoDataUrl(reduzida.dataUrl)} KB`,
+    );
+    logoCache.delete(chave);
+    logoCache.set(chave, { dataUrl: reduzida.dataUrl, em: Date.now() });
+    if (logoCache.size > LOGO_CACHE_MAX) {
+      logoCache.delete(logoCache.keys().next().value);
+    }
+    return reduzida.dataUrl;
+  } catch (err) {
+    console.error(
+      `[PDF][${logLabel}] redução falhou, indo a imagem original:`,
+      err.message,
+    );
+    return converted;
+  }
 }
 
 // Aplica {{placeholder}} usado como src de <img> num template carregado de
