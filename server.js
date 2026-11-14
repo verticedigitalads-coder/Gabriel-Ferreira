@@ -123,6 +123,16 @@ function diluirComissao(linhas, total, desconto) {
   }));
 }
 
+// Data do documento no PDF (v3): a data de criação no fuso de Brasília, para
+// que gerar de novo não troque a data. Sem ela, a data de hoje, como antes.
+function dataDoDocumento(dataCriacao) {
+  const d = new Date(dataCriacao);
+  if (!dataCriacao || Number.isNaN(d.getTime())) {
+    return new Date().toLocaleDateString('pt-BR');
+  }
+  return d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+}
+
 // Card numerado de um item (v3). idx é 1-based.
 function itemCardHtml(item, idx) {
   const qtd = item.quantidade || 1;
@@ -1139,7 +1149,7 @@ app.post(
           .replace('{{secao_condicoes}}', secaoCondicoes)
           .replace('{{QR_CODE_PIX}}', qrCodePixHtml)
           .replace('{{footer_contato}}', footerContato)
-          .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'));
+          .replace(/{{data}}/g, dataDoDocumento(dados.data_criacao));
 
         html = injectLogoImg(html, 'logo_bg', logoBgUrlOrc);
 
@@ -1580,6 +1590,16 @@ app.post(
           empresa_instagram,
         );
 
+        // Data da proposta: a criação mais antiga entre os orçamentos escolhidos
+        const datasCriacao = orcamentos
+          .map((o) => o.created_at)
+          .filter((d) => d && !Number.isNaN(new Date(d).getTime()));
+        const dataAgrupado = dataDoDocumento(
+          datasCriacao.length
+            ? datasCriacao.reduce((a, b) => (new Date(b) < new Date(a) ? b : a))
+            : null,
+        );
+
         htmlFinal = `<!doctype html>
 <html>
 <head>
@@ -1599,7 +1619,7 @@ app.post(
     </div>
     <div class="meta-bar">
       <div class="meta-item"><span class="mk">Cliente</span><span class="mv">${escapeHtml(cliente_nome) || 'Cliente'}</span></div>
-      <div class="meta-item"><span class="mk">Data</span><span class="mv">${new Date().toLocaleDateString('pt-BR')}</span></div>
+      <div class="meta-item"><span class="mk">Data</span><span class="mv">${dataAgrupado}</span></div>
       <div class="meta-item"><span class="mk">Orçamentos</span><span class="mv">${orcamentos.length}</span></div>
     </div>
     <div class="divider"></div>
@@ -1610,7 +1630,7 @@ app.post(
     ${secaoCondicoesAgrp}
     <div class="no-break">
       ${await gerarQrCodePixHtml({ chavePix: chave_pix || '', nomeRecebedor: nome_recebedor_pix || empresa_nome || 'EMPRESA', cidadeRecebedor: cidade_pix || 'UBERABA', valor: totalGeralV2, txid: 'PROPOSTA' })}
-      <div class="footer-v3">${footerContatoAgrp}<span class="criado">Criado em ${new Date().toLocaleDateString('pt-BR')}</span></div>
+      <div class="footer-v3">${footerContatoAgrp}<span class="criado">Criado em ${dataAgrupado}</span></div>
     </div>
   </div>
 </body>
