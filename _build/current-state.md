@@ -1,7 +1,7 @@
 # Estado Atual — CRM Vértice Digital
 
 Última atualização: 14/11/2026
-Versão: v2.39.4
+Versão: v2.39.5
 
 ## Build
 - TypeScript: 0 erros (tsc --noEmit, 14/11/2026, teste ponta a ponta parte 2, entrega 2)
@@ -10,6 +10,27 @@ Versão: v2.39.4
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Rodada da logo (14/11/2026): entrega 1 (redução no servidor) com commit `cbc5b4d7`, sem push, aguardando o ok do Gabriel. Entregas 2 (prévia e avisos) e 3 (Storage + "Enviar imagem", com migration) pendentes.** Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
+  - **Diagnóstico:**
+    - Não há nem nunca houve ImageMagick no repositório (`git log --all -S magick`: nada; o `server.js` não importa `child_process`).
+    - O `urlToBase64` embutia os bytes originais da imagem. Pior: o `filter: grayscale(100%)` do `.watermark` fazia o Chrome rasterizar a marca d'água a 300 dpi do tamanho exibido (1565x1566) em cada página. Isso dava 1,5 a 1,7 MB por página, qualquer que fosse a imagem.
+  - **`cbc5b4d7` (`server.js` + os 4 templates):**
+    - `resolveWorkspaceLogo` reduz PNG, JPEG e WebP (pela assinatura dos bytes) num Chrome à parte (`reduzirLogoParaPdf`). O topo vai a 800 px e o fundo a 1000 px no lado maior, sem ampliar, achatados no branco, em JPEG 85. A marca d'água já sai cinza, com o mesmo `grayscale(100%)` no canvas.
+    - Cache em memória por `logLabel|url`: vale 1 h, guarda até 50, e falha não entra.
+    - Outros formatos (SVG, GIF), `data:` e falha na redução: vai a imagem original, como antes.
+    - Os 12 chamadores não mudaram. Os templates perdem o `filter` e ganham um comentário dizendo por quê.
+  - **Provas (harness no scratchpad: `server.js` real, Supabase em stub HTTP só com `/auth/v1/user`, relógio fixo, logos reais do bucket num servidor local; HEAD × commit; nenhuma chamada inesperada ao Supabase):**
+    - 3 empresas × orçamento, agrupado e recibo, v1 e v2: mesmo número de páginas, e o HTML final, sem as data URLs, só difere na linha do CSS.
+    - Orçamento v2: Serralheria 8.122 → 711 KB, FL 3.810 → 826 KB, Ítalo 3.758 → 847 KB. Recibo v2: 6.105 → 439, 2.012 → 544, 2.580 → 571 KB. Agrupado v2 da FL: 6.870 → 854 KB. Sem logo, o mesmo orçamento tem 617 KB no Windows (QR do PIX e emojis).
+    - **Aparência** (screenshot do HTML final em mídia print a 2x): no corpo da página, onde fica a marca d'água, a diferença máxima é de 1 a 3 níveis em todos os casos. Na faixa da logo, só a reamostragem: média de 0,18 a 0,88 e 0,3% a 2,3% dos pixels acima de 10 níveis (Ítalo é o pior, nas bordas do PNG transparente). Os PDFs antes e depois da FL e os lado a lado ficaram no scratchpad para o Gabriel.
+    - **Tempo** (Windows, sem screenshot): antes 3,3 a 4,2 s por PDF; depois, com o cache frio, 3,8 a 4,2 s (+2 aberturas do Chrome); com o cache quente, 2,8 a 2,9 s.
+    - **Cache:** a 2ª geração não baixa nem abre o Chrome; 61 min depois baixa de novo; um 404 não fica em cache (corrigido o link, o PDF seguinte sai com logo).
+    - **Bordas:** SVG e GIF saem como antes, sem redução; PNG cortado tenta reduzir, falha e sai como antes; 404 e vazio saem sem logo, como antes. JPEG com EXIF Orientation 6 sai em pé (1423x2048 → 556x800). Antes, esse JPEG entrava cru, com 1,5 MB.
+    - O screenshot do agrupado da FL varia de altura entre rodadas do próprio HEAD (instabilidade do harness, não da mudança).
+    - O passo de renderizar os PDFs pelo pdf.js foi bloqueado pelo modo automático (carregava o script de uma CDN); no lugar dele foram usados os screenshots em mídia print.
+    - `node --check server.js` ok.
+  - **Mudança visível conhecida:** marca d'água em formato que não é reduzido (SVG, GIF) ou cuja redução falha passa a sair colorida a 6%, em vez de cinza. Nenhum workspace está nesse caso hoje (os 3 com logo usam PNG ou JPEG).
+  - **Deploy (só com o ok do Gabriel, junto com a entrega 2):** push + VPS `git pull origin main && pm2 restart crm-backend`, sem dependência nova. Validar o PDF do orçamento e do recibo da Serralheria abaixo de 1 MB e a linha `[PDF][logo_bg] reduzida …` no `pm2 logs`.
 - **Teste ponta a ponta, parte 2 (Serralheria Exemplo, 14/11/2026) — entregas 1 e 2 em produção e validadas pelo Gabriel; rodada fechada. Pendente só repetir o `UPDATE` da migration em 16/11 (ver Pendências Manuais):** corrige o que o teste de 14/11 achou no ciclo lead → orçamento → PDF → recibo. Plano aprovado em `C:\Users\gabri\.claude\plans\rodada-corre-es-do-teste-dynamic-summit.md` (itens 1 a 8 e acréscimos A a E).
   - **Duas entregas (decisão do Gabriel, 14/11):**
     1. **Entrega 1 = commits 1 a 11:** push em 14/11 (`b6cc7052`), deploy na Vercel e na VPS, validada pelo Gabriel em produção (PDF do orçamento e do recibo com e sem PIX: conta fecha, extenso, CPF/telefone, data, assinatura e PIX com CRC ok).
@@ -785,6 +806,8 @@ Versão: v2.39.4
 - **Comparador de Preços** (`src/modules/suprimentos/ComparadorPrecos.tsx`): item comentado em `Sidebar.tsx:59`. Import lazy em `App.tsx` e entrada no `ModuleRouter` mantidos. Reativar: descomentar a linha em Sidebar.tsx.
 
 ## Dívida Técnica Conhecida
+- **O servidor baixa qualquer URL de logo que vier no payload do PDF** (`urlToBase64`, `server.js`; registrado em 14/11/2026, rodada da logo, a pedido do Gabriel, sem corrigir agora). Antes de abrir para muitos clientes: limitar a `https` e bloquear endereço interno (localhost, IP privado). A redução da logo não mudou isso.
+- **`logoPath` e `logoBgPath` sem uso** (`server.js`, logo depois do `injectLogoImg`; registrado em 14/11/2026, rodada da logo): leem `assets/logo_header.png` e `assets/logo_bg.png` na subida do servidor e nunca são usados (resto do fallback da FL). Remover numa rodada de limpeza, junto com os arquivos se nada mais os servir (`/assets` é estático).
 - **`StatusBadge` pinta "Em Atendimento" de roxo** (`src/components/ui/Badge.tsx`, `--ia`/`--ia-subtle`), contra a regra 6 do plano do redesign: o roxo é só da IA. Decisão do Gabriel em 13/11: fica como está na D3 e vai para a D12. Aparece na lista de Leads, na ficha e onde mais o `StatusBadge` for usado.
 - **Kanban: arrasto por toque — corrigido, falta confirmar em Android real** (registrado em 13/11/2026 na D3, corrigido no `a1c77d25` em 14/11).
   - Causa: sem `touch-action: none` na alça, o Chromium manda `pointercancel` quando assume a rolagem, e o `PointerSensor` cancela o arrasto.
