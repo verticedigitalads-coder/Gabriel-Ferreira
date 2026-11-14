@@ -1939,12 +1939,43 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
     const { validos: itensValidosV2, zerados: itensZeradosV2 } = separarItens(
       dados.itens,
     );
-    const itensParaLinhas =
+    let itensParaLinhas =
       templateVersion === 'v2' ? itensValidosV2 : dados.itens;
 
-    const itensLinhas = itensParaLinhas
-      .map(
-        (item) => `
+    // v2: recibo criado de orçamento sai com as mesmas linhas do PDF do
+    // orçamento (mão de obra, comissão diluída e desconto), para a soma fechar
+    // com o total. Só quando o recibo ainda bate com o orçamento (soma dos
+    // itens = subtotal e valor = total, em centavos); recibo manual ou com
+    // valor editado sai como antes.
+    const ref = dados.orcamento_ref;
+    const centavos = (v) => Math.round(Number(v || 0) * 100);
+    let descontoRecibo = 0;
+    if (
+      templateVersion === 'v2' &&
+      ref &&
+      centavos(
+        dados.itens.reduce((soma, it) => soma + Number(it.valorTotal || 0), 0),
+      ) === centavos(ref.subtotal) &&
+      centavos(dados.valor_total) === centavos(ref.total)
+    ) {
+      const mdoRecibo = maoDeObraItem(
+        Number(ref.subtotal) || 0,
+        Number(ref.multiplicador) || 1,
+      );
+      const linhasBaseRecibo = mdoRecibo
+        ? [...itensValidosV2, mdoRecibo]
+        : itensValidosV2;
+      descontoRecibo = Number(ref.desconto) || 0;
+      itensParaLinhas =
+        Number(ref.valor_comissao) > 0
+          ? diluirComissao(linhasBaseRecibo, Number(ref.total) || 0, descontoRecibo)
+          : linhasBaseRecibo;
+    }
+
+    const itensLinhas =
+      itensParaLinhas
+        .map(
+          (item) => `
         <tr>
           <td>${escapeHtml(templateVersion === 'v2' ? maiusculaInicial(item.descricao) : item.descricao) || ''}</td>
           <td class="right">${item.quantidade || 1}</td>
@@ -1952,8 +1983,11 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
           <td class="right">R$ ${formatar(item.valorTotal)}</td>
         </tr>
       `,
-      )
-      .join('');
+        )
+        .join('') +
+      (descontoRecibo > 0
+        ? `<tr><td colspan="3" class="right">Desconto</td><td class="right">- R$ ${formatar(descontoRecibo)}</td></tr>`
+        : '');
 
     /* ==========================================
     📝 OBSERVAÇÕES (bloco opcional)

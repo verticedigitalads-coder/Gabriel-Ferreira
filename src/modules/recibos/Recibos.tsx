@@ -45,6 +45,7 @@ const statusLabel: Record<ReciboStatus, string> = {
 export function Recibos() {
   const recibos = useStore((state) => state.recibos) as Recibo[];
   const leads = useStore((state) => state.leads);
+  const orcamentos = useStore((state) => state.orcamentos);
   const emitirRecibo = useStore((state) => state.emitirRecibo);
   const updateRecibo = useStore((state) => state.updateRecibo);
   const addToast = useStore((state) => state.addToast);
@@ -97,6 +98,8 @@ export function Recibos() {
 
   const generateReciboPDF = async (recibo: Recibo) => {
     try {
+      // O servidor usa o orçamento para montar as mesmas linhas do PDF dele
+      const orc = orcamentos.find((o) => o.id === recibo.orcamentoId);
       const response = await apiFetch('/api/gerar-recibo', {
         method: 'POST',
         body: JSON.stringify({
@@ -108,6 +111,15 @@ export function Recibos() {
           descricao: recibo.descricao,
           itens: recibo.itens,
           valor_total: recibo.valorTotal,
+          orcamento_ref: orc
+            ? {
+                subtotal: orc.subtotal,
+                multiplicador: orc.multiplicador ?? 1,
+                desconto: orc.desconto ?? 0,
+                valor_comissao: orc.valorComissao ?? 0,
+                total: orc.total,
+              }
+            : null,
           observacoes: recibo.observacoes || '',
           data_emissao: recibo.dataEmissao
             ? parseISO(recibo.dataEmissao).toLocaleDateString('pt-BR')
