@@ -102,4 +102,8 @@
   --sidebar-width: 220px;
   --sidebar-item-height: 30px;
   --sidebar-icon-size: 16px;
+
+  /* --- PRÉVIA DO PDF (Configurações > Empresa) --- */
+  --pdf-papel: #ffffff; /* o papel do PDF, atrás da prévia da logo e da marca d'água */
+  --pdf-marca-dagua-opacidade: 0.06; /* espelha .watermark em templates/orcamento-v2.html e recibo-v2.html */
 }

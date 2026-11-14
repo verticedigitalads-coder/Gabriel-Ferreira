@@ -43,6 +43,12 @@ export function Settings() {
   const [empresaCnpj, setEmpresaCnpj] = useState('');
   const [empresaLogoUrl, setEmpresaLogoUrl] = useState('');
   const [empresaLogoBgUrl, setEmpresaLogoBgUrl] = useState('');
+  // A prévia segue o campo 700 ms depois da última mudança: digitando, nada
+  // pisca (nem o aviso de link quebrado). Quebrada = URL cuja prévia não abriu.
+  const [previaTopo, setPreviaTopo] = useState('');
+  const [previaFundo, setPreviaFundo] = useState('');
+  const [logoTopoQuebrada, setLogoTopoQuebrada] = useState('');
+  const [logoFundoQuebrada, setLogoFundoQuebrada] = useState('');
   const [empresaInstagram, setEmpresaInstagram] = useState('');
   const [corPrimaria, setCorPrimaria] = useState('#ff6a00');
   const [corDestaque, setCorDestaque] = useState('');
@@ -90,6 +96,16 @@ export function Settings() {
     setNomeRecebedorPix(settings.nomeRecebedorPix || '');
     setCidadePix(settings.cidadePix || '');
   }, [settings]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPreviaTopo(empresaLogoUrl.trim()), 700);
+    return () => clearTimeout(t);
+  }, [empresaLogoUrl]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPreviaFundo(empresaLogoBgUrl.trim()), 700);
+    return () => clearTimeout(t);
+  }, [empresaLogoBgUrl]);
 
   // ─── Salvar Empresa ───────────────────────────────────────
   const handleSaveEmpresa = async () => {
@@ -444,6 +460,22 @@ export function Settings() {
                 placeholder="URL da logo (upload de arquivo será futuro)"
               />
               <FieldHint>Sua logo, exibida no topo de todos os PDFs. Cole o link direto da imagem (.png ou .jpg), sem espaços no nome do arquivo.</FieldHint>
+              {/* Prévia no tamanho máximo do topo do PDF (230x140) */}
+              {previaTopo && (logoTopoQuebrada === previaTopo ? (
+                <div className="flex items-start gap-2 mt-2 p-2.5 rounded-md text-xs font-medium bg-[var(--danger-subtle)] text-[var(--danger)]">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Não conseguimos abrir essa imagem. Do jeito que está, o PDF sai sem logo. O link precisa abrir só a imagem: confira o nome e a extensão do arquivo.</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center justify-center mt-2 p-3 rounded-md border border-[var(--border)] bg-[var(--pdf-papel)]">
+                  <img
+                    src={previaTopo}
+                    alt="Prévia da logo"
+                    onError={() => setLogoTopoQuebrada(previaTopo)}
+                    className="max-w-[230px] max-h-[140px]"
+                  />
+                </div>
+              ))}
             </div>
             <div className="md:col-span-2">
               <Input
@@ -452,7 +484,30 @@ export function Settings() {
                 onChange={e => setEmpresaLogoBgUrl(e.target.value)}
                 placeholder="URL da logo de fundo (watermark no PDF)"
               />
-              <FieldHint>Aparece como marca d'água (bem clara) atrás do conteúdo dos PDFs. Use uma imagem grande — ela é exibida com transparência.</FieldHint>
+              <FieldHint>Aparece como marca d'água, bem clara e em cinza, atrás do conteúdo dos PDFs.</FieldHint>
+              <p className="flex items-start gap-1.5 mt-1 text-xs font-medium text-[var(--warning)]">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" />
+                <span>Use PNG com fundo transparente. Fundo preto ou colorido vira um quadrado cinza no PDF.</span>
+              </p>
+              {/* Prévia como no PDF: cinza, com a mesma opacidade, sobre o papel branco */}
+              {previaFundo && (logoFundoQuebrada === previaFundo ? (
+                <div className="flex items-start gap-2 mt-2 p-2.5 rounded-md text-xs font-medium bg-[var(--danger-subtle)] text-[var(--danger)]">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Não conseguimos abrir essa imagem. Do jeito que está, o PDF sai sem marca d'água. O link precisa abrir só a imagem: confira o nome e a extensão do arquivo.</span>
+                </div>
+              ) : (
+                <div className="mt-2">
+                  <div className="flex items-center justify-center w-[200px] h-[200px] p-3 rounded-md border border-[var(--border)] bg-[var(--pdf-papel)]">
+                    <img
+                      src={previaFundo}
+                      alt="Prévia da marca d'água"
+                      onError={() => setLogoFundoQuebrada(previaFundo)}
+                      className="max-w-full max-h-full grayscale opacity-[var(--pdf-marca-dagua-opacidade)]"
+                    />
+                  </div>
+                  <FieldHint>Prévia como sai no PDF.</FieldHint>
+                </div>
+              ))}
             </div>
 
             <div className="md:col-span-2 border-t border-[var(--border)] pt-4 mt-2">
