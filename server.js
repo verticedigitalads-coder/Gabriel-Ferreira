@@ -200,10 +200,37 @@ function observacoesHtml(observacoesUsuario, zerados) {
       </div>`;
 }
 
+// CPF/CNPJ com rótulo, só na exibição do PDF (o dado salvo não muda). Com
+// outro número de dígitos, sai como foi digitado.
+function documentoComRotulo(valor) {
+  const texto = String(valor || '').trim();
+  const d = soDigitos(texto);
+  if (d.length === 11) {
+    return `CPF ${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  }
+  if (d.length === 14) {
+    return `CNPJ ${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+  }
+  return texto;
+}
+
+// Telefone formatado, só na exibição do PDF. Mesma regra do formatPhone do
+// front (src/utils/formatters.ts), mas o 55 só sai com 12 ou 13 dígitos
+// (telefone com DDD 55 tem 11). Com outro número de dígitos, sai como foi
+// digitado.
+function telefoneFormatado(valor) {
+  const texto = String(valor || '').trim();
+  let d = soDigitos(texto);
+  if ((d.length === 12 || d.length === 13) && d.startsWith('55')) d = d.slice(2);
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return texto;
+}
+
 // Rodapé de contato (v3): WhatsApp + Instagram/site (só o que existir).
 function footerContatoHtml(empresaTelefone, empresaInstagram) {
   const partes = [];
-  const tel = (empresaTelefone || '').trim();
+  const tel = telefoneFormatado(empresaTelefone);
   const insta = (empresaInstagram || '').trim();
   if (tel) partes.push(`📱 WhatsApp: ${escapeHtml(tel)}`);
   if (insta) partes.push(`📸 ${escapeHtml(insta)}`);
@@ -1059,9 +1086,9 @@ app.post(
           .replace(/{{cor_destaque}}/g, cor_destaque)
           .replace('{{logo_html}}', logoHtml)
           .replace(/{{empresa_nome}}/g, escapeHtml(empresa_nome) || 'Empresa')
-          .replace(/{{empresa_cnpj}}/g, escapeHtml(empresa_cnpj) || '')
+          .replace(/{{empresa_cnpj}}/g, escapeHtml(documentoComRotulo(empresa_cnpj)))
           .replace(/{{empresa_endereco}}/g, escapeHtml(empresa_endereco) || '')
-          .replace(/{{empresa_telefone}}/g, escapeHtml(empresa_telefone) || '')
+          .replace(/{{empresa_telefone}}/g, escapeHtml(telefoneFormatado(empresa_telefone)))
           .replace(
             /{{cliente_nome}}/g,
             escapeHtml(dados.cliente_nome) || 'Cliente',
@@ -1526,7 +1553,7 @@ app.post(
       <div class="empresa-card">
         <div class="doc-title">Proposta</div>
         <div class="emp-nome">${escapeHtml(empresa_nome) || ''}</div>
-        <div class="emp-dados">${escapeHtml(empresa_cnpj) || ''}<br/>${escapeHtml(empresa_endereco) || ''}<br/>${escapeHtml(empresa_telefone) || ''}</div>
+        <div class="emp-dados">${escapeHtml(documentoComRotulo(empresa_cnpj))}<br/>${escapeHtml(empresa_endereco) || ''}<br/>${escapeHtml(telefoneFormatado(empresa_telefone))}</div>
       </div>
     </div>
     <div class="meta-bar">
@@ -1977,14 +2004,17 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
         .replace(/{{cor_destaque}}/g, corDestaqueRec)
         .replace(/{{logo_html}}/g, logoHtml)
         .replace(/{{empresa_nome}}/g, escapeHtml(dados.empresa_nome) || '')
-        .replace(/{{empresa_cnpj}}/g, escapeHtml(dados.empresa_cnpj) || '')
+        .replace(
+          /{{empresa_cnpj}}/g,
+          escapeHtml(documentoComRotulo(dados.empresa_cnpj)),
+        )
         .replace(
           /{{empresa_endereco}}/g,
           escapeHtml(dados.empresa_endereco) || '',
         )
         .replace(
           /{{empresa_telefone}}/g,
-          escapeHtml(dados.empresa_telefone) || '',
+          escapeHtml(telefoneFormatado(dados.empresa_telefone)),
         )
         .replace('{{footer_contato}}', footerContatoRec)
         .replace('{{QR_CODE_PIX}}', qrCodePixHtmlRecibo);
