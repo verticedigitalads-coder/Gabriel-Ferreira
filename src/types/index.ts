@@ -187,6 +187,9 @@ export interface Orcamento {
   clienteEndereco?: string;
 
   numero: string;
+  // Número que o PDF mostra: ORC-AAAA-NNN (novos, igual a numero) ou
+  // ORC-2026-001 (legado). Nulo em linha criada por app antigo em cache.
+  numeroDocumento?: string | null;
 
   itens: OrcamentoItem[];
 

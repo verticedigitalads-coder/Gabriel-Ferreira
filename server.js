@@ -950,49 +950,15 @@ app.post(
       const itensHTML = itensLinhas + maoDeObraItemHTML;
 
       /* ==========================================
-🔢 GERAR NÚMERO SEQUENCIAL (PADRÃO ERP)
+🔢 NÚMERO DO DOCUMENTO
 ========================================== */
 
+      // O front manda o numero_documento gravado no orçamento (novos:
+      // ORC-AAAA-NNN; legado: ORC-2026-001, que o PDF sempre mostrou). Sem ele
+      // (app antigo em cache), o mesmo de antes: a busca anon do sequencial
+      // nunca achava nada (RLS) e todo PDF saía ORC-<ano>-001.
       const anoAtual = new Date().getFullYear();
-
-      // 🔥 BUSCAR ÚLTIMO ORÇAMENTO DO ANO
-      let sequencial = 1;
-
-      try {
-        const _respSequencial = await fetch(
-          `${process.env.SUPABASE_URL}/rest/v1/orcamentos?select=numero&numero=like.ORC-${anoAtual}-%25&order=numero.desc&limit=1`,
-          {
-            headers: {
-              apikey: process.env.SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-            },
-          },
-        );
-        const ultimoNumero = await _respSequencial.json();
-
-        if (Array.isArray(ultimoNumero) && ultimoNumero.length > 0) {
-          const ultimo = ultimoNumero[0].numero;
-
-          const partes = ultimo.split('-');
-          const numeroAtual = parseInt(partes[2]);
-
-          sequencial = numeroAtual + 1;
-        }
-      } catch (error) {
-        const fallbackNumber = Date.now().toString().slice(-6);
-        console.error('[PDF] Falha ao buscar sequencial:', error.message);
-        console.warn(
-          '[PDF] Usando número sequencial de fallback:',
-          fallbackNumber,
-        );
-        sequencial = parseInt(fallbackNumber, 10);
-      }
-
-      // 🔥 FORMATA 001, 002, 003...
-      const sequencialFormatado = String(sequencial).padStart(3, '0');
-
-      const numeroFormatado =
-        dados.numero || `ORC-${anoAtual}-${sequencialFormatado}`;
+      const numeroFormatado = dados.numero || `ORC-${anoAtual}-001`;
 
       /* ==========================================
     🔁 SUBSTITUIÇÕES TEMPLATE

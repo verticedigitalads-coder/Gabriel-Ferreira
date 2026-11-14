@@ -50,12 +50,35 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       percentualComissao: data.percentualComissao ?? 0,
     });
 
+    // Número do documento: ORC-<ano>-NNN, sequencial por empresa e por ano. O
+    // maior do ano é calculado aqui (a ordem por texto quebraria depois de
+    // 999). O legado guarda ORC-2026-001, então em 2026 o primeiro novo é 002.
+    const prefixo = `ORC-${new Date().getFullYear()}-`;
+    const { data: doAno, error: erroNumero } = await supabase
+      .from('orcamentos')
+      .select('numero_documento')
+      .eq('workspace_id', workspaceId)
+      .like('numero_documento', `${prefixo}%`);
+
+    if (erroNumero) {
+      console.error('[OrcamentoSlice] Erro ao buscar o número do orçamento:', erroNumero);
+      return;
+    }
+
+    const maior = (doAno || []).reduce((max: number, o: any) => {
+      const n = parseInt(String(o.numero_documento).slice(prefixo.length), 10);
+      return Number.isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    const numeroDocumento = (seq: number) => `${prefixo}${String(seq).padStart(3, '0')}`;
+
     const novo = {
       id: uuid(),
       workspace_id: workspaceId,
       lead_id: data.leadId,
 
-      numero: data.numero || `ORC-${Date.now()}`,
+      // O mesmo número em todo lugar (lista, recibo, arquivo, PDF)
+      numero: numeroDocumento(maior + 1),
+      numero_documento: numeroDocumento(maior + 1),
 
       itens: itensNormalizados,
 
@@ -76,11 +99,21 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
       updated_at: now,
     };
 
-    const { data: inserted, error } = await supabase
-      .from('orcamentos')
-      .insert([novo])
-      .select()
-      .single();
+    const inserir = (linha: typeof novo) =>
+      supabase.from('orcamentos').insert([linha]).select().single();
+
+    let { data: inserted, error } = await inserir(novo);
+
+    // Outro orçamento da empresa pegou o mesmo número ao mesmo tempo (índice
+    // único): tenta uma vez com o seguinte
+    if (error?.code === '23505') {
+      const seguinte = numeroDocumento(maior + 2);
+      ({ data: inserted, error } = await inserir({
+        ...novo,
+        numero: seguinte,
+        numero_documento: seguinte,
+      }));
+    }
 
     if (error) {
       console.error('[OrcamentoSlice] Erro ao criar orçamento:', error);

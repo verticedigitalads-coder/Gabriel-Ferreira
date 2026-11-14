@@ -54,7 +54,7 @@ export function criarOrcamentoFromLead(
     clienteTelefone: lead.telefone || '',
     clienteEndereco: lead.endereco || '',
 
-    numero: `ORC-${Date.now()}`,
+    // numero: o addOrcamento gera o sequencial da empresa
 
     itens,
 

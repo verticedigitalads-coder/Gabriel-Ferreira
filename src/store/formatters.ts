@@ -175,6 +175,7 @@ export const formatOrcamento = (raw: any) => ({
   clienteTelefone: raw.cliente_telefone ?? null,
   clienteEndereco: raw.cliente_endereco ?? null,
   numero: raw.numero,
+  numeroDocumento: raw.numero_documento ?? null,
   itens: raw.itens || [],
   subtotal: Number(raw.subtotal) || 0,
   desconto: Number(raw.desconto) || 0,

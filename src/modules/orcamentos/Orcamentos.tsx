@@ -267,6 +267,9 @@ export function Orcamentos() {
         method: 'POST',
         body: JSON.stringify({
           id: orc.id,
+          // Só o número gravado para o PDF; sem ele (app antigo em cache), o
+          // servidor mostra o mesmo de sempre
+          numero: orc.numeroDocumento || undefined,
           cliente_nome: clienteNome,
           cliente_telefone: clienteTelefone,
           cliente_endereco: clienteEndereco,
