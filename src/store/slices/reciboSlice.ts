@@ -59,11 +59,13 @@ export const createReciboSlice = (set: any, get: any) => ({
 
     if (!workspaceId) {
       console.error('[ReciboSlice] workspaceId está null');
+      get().addToast({ type: 'error', message: 'Erro ao criar recibo' });
       return;
     }
 
     if (!data.orcamentoId) {
       console.error('[ReciboSlice] orcamentoId é obrigatório');
+      get().addToast({ type: 'error', message: 'Erro ao criar recibo' });
       return;
     }
 
@@ -95,6 +97,8 @@ export const createReciboSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[ReciboSlice] Erro ao criar recibo:', error);
+      // Quem chama confere a volta: a tela não pode dizer que criou sem ter criado
+      get().addToast({ type: 'error', message: 'Erro ao criar recibo' });
       return;
     }
 
@@ -141,6 +145,7 @@ export const createReciboSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[ReciboSlice] Erro ao atualizar recibo:', error);
+      get().addToast({ type: 'error', message: 'Erro ao atualizar recibo' });
       return;
     }
 
@@ -178,13 +183,20 @@ export const createReciboSlice = (set: any, get: any) => ({
     const prefixo = `REC-${ano}-`;
 
     // Buscar último recibo do ano (deste workspace) para gerar número sequencial
-    const { data: ultimosRecibos } = await supabase
+    const { data: ultimosRecibos, error: erroNumero } = await supabase
       .from('recibos')
       .select('numero_recibo')
       .eq('workspace_id', workspaceId)
       .like('numero_recibo', `${prefixo}%`)
       .order('numero_recibo', { ascending: false })
       .limit(1);
+
+    // Sem a busca, o número sairia 001 de novo: para antes de emitir
+    if (erroNumero) {
+      console.error('[ReciboSlice] Erro ao buscar o número do recibo:', erroNumero);
+      get().addToast({ type: 'error', message: 'Erro ao emitir recibo' });
+      return;
+    }
 
     let sequencial = 1;
 
@@ -214,6 +226,7 @@ export const createReciboSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[ReciboSlice] Erro ao emitir recibo:', error);
+      get().addToast({ type: 'error', message: 'Erro ao emitir recibo' });
       return;
     }
 

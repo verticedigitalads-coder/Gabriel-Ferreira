@@ -31,7 +31,7 @@ import { clienteCorrespondeBusca } from '@/utils/busca';
 const statusColors: Record<ReciboStatus, string> = {
   pendente:  'bg-[var(--warning-subtle)] text-[var(--warning)]',
   emitido:   'bg-[var(--success-subtle)] text-[var(--success)]',
-  cancelado: 'bg-[var(--bg-surface-2)]  text-[var(--text-disabled)]',
+  cancelado: 'bg-[var(--bg-surface-2)] text-[var(--text-tertiary)]',
 };
 
 const statusLabel: Record<ReciboStatus, string> = {
@@ -124,7 +124,9 @@ export function Recibos() {
   };
 
   const handleEmitir = async (r: Recibo) => {
-    await emitirRecibo(r.id);
+    // Falhou: o slice já mostrou o erro
+    const emitido = await emitirRecibo(r.id);
+    if (!emitido) return;
     addToast({ type: 'success', message: `Recibo emitido com sucesso!` });
   };
 
@@ -201,7 +203,9 @@ export function Recibos() {
 
   const handleConfirmCancelar = async () => {
     if (!cancelTargetId) return;
-    await updateRecibo(cancelTargetId, { status: 'cancelado' });
+    // Falhou: o slice já mostrou o erro e o diálogo fica aberto
+    const cancelado = await updateRecibo(cancelTargetId, { status: 'cancelado' });
+    if (!cancelado) return;
     addToast({ type: 'success', message: 'Recibo cancelado.' });
     setConfirmOpen(false);
     setCancelTargetId(null);
@@ -280,9 +284,12 @@ export function Recibos() {
                   {/* Número, status, cliente e data */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono font-semibold text-[var(--text-primary)]">
-                        {r.numeroRecibo || 'Pendente'}
-                      </span>
+                      {/* Sem número (pendente ou cancelado antes de emitir): fica só o selo */}
+                      {r.numeroRecibo && (
+                        <span className="font-mono font-semibold text-[var(--text-primary)]">
+                          {r.numeroRecibo}
+                        </span>
+                      )}
                       <span
                         className={`font-mono text-[length:var(--text-xs)] font-medium px-2 py-0.5 ${statusColors[r.status]}`}
                       >
@@ -496,6 +503,7 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
   const addRecibo = useStore((state) => state.addRecibo);
   const updateRecibo = useStore((state) => state.updateRecibo);
   const addToast = useStore((state) => state.addToast);
+  const { observacaoPadraoRecibo } = useDefaultSettings();
 
   const hoje = format(new Date(), 'yyyy-MM-dd');
 
@@ -507,7 +515,10 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
   const [dataEmissao, setDataEmissao] = useState(
     recibo?.dataEmissao || hoje,
   );
-  const [observacoes, setObservacoes] = useState(recibo?.observacoes || '');
+  // Recibo novo vem com a observação padrão da empresa; na edição, vale a gravada
+  const [observacoes, setObservacoes] = useState(
+    recibo ? recibo.observacoes || '' : observacaoPadraoRecibo,
+  );
 
   // Ao selecionar lead, preencher clienteNome automaticamente
   const handleLeadChange = (id: string) => {
@@ -551,17 +562,19 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
       return;
     }
 
+    // Falhou: o slice já mostrou o erro e o formulário fica aberto com o que foi digitado
     if (recibo) {
-      await updateRecibo(recibo.id, {
+      const salvo = await updateRecibo(recibo.id, {
         clienteNome,
         descricao,
         valorTotal,
         dataEmissao,
         observacoes,
       });
+      if (!salvo) return;
       addToast({ type: 'success', message: 'Recibo atualizado!' });
     } else {
-      await addRecibo({
+      const criado = await addRecibo({
         orcamentoId,
         leadId: leadId || null,
         clienteNome,
@@ -572,6 +585,7 @@ function ReciboForm({ recibo, onClose }: ReciboFormProps) {
         status: 'pendente',
         itens: [],
       });
+      if (!criado) return;
       addToast({ type: 'success', message: 'Recibo criado!' });
     }
 

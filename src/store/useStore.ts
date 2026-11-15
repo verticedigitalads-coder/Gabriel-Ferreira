@@ -114,9 +114,9 @@ type StoreState = {
   recibos: any[];
   fetchRecibos: (workspaceId: string) => Promise<void>;
   addRecibo: (data: any) => Promise<any>;
-  updateRecibo: (id: string, data: any) => Promise<void>;
+  updateRecibo: (id: string, data: any) => Promise<any>;
   deleteRecibo: (id: string) => Promise<void>;
-  emitirRecibo: (id: string) => Promise<void>;
+  emitirRecibo: (id: string) => Promise<any>;
 
   settings: WorkspaceSettings;
   fetchSettings: (workspaceId: string) => Promise<void>;
