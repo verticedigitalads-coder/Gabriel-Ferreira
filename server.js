@@ -807,6 +807,25 @@ app.use('/assets', express.static(assetsPath));
 ========================================== */
 
 app.post('/api/chat', requireAuth, strictLimiter, async (req, res) => {
+  // Modelo, limite e formato ficam fixos aqui: do app só entram as mensagens e
+  // a temperatura. Os 2 chamadores (ai.service.ts e openaiStrategicService.ts)
+  // mandam system + user, até ~14 mil caracteres.
+  const { messages, temperature } = req.body || {};
+  const mensagensValidas =
+    Array.isArray(messages) &&
+    messages.length >= 1 &&
+    messages.length <= 4 &&
+    messages.every(
+      (m) =>
+        m &&
+        (m.role === 'system' || m.role === 'user') &&
+        typeof m.content === 'string',
+    ) &&
+    messages.reduce((soma, m) => soma + m.content.length, 0) <= 20000;
+  if (!mensagensValidas) {
+    return res.status(400).json({ error: 'Mensagens inválidas' });
+  }
+
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -814,7 +833,16 @@ app.post('/api/chat', requireAuth, strictLimiter, async (req, res) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        max_tokens: 1500,
+        temperature:
+          typeof temperature === 'number' && temperature >= 0 && temperature <= 1
+            ? temperature
+            : 0.2,
+        response_format: { type: 'json_object' },
+      }),
     });
 
     const data = await response.json();
@@ -836,15 +864,23 @@ app.post('/api/help-chat', requireAuth, strictLimiter, async (req, res) => {
 
   try {
     const { message, history, activeModule } = req.body || {};
-    if (!message || typeof message !== 'string') {
+    if (!message || typeof message !== 'string' || message.length > 4000) {
       return res.status(400).json({ error: 'Mensagem inválida' });
     }
 
-    const safeHistory = Array.isArray(history)
+    const historicoValido = Array.isArray(history)
       ? history
           .filter(h => h && (h.role === 'user' || h.role === 'assistant') && typeof h.content === 'string')
           .slice(-6)
       : [];
+    // O HelpPanel manda a pergunta atual também no fim do histórico: ela sai
+    // daqui para não ir duas vezes (app que não mandar continua igual)
+    const ultimo = historicoValido[historicoValido.length - 1];
+    const safeHistory = (
+      ultimo && ultimo.role === 'user' && ultimo.content === message
+        ? historicoValido.slice(0, -1)
+        : historicoValido
+    ).map(h => ({ role: h.role, content: h.content.slice(0, 4000) }));
 
     const priorityStem = HELP_MODULE_TO_DOC[activeModule];
     const orderedStems = Object.keys(helpDocsCache).sort();
@@ -2117,7 +2153,7 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
       .replace(/{{cliente_nome}}/g, escapeHtml(dados.cliente_nome) || 'Cliente')
       .replace(
         /{{cliente_telefone}}/g,
-        escapeHtml(dados.cliente_telefone) || '-',
+        escapeHtml(telefoneFormatado(dados.cliente_telefone)) || '-',
       )
       .replace(
         /{{cliente_endereco}}/g,
