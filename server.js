@@ -53,7 +53,7 @@ function resolveCorDestaque(corDestaque, corPrimaria) {
 
 // ===== Helpers de template v3 (orçamento simples + agrupado) =====
 const fmtBRL = (v) =>
-  Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // Primeira letra maiúscula só na exibição do PDF (o dado salvo não muda).
 // Não mexe em texto que começa com unidade (m, m², m³, kg, cm, mm, un, pç);
@@ -980,6 +980,7 @@ app.post(
       const formatar = (v) =>
         Number(v || 0).toLocaleString('pt-BR', {
           minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
         });
 
       /* ==========================================
@@ -1410,7 +1411,7 @@ app.post(
       }
 
       const formatar = (v) =>
-        Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       const contatoTelefone = empresa_telefone || '(34) 9 9199-8953';
       const contatoEmail = empresa_email || 'flartmetal.uberaba@gmail.com';
@@ -2016,6 +2017,7 @@ app.post('/api/gerar-recibo', requireAuth, strictLimiter, async (req, res) => {
     const formatar = (v) =>
       Number(v || 0).toLocaleString('pt-BR', {
         minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       });
 
     /* ==========================================
