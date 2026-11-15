@@ -3,10 +3,6 @@
 Última atualização: 15/11/2026
 Versão: v2.39.5
 
-> **ATENÇÃO: NÃO fazer push antes de aplicar a migration da entrega 3; sem a policy, o botão falha.**
-> - O `main` local já tem a migration (`9fe5303b`, não aplicada) e o botão "Enviar imagem" (`753096e0`). Qualquer push publica o botão, e sem a policy todo envio dá erro.
-> - Ordem: bloco DO de teste → migration aplicada (modo Manual, com autorização do Gabriel) → push → VPS. Ver "Rodada da logo" e Pendências Manuais.
-
 ## Build
 - TypeScript: 0 erros (tsc --noEmit, 15/11/2026, redesign D5, na árvore e em cópia isolada)
 - Build vite: limpo (15/11/2026, redesign D5, na árvore e em cópia isolada; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
@@ -165,7 +161,9 @@ Versão: v2.39.5
 - **Rodada da logo (14/11/2026):**
   - **Entrega 1** (redução no servidor, `cbc5b4d7`): no ar, segundo o Gabriel.
   - **Entrega 2** (prévia e avisos, `73ea5c70`): no ar e testada pelo Gabriel (prévias, quadrado cinza e aviso de link quebrado).
-  - **Entrega 3** (Storage + "Enviar imagem"): migration (`9fe5303b`) e front (`753096e0`) com commit local, **sem push e com a migration NÃO aplicada**. O bloco DO de teste, a aplicação e o push ficam para segunda (16/11), em modo Manual. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
+  - **Entrega 3** (Storage + "Enviar imagem"):
+    - **Migration aplicada em 15/11/2026, registrada no banco como `20261115152640`** (`logos_upload_por_workspace`). Foi pelo SQL Editor, porque o conector do Supabase barra escrita no schema `storage`.
+    - Front (`753096e0`) com commit local, sem push. O push e a VPS ficam com o Gabriel. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8f86-rodada-da-abstract-quasar.md`.
   - **Diagnóstico:**
     - Não há nem nunca houve ImageMagick no repositório (`git log --all -S magick`: nada; o `server.js` não importa `child_process`).
     - O `urlToBase64` embutia os bytes originais da imagem. Pior: o `filter: grayscale(100%)` do `.watermark` fazia o Chrome rasterizar a marca d'água a 300 dpi do tamanho exibido (1565x1566) em cada página. Isso dava 1,5 a 1,7 MB por página, qualquer que fosse a imagem.
@@ -207,11 +205,12 @@ Versão: v2.39.5
       - link quebrado colado: a imagem é pedida em 720 ms e o aviso aparece 10 ms depois da falha;
       - link corrigido: o aviso some e a imagem carrega;
       - `tsc --noEmit` 0 erros; build limpo.
-  - **Entrega 3, parte sem banco (14/11/2026). NÃO publicar antes da migration:**
-    - **`9fe5303b` — migration `supabase/migrations/20261115000000_logos_upload_por_workspace.sql` (não aplicada; nenhum SQL rodou nesta etapa):**
+  - **Entrega 3, parte sem banco (14/11/2026):**
+    - **Migration `supabase/migrations/20261115000000_logos_upload_por_workspace.sql`** (`9fe5303b`, mais a policy de SELECT em `5b465fdb`; aplicada em 15/11, ver o bloco "Aplicação" abaixo):
       - bucket `logos` com `allowed_mime_types` PNG, JPEG e WebP e `file_size_limit` de 5 MB;
       - policy `logos_insert_pasta_do_workspace` (INSERT, `authenticated`): só na pasta `<workspace_id>/` dos workspaces do usuário, pela subquery de `workspace_members`;
-      - sem UPDATE, sem DELETE e sem SELECT (a leitura segue pela URL pública).
+      - policy `logos_select_pasta_do_workspace` (SELECT, `authenticated`), com a mesma condição. **Motivo:** o 1º bloco DO mostrou `INSERT … RETURNING` recusado (42501) sem policy de SELECT, e o upload não pode depender de a API do Storage não usar RETURNING. Listar pela API mostra só os arquivos da própria empresa: os das outras e os 5 da raiz ficam fora. A URL pública continua valendo para todos;
+      - sem UPDATE e sem DELETE. O DELETE direto também é barrado pelo trigger `protect_objects_delete` (42501).
     - **`753096e0` — front** (`src/utils/reduzirImagem.ts` novo, `Settings.tsx`, `docs/help/configuracoes.md`, `docs/help/primeiros-passos.md`):
       - **`reduzirImagem(file, maxPx)`:** canvas com o lado maior até o máximo, sem ampliar. JPEG continua JPEG (0,9); PNG e WebP viram PNG, que mantém a transparência.
       - **Botão "Enviar imagem"** (secondary, 44 px) embaixo de cada campo, com o mesmo input dinâmico do `handleImport` e `accept="image/png,image/jpeg,image/webp"`.
@@ -229,7 +228,28 @@ Versão: v2.39.5
       - **Sucesso:** toast "Logo enviada e dados da empresa salvos." / "Marca d'água enviada…", e a prévia carrega a imagem enviada.
       - **Regressão:** "Salvar Alterações" com o mesmo log do HEAD (11 chamadas, nenhuma ao Supabase); o atraso de 700 ms da prévia segue valendo; nenhum erro de console.
       - `tsc --noEmit` 0 erros; build limpo.
-    - **Segunda (16/11), em modo Manual:** ver Pendências Manuais.
+  - **Aplicação (15/11/2026, modo Manual).** Tudo pelo SQL Editor: o conector do Supabase recusou o bloco DO nas três tentativas, porque barra escrita no schema `storage`. As leituras (C0, C1 e conferência final) foram pelo MCP.
+    - **Antes (C0 = C1):**
+      - 5 objetos em `logos`;
+      - md5 da linha do bucket `9ea3870163fb8c352a8b70d300fb714f`;
+      - md5 dos objetos `ebbc51250533f57d318032ec56bee69e`;
+      - 0 policies no `storage`; bucket público, sem limites.
+    - **1º bloco DO** (só com a policy de INSERT; sempre aborta, `lock_timeout` de 3s; usuários: o membro da Serralheria `249a8512…`, um UUID sem vínculo e a conta do Gabriel `dd50c052…`, membro de Vértice, FL e Ítalo):
+      - **passou:** própria pasta; a conta do Gabriel nas pastas da FL e do Ítalo;
+      - **recusado com 42501:** pasta da FL; raiz do bucket; `anon`; usuário sem vínculo; a conta do Gabriel na pasta da Serralheria; `INSERT … RETURNING` (por isso entrou a policy de SELECT);
+      - **UPDATE:** 0 linhas;
+      - **DELETE:** recusado pelo trigger (42501). A trava do trigger não foi desligada (decisão do Gabriel).
+      - Depois do bloco, C1 igual ao C0.
+    - **2º bloco DO (v2, com as duas policies):** exatamente o esperado.
+      - `INSERT … RETURNING` passa;
+      - o membro da Serralheria lê 0 linhas na pasta da FL e 0 na raiz, e 2 na própria pasta (controle).
+    - **Script de aplicação** (`BEGIN`, migration, registro em `supabase_migrations.schema_migrations` no formato do `apply_migration`, conferências que abortam a transação se algo diferir, `COMMIT`):
+      - registrada como `20261115152640`, `created_by` com o e-mail de sempre;
+      - bucket público, com 5 MB e PNG/JPEG/WebP, e as outras colunas iguais (md5 sem os limites `05827b8674d17d29327f786972accef5`);
+      - 2 policies (INSERT e SELECT para `authenticated`);
+      - 5 objetos com md5 `ebbc5125…`, igual.
+      - Conferido de novo por SELECT pelo MCP depois da aplicação.
+    - **Falta:** push + VPS e o teste do Gabriel na Serralheria (ver Pendências Manuais).
 - **Teste ponta a ponta, parte 2 (Serralheria Exemplo, 14/11/2026) — entregas 1 e 2 em produção e validadas pelo Gabriel; rodada fechada. Pendente só repetir o `UPDATE` da migration em 16/11 (ver Pendências Manuais):** corrige o que o teste de 14/11 achou no ciclo lead → orçamento → PDF → recibo. Plano aprovado em `C:\Users\gabri\.claude\plans\rodada-corre-es-do-teste-dynamic-summit.md` (itens 1 a 8 e acréscimos A a E).
   - **Duas entregas (decisão do Gabriel, 14/11):**
     1. **Entrega 1 = commits 1 a 11:** push em 14/11 (`b6cc7052`), deploy na Vercel e na VPS, validada pelo Gabriel em produção (PDF do orçamento e do recibo com e sem PIX: conta fecha, extenso, CPF/telefone, data, assinatura e PIX com CRC ok).
@@ -992,17 +1012,9 @@ Versão: v2.39.5
 - ✅ Migração backend para VPS Hetzner (178.104.236.222) — PM2 (`crm-backend`) + Nginx reverse proxy, API pública `https://api.vrtxcrm.com.br` (supera decisão anterior "backend local via ngrok")
 
 ## Pendências Manuais
-- **Rodada da logo, entrega 3, em 16/11/2026, em modo Manual. NÃO fazer push antes do passo 2:**
-  1. **Bloco DO de teste da migration** `20261115000000_logos_upload_por_workspace.sql`, que sempre termina em `RAISE EXCEPTION`, com `lock_timeout` de 3s. Antes e depois, contar `storage.objects` do bucket `logos` (hoje 5) e tirar o md5 da linha do bucket. Como `authenticated` membro da Serralheria:
-     - própria pasta passa;
-     - pasta da FL dá 42501;
-     - raiz do bucket dá 42501;
-     - `INSERT … RETURNING` (informativo);
-     - UPDATE e DELETE afetam 0 linhas;
-     - `anon` e usuário sem membership são recusados.
-  2. **Aplicar a migration** com autorização do Gabriel (`apply_migration`) e registrar a versão gravada no banco. Conferir por SELECT a policy, os limites do bucket e os 5 arquivos intactos.
-  3. **Push** (Vercel) + VPS `git pull origin main && pm2 restart crm-backend`, para o chat de ajuda reler `docs/help`. O mesmo restart põe no ar o `bef50f0f` (valores sempre com 2 casas no PDF, redesign D5); a Vercel e a VPS saem no mesmo dia.
-  4. **Teste do Gabriel na Serralheria:**
+- **Rodada da logo, entrega 3.** A migration já está aplicada (15/11/2026, `20261115152640`). Falta:
+  1. **Push** (Vercel) + VPS `git pull origin main && pm2 restart crm-backend`, para o chat de ajuda reler `docs/help`. O mesmo restart põe no ar o `bef50f0f` (valores sempre com 2 casas no PDF, redesign D5); a Vercel e a VPS saem no mesmo dia.
+  2. **Teste do Gabriel na Serralheria:**
      - enviar a logo e a marca d'água pelo computador e pelo celular;
      - os arquivos caem em `logos/1b246275-…/`, e o campo fica preenchido e salvo;
      - PDF do orçamento e do recibo com logo, abaixo de 1 MB;
