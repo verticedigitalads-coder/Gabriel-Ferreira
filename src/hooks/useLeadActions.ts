@@ -20,9 +20,14 @@ export function useLeadActions() {
   );
 
   const copyPhone = useCallback(
-    (telefone: string) => {
-      navigator.clipboard.writeText(telefone);
-      addToast({ type: 'success', message: 'Telefone copiado!' });
+    async (telefone: string) => {
+      // Sem permissão (ou sem clipboard no navegador) a cópia falha: avisa em vez de dizer que copiou
+      try {
+        await navigator.clipboard.writeText(telefone);
+        addToast({ type: 'success', message: 'Telefone copiado!' });
+      } catch {
+        addToast({ type: 'error', message: 'Não foi possível copiar o telefone.' });
+      }
     },
     [addToast],
   );

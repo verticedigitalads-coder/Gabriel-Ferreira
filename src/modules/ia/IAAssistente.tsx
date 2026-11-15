@@ -171,7 +171,7 @@ export function IAAssistente() {
       ? `${observacoesExistentes}\n\n---\n${blocoPlano}`
       : blocoPlano
 
-    await updateLead(selectedLead.id, {
+    const leadOk = await updateLead(selectedLead.id, {
   resumo: analysis.resumoExecutivo,
   proximoContato: analysis.dataIdealFollowUp,
   observacoes: observacoesAtualizadas,
@@ -192,6 +192,8 @@ export function IAAssistente() {
     },
   ],
 })
+    // Falhou: o leadSlice já mostrou o erro; a prévia fica aberta e nenhuma tarefa é criada
+    if (!leadOk) return
 
     let tarefaOk = true
     if (analysis.nivelDeUrgencia >= 3) {
@@ -730,11 +732,14 @@ export function IAAssistente() {
                     size="sm"
                     variant="secondary"
                     className="rounded-none"
-                    onClick={() =>
-                      navigator.clipboard.writeText(
-                        analysis.mensagemSugeridaWhatsApp
-                      )
-                    }
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(analysis.mensagemSugeridaWhatsApp)
+                        addToast({ type: 'success', message: 'Mensagem copiada!' })
+                      } catch {
+                        addToast({ type: 'error', message: 'Não foi possível copiar. Selecione o texto e copie.' })
+                      }
+                    }}
                   >
                     Copiar Mensagem
                   </Button>
