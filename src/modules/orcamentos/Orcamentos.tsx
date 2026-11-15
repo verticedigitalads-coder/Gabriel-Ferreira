@@ -1183,7 +1183,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
             clienteNome: data.clienteNome || 'Cliente',
             clienteTelefone: data.clienteTelefone || '',
             clienteEndereco: data.clienteEndereco || '',
-            descricao: `Serviços ref. orçamento ${orcamento?.numero || ''}`,
+            descricao: `Serviços ref. orçamento ${salvo.numero || ''}`,
             itens: data.itens,
             valorTotal: salvo.total,
             status: 'pendente',
