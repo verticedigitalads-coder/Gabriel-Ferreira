@@ -126,6 +126,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[ContasReceberSlice] Erro ao deletar conta:', error);
+      get().addToast({ type: 'error', message: 'Erro ao excluir conta' });
       return;
     }
 
@@ -155,6 +156,7 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
 
     if (error) {
       console.error('[ContasReceberSlice] Erro ao marcar como recebido:', error);
+      get().addToast({ type: 'error', message: 'Erro ao marcar como recebido' });
       return;
     }
 
@@ -164,13 +166,20 @@ export const createContasReceberSlice = (_set: any, get: any) => ({
       ),
     }));
 
-    // Cria transação de receita no módulo Financeiro
-    await get().addTransaction({
+    // Cria transação de receita no módulo Financeiro. Se falhar, a conta já
+    // está como recebida: avisa para lançar à mão (o addTransaction já mostrou o erro)
+    const receita = await get().addTransaction({
       descricao: conta.descricao,
       valor: conta.valor,
       tipo: 'receita',
       data: today,
     });
+    if (!receita) {
+      get().addToast({
+        type: 'warning',
+        message: 'Conta marcada como recebida, mas a receita não entrou no Financeiro. Lance a receita no Financeiro.',
+      });
+    }
 
     return formatContaReceber(updated);
   },

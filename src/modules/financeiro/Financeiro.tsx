@@ -111,6 +111,14 @@ const isDespesaTipo = (tipo: string) =>
 
 // ─── exportar CSV ───────────────────────────────────────────────────────────
 
+// Texto digitado pelo usuário: entre aspas, com as aspas internas dobradas, e
+// apóstrofo na frente do que começa com =, +, - ou @ (o Excel não roda como fórmula)
+function celulaTexto(valor?: string | null) {
+  const texto = valor ?? '';
+  const seguro = /^[=+\-@]/.test(texto) ? `'${texto}` : texto;
+  return `"${seguro.replace(/"/g, '""')}"`;
+}
+
 function exportCSV(transactions: Transaction[], month: string) {
   const header = [
     'Data',
@@ -129,8 +137,8 @@ function exportCSV(transactions: Transaction[], month: string) {
     return [
       normalizeDate(t.data),
       t.tipo,
-      `"${t.descricao}"`,
-      t.categoria,
+      celulaTexto(t.descricao),
+      celulaTexto(t.categoria),
       t.valor.toFixed(2).replace('.', ','),
       statusConfig[status].label,
       t.dataVencimento || '',
@@ -282,7 +290,9 @@ export function Financeiro() {
 
   const handleConfirmPago = async () => {
     if (!pagarModal) return;
-    await marcarComoPago(pagarModal.id, formaPagamentoSelecionada);
+    // Falhou: o slice já mostrou o erro e o modal fica aberto
+    const pago = await marcarComoPago(pagarModal.id, formaPagamentoSelecionada);
+    if (!pago) return;
     setPagarModal(null);
   };
 
@@ -692,6 +702,8 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
   const [formaPagamento, setFormaPagamento] = useState<string>(
     initialData?.formaPagamento || '',
   );
+  // Trava de clique duplo: o botão fica desabilitado enquanto grava
+  const [salvando, setSalvando] = useState(false);
 
   const ehDespesa = isDespesaTipo(tipo);
 
@@ -713,13 +725,17 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
       if (formaPagamento) payload.formaPagamento = formaPagamento;
     }
 
-    if (isEditing) {
-      await updateTransaction(initialData.id, payload);
-    } else {
-      await addTransaction(payload);
+    // Falhou: o slice já mostrou o erro e o formulário fica aberto
+    setSalvando(true);
+    try {
+      const salvo = isEditing
+        ? await updateTransaction(initialData.id, payload)
+        : await addTransaction(payload);
+      if (!salvo) return;
+      onClose();
+    } finally {
+      setSalvando(false);
     }
-
-    onClose();
   };
 
   const leadOptions = [
@@ -747,6 +763,7 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
         <Input
           label="Valor (R$)"
           type="number"
+          step="0.01"
           value={valor}
           onChange={(e) => setValor(Number(e.target.value))}
           required
@@ -805,7 +822,7 @@ function TransactionForm({ onClose, initialData }: { onClose: () => void; initia
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancelar
         </Button>
-        <Button type="submit">{isEditing ? 'Salvar Alterações' : 'Adicionar'}</Button>
+        <Button type="submit" disabled={salvando}>{isEditing ? 'Salvar Alterações' : 'Adicionar'}</Button>
       </div>
     </form>
   );

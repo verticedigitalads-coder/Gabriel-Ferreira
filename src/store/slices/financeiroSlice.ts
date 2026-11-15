@@ -38,8 +38,10 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
     const { workspaceId } = get();
     const now = new Date().toISOString();
 
+    // Toda falha mostra o erro aqui; quem chama confere a volta antes de fechar
     if (!workspaceId) {
       console.error('[FinanceiroSlice] workspaceId não encontrado');
+      get().addToast({ type: 'error', message: 'Erro ao salvar transação' });
       return;
     }
 
@@ -72,6 +74,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[FinanceiroSlice] Erro ao criar transação:', error);
+      get().addToast({ type: 'error', message: 'Erro ao salvar transação' });
       return;
     }
 
@@ -119,6 +122,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[FinanceiroSlice] Erro ao atualizar transação:', error);
+      get().addToast({ type: 'error', message: 'Erro ao atualizar transação' });
       return;
     }
 
@@ -151,6 +155,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[FinanceiroSlice] Erro ao deletar transação:', error);
+      get().addToast({ type: 'error', message: 'Erro ao excluir transação' });
       return;
     }
 
@@ -179,6 +184,7 @@ export const createFinanceiroSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[FinanceiroSlice] Erro ao marcar como pago:', error);
+      get().addToast({ type: 'error', message: 'Erro ao marcar como pago' });
       return;
     }
 

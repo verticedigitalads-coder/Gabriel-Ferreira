@@ -415,6 +415,8 @@ function ContaReceberForm({
   );
   const [leadId, setLeadId] = useState(initialData?.leadId || '');
   const [observacao, setObservacao] = useState(initialData?.observacao || '');
+  // Trava de clique duplo: o botão fica desabilitado enquanto grava
+  const [salvando, setSalvando] = useState(false);
 
   const leadOptions = [
     { value: '', label: '— Sem lead —' },
@@ -434,14 +436,19 @@ function ContaReceberForm({
       observacao: observacao || null,
     };
 
-    if (isEditing) {
-      const result = await updateContaReceber(initialData.id, payload);
-      if (!result) return;
-    } else {
-      const result = await addContaReceber(payload);
-      if (!result) return;
+    setSalvando(true);
+    try {
+      if (isEditing) {
+        const result = await updateContaReceber(initialData.id, payload);
+        if (!result) return;
+      } else {
+        const result = await addContaReceber(payload);
+        if (!result) return;
+      }
+      onClose();
+    } finally {
+      setSalvando(false);
     }
-    onClose();
   };
 
   return (
@@ -458,6 +465,7 @@ function ContaReceberForm({
         <Input
           label="Valor (R$)"
           type="number"
+          step="0.01"
           value={valor}
           onChange={(e) => setValor(Number(e.target.value))}
           required
@@ -506,7 +514,7 @@ function ContaReceberForm({
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancelar
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={salvando}>
           {isEditing ? 'Salvar Alterações' : 'Adicionar'}
         </Button>
       </div>
