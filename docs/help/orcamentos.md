@@ -56,3 +56,6 @@ Na tela pequena ficam visíveis só PDF e PIX. Para editar, excluir ou colher as
 
 **Dá para remover uma assinatura coletada?**
 Pela tela, não — depois de assinado, o card mostra o selo "Assinado" em definitivo. Confirme com o cliente antes de coletar.
+
+**O app não deixa salvar e fala de item sem descrição.**
+Todo item com valor precisa de descrição: sem ela, ele não aparece no PDF. Escreva o que é o item ou apague a linha.
