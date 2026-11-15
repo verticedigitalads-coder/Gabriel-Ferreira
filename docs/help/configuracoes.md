@@ -6,7 +6,7 @@ Dados e identidade da sua empresa: logo, cores, PIX e textos padrão que aparece
 
 A tela tem 4 abas:
 
-- **Empresa** — nome, CNPJ, telefone, e-mail, endereço, Instagram/site, logos e as cores dos seus PDFs (com pré-visualização).
+- **Empresa** — nome, CNPJ, telefone, e-mail, endereço, Instagram/site, logos e as cores dos seus PDFs (com pré-visualização), e a meta de receita do mês.
 - **Documentos** — padrões dos orçamentos e recibos: validade, multiplicador de mão de obra, comissão, observações padrão, texto de apresentação, condições de contrato e a assinatura da empresa.
 - **Pagamentos** — métodos de pagamento exibidos no rodapé dos PDFs e os dados PIX: tipo da chave, chave, nome do recebedor e cidade.
 - **Dados** — backup, importação de leads por planilha e ações de limpeza.
@@ -47,6 +47,9 @@ Um acréscimo automático nos orçamentos novos. Ex.: 1.1 = +10% sobre os itens;
 
 **Para que servem as observações padrão?**
 São textos que já vêm preenchidos em todo orçamento (ou recibo) novo — condições de pagamento, prazo de instalação etc. Você pode editar em cada documento.
+
+**Para que serve a meta de receita do mês?**
+O Dashboard compara a receita provável com ela (barra e %) e avisa quando ela fica abaixo da metade. Deixe 0 para não usar meta.
 
 **Posso automatizar algo nas condições de contrato?**
 Sim: escreva `{{validade}}` no texto e o número de dias de validade do orçamento entra sozinho no PDF.

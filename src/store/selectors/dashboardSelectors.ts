@@ -6,7 +6,8 @@ export const useDashboardStats = (): DashboardStats => {
 
   const leads = useStore(state => state.leads)
   const transactions = useStore(state => state.transactions)
-  const metaMensal = useStore(state => state.metaMensal)
+  // Meta da empresa (Configurações → Empresa); 0 = sem meta
+  const metaMensal = useStore(state => state.settings.metaMensal)
   const tasks = useStore(state => state.operacionalTasks)
 
   const hojeDate = new Date()

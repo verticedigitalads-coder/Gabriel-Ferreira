@@ -568,7 +568,9 @@ export function Dashboard() {
                   )}
                   <p className="ed-mono mt-2 text-[var(--text-tertiary)]">
                     {pctMeta !== null && `${pctMeta.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da meta · `}
-                    <span className="ed-mono text-[var(--text-secondary)]">Meta {formatCurrency(stats.metaMensal)}</span>
+                    <span className="ed-mono text-[var(--text-secondary)]">
+                      {stats.metaMensal > 0 ? `Meta ${formatCurrency(stats.metaMensal)}` : 'Meta não definida'}
+                    </span>
                   </p>
                 </div>
               </LinhaReceita>

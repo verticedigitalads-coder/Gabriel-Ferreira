@@ -54,6 +54,7 @@ export function Settings() {
   const [empresaInstagram, setEmpresaInstagram] = useState('');
   const [corPrimaria, setCorPrimaria] = useState('#ff6a00');
   const [corDestaque, setCorDestaque] = useState('');
+  const [metaMensal, setMetaMensal] = useState(0);
 
   // ─── Documentos form state ────────────────────────────────
   const [validadePadrao, setValidadePadrao] = useState(15);
@@ -90,6 +91,7 @@ export function Settings() {
     if (mudou('empresaInstagram')) setEmpresaInstagram(settings.empresaInstagram || '');
     if (mudou('corPrimaria')) setCorPrimaria(settings.corPrimaria || '#ff6a00');
     if (mudou('corDestaque')) setCorDestaque(settings.corDestaque || '');
+    if (mudou('metaMensal')) setMetaMensal(settings.metaMensal ?? 0);
     if (mudou('validadePadraoOrcamento')) setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
     if (mudou('multiplicadorPadrao')) setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
     if (mudou('percentualComissao')) setPercentualComissao(settings.percentualComissao ?? 0);
@@ -134,6 +136,7 @@ export function Settings() {
         empresaInstagram,
         corPrimaria,
         corDestaque,
+        metaMensal,
         ...extra,
       });
       addToast({ type: 'success', message: mensagem });
@@ -775,6 +778,18 @@ export function Settings() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="md:max-w-xs">
+            <Input
+              label="Meta de receita do mês (R$)"
+              type="number"
+              step="0.01"
+              min="0"
+              value={metaMensal}
+              onChange={e => setMetaMensal(Number(e.target.value))}
+            />
+            <FieldHint>Usada no Dashboard para comparar com a receita provável. Deixe 0 para não usar meta.</FieldHint>
           </div>
 
           <div className="pt-2">

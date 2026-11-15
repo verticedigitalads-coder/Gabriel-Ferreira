@@ -24,6 +24,8 @@ export interface WorkspaceSettings {
   nomeRecebedorPix?: string;
   cidadePix?: string;
   assinaturaEmpresa?: string;
+  // Meta de receita do mês (Dashboard). 0 = sem meta
+  metaMensal: number;
 }
 
 const DEFAULT_SETTINGS: WorkspaceSettings = {
@@ -50,6 +52,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
   nomeRecebedorPix: '',
   cidadePix: '',
   assinaturaEmpresa: '',
+  metaMensal: 0,
 };
 
 // Mapeamento camelCase → snake_case (key do banco)
@@ -77,6 +80,7 @@ const CAMEL_TO_SNAKE: Record<keyof WorkspaceSettings, string> = {
   nomeRecebedorPix: 'nome_recebedor_pix',
   cidadePix: 'cidade_pix',
   assinaturaEmpresa: 'assinatura_empresa',
+  metaMensal: 'meta_mensal',
 };
 
 // Mapeamento inverso snake_case → camelCase
@@ -109,7 +113,7 @@ export const createSettingsSlice = (set: any, get: any) => ({
       if (!camelKey) continue;
 
       const val = row.value;
-      if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao') {
+      if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao' || camelKey === 'metaMensal') {
         (merged as any)[camelKey] = Number(val) || DEFAULT_SETTINGS[camelKey]; // TODO: tipar quando migrar store
       } else {
         (merged as any)[camelKey] = val ?? ''; // TODO: tipar quando migrar store
@@ -148,7 +152,7 @@ export const createSettingsSlice = (set: any, get: any) => ({
     if (camelKey) {
       set((state: any) => {
         const updated = { ...state.settings };
-        if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao') {
+        if (camelKey === 'validadePadraoOrcamento' || camelKey === 'multiplicadorPadrao' || camelKey === 'percentualComissao' || camelKey === 'metaMensal') {
           (updated as any)[camelKey] = Number(value) || DEFAULT_SETTINGS[camelKey]; // TODO: tipar quando migrar store
         } else {
           (updated as any)[camelKey] = value; // TODO: tipar quando migrar store
