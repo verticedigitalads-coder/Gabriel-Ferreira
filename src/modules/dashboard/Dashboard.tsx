@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { CrmHealthReasons, type HealthReason } from './CrmHealthReasons';
+import { contaEmAberto, contaEmAtraso } from '@/domain/contasReceber/situacaoConta';
 
 // ── Redesign D1: peças visuais do Dashboard (só UI; os números chegam prontos) ──
 
@@ -171,7 +172,8 @@ export function Dashboard() {
     const mEnd = endOfMonth(now);
     return contasReceber
       .filter(c => {
-        if (c.status !== 'pendente') return false;
+        // Em aberto: pendente ou marcada como atrasada (mesma regra da tela de Contas)
+        if (!contaEmAberto(c)) return false;
         return isWithinInterval(parseISO(c.dataVencimento), { start: mStart, end: mEnd });
       })
       .reduce((sum, c) => sum + (c.valor ?? 0), 0);
@@ -259,14 +261,15 @@ export function Dashboard() {
       });
     }
 
-    const contasAtrasadas = contasReceber.filter(c => c.status === 'atrasado');
+    // Marcada como atrasada ou pendente vencida (mesma regra da tela de Contas e do sino)
+    const contasAtrasadas = contasReceber.filter(contaEmAtraso);
     if (contasAtrasadas.length > 0) {
       r.push({
         icon: 'financeiro',
         label: `${contasAtrasadas.length} conta(s) a receber atrasada(s)`,
         severity: 'crit',
-        actionLabel: 'Ver financeiro',
-        onAction: () => setActiveModule('financeiro'),
+        actionLabel: 'Ver contas a receber',
+        onAction: () => setActiveModule('contas-receber'),
       });
     }
 

@@ -25,6 +25,7 @@ import {
   CheckCheck,
 } from 'lucide-react';
 import type { ContaReceberStatus, FormaRecebimento } from '@/types';
+import { contaEmAberto, contaEmAtraso } from '@/domain/contasReceber/situacaoConta';
 
 const statusOptions = [
   { value: 'pendente', label: 'Pendente' },
@@ -111,20 +112,18 @@ export function ContasReceber() {
       isWithinInterval(parseISO(c.dataVencimento), { start: monthStart, end: monthEnd }),
     );
 
+    // Em aberto no mês: pendente ou marcada como atrasada
     const pendente = allThisMonth
-      .filter((c) => c.status === 'pendente')
+      .filter(contaEmAberto)
       .reduce((sum, c) => sum + (c.valor ?? 0), 0);
 
     const recebido = allThisMonth
       .filter((c) => c.status === 'recebido')
       .reduce((sum, c) => sum + (c.valor ?? 0), 0);
 
+    // Em atraso, em todos os meses: marcada como atrasada ou pendente vencida
     const atrasado = contasReceber
-      .filter((c) => {
-        const venc = parseISO(c.dataVencimento);
-        venc.setHours(0, 0, 0, 0);
-        return c.status === 'pendente' && venc < today;
-      })
+      .filter(contaEmAtraso)
       .reduce((sum, c) => sum + (c.valor ?? 0), 0);
 
     const proximosVencimentos = contasReceber.filter((c) => {
@@ -307,7 +306,7 @@ export function ContasReceber() {
                       </div>
 
                       <div className="flex gap-1 shrink-0 ml-auto md:ml-0">
-                        {conta.status === 'pendente' && (
+                        {contaEmAberto(conta) && (
                           <Button
                             variant="ghost"
                             size="sm"

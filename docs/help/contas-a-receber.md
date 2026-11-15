@@ -19,7 +19,7 @@ Controle do que ainda vai entrar: parcelas, vencimentos e cobranças pendentes d
 3. Toque em Adicionar.
 
 ### Dar baixa em um recebimento
-1. Localize a conta pendente.
+1. Localize a conta pendente ou atrasada.
 2. Toque no botão de check duplo.
 3. Pronto: a conta vira "Recebido" e a receita entra automaticamente no Financeiro.
 
@@ -34,10 +34,10 @@ Controle do que ainda vai entrar: parcelas, vencimentos e cobranças pendentes d
 Não. Ao marcar como recebido, a receita é criada automaticamente no Financeiro. Lançar de novo duplica o valor.
 
 **Qual a diferença entre o selo "Vencida" e o status "Atrasado"?**
-O selo "Vencida" aparece sozinho em qualquer conta pendente com o vencimento passado. O status "Atrasado" é uma marcação manual, se você quiser classificar assim. Na prática, o selo já avisa o atraso sem você fazer nada.
+O selo "Vencida" aparece sozinho em qualquer conta pendente com o vencimento passado. O status "Atrasado" é uma marcação manual. Para o sistema, as duas valem o mesmo: entram no Total Atrasado, no aviso do sino e na Saúde do CRM, e podem receber baixa pelo botão de check duplo.
 
 **Os cartões do topo mudam quando troco o mês?**
-Em parte. "Total Pendente" e "Recebido este Mês" seguem o mês selecionado; "Total Atrasado" e "Vencem em 3 dias" olham todas as contas, independentemente do mês — para nenhum atraso passar batido.
+Em parte. "Total Pendente" (o que está em aberto, pendente ou atrasado, com vencimento no mês) e "Recebido este Mês" seguem o mês selecionado; "Total Atrasado" e "Vencem em 3 dias" olham todas as contas, independentemente do mês — para nenhum atraso passar batido.
 
 **Vendi parcelado. Crio uma conta por parcela?**
 Sim — crie uma conta para cada parcela, com o vencimento de cada uma. Assim os alertas de vencimento funcionam parcela a parcela.

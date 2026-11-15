@@ -4,6 +4,7 @@ import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
 import { useNotifications } from '@/hooks/useNotifications';
 import { differenceInDays, parseISO } from 'date-fns';
 import { Bell, AlertCircle, DollarSign, CheckSquare, Package } from 'lucide-react';
+import { contaEmAtraso } from '@/domain/contasReceber/situacaoConta';
 
 export function NotificationsDropdown() {
   const leads = useStore(state => state.leads);
@@ -35,7 +36,8 @@ export function NotificationsDropdown() {
     l.ultimoContato != null &&
     differenceInDays(now, parseISO(l.ultimoContato)) >= 5
   ).length;
-  const financeiroCount = contasReceber.filter(c => c.status === 'atrasado').length;
+  // Marcada como atrasada ou pendente vencida (mesma regra da tela de Contas)
+  const financeiroCount = contasReceber.filter(contaEmAtraso).length;
   const tarefasCount = stats.tarefasHoje + stats.tarefasAtrasadas;
   const estoqueCount = materiais.filter(m => m.estoque <= (m.estoqueMinimo ?? 0)).length;
 
