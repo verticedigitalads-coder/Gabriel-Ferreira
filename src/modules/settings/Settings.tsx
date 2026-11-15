@@ -1,6 +1,6 @@
 import { Building2, FileText, Download, Upload, AlertTriangle, Trash2, Database, PenTool, CreditCard } from 'lucide-react';
 import { SignaturePad } from '@/components/ui/SignaturePad';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import { useMaiusculaAuto } from '@/hooks/useMaiusculaAuto';
 import { supabase } from '@/lib/supabase';
@@ -71,32 +71,38 @@ export function Settings() {
   const [cidadePix, setCidadePix] = useState('');
   const [savingPagamentos, setSavingPagamentos] = useState(false);
 
-  // Popula formulários quando settings carrega
+  // Popula formulários quando settings carrega. Depois da 1ª carga, só repõe o
+  // campo cuja chave mudou: gravar uma chave sozinha (assinatura, logo) não
+  // desfaz o que está digitado e não salvo nas outras abas.
+  const settingsAnterior = useRef<typeof settings | null>(null);
   useEffect(() => {
     if (!settings) return;
-    setEmpresaNome(settings.empresaNome || '');
-    setEmpresaTelefone(settings.empresaTelefone || '');
-    setEmpresaEmail(settings.empresaEmail || '');
-    setEmpresaEndereco(settings.empresaEndereco || '');
-    setEmpresaCnpj(settings.empresaCnpj || '');
-    setEmpresaLogoUrl(settings.empresaLogoUrl || '');
-    setEmpresaLogoBgUrl(settings.empresaLogoBgUrl || '');
-    setEmpresaInstagram(settings.empresaInstagram || '');
-    setCorPrimaria(settings.corPrimaria || '#ff6a00');
-    setCorDestaque(settings.corDestaque || '');
-    setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
-    setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
-    setPercentualComissao(settings.percentualComissao ?? 0);
-    setObsPadraoOrcamento(settings.observacaoPadraoOrcamento || '');
-    setObsPadraoRecibo(settings.observacaoPadraoRecibo || '');
-    setTextoApresentacao(settings.textoApresentacao || '');
-    setCondicoesContrato(settings.condicoesContrato || '');
-    setMetodosPagamento(settings.metodosPagamento || '');
-    setChavePix(settings.chavePix || '');
+    const antes = settingsAnterior.current;
+    settingsAnterior.current = settings;
+    const mudou = (k: keyof typeof settings) => !antes || antes[k] !== settings[k];
+    if (mudou('empresaNome')) setEmpresaNome(settings.empresaNome || '');
+    if (mudou('empresaTelefone')) setEmpresaTelefone(settings.empresaTelefone || '');
+    if (mudou('empresaEmail')) setEmpresaEmail(settings.empresaEmail || '');
+    if (mudou('empresaEndereco')) setEmpresaEndereco(settings.empresaEndereco || '');
+    if (mudou('empresaCnpj')) setEmpresaCnpj(settings.empresaCnpj || '');
+    if (mudou('empresaLogoUrl')) setEmpresaLogoUrl(settings.empresaLogoUrl || '');
+    if (mudou('empresaLogoBgUrl')) setEmpresaLogoBgUrl(settings.empresaLogoBgUrl || '');
+    if (mudou('empresaInstagram')) setEmpresaInstagram(settings.empresaInstagram || '');
+    if (mudou('corPrimaria')) setCorPrimaria(settings.corPrimaria || '#ff6a00');
+    if (mudou('corDestaque')) setCorDestaque(settings.corDestaque || '');
+    if (mudou('validadePadraoOrcamento')) setValidadePadrao(settings.validadePadraoOrcamento ?? 15);
+    if (mudou('multiplicadorPadrao')) setMultiplicadorPadrao(settings.multiplicadorPadrao ?? 1);
+    if (mudou('percentualComissao')) setPercentualComissao(settings.percentualComissao ?? 0);
+    if (mudou('observacaoPadraoOrcamento')) setObsPadraoOrcamento(settings.observacaoPadraoOrcamento || '');
+    if (mudou('observacaoPadraoRecibo')) setObsPadraoRecibo(settings.observacaoPadraoRecibo || '');
+    if (mudou('textoApresentacao')) setTextoApresentacao(settings.textoApresentacao || '');
+    if (mudou('condicoesContrato')) setCondicoesContrato(settings.condicoesContrato || '');
+    if (mudou('metodosPagamento')) setMetodosPagamento(settings.metodosPagamento || '');
+    if (mudou('chavePix')) setChavePix(settings.chavePix || '');
     // cpf e cnpj: valores antigos do seletor que ficava em Documentos (hoje é cpf_cnpj).
-    setTipoChavePix(settings.tipoChavePix === 'cpf' || settings.tipoChavePix === 'cnpj' ? 'cpf_cnpj' : settings.tipoChavePix || '');
-    setNomeRecebedorPix(settings.nomeRecebedorPix || '');
-    setCidadePix(settings.cidadePix || '');
+    if (mudou('tipoChavePix')) setTipoChavePix(settings.tipoChavePix === 'cpf' || settings.tipoChavePix === 'cnpj' ? 'cpf_cnpj' : settings.tipoChavePix || '');
+    if (mudou('nomeRecebedorPix')) setNomeRecebedorPix(settings.nomeRecebedorPix || '');
+    if (mudou('cidadePix')) setCidadePix(settings.cidadePix || '');
   }, [settings]);
 
   useEffect(() => {
@@ -140,7 +146,7 @@ export function Settings() {
 
   // ─── Enviar imagem (logo ou marca d'água) ─────────────────
   // Reduz no aparelho, sobe para logos/<workspace>/ com nome novo e salva a aba
-  // Empresa junto: assim o reset do useEffect não apaga o que estiver digitado.
+  // Empresa junto (o toast avisa).
   const handleEnviarImagem = (slot: 'topo' | 'fundo') => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -251,6 +257,12 @@ export function Settings() {
           supabase.from('fornecedores').select('*').eq('workspace_id', workspaceId),
         ]);
 
+      // Sem uma das leituras, o backup sairia incompleto: não baixa nada
+      if ([leadsRes, orcRes, txRes, notasRes, recibosRes, tasksRes, fornRes].some((r) => r.error)) {
+        addToast({ type: 'error', message: 'Erro ao exportar backup: não foi possível ler todos os dados.' });
+        return;
+      }
+
       const backup = {
         exportedAt: new Date().toISOString(),
         workspaceId,
@@ -292,12 +304,19 @@ export function Settings() {
         try {
           if (file.name.endsWith('.csv')) {
             const linhas = content.split('\n').filter(l => l.trim() !== '');
+            if (linhas.length < 2) {
+              addToast({ type: 'error', message: 'Nenhum lead encontrado no arquivo.' });
+              return;
+            }
             const cabecalho = linhas[0].split(',');
+            // addLead devolve undefined na falha: conta o que entrou e o que não entrou
+            let importados = 0;
+            let falhas = 0;
             for (let i = 1; i < linhas.length; i++) {
               const valores = linhas[i].split(',');
               const obj: any = {};
               cabecalho.forEach((col, idx) => { obj[col.trim()] = valores[idx]?.trim(); });
-              await addLead({
+              const criado = await addLead({
                 nome: obj.nome || '',
                 telefone: obj.telefone || '',
                 email: obj.email || '',
@@ -311,8 +330,16 @@ export function Settings() {
                 resumo: '',
                 observacoes: obj.observacoes || '',
               });
+              if (criado) importados++;
+              else falhas++;
             }
-            addToast({ type: 'success', message: 'Leads CSV importados com sucesso!' });
+            if (falhas === 0) {
+              addToast({ type: 'success', message: `${importados} lead(s) importado(s)!` });
+            } else if (importados === 0) {
+              addToast({ type: 'error', message: 'Nenhum lead foi importado. Tente de novo.' });
+            } else {
+              addToast({ type: 'warning', message: `${importados} lead(s) importado(s), ${falhas} não entraram.` });
+            }
           } else {
             addToast({ type: 'error', message: 'Apenas arquivos CSV são suportados para importação' });
           }
@@ -326,19 +353,22 @@ export function Settings() {
     input.click();
   };
 
-  // ─── Demo: Gerar seed ─────────────────────────────────────
-  const handleGenerateSeed = async () => {
-    if (!window.confirm('Gerar dados de exemplo?')) return;
-    if (!workspaceId) return;
-    setLoadingDemo(true);
-    try {
-      await initialize(workspaceId);
-      addToast({ type: 'success', message: 'Dados de exemplo gerados!' });
-    } catch {
-      addToast({ type: 'error', message: 'Erro ao gerar dados' });
-    } finally {
-      setLoadingDemo(false);
+  // ─── Apagar tabelas em ordem ──────────────────────────────
+  // Para no primeiro erro e diz o que já saiu (Limpar Financeiro e Reset)
+  const apagarEmOrdem = async (ws: string, tabelas: [string, string][]) => {
+    const apagadas: string[] = [];
+    for (const [tabela, nome] of tabelas) {
+      const { error } = await supabase.from(tabela).delete().eq('workspace_id', ws);
+      if (error) {
+        addToast({
+          type: 'error',
+          message: `Erro ao apagar ${nome}. ${apagadas.length ? `Já foram apagados: ${apagadas.join(', ')}.` : 'Nada foi apagado.'}`,
+        });
+        return false;
+      }
+      apagadas.push(nome);
     }
+    return true;
   };
 
   // ─── Demo: Limpar Leads ───────────────────────────────────
@@ -364,12 +394,15 @@ export function Settings() {
     if (!window.confirm('Deseja apagar ORÇAMENTOS, TRANSAÇÕES, NOTAS e RECIBOS? Esta ação não pode ser desfeita.')) return;
     setLoadingDemo(true);
     try {
-      await supabase.from('recibos').delete().eq('workspace_id', workspaceId);
-      await supabase.from('orcamentos').delete().eq('workspace_id', workspaceId);
-      await supabase.from('transactions').delete().eq('workspace_id', workspaceId);
-      await supabase.from('notas').delete().eq('workspace_id', workspaceId);
+      const ok = await apagarEmOrdem(workspaceId, [
+        ['recibos', 'recibos'],
+        ['orcamentos', 'orçamentos'],
+        ['transactions', 'transações'],
+        ['notas', 'notas'],
+      ]);
+      // Recarrega nos dois casos: com falha no meio, parte já foi apagada
       await initialize(workspaceId);
-      addToast({ type: 'success', message: 'Dados financeiros removidos.' });
+      if (ok) addToast({ type: 'success', message: 'Dados financeiros removidos.' });
     } catch {
       addToast({ type: 'error', message: 'Erro ao limpar financeiro' });
     } finally {
@@ -386,20 +419,25 @@ export function Settings() {
     }
     setLoadingDemo(true);
     try {
-      await supabase.from('recibos').delete().eq('workspace_id', workspaceId);
-      await supabase.from('notas').delete().eq('workspace_id', workspaceId);
-      await supabase.from('orcamentos').delete().eq('workspace_id', workspaceId);
-      await supabase.from('transactions').delete().eq('workspace_id', workspaceId);
-      await supabase.from('contas_receber').delete().eq('workspace_id', workspaceId);
-      await supabase.from('operacional_tasks').delete().eq('workspace_id', workspaceId);
-      await supabase.from('cotacoes_materiais').delete().eq('workspace_id', workspaceId);
-      await supabase.from('consumo_materiais').delete().eq('workspace_id', workspaceId);
-      await supabase.from('materiais').delete().eq('workspace_id', workspaceId);
-      await supabase.from('fornecedores').delete().eq('workspace_id', workspaceId);
-      await supabase.from('leads').delete().eq('workspace_id', workspaceId);
+      const ok = await apagarEmOrdem(workspaceId, [
+        ['recibos', 'recibos'],
+        ['notas', 'notas'],
+        ['orcamentos', 'orçamentos'],
+        ['transactions', 'transações'],
+        ['contas_receber', 'contas a receber'],
+        ['operacional_tasks', 'tarefas'],
+        ['cotacoes_materiais', 'cotações'],
+        ['consumo_materiais', 'consumo de materiais'],
+        ['materiais', 'materiais'],
+        ['fornecedores', 'fornecedores'],
+        ['leads', 'leads'],
+      ]);
+      // Recarrega nos dois casos: com falha no meio, parte já foi apagada
       await initialize(workspaceId);
-      setConfirmReset('');
-      addToast({ type: 'success', message: 'Sistema resetado com sucesso.' });
+      if (ok) {
+        setConfirmReset('');
+        addToast({ type: 'success', message: 'Sistema resetado com sucesso.' });
+      }
     } catch {
       addToast({ type: 'error', message: 'Erro ao resetar sistema' });
     } finally {
@@ -1095,18 +1133,6 @@ export function Settings() {
               Estas ações afetam dados reais. Use com cuidado.
             </p>
           </div>
-
-          {/* Gerar seed */}
-          <Card className="p-4 md:p-6 space-y-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Gerar Dados Demo</h3>
-            <p className="text-sm text-[var(--text-tertiary)]">
-              Popula o sistema com dados de exemplo para demonstração.
-            </p>
-            <Button variant="secondary" onClick={handleGenerateSeed} disabled={loadingDemo} className="gap-2">
-              <Database className="w-4 h-4" />
-              Gerar Dados Demo
-            </Button>
-          </Card>
 
           {/* Limpar Leads */}
           <Card className="p-4 md:p-6 space-y-3">
