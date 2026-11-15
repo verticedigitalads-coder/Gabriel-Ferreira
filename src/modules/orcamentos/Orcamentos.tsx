@@ -4,10 +4,13 @@ import type { Lead } from '@/types';
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Modal } from '@/components/ui/Modal';
+import { Modal, SlidePanel } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Input, TextArea, Select } from '@/components/ui/Input';
+import { SectionHeading } from '@/components/editorial/SectionHeading';
+import { EmptyState } from '@/components/editorial/EmptyState';
+import { Colophon } from '@/components/editorial/Colophon';
+import { useCountUp } from '@/hooks/useCountUp';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { v4 as uuid } from 'uuid';
@@ -32,6 +35,7 @@ import { enviarPixWhatsapp } from '@/utils/pixWhatsapp';
 import { clienteCorrespondeBusca } from '@/utils/busca';
 import { SignatureModal } from '@/components/ui/SignatureModal';
 import type { Orcamento, OrcamentoItem, OrcamentoStatus, UnidadeOrcamento } from '@/types';
+import { montarPrevia, type Previa } from './previaOrcamento';
 
 const unitOptionsBySegment: Record<string, { value: string; label: string }[]> = {
   metalurgica: [
@@ -61,6 +65,29 @@ const statusColors: Record<OrcamentoStatus, string> = {
   aprovado: 'bg-[var(--success-subtle)] text-[var(--success)]',
   recusado: 'bg-[var(--danger-subtle)]  text-[var(--danger)]',
 };
+
+// Redesign D5: faixa de 3px do card pelo status
+const faixaStatus: Record<OrcamentoStatus, string> = {
+  rascunho: 'var(--border-strong)',
+  enviado: 'var(--info)',
+  aprovado: 'var(--success)',
+  recusado: 'var(--danger)',
+};
+
+// Número grande do topo (padrão de Leads, D3). Componente próprio para a contagem não
+// re-renderizar a tela a cada quadro; com "reduzir movimento", sai direto o valor final.
+function TotalContado({ valor }: { valor: number }) {
+  const animado = useCountUp(valor);
+  return (
+    <p
+      className="tnum leading-[0.8] text-[44px] md:text-[56px] text-[var(--text-primary)]"
+      style={{ fontWeight: 'var(--font-bold)', letterSpacing: '-0.06em' }}
+    >
+      <span className="sr-only">{valor}</span>
+      <span aria-hidden="true">{String(Math.round(animado)).padStart(2, '0')}</span>
+    </p>
+  );
+}
 
 export function Orcamentos() {
   const leads = useStore((state) => state.leads) as Lead[];
@@ -327,25 +354,71 @@ export function Orcamentos() {
     }
   };
 
+  // Redesign D5: prévia ao lado da lista a partir de 1280px (xl); abaixo, no painel
+  const setActiveModule = useStore((state) => state.setActiveModule);
+  const [previaId, setPreviaId] = useState<string | null>(null);
+  const [painelAberto, setPainelAberto] = useState(false);
+  // Ao lado: o escolhido; se a busca o esconder (ou nada foi escolhido), o 1º da lista filtrada
+  const orcPrevia = orcamentosFiltrados.find((o) => o.id === previaId) ?? orcamentosFiltrados[0] ?? null;
+  const orcPainel = orcamentos.find((o) => o.id === previaId) ?? null;
+  const abrirPrevia = (orc: Orcamento) => {
+    setPreviaId(orc.id);
+    setPainelAberto(!window.matchMedia('(min-width: 1280px)').matches);
+  };
+  const previaDe = (orc: Orcamento) =>
+    montarPrevia(orc, leads.find((l) => l.id === orc.leadId)?.nome, {
+      empresaNome: defaultSettings.empresaNome,
+      validadePadraoOrcamento: defaultSettings.validadePadraoOrcamento,
+      condicoesContrato: defaultSettings.condicoesContrato,
+    });
+
   const renderOrcCard = (orc: Orcamento) => {
     const isSelecionado = selecionados.has(orc.id);
     const bloqueado =
       modoSelecao && !isSelecionado && !!orcTravado && orc.leadId !== orcTravado.leadId;
     const lead = leads.find((l) => l.id === orc.leadId);
-    return (
-      <Card
-        key={orc.id}
-        className={`p-4${modoSelecao && isSelecionado ? ' ring-2 ring-[var(--accent)]' : ''}`}
-        hoverable
-      >
-        {/* Markup único: mobile empilhado, desktop (md+) em linha única */}
-        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-          {/* checkbox + conteúdo */}
-          <div
-            className={`flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0${modoSelecao ? ' min-h-[44px]' : ''}`}
-            onClick={modoSelecao ? () => alternarSelecao(orc) : undefined}
+    const naPrevia = !modoSelecao && orcPrevia?.id === orc.id;
+    const dados = (
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <span className="text-[length:var(--text-lg)] leading-tight font-semibold text-[var(--text-primary)] break-words">
+            {getLeadName(orc)}
+          </span>
+          <span
+            className={`font-mono px-2 py-0.5 text-[length:var(--text-xs)] font-medium shrink-0 ${statusColors[orc.status as OrcamentoStatus]}`}
           >
-            {modoSelecao && (
+            {statusOptions.find((s) => s.value === orc.status)?.label}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 md:gap-4 text-xs text-[var(--text-tertiary)] flex-wrap">
+          <span className="font-mono">{orc.numero}</span>
+          <span className="flex items-center gap-1">
+            <Calendar className="w-3 h-3" aria-hidden="true" />
+            {orc.createdAt
+              ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', { locale: ptBR })
+              : '-'}
+          </span>
+        </div>
+      </div>
+    );
+    return (
+      <li
+        key={orc.id}
+        className={`relative border border-[var(--border)] bg-[var(--bg-surface)] transition-colors${modoSelecao && isSelecionado ? ' ring-2 ring-[var(--accent)]' : ''}${naPrevia ? ' xl:bg-[var(--accent-subtle)] xl:border-[var(--border-accent)]' : ''}`}
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 left-0 w-[3px]"
+          style={{ background: faixaStatus[orc.status as OrcamentoStatus] }}
+        />
+        {/* Markup único: mobile empilhado, desktop (md+) em linha única */}
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-2 pl-4 pr-2 md:pr-3">
+          {modoSelecao ? (
+            // Modo PDF Agrupado: tocar no card marca/desmarca, como antes
+            <div
+              className="flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0 min-h-[44px] py-1"
+              onClick={() => alternarSelecao(orc)}
+            >
               <input
                 type="checkbox"
                 checked={isSelecionado}
@@ -354,34 +427,23 @@ export function Orcamentos() {
                 onChange={() => alternarSelecao(orc)}
                 style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0, opacity: bloqueado ? 0.4 : 1 }}
               />
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                  {getLeadName(orc)}
-                </span>
-                <span
-                  className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${statusColors[orc.status as OrcamentoStatus]}`}
-                >
-                  {statusOptions.find((s) => s.value === orc.status)?.label}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 md:gap-4 text-xs text-[var(--text-disabled)] flex-wrap">
-                <span className="font-mono">{orc.numero}</span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {orc.createdAt
-                    ? format(parseISO(orc.createdAt), 'dd/MM/yyyy', { locale: ptBR })
-                    : '-'}
-                </span>
-              </div>
+              {dados}
             </div>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => abrirPrevia(orc)}
+              aria-label={`Ver prévia de ${getLeadName(orc)}`}
+              className="flex flex-1 min-w-0 min-h-[44px] items-center py-1 text-left transition-colors hover:opacity-80"
+            >
+              {dados}
+            </button>
+          )}
 
           {/* barra valor + ações (no mobile pode quebrar em 2 linhas) */}
           <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 flex-wrap md:flex-nowrap shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
             <div className="text-left md:text-right">
-              <p className="text-lg font-bold text-[var(--text-primary)] md:whitespace-nowrap">
+              <p className="tnum text-[length:var(--text-lg)] font-bold text-[var(--text-primary)] md:whitespace-nowrap">
                 {formatCurrency(orc.total)}
               </p>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -395,9 +457,9 @@ export function Orcamentos() {
             </div>
             <div className="flex items-center gap-1 shrink-0 ml-auto md:ml-0">
               {/* Sempre visíveis: PDF + PIX */}
-              <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF" className="gap-1">
+              <Button variant="ghost" size="sm" onClick={() => generatePDF(orc)} title="Baixar PDF" aria-label="Baixar PDF" className="gap-1 min-w-[44px] rounded-none">
                 <Download className="w-4 h-4" />
-                <span className="sm:hidden text-[10px]">PDF</span>
+                <span className="sm:hidden text-[length:var(--text-xs)]">PDF</span>
               </Button>
               {defaultSettings.chavePix && (lead?.telefone || orc.clienteTelefone) && (
                 <Button
@@ -405,7 +467,7 @@ export function Orcamentos() {
                   size="sm"
                   title="Enviar PIX via WhatsApp"
                   aria-label="Enviar PIX via WhatsApp"
-                  className="gap-1"
+                  className="gap-1 min-w-[44px] rounded-none"
                   onClick={() => {
                     enviarPixWhatsapp({
                       telefoneCliente: orc.clienteTelefone || lead?.telefone || '',
@@ -421,16 +483,16 @@ export function Orcamentos() {
                   }}
                 >
                   <QrCode className="w-4 h-4 text-[var(--success)]" />
-                  <span className="sm:hidden text-[10px]">PIX</span>
+                  <span className="sm:hidden text-[length:var(--text-xs)]">PIX</span>
                 </Button>
               )}
 
               {/* Desktop: Editar, Excluir, Assinatura */}
               <div className="hidden sm:flex items-center gap-1">
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(orc)} title="Editar orçamento" aria-label="Editar orçamento" className="min-w-[44px] rounded-none">
                   <Edit className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento">
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(orc.id)} title="Excluir orçamento" aria-label="Excluir orçamento" className="min-w-[44px] rounded-none">
                   <Trash2 className="w-4 h-4 text-[var(--danger)]" />
                 </Button>
                 {!orc.assinaturaCliente ? (
@@ -439,12 +501,13 @@ export function Orcamentos() {
                     size="sm"
                     title="Coletar assinatura do cliente"
                     aria-label="Coletar assinatura do cliente"
+                    className="min-w-[44px] rounded-none"
                     onClick={() => {
                       setSelectedOrcamentoForSign(orc);
                       setSignatureModalOpen(true);
                     }}
                   >
-                    <PenTool className="w-4 h-4 text-amber-500" />
+                    <PenTool className="w-4 h-4 text-[var(--warning)]" />
                   </Button>
                 ) : (
                   <span className="flex items-center gap-1 text-xs text-[var(--success)] px-2" title="Orçamento assinado">
@@ -456,19 +519,24 @@ export function Orcamentos() {
             </div>
           </div>
         </div>
-      </Card>
+      </li>
     );
   };
 
   return (
     <div className="flex flex-col md:h-full">
-      {/* Header */}
-      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <p className="text-sm text-[var(--text-secondary)]">
-            {busca.trim() ? `${orcamentosFiltrados.length} de ` : ''}
-            {orcamentos.length} orçamentos
-          </p>
+      {/* Topo compacto (padrão de Leads): total com contagem, botões e busca */}
+      <section className="relative border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 pt-4 pb-4 md:px-6 md:pt-5">
+        <span aria-hidden="true" className="absolute bottom-0 left-0 h-[2px] w-32 bg-[var(--accent)]" />
+
+        <div className="flex items-end justify-between flex-wrap gap-3 mb-4">
+          <div className="min-w-0 border-l-2 border-[var(--accent)] pl-3">
+            <TotalContado valor={orcamentos.length} />
+            <p className="font-mono mt-2 text-[length:var(--text-xs)] text-[var(--text-tertiary)]">
+              {busca.trim() ? `${orcamentosFiltrados.length} de ` : ''}
+              {orcamentos.length} orçamentos
+            </p>
+          </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant={modoSelecao ? 'primary' : 'secondary'}
@@ -476,7 +544,7 @@ export function Orcamentos() {
                 setModoSelecao(!modoSelecao);
                 setSelecionados(new Set());
               }}
-              className="gap-2"
+              className="gap-2 rounded-none"
             >
               <FileText className="w-4 h-4" />
               {modoSelecao ? 'Cancelar seleção' : 'PDF Agrupado'}
@@ -486,7 +554,7 @@ export function Orcamentos() {
                 setEditingOrcamento(null);
                 setShowModal(true);
               }}
-              className="gap-2"
+              className="gap-2 rounded-none"
             >
               <Plus className="w-4 h-4" />
               Novo Orçamento
@@ -494,7 +562,7 @@ export function Orcamentos() {
           </div>
         </div>
 
-        <div className="relative mt-3">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
           <Input
             type="text"
@@ -502,7 +570,7 @@ export function Orcamentos() {
             aria-label="Buscar orçamentos"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="pl-9 min-h-[44px]"
+            className="pl-9 min-h-[44px] rounded-none"
           />
         </div>
 
@@ -512,65 +580,74 @@ export function Orcamentos() {
           onCancel={() => setConfirmOpen(false)}
           description="Tem certeza que deseja excluir este orçamento?"
         />
-      </div>
+      </section>
 
-      {/* List */}
-      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
-        {sortedOrcamentos.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-3xl mb-3 opacity-30">📄</div>
-            <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Nenhum orçamento criado
-            </p>
-            <p className="text-xs text-[var(--text-tertiary)] mb-4">
-              Crie seu primeiro orçamento para um lead
-            </p>
-            <Button onClick={() => setShowModal(true)} className="gap-1">
-              <Plus className="w-4 h-4" />
-              Novo Orçamento
-            </Button>
-          </div>
-        ) : orcamentosFiltrados.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-3xl mb-3 opacity-30">🔍</div>
-            <p className="text-sm text-[var(--text-tertiary)] mb-1">
-              Nenhum orçamento encontrado
-            </p>
-            <Button variant="ghost" size="sm" onClick={() => setBusca('')} className="mt-3">
-              Limpar busca
-            </Button>
-          </div>
-        ) : !modoSelecao ? (
-          <div className="space-y-3">
-            {orcamentosFiltrados.map((orc) => renderOrcCard(orc))}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {Object.entries(orcamentosPorCliente).map(([clienteKey, grupo]) => (
-              <div key={clienteKey}>
-                <div className="flex items-center justify-between flex-wrap gap-2 mb-3 px-1">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <User className="w-4 h-4 text-[var(--text-secondary)]" />
-                    <span className="font-semibold text-[var(--text-primary)]">
-                      {grupo.nome}
-                    </span>
-                    <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-surface-2)] px-2 py-0.5 rounded-full">
-                      {grupo.orcamentos.length} orçamento{grupo.orcamentos.length !== 1 ? 's' : ''}
+      {/* Lista (e, a partir de xl, a prévia ao lado; cada coluna rola sozinha) */}
+      <div className="pt-4 md:pt-5 md:flex-1 md:min-h-0 md:overflow-y-auto xl:grid xl:grid-cols-12 xl:gap-5 xl:overflow-hidden">
+        <div className={`${orcPrevia ? 'xl:col-span-7' : 'xl:col-span-12'} xl:min-h-0 xl:overflow-y-auto xl:pr-1`}>
+          {/* "01" só faz par com o "02 Prévia", que aparece a partir de xl */}
+          <SectionHeading index="01" label="Lista de orçamentos" className="mb-3 hidden xl:flex" />
+          {sortedOrcamentos.length === 0 ? (
+            <div className="space-y-4">
+              <EmptyState title="Nenhum orçamento criado" note="Crie seu primeiro orçamento para um lead" />
+              <div className="flex justify-center">
+                <Button onClick={() => setShowModal(true)} className="gap-1 rounded-none">
+                  <Plus className="w-4 h-4" />
+                  Novo Orçamento
+                </Button>
+              </div>
+            </div>
+          ) : orcamentosFiltrados.length === 0 ? (
+            <div className="space-y-4">
+              <EmptyState title="Nenhum orçamento encontrado" note="Ajuste a busca" />
+              <div className="flex justify-center">
+                <Button variant="ghost" size="sm" onClick={() => setBusca('')} className="rounded-none">
+                  Limpar busca
+                </Button>
+              </div>
+            </div>
+          ) : !modoSelecao ? (
+            <ul className="space-y-2">
+              {orcamentosFiltrados.map((orc) => renderOrcCard(orc))}
+            </ul>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(orcamentosPorCliente).map(([clienteKey, grupo]) => (
+                <div key={clienteKey}>
+                  <div className="flex items-center justify-between flex-wrap gap-2 mb-3 px-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <User className="w-4 h-4 text-[var(--text-secondary)]" />
+                      <span className="font-semibold text-[var(--text-primary)]">
+                        {grupo.nome}
+                      </span>
+                      <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-surface-2)] px-2 py-0.5">
+                        {grupo.orcamentos.length} orçamento{grupo.orcamentos.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <span className="text-sm text-[var(--text-secondary)]">
+                      Total:{' '}
+                      <span className="tnum font-semibold text-[var(--text-primary)]">
+                        {formatCurrency(grupo.orcamentos.reduce((s, o) => s + (o.total || 0), 0))}
+                      </span>
                     </span>
                   </div>
-                  <span className="text-sm text-[var(--text-secondary)]">
-                    Total:{' '}
-                    <span className="font-semibold text-[var(--text-primary)]">
-                      {formatCurrency(grupo.orcamentos.reduce((s, o) => s + (o.total || 0), 0))}
-                    </span>
-                  </span>
+                  <ul className="space-y-2">
+                    {grupo.orcamentos.map((orc) => renderOrcCard(orc))}
+                  </ul>
                 </div>
-                <div className="space-y-2">
-                  {grupo.orcamentos.map((orc) => renderOrcCard(orc))}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+          <div className="mt-5">
+            <Colophon label="VRTX CRM · Orçamentos" onBack={() => setActiveModule('dashboard')} />
           </div>
+        </div>
+
+        {orcPrevia && (
+          <aside className="hidden xl:block xl:col-span-5 xl:min-h-0 xl:overflow-y-auto">
+            <SectionHeading index="02" label="Prévia" accent="aproximada" className="mb-3" />
+            <PreviaOrcamento previa={previaDe(orcPrevia)} cor={defaultSettings.corPrimaria} />
+          </aside>
         )}
       </div>
 
@@ -578,11 +655,11 @@ export function Orcamentos() {
       {modoSelecao && selecionados.size > 0 && (
         <div
           className="border-t p-4 flex items-center justify-between gap-3"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg-surface)' }}
+          style={{ borderColor: 'var(--border-strong)', background: 'var(--bg-surface)' }}
         >
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
+              className="tnum text-xs font-bold px-2 py-0.5 shrink-0"
               style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
             >
               {selecionados.size}
@@ -590,7 +667,7 @@ export function Orcamentos() {
             <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               selecionado{selecionados.size !== 1 ? 's' : ''}
             </span>
-            <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+            <span className="tnum text-base font-bold" style={{ color: 'var(--text-primary)' }}>
               {formatCurrency(totalSelecionado)}
             </span>
             {orcTravado && (
@@ -600,13 +677,22 @@ export function Orcamentos() {
               </span>
             )}
           </div>
-          <Button onClick={handleGerarPDFAgrupado} className="gap-2 shrink-0">
+          <Button onClick={handleGerarPDFAgrupado} className="gap-2 shrink-0 rounded-none">
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Gerar PDF Agrupado</span>
             <span className="sm:hidden">PDF</span>
           </Button>
         </div>
       )}
+
+      {/* Prévia no celular e no tablet (abaixo de xl) */}
+      <SlidePanel isOpen={painelAberto && !!orcPainel} onClose={() => setPainelAberto(false)} title="Prévia aproximada">
+        {painelAberto && orcPainel && (
+          <div className="p-4">
+            <PreviaOrcamento previa={previaDe(orcPainel)} cor={defaultSettings.corPrimaria} />
+          </div>
+        )}
+      </SlidePanel>
 
       {/* Modal */}
       <Modal
@@ -638,6 +724,107 @@ export function Orcamentos() {
         codigoDocumento={selectedOrcamentoForSign?.numero || ''}
         valorTotal={(selectedOrcamentoForSign?.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// PreviaOrcamento — o papel do PDF em HTML (redesign D5). Os dados vêm de
+// montarPrevia (previaOrcamento.ts), que espelha o server.js. É aproximada:
+// sem logo, marca d'água, cards, condições, PIX e assinaturas.
+// ─────────────────────────────────────────────
+
+function PreviaOrcamento({ previa, cor }: { previa: Previa; cor: string }) {
+  const celula = 'py-1.5 align-top border-b border-[var(--pdf-fio)]';
+  return (
+    <div className="space-y-3">
+      {/* "Prévia aproximada" já está no título da seção (xl) e do painel (celular) */}
+      <p className="text-xs text-[var(--text-tertiary)]">
+        O PDF tem também logo, marca d'água, condições, PIX e assinaturas.
+      </p>
+
+      <article className="relative border border-[var(--pdf-fio)] bg-[var(--pdf-papel)] text-[var(--pdf-tinta)] px-3 pt-6 pb-5 sm:px-4 md:px-5">
+        <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px]" style={{ background: cor || 'var(--accent)' }} />
+
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-mono text-[length:var(--text-xs)] uppercase tracking-[0.16em] text-[var(--pdf-tinta-suave)] break-words">
+              {previa.empresa}
+            </p>
+            <p className="mt-1 text-[length:var(--text-xl)] font-bold tracking-[-0.02em]">Orçamento</p>
+          </div>
+          <p className="font-mono text-[length:var(--text-xs)] text-[var(--pdf-tinta-suave)] whitespace-nowrap">
+            Nº {previa.numero}
+          </p>
+        </div>
+
+        <dl className="mt-4 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-y border-[var(--pdf-fio)] py-3 text-[length:var(--text-sm)]">
+          <dt className="text-[var(--pdf-tinta-suave)]">Cliente</dt>
+          <dd className="font-semibold text-right break-words">{previa.cliente}</dd>
+          <dt className="text-[var(--pdf-tinta-suave)]">Data</dt>
+          <dd className="tnum text-right">{previa.data}</dd>
+          {previa.validadeDias !== null && (
+            <>
+              <dt className="text-[var(--pdf-tinta-suave)]">Validade</dt>
+              <dd className="tnum text-right">{previa.validadeDias} dias</dd>
+            </>
+          )}
+        </dl>
+
+        {previa.linhas.length > 0 ? (
+          <>
+            {/* No celular estreito a fonte menor faz Unit. e Total caberem sem quebrar o valor */}
+            <table className="mt-4 w-full text-[length:var(--text-xs)] sm:text-[length:var(--text-sm)]">
+              <thead>
+                <tr className="text-left text-[length:var(--text-xs)] text-[var(--pdf-tinta-suave)]">
+                  <th className="pb-1 font-medium">Descrição</th>
+                  <th className="pb-1 pl-1.5 sm:pl-2 font-medium text-right">Qtd</th>
+                  <th className="pb-1 pl-1.5 sm:pl-2 font-medium text-right">Unit.</th>
+                  <th className="pb-1 pl-1.5 sm:pl-2 font-medium text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previa.linhas.map((l, i) => (
+                  <tr key={i}>
+                    <td className={`${celula} pr-1.5 sm:pr-2 break-words`}>{l.descricao}</td>
+                    <td className={`${celula} pl-1.5 sm:pl-2 text-right tnum`}>{l.quantidade}</td>
+                    <td className={`${celula} pl-1.5 sm:pl-2 text-right tnum whitespace-nowrap`}>R$ {l.unitario}</td>
+                    <td className={`${celula} pl-1.5 sm:pl-2 text-right tnum whitespace-nowrap`}>R$ {l.total}</td>
+                  </tr>
+                ))}
+                {previa.desconto !== null && (
+                  <tr>
+                    <td colSpan={3} className={`${celula} text-right`}>Desconto</td>
+                    <td className={`${celula} pl-1.5 sm:pl-2 text-right tnum whitespace-nowrap`}>- R$ {previa.desconto}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <div className="mt-3 flex items-center justify-between gap-3 bg-[var(--pdf-tinta)] px-3 py-2 text-[var(--pdf-papel)]">
+              <span className="font-mono text-[length:var(--text-xs)] tracking-[0.16em]">TOTAL GERAL</span>
+              <span className="tnum font-bold whitespace-nowrap">R$ {previa.total}</span>
+            </div>
+          </>
+        ) : (
+          <p className="mt-4 text-[length:var(--text-sm)] text-[var(--pdf-tinta-suave)]">Nenhum item com valor lançado.</p>
+        )}
+
+        {previa.quadro && (
+          <div
+            className="mt-3 border border-[var(--pdf-fio)] px-3 py-2"
+            style={previa.quadro.titulo === 'Importante' ? { borderLeft: `3px solid ${cor || 'var(--accent)'}` } : undefined}
+          >
+            <p className="text-[length:var(--text-xs)] font-bold">{previa.quadro.titulo}</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-[length:var(--text-sm)]">{previa.quadro.texto}</p>
+          </div>
+        )}
+
+        <div className="mt-4 border-t border-[var(--pdf-fio)] pt-3">
+          <p className="text-[length:var(--text-xs)] text-[var(--pdf-tinta-suave)]">Valor total do orçamento</p>
+          <p className="tnum text-[length:var(--text-2xl)] font-bold tracking-[-0.02em]">R$ {previa.total}</p>
+          <p className="text-[length:var(--text-sm)] text-[var(--pdf-tinta-suave)]">{previa.extenso}</p>
+        </div>
+      </article>
     </div>
   );
 }
