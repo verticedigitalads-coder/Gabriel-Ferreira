@@ -7,7 +7,7 @@ Controle do que ainda vai entrar: parcelas, vencimentos e cobranças pendentes d
 - Criar cobranças (**Nova Conta**): descrição, valor, vencimento, forma de recebimento, cliente e observação.
 - **Marcar como recebido** com um toque (botão de check duplo) — a data do recebimento fica registrada.
 - Filtrar por mês e por status: Todos / Pendente / Recebido / Atrasado / Cancelado.
-- Acompanhar os cartões: Total Pendente, Recebido este Mês, Total Atrasado e Vencem em 3 dias.
+- Acompanhar o **Total Pendente** (o número grande do topo), os cartões Recebido este Mês e Vencem em 3 dias, e o **Total Atrasado** na faixa **Diagnóstico de atraso**, logo acima da lista.
 - Ver no card de cada conta o cliente, o vencimento, a forma de recebimento e a observação.
 - Editar e excluir contas (excluir pede confirmação).
 

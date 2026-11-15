@@ -7,6 +7,8 @@ Entradas e saídas do seu caixa: registre receitas e despesas e acompanhe o resu
 - Lançar transações (**Nova Transação**): receita, despesa, comissão ou pagamento de funcionário.
 - Nas despesas, controlar o vencimento e **marcar como pago** informando a forma de pagamento.
 - Filtrar por **mês**, por status (**Todos / A vencer / Vencido / Pago**) e por categoria.
+- Ver no topo a **Receita Provável**: a mesma do Dashboard, calculada pelos leads orçados e pelo peso da temperatura de cada um. Ela olha os orçamentos de hoje e **não muda com o mês** escolhido.
+- Logo abaixo, a barra com o **% da meta**. A meta vem de **Configurações → Empresa** (Meta de receita do mês); sem meta, aparece **Meta não definida**.
 - Acompanhar os cartões do topo: Receitas do mês, A pagar, Vencidas e Resultado.
 - Ver o **Resultado do Mês** (receitas menos despesas do período filtrado).
 - **Exportar** as transações filtradas em planilha (arquivo CSV, abre no Excel).
@@ -41,6 +43,9 @@ Automaticamente, quando a data de vencimento passa e ela ainda não foi marcada 
 
 **O cartão "Resultado" e o banner "Resultado do Mês" mostram números diferentes.**
 Eles calculam de formas diferentes: o cartão considera todas as transações do mês; o banner considera só o que está filtrado na lista. Com filtros ativos, os valores podem divergir.
+
+**Troquei o mês e a Receita Provável não mudou.**
+É assim mesmo: ela é uma previsão feita com os leads orçados de hoje, não com os lançamentos do mês. Os cartões, o Resultado do Mês e a lista é que seguem o mês escolhido.
 
 **O que sai no arquivo exportado?**
 As transações do mês e dos filtros escolhidos no momento, com data, descrição, tipo, categoria e valor — pronto para abrir no Excel.

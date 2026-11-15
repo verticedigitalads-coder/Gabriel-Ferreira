@@ -5,6 +5,7 @@ Crie e envie orçamentos profissionais em PDF, com sua logo, suas cores e QR Cod
 ## O que você pode fazer aqui
 
 - Criar orçamento (**Novo Orçamento**) escolhendo o cliente e montando a lista de itens (quantidade, unidade e valor).
+- Ver a **prévia** do orçamento, com os itens, sem abrir a edição: no computador (tela larga) ela fica ao lado da lista; no celular e no tablet, toque no orçamento para abri-la.
 - Aplicar **multiplicador de mão de obra** (atalhos +10% / +15% / +20% ou valor livre), comissão e desconto.
 - Baixar o **PDF** de cada orçamento, já com a identidade visual da sua empresa.
 - Gerar um **PDF Agrupado**: selecione vários orçamentos e saia com um único PDF com total geral.
@@ -31,6 +32,9 @@ Crie e envie orçamentos profissionais em PDF, com sua logo, suas cores e QR Cod
 3. Um recibo **pendente** é criado automaticamente na tela de Recibos.
 
 ## Perguntas frequentes
+
+**A prévia é igual ao PDF?**
+Não: é uma **prévia aproximada**, para conferir itens e valores sem abrir o orçamento. O PDF tem também logo, marca d'água, condições, PIX e assinaturas. No computador, enquanto você não escolhe nenhum, a prévia mostra o primeiro orçamento da lista.
 
 **Coloquei um item com valor 0 e ele não apareceu na tabela do PDF.**
 É proposital: itens de valor zero (cortesias, itens inclusos) saem no quadro de observações do PDF, logo abaixo do TOTAL GERAL do resumo, marcados como "sem custo". Quando o orçamento tem observação escrita, esse quadro aparece em destaque, com o título **Importante**. Atenção: item sem descrição não sai no PDF de jeito nenhum — sempre dê um nome ao item.

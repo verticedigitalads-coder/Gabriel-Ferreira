@@ -10,6 +10,8 @@ Emita recibos numerados dos serviços recebidos, em PDF com a identidade da sua 
 - Baixar o **PDF** do recibo emitido, com ou sem QR Code PIX.
 - Enviar o **PIX pelo WhatsApp** (mensagem com o copia-e-cola).
 - **Cancelar** um recibo (com confirmação).
+- Seguir o caminho **01 Aprovar → 02 Emitir → 03 Baixar o PDF**: enquanto não há nenhum recibo, a tela explica os três passos; depois do primeiro, eles viram uma faixa de uma linha no fim da lista.
+- Ver quantos **orçamentos aprovados** você tem e tocar no card para ir à tela de Orçamentos.
 
 ## Passo a passo
 
