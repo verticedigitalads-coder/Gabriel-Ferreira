@@ -103,7 +103,10 @@
   --sidebar-item-height: 30px;
   --sidebar-icon-size: 16px;
 
-  /* --- PRÉVIA DO PDF (Configurações > Empresa) --- */
+  /* --- PRÉVIA DO PDF (Configurações > Empresa e prévia de Orçamentos) --- */
   --pdf-papel: #ffffff; /* o papel do PDF, atrás da prévia da logo e da marca d'água */
   --pdf-marca-dagua-opacidade: 0.06; /* espelha .watermark em templates/orcamento-v2.html e recibo-v2.html */
+  --pdf-tinta: #0f1117; /* texto do papel na prévia do PDF (Orçamentos) */
+  --pdf-tinta-suave: #71717a; /* rótulos e texto secundário no papel (4,8:1 sobre o branco) */
+  --pdf-fio: rgba(15, 17, 23, 0.1); /* fios e bordas no papel */
 }
