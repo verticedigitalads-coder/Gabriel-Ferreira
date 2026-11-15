@@ -1228,7 +1228,25 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Mesma regra do separarItens (server.js): descrição vazia ou "item" não sai no PDF
+    const semDescricao = (it: OrcamentoItem) => {
+      const nome = (it.descricao || '').trim().toLowerCase();
+      return !nome || nome === 'item';
+    };
+    const posSemDescricao = itens.findIndex(
+      (it) => semDescricao(it) && Number(it.valorTotal || 0) !== 0,
+    );
+    if (posSemDescricao >= 0) {
+      addToast({
+        type: 'error',
+        message: `Item ${posSemDescricao + 1} sem descrição: escreva o que é, senão ele não sai no PDF.`,
+      });
+      return;
+    }
+
     const data = montarDados();
+    // Linha sem descrição e de valor 0 sai da lista ao salvar
+    data.itens = itens.filter((it) => !semDescricao(it));
     // Orçamento novo: "Enviar" grava Enviado, a não ser que outro status tenha sido escolhido
     if (!orcamento && data.status === 'rascunho') data.status = 'enviado';
 
