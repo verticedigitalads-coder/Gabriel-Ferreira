@@ -34,6 +34,13 @@ export const createUISlice = (set: any) => ({
       toasts: [...state.toasts, { ...toast, id }]
     }))
 
+    // Some sozinho: 4 s, erro 6 s (ou o duration de quem chamou). O X fecha antes.
+    setTimeout(() => {
+      set((state: any) => ({
+        toasts: state.toasts.filter((t: ToastMessage) => t.id !== id)
+      }))
+    }, toast.duration ?? (toast.type === 'error' ? 6000 : 4000))
+
   },
 
   removeToast: (id: string) =>
