@@ -107,15 +107,17 @@ export const createMaterialSlice = (set:any,get:any)=>({
     const { materiais } = get()
 
     const material = materiais.find((m:Material)=> m.id === id)
-    if(!material) return
+    if(!material) return false
 
     const novoEstoque = tipo === 'entrada'
       ? material.estoque + quantidade
       : material.estoque - quantidade
 
+    // Quem chama conta só as movimentações que deram true
     if(novoEstoque < 0){
       console.warn('[MaterialSlice] Estoque insuficiente para saída')
-      return
+      get().addToast({ type: 'error', message: `Estoque insuficiente para ${material.nome}` })
+      return false
     }
 
     const { data:updated, error } = await supabase
@@ -128,7 +130,8 @@ export const createMaterialSlice = (set:any,get:any)=>({
 
     if(error){
       console.error('[MaterialSlice] Erro ao movimentar estoque:', error)
-      return
+      get().addToast({ type: 'error', message: 'Erro ao movimentar estoque' })
+      return false
     }
 
     set({
@@ -137,6 +140,7 @@ export const createMaterialSlice = (set:any,get:any)=>({
       )
     })
 
+    return true
   },
 
   reduceMaterialStock: async (materialId:string, quantidade:number)=>{

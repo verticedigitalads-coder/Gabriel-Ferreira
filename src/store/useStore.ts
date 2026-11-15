@@ -46,7 +46,7 @@ type StoreState = {
 
   orcamentos: any[];
   addOrcamento: (data: any) => Promise<any>;
-  updateOrcamento: (id: string, data: any) => Promise<void>;
+  updateOrcamento: (id: string, data: any) => Promise<any>;
   deleteOrcamento: (id: string) => Promise<void>;
 
   transactions: any[];
@@ -103,7 +103,7 @@ type StoreState = {
   addMaterial: (data: any) => Promise<void>;
   updateMaterial: (id: string, data: any) => Promise<void>;
   deleteMaterial: (id: string) => Promise<void>;
-  movimentarEstoque: (id: string, tipo: 'entrada' | 'saida', quantidade: number, motivo: string) => Promise<void>;
+  movimentarEstoque: (id: string, tipo: 'entrada' | 'saida', quantidade: number, motivo: string) => Promise<boolean>;
 
   cotacoesMateriais: any[];
   fetchCotacoesMateriais: () => Promise<void>;

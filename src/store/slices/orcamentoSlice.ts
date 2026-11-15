@@ -4,6 +4,9 @@ import type { Orcamento, OrcamentoItem } from '@/types';
 import { calcularOrcamento } from '@/domain/orcamento/calcularOrcamento';
 import { formatOrcamento } from '@/store/formatters';
 
+// Valores gravados em centavos: a conta em float deixava ruído (3382.4400000000005)
+const centavos = (v: number) => Math.round(v * 100) / 100;
+
 function normalizarItens(itens: OrcamentoItem[]) {
   return itens.map((item: OrcamentoItem) => {
     const quantidade = Number(item.quantidade) || 1;
@@ -30,13 +33,16 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     const { workspaceId } = get();
     const now = new Date().toISOString();
 
+    // Toda falha mostra o erro aqui; quem chama confere a volta antes de seguir
     if (!workspaceId) {
       console.error('[OrcamentoSlice] workspaceId está null');
+      get().addToast({ type: 'error', message: 'Erro ao salvar orçamento' });
       return;
     }
 
     if (!data.leadId || typeof data.leadId !== 'string') {
       console.error('[OrcamentoSlice] leadId inválido');
+      get().addToast({ type: 'error', message: 'Erro ao salvar orçamento' });
       return;
     }
 
@@ -62,6 +68,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     if (erroNumero) {
       console.error('[OrcamentoSlice] Erro ao buscar o número do orçamento:', erroNumero);
+      get().addToast({ type: 'error', message: 'Erro ao salvar orçamento' });
       return;
     }
 
@@ -82,13 +89,13 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
       itens: itensNormalizados,
 
-      subtotal,
-      total,
+      subtotal: centavos(subtotal),
+      total: centavos(total),
 
       desconto: data.desconto || 0,
       multiplicador: data.multiplicador ?? 1,
       percentual_comissao: data.percentualComissao ?? 0,
-      valor_comissao: comissao,
+      valor_comissao: centavos(comissao),
 
       status: data.status || 'rascunho',
 
@@ -117,6 +124,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[OrcamentoSlice] Erro ao criar orçamento:', error);
+      get().addToast({ type: 'error', message: 'Erro ao salvar orçamento' });
       return;
     }
 
@@ -143,6 +151,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[OrcamentoSlice] Erro ao deletar orçamento:', error);
+      get().addToast({ type: 'error', message: 'Erro ao excluir orçamento' });
       return;
     }
 
@@ -172,15 +181,15 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
         percentualComissao: data.percentualComissao ?? 0,
       });
 
-      payload.subtotal = subtotal;
-      payload.total = total;
-      payload.valor_comissao = comissao;
+      payload.subtotal = centavos(subtotal);
+      payload.total = centavos(total);
+      payload.valor_comissao = centavos(comissao);
     }
 
     if (data.subtotal !== undefined)
-      payload.subtotal = Number(data.subtotal) || 0;
+      payload.subtotal = centavos(Number(data.subtotal) || 0);
 
-    if (data.total !== undefined) payload.total = Number(data.total) || 0;
+    if (data.total !== undefined) payload.total = centavos(Number(data.total) || 0);
 
     if (data.desconto !== undefined) payload.desconto = data.desconto;
 
@@ -189,7 +198,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
     if (data.percentualComissao !== undefined)
       payload.percentual_comissao = data.percentualComissao;
     if (data.valorComissao !== undefined)
-      payload.valor_comissao = data.valorComissao;
+      payload.valor_comissao = centavos(Number(data.valorComissao) || 0);
     if (data.status !== undefined) payload.status = data.status;
     if (data.observacoes !== undefined)
       payload.observacoes = data.observacoes?.trim() ?? data.observacoes;
@@ -206,6 +215,7 @@ export const createOrcamentoSlice = (set: any, get: any) => ({
 
     if (error) {
       console.error('[OrcamentoSlice] Erro ao atualizar orçamento:', error);
+      get().addToast({ type: 'error', message: 'Erro ao salvar orçamento' });
       return;
     }
 

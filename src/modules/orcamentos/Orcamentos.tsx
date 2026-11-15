@@ -1067,6 +1067,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     percentualComissao: percentualPadrao,
     validadePadraoOrcamento,
     observacaoPadraoOrcamento,
+    observacaoPadraoRecibo,
     multiplicadorPadrao,
   } = useDefaultSettings();
 
@@ -1092,6 +1093,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
 
   const [showBaixaModal, setShowBaixaModal] = useState(false);
   const [pendingData, setPendingData] = useState<any>(null);
+  // Trava de clique duplo: os botões ficam desabilitados enquanto grava
+  const [salvando, setSalvando] = useState(false);
 
   const segment = useWorkspaceSegment();
   const isMarcenaria = segment === 'marcenaria';
@@ -1137,48 +1140,63 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     setItens(itens.filter((item) => item.id !== id));
   };
 
-  const saveOrcamento = async (data: any) => {
-    let savedOrcId = orcamento?.id;
+  // Devolve false se o orçamento não foi gravado: o slice já mostrou o erro e a
+  // janela fica aberta com o que foi digitado
+  const saveOrcamento = async (data: any): Promise<boolean> => {
+    setSalvando(true);
+    try {
+      const salvo = orcamento
+        ? await updateOrcamento(orcamento.id, data)
+        : await addOrcamento(data);
+      if (!salvo) return false;
 
-    if (orcamento) {
-      await updateOrcamento(orcamento.id, data);
-    } else {
-      const inserted = await addOrcamento(data);
-      savedOrcId = inserted?.id;
-    }
-
-    if (data.leadId && data.total > 0) {
-      const lead = leads.find((l: Lead) => l.id === data.leadId);
-      if (lead) {
-        await updateLead(data.leadId, {
-          valorOrcado: data.total,
-          orcamentoEnviado: data.status === 'enviado' || data.status === 'aprovado',
-        });
+      // Daqui em diante o orçamento já está gravado: falha no lead ou no
+      // pré-recibo mostra o erro (no slice) e a janela fecha, senão o segundo
+      // clique duplicaria o orçamento
+      if (data.leadId && salvo.total > 0) {
+        const lead = leads.find((l: Lead) => l.id === data.leadId);
+        if (lead) {
+          // Enviado se algum orçamento do lead estiver enviado ou aprovado (o
+          // salvo já está no store): um rascunho novo não zera o lead
+          const orcsDoLead = useStore
+            .getState()
+            .orcamentos.filter((o: Orcamento) => o.leadId === data.leadId);
+          await updateLead(data.leadId, {
+            valorOrcado: salvo.total,
+            orcamentoEnviado: orcsDoLead.some(
+              (o: Orcamento) => o.status === 'enviado' || o.status === 'aprovado',
+            ),
+          });
+        }
       }
-    }
 
-    // Criar pré-recibo automaticamente ao aprovar
-    if (data.status === 'aprovado' && savedOrcId) {
-      const addRecibo = useStore.getState().addRecibo;
-      const recibosExistentes = useStore.getState().recibos;
-      const jaExiste = recibosExistentes.some((r: any) => r.orcamentoId === savedOrcId);
+      // Criar pré-recibo automaticamente ao aprovar
+      if (data.status === 'aprovado') {
+        const addRecibo = useStore.getState().addRecibo;
+        const recibosExistentes = useStore.getState().recibos;
+        const jaExiste = recibosExistentes.some((r: any) => r.orcamentoId === salvo.id);
 
-      if (!jaExiste) {
-        await addRecibo({
-          orcamentoId: savedOrcId,
-          leadId: data.leadId,
-          clienteNome: data.clienteNome || 'Cliente',
-          clienteTelefone: data.clienteTelefone || '',
-          clienteEndereco: data.clienteEndereco || '',
-          descricao: `Serviços ref. orçamento ${orcamento?.numero || ''}`,
-          itens: data.itens,
-          valorTotal: data.total,
-          status: 'pendente',
-        });
+        if (!jaExiste) {
+          await addRecibo({
+            orcamentoId: salvo.id,
+            leadId: data.leadId,
+            clienteNome: data.clienteNome || 'Cliente',
+            clienteTelefone: data.clienteTelefone || '',
+            clienteEndereco: data.clienteEndereco || '',
+            descricao: `Serviços ref. orçamento ${orcamento?.numero || ''}`,
+            itens: data.itens,
+            valorTotal: salvo.total,
+            status: 'pendente',
+            observacoes: observacaoPadraoRecibo,
+          });
+        }
       }
-    }
 
-    onClose();
+      onClose();
+      return true;
+    } finally {
+      setSalvando(false);
+    }
   };
 
   // Dados do formulário para gravar (usado pelo Enviar/Salvar e pelo Salvar Rascunho)
@@ -1211,6 +1229,8 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     e.preventDefault();
 
     const data = montarDados();
+    // Orçamento novo: "Enviar" grava Enviado, a não ser que outro status tenha sido escolhido
+    if (!orcamento && data.status === 'rascunho') data.status = 'enviado';
 
     // Interceptar somente quando TRANSICIONANDO para 'aprovado'
     const transicionandoParaAprovado =
@@ -1466,6 +1486,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
           <span className="text-sm text-[var(--text-secondary)]">Desconto:</span>
           <Input
             type="number"
+            step="0.01"
             value={desconto}
             onChange={(e) => setDesconto(Number(e.target.value))}
             className="w-32 text-right py-2 bg-[var(--bg-app)] text-[var(--text-primary)] border-[var(--border)]"
@@ -1511,7 +1532,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
             // Orçamento novo: grava como rascunho (saveOrcamento fecha a tela)
             await saveOrcamento({ ...montarDados(), status: 'rascunho' });
           }}
-          disabled={!orcamento && (!leadId || itens.length === 0)}
+          disabled={salvando || (!orcamento && (!leadId || itens.length === 0))}
           className="flex-1 min-h-[48px] text-sm"
         >
           {orcamento ? 'Cancelar' : 'Salvar Rascunho'}
@@ -1519,7 +1540,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         <Button
           type="submit"
           variant="primary"
-          disabled={!leadId || itens.length === 0}
+          disabled={salvando || !leadId || itens.length === 0}
           className="flex-1 min-h-[48px] text-sm"
         >
           {orcamento ? 'Salvar' : 'Enviar'}
@@ -1537,13 +1558,18 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
           setPendingData(null);
         }}
         onConfirm={async (baixas) => {
+          // Grava antes de baixar: com falha, o estoque não é tocado e o modal fica aberto
+          if (!(await saveOrcamento(pendingData))) return;
+          // Conta só as baixas feitas (a que falha mostra o próprio erro)
+          let baixados = 0;
           for (const b of baixas) {
-            await movimentarEstoque(b.materialId, 'saida', b.quantidadeBaixar, `Aprovação ${orcamento?.numero || 'orçamento'}`);
+            if (await movimentarEstoque(b.materialId, 'saida', b.quantidadeBaixar, `Aprovação ${orcamento?.numero || 'orçamento'}`)) {
+              baixados++;
+            }
           }
-          await saveOrcamento(pendingData);
           addToast({
             type: 'success',
-            message: `Orçamento aprovado! ${baixas.length} item(s) baixado(s) do estoque.`,
+            message: `Orçamento aprovado! ${baixados} item(s) baixado(s) do estoque.`,
           });
         }}
       />
