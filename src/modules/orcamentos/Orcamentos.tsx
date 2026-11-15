@@ -1225,9 +1225,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  // Dados para gravar, ou null se algum item com valor está sem descrição (toast
+  // mostrado). Usado pelo Enviar/Salvar e pelo Salvar Rascunho.
+  const montarDadosValidados = () => {
     // Mesma regra do separarItens (server.js): descrição vazia ou "item" não sai no PDF
     const semDescricao = (it: OrcamentoItem) => {
       const nome = (it.descricao || '').trim().toLowerCase();
@@ -1241,12 +1241,20 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
         type: 'error',
         message: `Item ${posSemDescricao + 1} sem descrição: escreva o que é, senão ele não sai no PDF.`,
       });
-      return;
+      return null;
     }
 
     const data = montarDados();
     // Linha sem descrição e de valor 0 sai da lista ao salvar
     data.itens = itens.filter((it) => !semDescricao(it));
+    return data;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const data = montarDadosValidados();
+    if (!data) return;
     // Orçamento novo: "Enviar" grava Enviado, a não ser que outro status tenha sido escolhido
     if (!orcamento && data.status === 'rascunho') data.status = 'enviado';
 
@@ -1548,7 +1556,9 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
               return;
             }
             // Orçamento novo: grava como rascunho (saveOrcamento fecha a tela)
-            await saveOrcamento({ ...montarDados(), status: 'rascunho' });
+            const dados = montarDadosValidados();
+            if (!dados) return;
+            await saveOrcamento({ ...dados, status: 'rascunho' });
           }}
           disabled={salvando || (!orcamento && (!leadId || itens.length === 0))}
           className="flex-1 min-h-[48px] text-sm"
