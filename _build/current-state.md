@@ -1,6 +1,6 @@
 # Estado Atual — CRM Vértice Digital
 
-Última atualização: 14/11/2026
+Última atualização: 15/11/2026
 Versão: v2.39.5
 
 > **ATENÇÃO: NÃO fazer push antes de aplicar a migration da entrega 3; sem a policy, o botão falha.**
@@ -8,12 +8,71 @@ Versão: v2.39.5
 > - Ordem: bloco DO de teste → migration aplicada (modo Manual, com autorização do Gabriel) → push → VPS. Ver "Rodada da logo" e Pendências Manuais.
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 14/11/2026, rodada da logo, entrega 3)
-- Build vite: limpo (14/11/2026, rodada da logo, entrega 3; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 15/11/2026, redesign D7)
+- Build vite: limpo (14/11/2026, redesign D7, em cópia fora do repo; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Redesign do app D7 — IA Assistente (14-15/11/2026) — commit `25c44d98`, sem push; aguardando aceite do Gabriel no celular:** rodada 7 de `_build/plano-redesign-app.md` (linha "IA Assistente"). Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-f991-redesign-d7-staged-sutherland.md`. Só pele: só `src/modules/ia/IAAssistente.tsx` mudou. Nenhum service da IA (`iaService`, `strategicDiagnosisService`, `openaiStrategicService`), slice, formatter, componente de `editorial`/`ui`, `visualLead.ts`, `HeaderGlobal` ou doc de ajuda mudou. Sai pela Vercel no push; nada na VPS.
+  - **O que a leitura mostrou:** a tela não tinha chat nem caixa de pergunta (o fluxo é lead → Analisar Lead → prévia → Copiar Mensagem / Executar Plano). O chat do protótipo responde com texto fixo, de mentira.
+  - **Decisões do Gabriel:**
+    1. (14/11) **Sessão sem caixa de pergunta:** a moldura do chat abriga o fluxo que já existe. De um lado o lead escolhido, do outro o que a IA já registrou, e o "Analisar Lead" onde ficava a caixa de texto. As Sugestões são a lista de leads de hoje (mesma ordem, busca e filtros).
+    2. (14/11) **Número grande do masthead = Leads ativos** (`activeLeads.length`, a soma dos 4 cartões).
+    3. (15/11, depois do comparar) **Busca e filtros acima da Sessão,** e não no painel de Sugestões como dizia o plano: no celular a ordem segue a de antes (filtros → lead com o Analisar → lista), e o botão fica colado na lista.
+    4. (15/11) **Cores dos contadores:** Média passa de amarelo a azul e Baixa de verde a cinza (cores do `visualLead`, como no resto do app).
+  - **Por regra (sem pergunta):**
+    - o nome continua "IA Assistente" (`server.js` usa o nome no assistente de ajuda);
+    - o padrão anti-colapso fica (`md:h-full` + scroller só no desktop), com o masthead dentro do scroller;
+    - "Gerar Relatório" fica igual (ver Dívida Técnica);
+    - sem token novo.
+  - **Visual:**
+    - **Masthead** `PageMasthead tone="ia"`: "Inteligência · IA Assistente", "IA *Assistente*", a descrição de antes e "IA" ao fundo. O número usa `useCountUp` num componente local, `LeadsAtivosContados`, com o valor real em `sr-only`; com "reduzir movimento", sai direto o valor final. Sai a barra de topo com o `h1` que repetia o header.
+    - **Onboarding** com borda `--ia`.
+    - **01 Carteira:** os 4 contadores numa faixa, com a faixa de 3px e a cor do `visualLead`, e "Gerar Relatório" no `SectionHeading`. Saem `border-l-red/orange/yellow/green-500` e `text-orange-600`.
+    - **02 Analisar Lead Individual:**
+      - busca e 3 selects com 44px;
+      - Sessão: o lead escolhido em laranja suave, com rótulo e score da prioridade, `StatusBadge` e temperatura com ícone + texto; o lado da IA com fundo `--ia-subtle` e filete roxo, com a Evolução Estratégica e o alerta de conflito; "Analisar Lead" roxo. Vazio: "Nenhum lead selecionado";
+      - Sugestões em `<button>` de 44px ou mais, com a faixa da prioridade, o nome quebrando linha e o rótulo mono. Vazio: "Nenhum lead encontrado" / "Leads fechados e perdidos não entram aqui".
+    - **03 Como funciona** (os 8 itens) e `Colophon` "VRTX CRM · IA Assistente" com voltar ao painel.
+    - **Prévia:** mesmo `Modal` e título; o banner "IA indisponível" vem primeiro, com os mesmos textos; grade dos 6 dados com fios. Emoji que só servia de ícone vira lucide; as palavras não mudam e as `<option>` ficam com emoji.
+    - **Papéis das cores:** roxo = o que a IA diz ou faz; laranja = o que o usuário escolhe e as ações do app.
+  - **Provas.** Harness no scratchpad, com base no da D4:
+    - versões: `git archive d92ce657 src` × a mesma cópia com o `IAAssistente.tsx` novo;
+    - Supabase em stub; o `/api/chat` também, na própria página, nos modos ok, HTTP 500, JSON inválido, sem conteúdo e rede fora;
+    - o Puppeteer derruba toda a rede externa.
+
+    Nada foi ao banco nem à OpenAI.
+    - **Controle antes de editar:** roteiro 2× no HEAD e 1× na cópia sem mudança, 46 passos, 0 diferenças.
+    - **Roteiro de 46 passos:**
+      - cobre busca, filtros, Limpar, usar sugestão, Analisar com a IA ok e nos 4 modos de falha, abrir e fechar a prévia, copiar, executar (com e sem tarefa, com falha na tarefa e no lead), Gerar Relatório, toque a 390, tempo real e vazio;
+      - mesmas chamadas, toasts, clipboard, corpos do `/api/chat`, filtros, tarefas e retrato da tela: 0 diferenças, 0 falhas, 0 pedidos de rede;
+      - o banner aparece com os 2 textos nos 4 modos de falha.
+    - **Lógica (65 verificações):** de `export function IAAssistente()` até o fim do `handleGenerateReport` (171 linhas) e os 25 cálculos do lead escolhido, byte a byte; handlers, expressões e opções dos filtros iguais.
+    - **Rótulos:** 21 de 21 (`docs/help/ia-assistente.md`, banner, prévia e o header).
+    - **Só no depois:**
+      - voltar ao painel leva ao Dashboard;
+      - a contagem vai de 00 a 18, passando por 14;
+      - com "reduzir movimento", 18 no 1º quadro;
+      - Tab+Enter e Tab+Espaço escolhem o lead, com foco visível e 0 chamadas.
+    - **Medidas (1440/390/320 × 5 estados):**
+      - sem rolagem horizontal;
+      - alvos <44px: 4 → 0;
+      - selects sem corte;
+      - banner inteiro na 1ª tela do modal;
+      - topo do Analisar: 1440 1138 → 908px, 390 1257 → 1185px, 320 1443 → 1254px.
+    - **Extrator corrigido no meio** (a tela não mudou): depois disso, HEAD × HEAD e HEAD × depois deram 0 diferenças.
+    - **Build:**
+      - `tsc --noEmit` 0 erros;
+      - build limpo numa cópia fora do repo (os 2 avisos de sempre);
+      - `IAAssistente` 28,19 → 32,52 kB (gzip 9,02 → 10,38), `index` 1.213,80 → 1.213,69 kB, CSS 63,66 → 64,64 kB.
+    - **Commits que entraram no meio:** `0e91c38f` (3 tokens novos da prévia do PDF), `bef50f0f` (`server.js`) e `89747f20` (D5). Nenhum toca no que a tela de IA usa; `tsc` repetido no HEAD novo, 0 erros.
+  - **Achados:**
+    - 6 entraram na Dívida Técnica: Gerar Relatório, Copiar Mensagem, `catch` do Analisar, regra do lead sem último contato, `/api/chat` repassando o body e `Button variant="ia"`;
+    - a entrada do `handleApply` × `updateLead` foi confirmada no harness;
+    - a do toast de sucesso com a tarefa falhando já estava resolvida desde o `953e6789`.
+  - **Linhas antigas:** as linhas de `IAAssistente.tsx` citadas em entradas anteriores são de antes da D7 (o topo ganhou ~36 linhas de imports e constantes).
+  - **Teste no aparelho antes do push** (workspace Teste): tocar num lead nas Sugestões, Analisar, ver a prévia, Copiar Mensagem e Executar Plano.
 - **Redesign do app D4 — Central / Modo Execução (14/11/2026) — commit `37d4a476`, sem push; aguardando aceite do Gabriel no celular:** rodada 4 de `_build/plano-redesign-app.md` (linha "Central"). Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-96d8-redesign-d4-shimmering-brooks.md`. Só pele: só `src/modules/central/Central.tsx` mudou. Nenhum slice, formatter, selector, `HeaderGlobal`, componente de `editorial`/`ui`, `visualLead.ts` ou doc de ajuda mudou. Sai pela Vercel no push; nada na VPS (a ajuda não mudou).
   - **Decisões do Gabriel (14/11):**
     1. O feed são as **Prioridades de Hoje** (os até 7 leads de sempre), com a severidade pela prioridade do lead. O plano dizia que o feed sairia da Saúde do CRM, dos críticos e das contas atrasadas, mas a Central não tem esses alertas: eles ficam no Dashboard (calculados dentro do `Dashboard.tsx`, sem export) e no sino.
@@ -926,6 +985,15 @@ Versão: v2.39.5
 - **Comparador de Preços** (`src/modules/suprimentos/ComparadorPrecos.tsx`): item comentado em `Sidebar.tsx:59`. Import lazy em `App.tsx` e entrada no `ModuleRouter` mantidos. Reativar: descomentar a linha em Sidebar.tsx.
 
 ## Dívida Técnica Conhecida
+- **"Gerar Relatório" da IA Assistente não mostra nada** (`IAAssistente.tsx:74-75`, `:227-231`; registrado em 14/11/2026, redesign D7; também citado em `_build/automacoes-reais.md:112`): o `handleGenerateReport` grava `_priorityReport`/`_showReport`, e nada os renderiza. A D7 manteve o botão (regra: não remover nada da IA). Decidir entre mostrar o relatório ou tirar o botão.
+- **Copiar Mensagem da IA sem retorno** (`IAAssistente.tsx:734`; registrado em 14/11/2026, D7): `navigator.clipboard.writeText` sem `await`, `catch` ou toast. Não confirma o sucesso e, sem permissão, falha calado.
+- **Analisar Lead: o `catch` só faz `console.error`** (`IAAssistente.tsx:150-163`; registrado em 14/11/2026, D7). A falha da IA é tratada dentro do service (banner "IA indisponível"), então só um erro fora do refinamento cairia aqui. Nesse caso, o botão voltaria sem nada na tela.
+- **Lead sem último contato vira "atendimento recente" na análise da IA** (`strategicDiagnosisService.ts:40-47`, `:66`, `:122-125`; registrado em 14/11/2026, D7; vai junto da revisão da regra de sugestão, mais abaixo):
+  - sem `ultimoContato`, `diasSemContato` fica 0: risco baixo, +10 de probabilidade e "Lead em atendimento recente.";
+  - o prompt manda "Dias sem contato: 999" para o mesmo lead (`openaiStrategicService.ts:21-25`);
+  - no harness: lead novo quente sem contato = 70% e risco baixo. O Orçado com contato hoje também recebe "Lead em atendimento recente.".
+- **`/api/chat` repassa o `req.body` inteiro para a OpenAI** (`server.js:809-826`; registrado em 14/11/2026, D7). Qualquer usuário logado escolhe `model`, `max_tokens` e as mensagens. É risco de custo, não de vazamento entre empresas. Fixar modelo e limite no servidor numa rodada do `server.js` (🔴).
+- **`Button variant="ia"` com cor fixa** (`src/components/ui/Button.tsx:35`: `#a855f7`, `#9333ea` e `purple-500`; registrado em 14/11/2026, D7): vai contra a regra 8. Trocar por `--ia` na D12. A D7 não usa esse variant.
 - **O servidor baixa qualquer URL de logo que vier no payload do PDF** (`urlToBase64`, `server.js`; registrado em 14/11/2026, rodada da logo, a pedido do Gabriel, sem corrigir agora). Antes de abrir para muitos clientes: limitar a `https` e bloquear endereço interno (localhost, IP privado). A redução da logo não mudou isso.
 - **`logoPath` e `logoBgPath` sem uso** (`server.js`, logo depois do `injectLogoImg`; registrado em 14/11/2026, rodada da logo): leem `assets/logo_header.png` e `assets/logo_bg.png` na subida do servidor e nunca são usados (resto do fallback da FL). Remover numa rodada de limpeza, junto com os arquivos se nada mais os servir (`/assets` é estático).
 - **`StatusBadge` pinta "Em Atendimento" de roxo** (`src/components/ui/Badge.tsx`, `--ia`/`--ia-subtle`), contra a regra 6 do plano do redesign: o roxo é só da IA. Decisão do Gabriel em 13/11: fica como está na D3 e vai para a D12. Aparece na lista de Leads, na ficha e onde mais o `StatusBadge` for usado.
@@ -1006,7 +1074,8 @@ Versão: v2.39.5
 - **`Orcamentos.tsx:946` chama `updateLead` sem checar o retorno (fix v2.39.6, fora de escopo):** `saveOrcamento` já salvou orçamento/recibo antes; se o `updateLead` do lead falhar, o modal fecha e o toast do slice já avisa o erro, mas a tela não trata o caso — orçamento gravado, lead sem o valor sincronizado.
 - **`AILeadModal.tsx:162` chama `updateLead` sem `await` (fix v2.39.6, fora de escopo):** `handleUpdateExisting` dispara a gravação e já segue pro toast de sucesso + `onClose()` sem esperar o resultado — mostra sucesso mesmo que o toast de erro do slice apareça depois, numa tela que já fechou.
 - **`IAAssistente.tsx:136` mostra toast de sucesso mesmo com toast de erro do slice (fix v2.39.6, fora de escopo):** `handleApply` não checa o retorno de `updateLead`; no erro, o usuário vê os dois toasts (erro do slice + sucesso do componente). `markAsFechado` e `handleMarkAsOrcado` (`leadSlice.ts`) continuam retornando `void` — só ganharam o toast de erro, não o `boolean`.
+  - **Confirmado no harness da D7 (14/11/2026)**, igual no HEAD e no depois: com o update do lead falhando, saem "Erro ao atualizar lead" e "Estratégia aplicada com sucesso!", a tarefa de follow-up é criada mesmo assim e a prévia fecha. Depois da D7, a chamada está em `IAAssistente.tsx:174`.
 - **`AILeadModal.tsx:128-141` mostra "Tarefa de visita agendada" mesmo com `addOperacionalTask` falhando (fix do `operacionalSlice`, 08/11/2026, fora de escopo):** `handleCreateNew` descarta o retorno do `addOperacionalTask`. Na falha o usuário vê o toast de erro do slice ("Erro ao criar tarefa") e logo depois "Lead criado! Tarefa de visita agendada no Operacional.". O lead já foi criado antes (`addLead`), então fechar o modal está certo; só a mensagem de sucesso mente. Corrigir com `const ok = await addOperacionalTask(...)` e texto de sucesso condicionado a `ok`.
-- **`IAAssistente.tsx:159-174` mostra "Estratégia aplicada com sucesso!" mesmo com `addOperacionalTask` falhando (fix do `operacionalSlice`, 08/11/2026, fora de escopo):** `handleApply` descarta o retorno do follow-up (`nivelDeUrgencia >= 3`); na falha saem os dois toasts, erro do slice e sucesso do componente. Mesmo padrão do `IAAssistente.tsx:136` acima (retorno do `updateLead`).
+- ~~**`IAAssistente.tsx:159-174` mostra "Estratégia aplicada com sucesso!" mesmo com `addOperacionalTask` falhando**~~ — **resolvida em 11/11/2026 pelo `953e6789`**: na falha da tarefa sai o aviso "Estratégia aplicada! A tarefa de follow-up não foi criada. Crie no Operacional." (conferido no harness da D7, 14/11/2026). Texto original: (fix do `operacionalSlice`, 08/11/2026, fora de escopo): `handleApply` descarta o retorno do follow-up (`nivelDeUrgencia >= 3`); na falha saem os dois toasts, erro do slice e sucesso do componente. Mesmo padrão do `IAAssistente.tsx:136` acima (retorno do `updateLead`).
 - **`deleteOperacionalTask` não detecta exclusão sem efeito (`operacionalSlice.ts`, 08/11/2026):** `.delete()` sem `.select()` volta sem erro quando 0 linhas são apagadas (tarefa já excluída em outro aparelho, ou RLS bloqueando em silêncio). O slice remove do estado local e retorna `true`, sem toast. Mantido assim de propósito: tratar 0 linhas como erro daria alarme falso no caso "outro aparelho já apagou".
 - **Gravar `historico` é ler-alterar-regravar a lista inteira, não um append atômico:** `LeadDetail.tsx` (fix v2.39.2) e `AILeadModal.tsx:163-171` montam o novo array a partir do `historico` que já está em memória e regravam a coluna completa pelo `updateLead`. A guarda do fix v2.39.2 (`isSavingContato`) só impede o clique duplo na mesma aba; entre 2 aparelhos ou abas abertas no mesmo lead, a última gravação vence e descarta a entrada da outra. `historico` é array JSON na própria linha do lead, não uma tabela própria — sem isso, não tem append atômico.
