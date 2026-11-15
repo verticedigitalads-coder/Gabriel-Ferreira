@@ -2,10 +2,12 @@ import { formatCurrency } from '@/utils/formatters';
 import { useEffect, useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
-import { Card, StatCard } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { Input, TextArea, Select } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { EmptyState } from '@/components/editorial/EmptyState';
+import { Colophon } from '@/components/editorial/Colophon';
+import { SectionHeading } from '@/components/editorial/SectionHeading';
 import {
   format,
   parseISO,
@@ -17,10 +19,9 @@ import {
 import {
   Plus,
   DollarSign,
-  Clock,
   CheckCircle,
   AlertTriangle,
-  CalendarClock,
+  Pencil,
   Trash2,
   CheckCheck,
 } from 'lucide-react';
@@ -63,6 +64,44 @@ function getStatusClasses(status: ContaReceberStatus, vencida: boolean) {
   if (status === 'cancelado') return 'bg-[var(--bg-surface-3)] text-[var(--text-tertiary)]';
   return 'bg-[var(--warning-subtle)] text-[var(--warning)]';
 }
+
+// ─── Redesign D6: peças visuais (só UI; os números chegam prontos) ──────────
+
+// Total Pendente no topo compacto: mesma marcação do número da Receita Provável
+// no Financeiro, sem contagem (não pedida). Tamanhos de display sem token (cabe a 320px).
+function ValorGrande({ valor }: { valor: number }) {
+  const [inteiro, centavos] = formatCurrency(valor).replace(/^R\$\s*/, '').split(',');
+
+  return (
+    <p
+      className="tnum flex flex-wrap items-baseline leading-[0.8] text-[var(--text-primary)]"
+      style={{ fontWeight: 'var(--font-bold)', letterSpacing: '-0.045em' }}
+    >
+      <span className="sr-only">{formatCurrency(valor)}</span>
+      <span aria-hidden="true" className="ed-serif mr-1.5 text-[22px] md:text-[28px] text-[var(--accent)]">R$</span>
+      <span aria-hidden="true" className="min-w-0 [overflow-wrap:anywhere] text-[clamp(32px,10vw,44px)] md:text-[52px]">
+        {inteiro}
+      </span>
+      <span
+        aria-hidden="true"
+        className="text-[18px] md:text-[24px] text-[var(--text-tertiary)]"
+        style={{ fontWeight: 'var(--font-semibold)' }}
+      >
+        ,{centavos}
+      </span>
+    </p>
+  );
+}
+
+const CHIP = 'ed-mono shrink-0 inline-flex items-center px-3 min-h-[44px] whitespace-nowrap transition-colors';
+const ACAO = 'flex h-11 w-11 shrink-0 items-center justify-center transition-colors hover:bg-[var(--bg-surface-2)]';
+
+// Texto da ajuda (docs/help/contas-a-receber.md, passo a passo "Dar baixa" e perguntas)
+const COMO_FUNCIONA = [
+  { titulo: 'Nova Conta', texto: 'Descrição, valor e vencimento; vincule o cliente se quiser.' },
+  { titulo: 'Marcar como recebido', texto: 'Toque no check duplo, também na conta atrasada. A data do recebimento fica registrada.' },
+  { titulo: 'A receita entra no Financeiro', texto: 'Sozinha, com o mesmo valor e a data de hoje. Lançar de novo duplica o valor.' },
+];
 
 export function ContasReceber() {
   const contasReceber = useStore((state) => state.contasReceber);
@@ -146,207 +185,274 @@ export function ContasReceber() {
     return leads.find((l) => l.id === leadId)?.nome ?? null;
   };
 
+  // ── Redesign D6: só pele. A lógica acima é a mesma de antes. ──
+  const setActiveModule = useStore((state) => state.setActiveModule);
+
   return (
     <div className="flex flex-col md:h-full">
-      {/* HEADER */}
-      <div className="p-4 md:p-6 border-b border-[var(--border)] bg-[var(--bg-surface)]">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl! font-bold text-[var(--text-primary)]">
-              Contas a Receber
-            </h1>
-            <p className="text-sm text-[var(--text-tertiary)]">
-              Gestão de cobranças e recebimentos
+      {/* Topo compacto (padrão de Leads e Orçamentos) com o "CR" cortado ao fundo: Total Pendente, mês, ação, cartões e status */}
+      <section className="relative overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 pt-4 pb-4 md:px-6 md:pt-5">
+        <span
+          aria-hidden="true"
+          className="ed-serif ed-ghost pointer-events-none select-none absolute -right-4 -top-12 leading-none text-[150px] md:text-[190px]"
+        >
+          CR
+        </span>
+        <span aria-hidden="true" className="absolute bottom-0 left-0 h-[2px] w-32 bg-[var(--accent)]" />
+
+        <div className="relative flex items-end justify-between flex-wrap gap-3 mb-4">
+          <div className="min-w-0 border-l-2 border-[var(--accent)] pl-3">
+            <ValorGrande valor={stats.pendente} />
+            <p className="ed-mono mt-2 text-[var(--text-tertiary)]">
+              Total Pendente
+              <span className="normal-case tracking-normal"> · em aberto no mês</span>
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <input
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm bg-[var(--bg-surface)] text-[var(--text-primary)] shrink-0 min-w-[150px]"
+              className="min-h-[44px] min-w-[150px] flex-1 sm:flex-none border border-[var(--border-strong)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)]"
             />
-            <Button onClick={() => setShowModal(true)} className="gap-2">
+            <Button onClick={() => setShowModal(true)} className="gap-2 rounded-none text-[var(--bg-app)]">
               <Plus className="w-4 h-4" />
               Nova Conta
             </Button>
           </div>
         </div>
 
-        {/* STAT CARDS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <StatCard
-            label="Total Pendente"
-            value={formatCurrency(stats.pendente)}
-            valueClassName="text-lg md:text-2xl"
-            color="yellow"
-            icon={<Clock />}
-          />
-          <StatCard
-            label="Recebido este Mês"
-            value={formatCurrency(stats.recebido)}
-            valueClassName="text-lg md:text-2xl"
-            color="green"
-            icon={<CheckCircle />}
-          />
-          <StatCard
-            label="Total Atrasado"
-            value={formatCurrency(stats.atrasado)}
-            valueClassName="text-lg md:text-2xl"
-            color="red"
-            icon={<AlertTriangle />}
-          />
-          <StatCard
-            label="Vencem em 3 dias"
-            value={`${stats.proximosVencimentos} conta${stats.proximosVencimentos !== 1 ? 's' : ''}`}
-            valueClassName="text-lg md:text-2xl"
-            color={stats.proximosVencimentos > 0 ? 'red' : 'default'}
-            icon={<CalendarClock />}
-          />
+        {/* Cartões (o Total Pendente está no número grande e o Total Atrasado no diagnóstico) */}
+        <div className="relative grid grid-cols-2 gap-px border border-[var(--border)] bg-[var(--border)] mb-4">
+          {[
+            { label: 'Recebido este Mês', valor: formatCurrency(stats.recebido), cor: 'var(--success)', perigo: false },
+            {
+              label: 'Vencem em 3 dias',
+              valor: `${stats.proximosVencimentos} conta${stats.proximosVencimentos !== 1 ? 's' : ''}`,
+              cor: stats.proximosVencimentos > 0 ? 'var(--danger)' : 'var(--border-strong)',
+              perigo: stats.proximosVencimentos > 0,
+            },
+          ].map((c) => (
+            <div key={c.label} className="min-w-0 bg-[var(--bg-surface)] px-3 py-3 md:px-4">
+              <p className="ed-mono flex items-center gap-2 text-[var(--text-tertiary)]">
+                <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0" style={{ background: c.cor }} />
+                {c.label}
+              </p>
+              <p
+                className="tnum mt-1.5 leading-none text-lg md:text-xl [overflow-wrap:anywhere]"
+                style={{
+                  color: c.perigo ? 'var(--danger)' : 'var(--text-primary)',
+                  fontWeight: 'var(--font-bold)',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {c.valor}
+              </p>
+            </div>
+          ))}
         </div>
-      </div>
 
-      {/* FILTROS DE STATUS */}
-      <div className="px-4 md:px-6 py-3 border-b border-[var(--border)] bg-[var(--bg-surface)] flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-medium text-[var(--text-tertiary)] mr-1">
-          Status:
-        </span>
-        {statusFilterOptions.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setStatusFilter(opt.value)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-              statusFilter === opt.value
-                ? 'bg-[var(--accent)] text-white'
-                : 'bg-[var(--bg-surface-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+        {/* Status */}
+        <div className="relative flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <span className="ed-mono shrink-0 text-[var(--text-tertiary)]">Status:</span>
+          {statusFilterOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+              className={CHIP}
+              style={{
+                background: statusFilter === opt.value ? 'var(--accent-subtle)' : 'var(--bg-surface-2)',
+                color: statusFilter === opt.value ? 'var(--accent)' : 'var(--text-secondary)',
+                border: `1px solid ${statusFilter === opt.value ? 'var(--accent)' : 'var(--border)'}`,
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
-      {/* LISTA */}
-      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
-        {filteredContas.length === 0 ? (
-          <div className="flex items-center justify-center h-32">
-            <p className="text-sm text-[var(--text-tertiary)]">
-              Nenhuma conta encontrada para este período
-            </p>
+      {/* Diagnóstico, lista e explicação (no desktop, só esta parte rola) */}
+      <div className="pt-4 md:pt-5 md:flex-1 md:min-h-0 md:overflow-y-auto space-y-4">
+        {/* Diagnóstico de atraso: Total Atrasado (todas as contas, qualquer mês) */}
+        <div
+          className="relative border px-4 py-3 md:px-5"
+          style={{
+            background: stats.atrasado > 0 ? 'var(--danger-subtle)' : 'var(--bg-surface)',
+            borderColor: stats.atrasado > 0 ? 'var(--danger)' : 'var(--border-strong)',
+          }}
+        >
+          {stats.atrasado > 0 && (
+            <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-[var(--danger)]" />
+          )}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-6">
+            <div className="min-w-0">
+              <p
+                className="ed-mono flex items-center gap-2"
+                style={{ color: stats.atrasado > 0 ? 'var(--danger)' : 'var(--text-tertiary)' }}
+              >
+                {stats.atrasado > 0 ? (
+                  <AlertTriangle aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                ) : (
+                  <CheckCircle aria-hidden="true" className="w-3.5 h-3.5 shrink-0 text-[var(--success)]" />
+                )}
+                Diagnóstico de atraso
+              </p>
+              <p className="mt-1 max-w-xl text-xs text-[var(--text-tertiary)]">
+                Soma, de qualquer mês, as contas pendentes com o vencimento passado (selo "Vencida") e as marcadas como
+                "Atrasado".
+              </p>
+            </div>
+            <div className="shrink-0 md:text-right">
+              <p className="ed-mono text-[var(--text-tertiary)]">Total Atrasado</p>
+              <p
+                className="tnum mt-1 text-xl leading-none [overflow-wrap:anywhere]"
+                style={{
+                  color: stats.atrasado > 0 ? 'var(--danger)' : 'var(--text-primary)',
+                  fontWeight: 'var(--font-bold)',
+                }}
+              >
+                {formatCurrency(stats.atrasado)}
+              </p>
+            </div>
           </div>
+        </div>
+
+        {filteredContas.length === 0 ? (
+          <EmptyState title="Nenhuma conta encontrada para este período" note="Troque o mês ou o status" />
         ) : (
-          <div className="space-y-2">
+          <ul className="divide-y divide-[var(--border)] border border-[var(--border-strong)] bg-[var(--bg-surface)]">
             {filteredContas.map((conta) => {
               const vencida = isVencida(conta);
               const leadNome = getLeadName(conta.leadId);
 
               return (
-                <Card key={conta.id} className="p-4" hoverable>
-                  {/* Markup único: mobile empilhado, desktop (md+) em linha única */}
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                    {/* ícone + conteúdo */}
-                    <div className="flex items-start md:items-center gap-2 md:gap-4 flex-1 min-w-0">
-                      <DollarSign
-                        className={`w-5 h-5 shrink-0 mt-0.5 md:mt-0 ${
-                          conta.status === 'recebido'
-                            ? 'text-[var(--success)]'
-                            : conta.status === 'atrasado' || vencida
-                            ? 'text-[var(--danger)]'
-                            : 'text-[var(--warning)]'
-                        }`}
-                      />
+                <li
+                  key={conta.id}
+                  className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 px-4 py-4 md:px-5 transition-colors hover:bg-[var(--bg-surface-2)]"
+                >
+                  <div className="flex items-start md:items-center gap-2 md:gap-4 flex-1 min-w-0">
+                    <DollarSign
+                      className={`w-5 h-5 shrink-0 mt-0.5 md:mt-0 ${
+                        conta.status === 'recebido'
+                          ? 'text-[var(--success)]'
+                          : conta.status === 'atrasado' || vencida
+                          ? 'text-[var(--danger)]'
+                          : 'text-[var(--warning)]'
+                      }`}
+                    />
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-[var(--text-primary)] truncate">
-                            {conta.descricao}
-                          </p>
-                          {vencida && (
-                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[var(--danger-subtle)] text-[var(--danger)] rounded uppercase tracking-wide">
-                              Vencida
-                            </span>
-                          )}
-                        </div>
-                        {conta.observacao && (
-                          <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
-                            {conta.observacao}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-0.5 flex-wrap">
-                          {leadNome && <span>{leadNome}</span>}
-                          {leadNome && <span>•</span>}
-                          <span>
-                            Vence{' '}
-                            {format(parseISO(conta.dataVencimento), 'dd/MM/yyyy')}
-                          </span>
-                          {conta.formaRecebimento && (
-                            <>
-                              <span>•</span>
-                              <span className="capitalize">
-                                {conta.formaRecebimento}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* barra valor + ações (no mobile pode quebrar em 2 linhas) */}
-                    <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 flex-wrap md:flex-nowrap shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${getStatusClasses(conta.status, vencida)}`}
-                        >
-                          {getStatusLabel(conta.status)}
-                        </span>
-
-                        <p className="text-lg font-bold text-[var(--text-primary)] tabular-nums md:whitespace-nowrap">
-                          {formatCurrency(conta.valor)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 flex-wrap">
+                        <p className="font-medium min-w-0 [overflow-wrap:anywhere] text-[var(--text-primary)]">
+                          {conta.descricao}
                         </p>
-                      </div>
-
-                      <div className="flex gap-1 shrink-0 ml-auto md:ml-0">
-                        {contaEmAberto(conta) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="min-w-[44px] md:min-w-auto"
-                            onClick={() => marcarComoRecebido(conta.id)}
-                            title="Marcar como recebido"
-                          >
-                            <CheckCheck className="w-4 h-4 text-[var(--success)]" />
-                          </Button>
+                        {vencida && (
+                          <span className="ed-mono shrink-0 border border-[var(--danger)] bg-[var(--danger-subtle)] px-1.5 py-0.5 text-[var(--danger)]">
+                            Vencida
+                          </span>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="min-w-[44px] md:min-w-auto"
-                          onClick={() => {
-                            setEditingConta(conta);
-                            setShowEditModal(true);
-                          }}
-                        >
-                          ✏️
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="min-w-[44px] md:min-w-auto"
-                          onClick={() => {
-                            setSelectedConta(conta);
-                            setConfirmOpen(true);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
+                      </div>
+                      {conta.observacao && (
+                        <p className="text-xs text-[var(--text-secondary)] [overflow-wrap:anywhere] mt-0.5">
+                          {conta.observacao}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-0.5 flex-wrap">
+                        {leadNome && <span>{leadNome}</span>}
+                        {leadNome && <span>•</span>}
+                        <span>
+                          Vence{' '}
+                          {format(parseISO(conta.dataVencimento), 'dd/MM/yyyy')}
+                        </span>
+                        {conta.formaRecebimento && (
+                          <>
+                            <span>•</span>
+                            {/* Rótulo das opções do formulário (PIX, Transferência...); valor desconhecido sai como está */}
+                            <span>
+                              {formaOptions.find((o) => o.value === conta.formaRecebimento)?.label ?? conta.formaRecebimento}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
-                </Card>
+
+                  <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4 flex-wrap md:flex-nowrap shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <span className={`ed-mono px-1.5 py-0.5 shrink-0 ${getStatusClasses(conta.status, vencida)}`}>
+                        {getStatusLabel(conta.status)}
+                      </span>
+
+                      <p
+                        className="tnum text-lg text-[var(--text-primary)] md:whitespace-nowrap"
+                        style={{ fontWeight: 'var(--font-bold)' }}
+                      >
+                        {formatCurrency(conta.valor)}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-1 shrink-0 ml-auto md:ml-0">
+                      {contaEmAberto(conta) && (
+                        <button
+                          onClick={() => marcarComoRecebido(conta.id)}
+                          title="Marcar como recebido"
+                          aria-label="Marcar como recebido"
+                          className={ACAO}
+                          style={{ color: 'var(--success)', background: 'var(--success-subtle)' }}
+                        >
+                          <CheckCheck className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingConta(conta);
+                          setShowEditModal(true);
+                        }}
+                        title="Editar"
+                        aria-label="Editar"
+                        className={ACAO}
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedConta(conta);
+                          setConfirmOpen(true);
+                        }}
+                        title="Excluir"
+                        aria-label="Excluir"
+                        className={ACAO}
+                        style={{ color: 'var(--danger)' }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
+
+        {/* Como funciona: o fluxo recebido → Financeiro */}
+        <section className="border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 py-4 md:px-5">
+          <SectionHeading index="01" label="Como funciona" accent="recebido vira receita" />
+          <ol className="mt-3 grid gap-px border border-[var(--border)] bg-[var(--border)] sm:grid-cols-3">
+            {COMO_FUNCIONA.map((passo, i) => (
+              <li key={passo.titulo} className="bg-[var(--bg-surface)] px-4 py-3">
+                <p className="flex items-baseline gap-2">
+                  <span className="ed-serif text-xl text-[var(--accent)]">{i + 1}</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{passo.titulo}</span>
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-tertiary)]">{passo.texto}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <Colophon label="VRTX CRM · Contas a Receber" onBack={() => setActiveModule('dashboard')} />
       </div>
 
       {/* MODAL CRIAR */}
