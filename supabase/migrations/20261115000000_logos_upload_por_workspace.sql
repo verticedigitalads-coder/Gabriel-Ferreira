@@ -18,14 +18,18 @@
 --    workspace_members, self_access, já limita às linhas do próprio usuário).
 --    Qualquer membro pode enviar, como já grava em workspace_settings.
 --    Sem UPDATE e sem DELETE: cada envio é um arquivo novo (o app usa
---    upsert: false e nome com timestamp). anon fica sem policy.
--- A leitura continua pela URL pública (bucket público não passa por policy de
--- SELECT). Não criar policy de SELECT: ela deixaria listar os arquivos das
--- outras empresas.
+--    upsert: false e nome com timestamp). DELETE direto também é barrado pelo
+--    trigger protect_objects_delete (42501). anon fica sem policy.
+-- 3) Leitura (SELECT) pela API com a mesma condição: só a pasta dos próprios
+--    workspaces. O teste de 15/11 mostrou que INSERT ... RETURNING é recusado
+--    (42501) sem policy de SELECT, e o upload não pode depender de a API não
+--    usar RETURNING. Listar mostra só os arquivos da própria empresa: os das
+--    outras e os 5 da raiz ficam fora. A URL pública continua valendo para
+--    todos (bucket público não passa por policy).
 --
 -- Aplicar só depois do bloco DO de teste (sempre aborta) e com autorização do
 -- Gabriel, em modo Manual. O front com o botão só pode ir ao ar depois desta
--- migration: sem a policy, o upload falha.
+-- migration: sem as policies, o upload falha.
 -- =============================================================================
 
 update storage.buckets
@@ -38,6 +42,19 @@ create policy logos_insert_pasta_do_workspace
   for insert
   to authenticated
   with check (
+    bucket_id = 'logos'
+    and (storage.foldername(name))[1] in (
+      select wm.workspace_id::text
+        from public.workspace_members wm
+       where wm.user_id = (select auth.uid())
+    )
+  );
+
+create policy logos_select_pasta_do_workspace
+  on storage.objects
+  for select
+  to authenticated
+  using (
     bucket_id = 'logos'
     and (storage.foldername(name))[1] in (
       select wm.workspace_id::text
