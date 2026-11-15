@@ -588,7 +588,7 @@ export function Settings() {
                 onChange={e => setEmpresaLogoBgUrl(e.target.value)}
                 placeholder="Cole o link ou toque em Enviar imagem"
               />
-              <FieldHint>Aparece como marca d'água, bem clara e em cinza, atrás do conteúdo dos PDFs.</FieldHint>
+              <FieldHint>Aparece como marca d'água, bem clara e em cinza, atrás do conteúdo dos PDFs. Use PNG com fundo transparente: fundo escuro vira um quadrado cinza.</FieldHint>
               <p className="flex items-start gap-1.5 mt-1 text-xs font-medium text-[var(--warning)]">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" />
                 <span>Use PNG com fundo transparente. Fundo preto ou colorido vira um quadrado cinza no PDF.</span>
