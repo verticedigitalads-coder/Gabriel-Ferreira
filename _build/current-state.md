@@ -4,12 +4,71 @@
 Versão: v2.39.5
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 15/11/2026, rodada de confiabilidade, depois de cada entrega)
-- Build vite: limpo (15/11/2026, rodada de confiabilidade, em cópia `git archive` do `d563db22` fora do repo; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 15/11/2026, redesign D6, a cada commit)
+- Build vite: limpo (15/11/2026, redesign D6, em cópia `git archive` do `6a5c493b` + as duas telas, fora do repo; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Redesign do app D6 — Financeiro + Contas a Receber (15/11/2026) — 3 commits, sem push; aguardando aceite do Gabriel no celular:** rodada 6 de `_build/plano-redesign-app.md`. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-8509-redesign-d6-vast-flamingo.md`, refeito sobre o HEAD `6a5c493b` (rodada de confiabilidade). Só pele: nenhum slice, formatter, selector, `situacaoConta.ts`, componente de `ui`/`editorial` ou `server.js` mudou.
+  - **Commits:**
+    1. `8e833a8b` `feat(financeiro): redesign D6` (`src/modules/financeiro/Financeiro.tsx`);
+    2. `5497946c` `feat(contas-receber): redesign D6` (`src/modules/contasReceber/ContasReceber.tsx`);
+    3. `db7a6823` `docs(help): telas novas do redesign D5 e D6` (`orcamentos.md`, `recibos.md`, `financeiro.md`, `contas-a-receber.md`).
+  - **Decisões do Gabriel:**
+    1. **Topo compacto** nas duas telas (padrão de Leads e Orçamentos), sem `PageMasthead`. O Financeiro saiu primeiro com masthead e "FX", e a lista caiu de 5 para 2 linhas na 1ª tela a 1440; ele pediu o topo compacto. A CR já nasceu assim, com o "CR" cortado ao fundo.
+    2. **Financeiro:** número grande = **Receita Provável** com contagem (`useDashboardStats`, a mesma do Dashboard), com o rótulo "· não muda com o mês".
+    3. **Meta igual ao Dashboard:** barra + "X% da meta · Meta R$ Y", ou "Meta não definida", sem barra (a meta virou configuração no `d563db22`). Mesma conta e mesmo texto de `Dashboard.tsx:356` e `:564-572`.
+    4. **CR:** número grande = **Total Pendente**; o **Total Atrasado** fica na faixa "Diagnóstico de atraso", sempre visível (vermelha com atraso, neutra com zero), com o texto da regra nova ("pendentes vencidas e marcadas como Atrasado, de qualquer mês").
+    5. **Forma de pagamento/recebimento com rótulo legível** (PIX, Débito Automático, Transferência…), usando as opções que já existiam nos formulários, **só na exibição**. O CSV do Financeiro continua com o valor cru.
+  - **Visual:**
+    - **Topo:** fixo no desktop (só a lista rola, como no HEAD); cartões com fios; chips e filtros com 44px numa linha com rolagem lateral; "Exportar" com texto também no celular.
+    - **Lista:** linhas em `<li>`, descrição quebrando linha, selos retos em mono, ações 44×44 em todas as larguras (antes 36 no desktop). ✏️ vira `Pencil`. Na CR, Editar e Excluir ganharam `title`/`aria-label` (não tinham; a ajuda manda "Toque em Editar").
+    - "Resultado do Mês" (Financeiro) e "Diagnóstico de atraso" (CR) abrem a parte que rola. A CR termina com "Como funciona" (Nova Conta → Marcar como recebido → a receita entra no Financeiro). `EmptyState` e "voltar ao painel" nas duas.
+    - **Fora do protótipo:** os cartões Potencial/Conservadora/Prevista, a barra de composição, "Leitura financeira", "Previsto (contas)", "A receber organizado", "Automação 04", "Marcar um recibo…" (falso), o roxo e o `anim-rise`.
+  - **Provas** (harness no scratchpad: MainLayout + módulos e slices reais, Supabase falso em memória com `transactions` em `timestamptz` à meia-noite UTC, como o banco (conferido via MCP em 14/11), relógio fixo e fuso de São Paulo; nada foi ao banco):
+    - **Controle antes de editar:** roteiro de 41 passos 2× no HEAD e 1× na cópia sem mudança, nas duas rodadas (`6a5c493b` e `8e833a8b`): 0 diferenças. `git archive` com `core.autocrlf=false` (com `true` sai em CRLF); o hash das cópias é igual ao dos blobs do HEAD.
+    - **Roteiro depois:** 41 passos. As diferenças cruas são só a forma (77 no Financeiro, 100 na CR); com o valor cru do HEAD trocado pelo rótulo, 41/41 iguais em chamadas, toasts, store, CSV byte a byte, modais e retrato da tela. Cobre:
+      - filtro de mês, status, categoria e CSV;
+      - novo, editar, excluir e marcar pago/recebido;
+      - falha com o modal aberto, clique duplo = 1 insert e centavos com Enter = 150.5;
+      - "Atrasado" manual nos totais e com o botão de recebido;
+      - aviso quando a receita não entra no Financeiro.
+    - **Datas:** iguais ao HEAD.
+      - Às 23h30 de 30/11 (01/12 em UTC): mês padrão nov, datas padrão 30/11; o lançamento salvo entra em nov e não em dez; vencimento 29/11 = Vencido, 30/11 = A vencer; pago grava 30/11; Total Atrasado inclui 29/11 e 31/10, não 30/11.
+      - Às 23h30 de 01/11: datas padrão 01/11, entra em nov e não em out.
+      - Troca de mês out/dez/nov.
+      - Recebido → Financeiro no mês certo nas duas horas.
+    - **Trechos de lógica:**
+      - Financeiro: 73 ok. Byte a byte: helpers e `exportCSV` (126 linhas), `Financeiro()` até o `tipoConfig` (98), `handleConfirmPago`, os modais (73) e o `TransactionForm` (154).
+      - CR: 55 ok. Byte a byte: opções e `getStatusClasses` (36), `ContasReceber()` até o `getLeadName` (81), modais (35) e o `ContaReceberForm` (132).
+      - Nas duas: as mesmas contagens de chamadas de data.
+    - **Rótulos da ajuda:** Financeiro 22/22; CR 18/18 (no HEAD faltavam Editar e Excluir).
+    - **Medidas (1ª linha da lista):**
+
+      | Largura | Financeiro (HEAD → depois) | CR (HEAD → depois) |
+      |---|---|---|
+      | 1440 | 494 → 518px (5 → 4 linhas na 1ª tela) | 404 → 490px (5 linhas nas duas) |
+      | 390 | 717 → 732px | 546 → 553px |
+      | 320 | 774 → 860px | 599 → 614px |
+
+      Alvos < 44px no `<main>`: Financeiro 44 → 0 e CR 30 → 0 a 1440, 6 → 0 no celular. No HEAD, a 390/320, os cartões do Financeiro cortavam o valor; agora nada vaza. Sem rolagem horizontal, 0 erros de JS.
+    - **Só no depois:**
+      - Receita Provável termina no valor real;
+      - contagem com valores intermediários; com "reduzir movimento", o valor final no 1º quadro;
+      - barra presa em 100% acima da meta;
+      - faixa do diagnóstico vermelha/neutra pelo estado;
+      - "voltar ao painel" sem escrita.
+    - **Build:** `tsc --noEmit` 0 erros a cada commit; build limpo em cópia fora do repo. Financeiro 15,05 → 17,18 kB, ContasReceber 9,72 → 13,97 kB, CSS 66,54 → 67,16 kB.
+  - **Deploy:** Vercel no push (as duas telas). A ajuda mudou: **`git pull` + `pm2 restart crm-backend` na VPS** para o chat de ajuda reler `docs/help`.
+  - **Reportado, não corrigido:**
+    1. `ContasReceber.tsx:128-133`/`:175`: `monthStart`, `monthEnd`, `today` e `in3Days` são recriados a cada render, então os dois `useMemo` recalculam sempre (sem número errado).
+    2. `ContasReceber.tsx:145`: a ordenação usa `new Date(string)`. A ordem sai certa, mas vai contra `_build/mistakes.md:72`.
+    3. "Vencem em 3 dias" sem o "Atrasado" manual (ver Dívida Técnica).
+    4. Marcação repetida para a D12: o número grande (Financeiro, CR e `Dashboard.tsx:43`), a conta e o texto da meta (Financeiro × Dashboard), e `CHIP`/`ACAO` nos dois arquivos.
+    5. O CSV mantém a forma crua (pedido: só na exibição).
+    6. `useDashboardStats().receitaMes` soma todos os meses e não tem consumidor.
+    7. `docs/help/contas-a-receber.md:40` ainda chama Total Pendente e Total Atrasado de "cartões do topo". A resposta continua certa sobre o comportamento; não mexi (o pedido era a linha 10).
 - **Rodada de confiabilidade antes do lançamento (15/11/2026) — 10 commits, de `245b0bc4` a `d563db22`, sem push:** itens confirmados em 14/11 (sucesso falso, totais, `/api/chat`, configurações fixas) mais os acréscimos do Gabriel. Plano aprovado em `C:\Users\gabri\.claude\plans\pasted-content-id-525a-rodada-de-immutable-frost.md`. **Nenhuma mudança no banco e nenhuma migration** (conferido no schema: `workspace_settings` é chave/valor sem CHECK; `contas_receber.valor` e `recibos.valor_total` já são `numeric(N,2)`).
   - **Commits:**
     1. `245b0bc4` **E1 `server.js` 🔴:** `/api/chat` monta o corpo no servidor (`gpt-4o-mini`, `max_tokens` 1500, `json_object`; do app entram só as mensagens validadas, de 1 a 4, `system`/`user`, até 20.000 caracteres, e a temperatura entre 0 e 1; fora disso, 400 sem chamar a OpenAI). `/api/help-chat`: pergunta até 4.000 caracteres, histórico cortado em 4.000 e a pergunta atual não vai mais duas vezes (o `HelpPanel` a manda também no histórico; o servidor tira). Telefone do cliente formatado no recibo v1 e v2 (`telefoneFormatado`). **Só vale depois do deploy na VPS.**
@@ -1061,7 +1120,8 @@ Versão: v2.39.5
 - **Prévia do orçamento duplica o PDF v2** (`src/modules/orcamentos/previaOrcamento.ts`; registrado em 15/11/2026, D5): sem duplicação seria tirar as funções do PDF v2 do `server.js` para um módulo ESM em `utils/` (como o `pixPayload.js`) e importar no front. Exige `/grill-me` (`server.js` é 🔴). Até lá, vale a regra da entrada da D5 (mudou lá, muda aqui e roda o T1).
 - **Visuais que a D5 não tocou** (registrado em 15/11/2026; D12; atualizado na rodada de confiabilidade): o "Pendente Pendente" saiu (`dae809e1`). O selo "Cancelado" passou de `--text-disabled` para `--text-tertiary` sobre `--bg-surface-2`: contraste 1,46 → 3,16:1, **ainda abaixo de 4,5:1 para texto pequeno** (o app só tem o tema escuro) — **vai para a D12** (decisão do Gabriel). `Button variant="success"`/`"danger"` seguem com `bg-green-600`/`bg-red-600` (`src/components/ui/Button.tsx:29-33`), contra a regra 8.
 - **Modais da D11 fora do padrão** (registrado em 15/11/2026, D5): `BaixaEstoqueModal` (`Orcamentos.tsx`) com `rgba(0,0,0,0.6)`, `width: 660` e botões com menos de 44px; multiplicador do `OrcamentoForm` com `min-h-[36px]` e `#fff` fixo.
-- **Ajuda sem a prévia de Orçamentos e sem o tutorial de Recibos** (registrado em 15/11/2026, D5): nenhuma frase de `docs/help/orcamentos.md`/`recibos.md` ficou falsa, mas o chat de ajuda não conhece a prévia. Proposta: commit só de docs, com restart da VPS.
+- ~~**Ajuda sem a prévia de Orçamentos e sem o tutorial de Recibos**~~ — **resolvida em 15/11/2026** (`db7a6823`; falta o restart da VPS para o chat de ajuda). Texto original: nenhuma frase de `docs/help/orcamentos.md`/`recibos.md` ficou falsa, mas o chat de ajuda não conhece a prévia. Proposta: commit só de docs, com restart da VPS.
+- **"Vencem em 3 dias" não conta a conta "Atrasado" manual** (`src/modules/contasReceber/ContasReceber.tsx:171`; registrado em 15/11/2026, D6): o filtro exige `c.status === 'pendente'`. Uma conta marcada "Atrasado" à mão com vencimento nos próximos 3 dias fica fora do cartão (ela entra no Total Atrasado e no Total Pendente pela regra de `situacaoConta.ts`). Igual ao HEAD; a D6 não mexeu na lógica.
 - **"Gerar Relatório" da IA Assistente não mostra nada** (`IAAssistente.tsx:74-75`, `:227-231`; registrado em 14/11/2026, redesign D7; também citado em `_build/automacoes-reais.md:112`): o `handleGenerateReport` grava `_priorityReport`/`_showReport`, e nada os renderiza. A D7 manteve o botão (regra: não remover nada da IA). Decidir entre mostrar o relatório ou tirar o botão.
 - ~~**Copiar Mensagem da IA sem retorno**~~ — **resolvida em 15/11/2026** (`79998024`; o `copyPhone` da ficha do lead foi junto). Texto original: `navigator.clipboard.writeText` sem `await`, `catch` ou toast.
 - **Analisar Lead: o `catch` só faz `console.error`** (`IAAssistente.tsx:150-163`; registrado em 14/11/2026, D7). A falha da IA é tratada dentro do service (banner "IA indisponível"), então só um erro fora do refinamento cairia aqui. Nesse caso, o botão voltaria sem nada na tela.
