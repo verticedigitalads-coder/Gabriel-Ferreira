@@ -2,17 +2,18 @@ import { formatCurrency } from '@/utils/formatters';
 import { useEffect, useState, useMemo } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useStore } from '@/store/useStore';
+import { useDashboardStats } from '@/store/selectors/dashboardSelectors';
+import { useCountUp } from '@/hooks/useCountUp';
 import { Button } from '@/components/ui/Button';
-import { Card, StatCard } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { Input, TextArea, Select } from '@/components/ui/Input';
+import { EmptyState } from '@/components/editorial/EmptyState';
+import { Colophon } from '@/components/editorial/Colophon';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Plus,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
+  Pencil,
   Trash2,
   ArrowUpCircle,
   ArrowDownCircle,
@@ -165,14 +166,49 @@ function StatusBadge({ transaction }: { transaction: Transaction }) {
   const cfg = statusConfig[status];
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-      style={{ color: cfg.color, background: cfg.bg }}
+      className="ed-mono inline-flex shrink-0 items-center gap-1 border px-1.5 py-0.5"
+      style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.color }}
     >
       {cfg.icon}
       {cfg.label}
     </span>
   );
 }
+
+// ─── Redesign D6: peças visuais (só UI; os números chegam prontos) ──────────
+
+// Receita Provável com contagem, no topo compacto (padrão de Leads e Orçamentos).
+// Mesma marcação do ReceitaPotencialContada do Dashboard (local, sem export), em
+// tamanho menor. Componente próprio para a contagem não re-renderizar a tela a
+// cada quadro; com "reduzir movimento", sai direto o valor final. Tamanhos de
+// display sem token (cabe a 320px).
+function ReceitaProvavelContada({ valor }: { valor: number }) {
+  const animado = useCountUp(valor);
+  const [inteiro, centavos] = formatCurrency(animado).replace(/^R\$\s*/, '').split(',');
+
+  return (
+    <p
+      className="tnum flex flex-wrap items-baseline leading-[0.8] text-[var(--text-primary)]"
+      style={{ fontWeight: 'var(--font-bold)', letterSpacing: '-0.045em' }}
+    >
+      <span className="sr-only">{formatCurrency(valor)}</span>
+      <span aria-hidden="true" className="ed-serif mr-1.5 text-[22px] md:text-[28px] text-[var(--accent)]">R$</span>
+      <span aria-hidden="true" className="min-w-0 [overflow-wrap:anywhere] text-[clamp(32px,10vw,44px)] md:text-[52px]">
+        {inteiro}
+      </span>
+      <span
+        aria-hidden="true"
+        className="text-[18px] md:text-[24px] text-[var(--text-tertiary)]"
+        style={{ fontWeight: 'var(--font-semibold)' }}
+      >
+        ,{centavos}
+      </span>
+    </p>
+  );
+}
+
+const CHIP = 'ed-mono shrink-0 inline-flex items-center gap-1.5 px-3 min-h-[44px] whitespace-nowrap transition-colors';
+const ACAO = 'flex h-11 w-11 shrink-0 items-center justify-center transition-colors hover:bg-[var(--bg-surface-2)]';
 
 // ─── componente principal ───────────────────────────────────────────────────
 
@@ -280,7 +316,7 @@ export function Financeiro() {
     if (!cfg) return null;
     return (
       <div
-        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+        className="w-9 h-9 flex items-center justify-center shrink-0"
         style={{ background: cfg.bg, color: cfg.color }}
       >
         {cfg.icon}
@@ -296,20 +332,24 @@ export function Financeiro() {
     setPagarModal(null);
   };
 
+  // ── Redesign D6: só pele. A lógica acima é a mesma de antes. ──
+  const { receitaProvavel, metaMensal } = useDashboardStats();
+  const setActiveModule = useStore((state) => state.setActiveModule);
+  // Mesma conta e mesmo texto do Dashboard (Dashboard.tsx:356 e :564-572)
+  const pctMeta = metaMensal > 0 ? (receitaProvavel / metaMensal) * 100 : null;
+
   return (
     <div className="flex flex-col md:h-full">
-      {/* ── Header ── */}
-      <div
-        className="p-4 md:p-6 border-b"
-        style={{ borderColor: 'var(--border)', background: 'var(--bg-surface)' }}
-      >
-        <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              Financeiro
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
-              Controle de receitas e despesas
+      {/* Topo compacto (padrão de Leads e Orçamentos): Receita Provável com contagem, meta, ações, cartões e filtros */}
+      <section className="relative border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 pt-4 pb-4 md:px-6 md:pt-5">
+        <span aria-hidden="true" className="absolute bottom-0 left-0 h-[2px] w-32 bg-[var(--accent)]" />
+
+        <div className="flex items-end justify-between flex-wrap gap-3 mb-3">
+          <div className="min-w-0 border-l-2 border-[var(--accent)] pl-3">
+            <ReceitaProvavelContada valor={receitaProvavel} />
+            <p className="ed-mono mt-2 text-[var(--text-tertiary)]">
+              Receita Provável
+              <span className="normal-case tracking-normal"> · não muda com o mês</span>
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -317,110 +357,120 @@ export function Financeiro() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 rounded-md text-sm min-h-[44px] shrink-0 min-w-[150px]"
-              style={{
-                border: '1px solid var(--border)',
-                background: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-              }}
+              className="min-h-[44px] min-w-[150px] flex-1 sm:flex-none border border-[var(--border-strong)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)]"
             />
             <Button
               variant="secondary"
-              size="sm"
               onClick={() => exportCSV(filteredTransactions, selectedMonth)}
-              className="gap-1"
+              className="gap-1.5 rounded-none"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Exportar</span>
+              Exportar
             </Button>
-            <Button onClick={() => setShowModal(true)} className="gap-2">
+            <Button onClick={() => setShowModal(true)} className="gap-2 rounded-none text-[var(--bg-app)]">
               <Plus className="w-4 h-4" />
               Nova Transação
             </Button>
           </div>
         </div>
 
-        {/* StatCards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <StatCard
-            label="Receitas do mês"
-            value={formatCurrency(stats.receitas)}
-            color="green"
-            icon={<TrendingUp />}
-          />
-          <StatCard
-            label="A pagar"
-            value={formatCurrency(stats.despesasPendentes)}
-            color="yellow"
-            icon={<TrendingDown />}
-          />
-          <StatCard
-            label="Vencidas"
-            value={formatCurrency(stats.vencidas)}
-            color="red"
-            icon={<AlertTriangle />}
-          />
-          <StatCard
-            label="Resultado"
-            value={formatCurrency(stats.resultado)}
-            color={stats.resultado >= 0 ? 'green' : 'red'}
-            icon={<DollarSign />}
-          />
+        {/* Linha da meta: mesma conta e mesmo texto do Dashboard */}
+        <div className="mb-4">
+          {pctMeta !== null && (
+            <div className="mb-1.5 h-[3px] w-full bg-[var(--border-strong)]">
+              <div className="ed-grow h-full bg-[var(--accent)]" style={{ width: `${Math.min(pctMeta, 100)}%` }} />
+            </div>
+          )}
+          <p className="ed-mono text-[var(--text-tertiary)]">
+            {pctMeta !== null && `${pctMeta.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da meta · `}
+            <span className="ed-mono text-[var(--text-secondary)]">
+              {metaMensal > 0 ? `Meta ${formatCurrency(metaMensal)}` : 'Meta não definida'}
+            </span>
+          </p>
+          {receitaProvavel === 0 && (
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Marque leads como orçados com valor para ver a previsão de receita.
+            </p>
+          )}
         </div>
 
-        {/* Filtros de status */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {(
-            [
-              { key: 'todos', label: 'Todos', count: statusCounts.todos },
-              { key: 'a_vencer', label: 'A vencer', count: statusCounts.a_vencer },
-              { key: 'vencido', label: 'Vencido', count: statusCounts.vencido },
-              { key: 'pago', label: 'Pago', count: statusCounts.pago },
-            ] as const
-          ).map(({ key, label, count }) => {
-            const isActive = filtroStatus === key;
-            const cfg = key !== 'todos' ? statusConfig[key as StatusPagamentoDisplay] : null;
-            return (
-              <button
-                key={key}
-                onClick={() => setFiltroStatus(key)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all min-h-[32px]"
-                style={{
-                  background: isActive
-                    ? cfg
-                      ? cfg.bg
-                      : 'var(--accent-subtle)'
-                    : 'var(--bg-surface-2)',
-                  color: isActive
-                    ? cfg
-                      ? cfg.color
-                      : 'var(--accent)'
-                    : 'var(--text-secondary)',
-                  border: `1px solid ${isActive ? (cfg ? cfg.color : 'var(--accent)') : 'var(--border)'}`,
-                }}
+        {/* Cartões do mês */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-px border border-[var(--border)] bg-[var(--border)] mb-4">
+          {[
+            { label: 'Receitas do mês', valor: formatCurrency(stats.receitas), cor: 'var(--success)' },
+            { label: 'A pagar', valor: formatCurrency(stats.despesasPendentes), cor: 'var(--warning)' },
+            { label: 'Vencidas', valor: formatCurrency(stats.vencidas), cor: 'var(--danger)' },
+            {
+              label: 'Resultado',
+              valor: formatCurrency(stats.resultado),
+              cor: stats.resultado >= 0 ? 'var(--success)' : 'var(--danger)',
+            },
+          ].map((c) => (
+            <div key={c.label} className="min-w-0 bg-[var(--bg-surface)] px-3 py-3 md:px-4">
+              <p className="ed-mono flex items-center gap-2 text-[var(--text-tertiary)]">
+                <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0" style={{ background: c.cor }} />
+                {c.label}
+              </p>
+              <p
+                className="tnum mt-1.5 leading-none text-lg md:text-xl [overflow-wrap:anywhere] text-[var(--text-primary)]"
+                style={{ fontWeight: 'var(--font-bold)', letterSpacing: '-0.02em' }}
               >
-                {label}
-                <span
-                  className="px-1.5 py-0.5 rounded-full text-[10px]"
+                {c.valor}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Filtros: status e categoria */}
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <div className="flex min-w-0 gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {(
+              [
+                { key: 'todos', label: 'Todos', count: statusCounts.todos },
+                { key: 'a_vencer', label: 'A vencer', count: statusCounts.a_vencer },
+                { key: 'vencido', label: 'Vencido', count: statusCounts.vencido },
+                { key: 'pago', label: 'Pago', count: statusCounts.pago },
+              ] as const
+            ).map(({ key, label, count }) => {
+              const isActive = filtroStatus === key;
+              const cfg = key !== 'todos' ? statusConfig[key as StatusPagamentoDisplay] : null;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setFiltroStatus(key)}
+                  className={CHIP}
                   style={{
-                    background: isActive ? 'rgba(255,255,255,0.15)' : 'var(--bg-surface-3)',
+                    background: isActive
+                      ? cfg
+                        ? cfg.bg
+                        : 'var(--accent-subtle)'
+                      : 'var(--bg-surface-2)',
+                    color: isActive
+                      ? cfg
+                        ? cfg.color
+                        : 'var(--accent)'
+                      : 'var(--text-secondary)',
+                    border: `1px solid ${isActive ? (cfg ? cfg.color : 'var(--accent)') : 'var(--border)'}`,
                   }}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+                  {label}
+                  <span
+                    className="tnum px-1.5"
+                    style={{
+                      background: isActive ? 'var(--bg-surface)' : 'var(--bg-surface-3)',
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
           <select
             value={filtroCategoria}
             onChange={(e) => setFiltroCategoria(e.target.value)}
-            className="ml-auto text-xs px-2 py-1.5 rounded-md min-h-[32px]"
-            style={{
-              border: '1px solid var(--border)',
-              background: 'var(--bg-surface-2)',
-              color: 'var(--text-secondary)',
-            }}
+            className="min-h-[44px] md:ml-auto border border-[var(--border-strong)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-secondary)]"
           >
             <option value="todos">Todas categorias</option>
             {categoriaOptions.map((o) => (
@@ -430,11 +480,11 @@ export function Financeiro() {
             ))}
           </select>
         </div>
-      </div>
+      </section>
 
-      {/* ── Lista ── */}
-      <div className="p-4 md:p-6 md:flex-1 md:overflow-y-auto">
-        {/* Resultado do Mês */}
+      {/* Resultado do Mês e lista (no desktop, só esta parte rola) */}
+      <div className="pt-4 md:pt-5 md:flex-1 md:min-h-0 md:overflow-y-auto space-y-4">
+        {/* Resultado do Mês (o que está filtrado na lista) */}
         {(() => {
           const receitasMes = filteredTransactions
             .filter(t => t.tipo === 'receita')
@@ -446,31 +496,33 @@ export function Financeiro() {
           const positivo = resultado >= 0;
           return (
             <div
-              className="flex flex-col md:flex-row md:items-center justify-between gap-2 rounded-xl px-4 md:px-5 py-4 mb-4"
+              className="relative flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-2 border px-4 py-3 md:px-5"
               style={{
                 background: positivo ? 'var(--success-subtle)' : 'var(--danger-subtle)',
-                border: `1px solid ${positivo ? 'var(--success)' : 'var(--danger)'}`,
+                borderColor: positivo ? 'var(--success)' : 'var(--danger)',
               }}
             >
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 left-0 w-[3px]"
+                style={{ background: positivo ? 'var(--success)' : 'var(--danger)' }}
+              />
               <div>
-                <span
-                  className="text-xs font-bold uppercase tracking-wide"
-                  style={{ color: positivo ? 'var(--success)' : 'var(--danger)' }}
-                >
+                <span className="ed-mono" style={{ color: positivo ? 'var(--success)' : 'var(--danger)' }}>
                   Resultado do Mês
                 </span>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  <span className="tnum text-xs text-[var(--text-tertiary)]">
                     Receitas: {formatCurrency(receitasMes)}
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  <span className="tnum text-xs text-[var(--text-tertiary)]">
                     Despesas: {formatCurrency(despesasMes)}
                   </span>
                 </div>
               </div>
               <span
-                className="text-xl font-bold tabular-nums"
-                style={{ color: positivo ? 'var(--success)' : 'var(--danger)' }}
+                className="tnum text-xl [overflow-wrap:anywhere]"
+                style={{ color: positivo ? 'var(--success)' : 'var(--danger)', fontWeight: 'var(--font-bold)' }}
               >
                 {positivo ? '+' : '−'}{formatCurrency(Math.abs(resultado))}
               </span>
@@ -479,121 +531,118 @@ export function Financeiro() {
         })()}
 
         {filteredTransactions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <DollarSign className="w-10 h-10" style={{ color: 'var(--text-tertiary)' }} />
-            <p style={{ color: 'var(--text-tertiary)' }}>Nenhuma transação encontrada</p>
-          </div>
+          <EmptyState title="Nenhuma transação encontrada" note="Ajuste o mês ou os filtros" />
         ) : (
-          <div className="space-y-2">
+          <ul className="divide-y divide-[var(--border)] border border-[var(--border-strong)] bg-[var(--bg-surface)]">
             {filteredTransactions.map((t) => {
               const statusDisplay = isDespesaTipo(t.tipo) ? getStatusDisplay(t) : null;
               const isPendente =
                 statusDisplay === 'a_vencer' || statusDisplay === 'vencido';
 
               return (
-                <Card key={t.id} className="p-4" hoverable>
-                  <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-3">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      {getTypeIcon(t.tipo)}
+                <li
+                  key={t.id}
+                  className="flex flex-col md:flex-row md:items-start gap-2 md:gap-3 px-4 py-4 md:px-5 transition-colors hover:bg-[var(--bg-surface-2)]"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {getTypeIcon(t.tipo)}
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p
-                            className="font-medium truncate"
-                            style={{ color: 'var(--text-primary)' }}
-                          >
-                            {t.descricao}
-                          </p>
-                          <StatusBadge transaction={t} />
-                        </div>
-
-                        <div
-                          className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs"
-                          style={{ color: 'var(--text-tertiary)' }}
-                        >
-                          {t.categoria && <span>{t.categoria}</span>}
-                          {t.leadId && getLeadName(t.leadId) && (
-                            <span>• {getLeadName(t.leadId)}</span>
-                          )}
-                          <span>
-                            {format(parseISO(normalizeDate(t.data)), "dd 'de' MMM", { locale: ptBR })}
-                          </span>
-                          {isDespesaTipo(t.tipo) && t.dataVencimento && (
-                            <span>• Vence: {format(parseISO(t.dataVencimento), 'dd/MM/yy')}</span>
-                          )}
-                          {t.dataPagamento && (
-                            <span>
-                              • Pago em: {format(parseISO(t.dataPagamento), 'dd/MM/yy')}
-                              {t.formaPagamento && ` (${t.formaPagamento.replace('_', ' ')})`}
-                            </span>
-                          )}
-                        </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 flex-wrap">
+                        <p className="font-medium min-w-0 [overflow-wrap:anywhere] text-[var(--text-primary)]">
+                          {t.descricao}
+                        </p>
+                        <StatusBadge transaction={t} />
                       </div>
-                    </div>
 
-                    <div
-                      className="flex items-center justify-between md:justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0"
-                      style={{ borderColor: 'var(--border)' }}
-                    >
-                      <p
-                        className="text-base font-bold tabular-nums"
-                        style={{
-                          color: t.tipo === 'receita' ? 'var(--success)' : 'var(--danger)',
-                          letterSpacing: '-0.3px',
-                        }}
-                      >
-                        {t.tipo === 'receita' ? '+' : '−'}{formatCurrency(t.valor)}
-                      </p>
-
-                      <div className="flex gap-1">
-                        {isPendente && (
-                          <button
-                            onClick={() => {
-                              setFormaPagamentoSelecionada('pix');
-                              setPagarModal(t);
-                            }}
-                            title="Marcar como pago"
-                            className="p-2 rounded-md min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center transition-colors"
-                            style={{
-                              color: 'var(--success)',
-                              background: 'var(--success-subtle)',
-                            }}
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-[var(--text-tertiary)]">
+                        {t.categoria && <span>{t.categoria}</span>}
+                        {t.leadId && getLeadName(t.leadId) && (
+                          <span>• {getLeadName(t.leadId)}</span>
                         )}
-
-                        <button
-                          onClick={() => {
-                            setEditingTransaction(t);
-                            setShowEditModal(true);
-                          }}
-                          className="p-2 rounded-md min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center transition-colors"
-                          style={{ color: 'var(--text-secondary)' }}
-                          title="Editar"
-                        >
-                          ✏️
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setSelectedTransaction(t);
-                            setConfirmOpen(true);
-                          }}
-                          className="p-2 rounded-md min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center transition-colors"
-                          style={{ color: 'var(--danger)' }}
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <span>
+                          {format(parseISO(normalizeDate(t.data)), "dd 'de' MMM", { locale: ptBR })}
+                        </span>
+                        {isDespesaTipo(t.tipo) && t.dataVencimento && (
+                          <span>• Vence: {format(parseISO(t.dataVencimento), 'dd/MM/yy')}</span>
+                        )}
+                        {t.dataPagamento && (
+                          <span>
+                            • Pago em: {format(parseISO(t.dataPagamento), 'dd/MM/yy')}
+                            {/* Rótulo das opções do formulário (PIX, Débito Automático...); valor desconhecido sai como está */}
+                            {t.formaPagamento &&
+                              ` (${formaPagamentoOptions.find((o) => o.value === t.formaPagamento)?.label ?? t.formaPagamento})`}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
-                </Card>
+
+                  <div className="flex items-center justify-between md:justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+                    <p
+                      className="tnum text-base whitespace-nowrap"
+                      style={{
+                        color: t.tipo === 'receita' ? 'var(--success)' : 'var(--danger)',
+                        fontWeight: 'var(--font-bold)',
+                        letterSpacing: '-0.3px',
+                      }}
+                    >
+                      {t.tipo === 'receita' ? '+' : '−'}{formatCurrency(t.valor)}
+                    </p>
+
+                    <div className="flex gap-1">
+                      {isPendente && (
+                        <button
+                          onClick={() => {
+                            setFormaPagamentoSelecionada('pix');
+                            setPagarModal(t);
+                          }}
+                          title="Marcar como pago"
+                          aria-label="Marcar como pago"
+                          className={ACAO}
+                          style={{
+                            color: 'var(--success)',
+                            background: 'var(--success-subtle)',
+                          }}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setEditingTransaction(t);
+                          setShowEditModal(true);
+                        }}
+                        className={ACAO}
+                        style={{ color: 'var(--text-secondary)' }}
+                        title="Editar"
+                        aria-label="Editar"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedTransaction(t);
+                          setConfirmOpen(true);
+                        }}
+                        className={ACAO}
+                        style={{ color: 'var(--danger)' }}
+                        title="Excluir"
+                        aria-label="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
+
+        <Colophon label="VRTX CRM · Financeiro" onBack={() => setActiveModule('dashboard')} />
       </div>
 
       {/* ── Modal: Nova transação ── */}
