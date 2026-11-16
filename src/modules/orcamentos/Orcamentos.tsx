@@ -280,6 +280,7 @@ export function Orcamentos() {
 
     setConfirmOpen(false);
     setOrcToDelete(null);
+    setPainelAberto(false);
   };
 
   const generatePDF = async (orc: Orcamento) => {
@@ -573,13 +574,6 @@ export function Orcamentos() {
             className="pl-9 min-h-[44px] rounded-none"
           />
         </div>
-
-        <ConfirmDialog
-          isOpen={confirmOpen}
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setConfirmOpen(false)}
-          description="Tem certeza que deseja excluir este orçamento?"
-        />
       </section>
 
       {/* Lista (e, a partir de xl, a prévia ao lado; cada coluna rola sozinha) */}
@@ -688,11 +682,63 @@ export function Orcamentos() {
       {/* Prévia no celular e no tablet (abaixo de xl) */}
       <SlidePanel isOpen={painelAberto && !!orcPainel} onClose={() => setPainelAberto(false)} title="Prévia aproximada">
         {painelAberto && orcPainel && (
-          <div className="p-4">
-            <PreviaOrcamento previa={previaDe(orcPainel)} cor={defaultSettings.corPrimaria} />
-          </div>
+          <>
+            <div className="p-4">
+              <PreviaOrcamento previa={previaDe(orcPainel)} cor={defaultSettings.corPrimaria} />
+            </div>
+            {/* Ações do orçamento no celular/tablet (no card ficam só a partir de sm) */}
+            <div className="flex items-center gap-2 px-4 pb-4 border-t border-[var(--border)] pt-4">
+              <Button
+                onClick={() => {
+                  setPainelAberto(false);
+                  handleEdit(orcPainel);
+                }}
+                className="flex-1 gap-2 min-h-[44px] rounded-none"
+              >
+                <Edit className="w-4 h-4" />
+                Editar
+              </Button>
+              {!orcPainel.assinaturaCliente ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setPainelAberto(false);
+                    setSelectedOrcamentoForSign(orcPainel);
+                    setSignatureModalOpen(true);
+                  }}
+                  className="flex-1 gap-2 min-h-[44px] rounded-none"
+                >
+                  <PenTool className="w-4 h-4 text-[var(--warning)]" />
+                  Assinatura
+                </Button>
+              ) : (
+                <span className="flex-1 flex items-center justify-center gap-1 min-h-[44px] text-xs text-[var(--success)]" title="Orçamento assinado">
+                  <PenTool className="w-3 h-3" />
+                  Assinado
+                </span>
+              )}
+              <Button
+                variant="ghost"
+                onClick={() => handleDelete(orcPainel.id)}
+                aria-label="Excluir orçamento"
+                className="gap-2 min-w-[44px] min-h-[44px] rounded-none text-[var(--danger)]"
+              >
+                <Trash2 className="w-4 h-4" />
+                Excluir
+              </Button>
+            </div>
+          </>
         )}
       </SlidePanel>
+
+      {/* Depois do SlidePanel: os dois são fixed z-50, e a ordem no DOM decide quem fica
+          por cima quando o Excluir vem do painel */}
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+        description="Tem certeza que deseja excluir este orçamento?"
+      />
 
       {/* Modal */}
       <Modal
@@ -1406,6 +1452,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
                   type="number"
                   placeholder="Qtd"
                   value={item.quantidade}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) =>
                     updateItem(item.id, 'quantidade', Number(e.target.value))
                   }
@@ -1415,6 +1462,7 @@ function OrcamentoForm({ orcamento, onClose }: OrcamentoFormProps) {
                   type="number"
                   placeholder="Valor unit."
                   value={item.valorUnitario}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) =>
                     updateItem(item.id, 'valorUnitario', Number(e.target.value))
                   }
