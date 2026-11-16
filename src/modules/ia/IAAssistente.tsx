@@ -683,7 +683,7 @@ export function IAAssistente() {
 
               <div className={CELULA}>
                 <p className="ed-mono text-[var(--text-tertiary)]">Potencial Futuro</p>
-                <p className="mt-1 font-medium">
+                <p className="mt-1 font-medium capitalize">
                   {analysis.potencialFuturo}
                 </p>
               </div>
