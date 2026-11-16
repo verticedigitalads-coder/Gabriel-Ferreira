@@ -4,12 +4,25 @@
 Versão: v2.39.5
 
 ## Build
-- TypeScript: 0 erros (tsc --noEmit, 16/11/2026, rodada de IA, em cópia `git archive` do `d8f9f104` fora do repo)
-- Build vite: limpo (16/11/2026, rodada de IA, na mesma cópia; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
+- TypeScript: 0 erros (tsc --noEmit, 16/11/2026, orçamentos no celular, em cópia `git archive` do `7231e376` + `Orcamentos.tsx` fora do repo)
+- Build vite: limpo (16/11/2026, orçamentos no celular, na mesma cópia, `Orcamentos` 42,58 kB; avisos pré-existentes: bundle >500KB e `@import` da Inter depois de regras no `index.css`)
 - tsconfig fix (09/06/2026): removidos `baseUrl: "."` + `ignoreDeprecations: "6.0"` (TS 5.9.3 rejeita "6.0"); paths ajustado para `"./src/*"`. tsc --noEmit agora funciona.
 - Fix v2.33.7 type-safety (09/06/2026): zerados os 19 erros de tipo. (1) `reciboSlice.formatRecibo` retipado `Record<string,unknown>`→`any` (padrão dos demais formatters) + hardening leve: `status` valida contra `VALID_RECIBO_STATUS` com fallback `'pendente'`, `itens` via `Array.isArray` (15 erros). (2) `financeiroSlice.ts:45` guard `!!data.tipo &&` antes do `.includes()` — `data.tipo` é `string|undefined` em `Partial<Transaction>` (NÃO era risco cross-tenant; workspaceId já tinha early-return). (3) Dead code: `IAAssistente.tsx:211` callback `h` anotado `HistoricoEntry`; `Recibos.tsx` import `Receipt` removido; `whatsappSlice.ts` const `jidToNumber` removida (morta desde v2.32.2).
 
 ## Últimas Mudanças
+- **Orçamentos no celular: Editar, Excluir e Assinatura na prévia + zero na frente do valor (16/11/2026) — 2 commits + este, sem push:** abaixo de 640px o card esconde os três botões (`hidden sm:flex`), e a ajuda mandava usar o computador; o uso principal no lançamento é a assinatura na casa do cliente.
+  - **Commits:**
+    1. `6e32daca` `feat(orcamentos): Editar, Assinatura e Excluir na previa do celular` (`src/modules/orcamentos/Orcamentos.tsx`);
+    2. `66eac36d` `docs(help): editar, excluir e assinatura pela previa no celular` (`docs/help/orcamentos.md`: pergunta "Não acho os botões…" e as duas linhas da lista que falavam só do ícone do card).
+  - **Painel "Prévia aproximada"** (abaixo de 1280px, abre ao tocar no orçamento): abaixo da prévia, barra com **Editar** (primário; fecha o painel e chama `handleEdit`), **Assinatura** (secundário; fecha o painel e abre o `SignatureModal`, mesmo código do card; já assinado → selo "Assinado" no lugar) e **Excluir** (ghost com `--danger`; `handleDelete` + o `ConfirmDialog` de sempre; confirmar fecha o painel em `handleConfirmDelete`, cancelar deixa tudo como estava). Os três com `min-h-[44px]`. Card, ícones do desktop e a prévia em si não mudaram.
+  - **`ConfirmDialog` passou para depois do `SlidePanel` no JSX.** Os dois são `fixed z-50` sem portal; na ordem antiga o diálogo ficava embaixo do painel (o harness apontou `elementFromPoint` no botão "Excluir" do diálogo devolvendo a prévia). Depois da troca, devolve o próprio botão. A 1440 nada muda (print idêntico).
+  - **Zero na frente:** `Qtd` e `Valor unit.` do item ganharam `onFocus={(e) => e.target.select()}`. Antes, focar e digitar 5000 dava "05000" (e "13" na quantidade); depois, "5000" e "3".
+  - **Provas** (harness Vite no scratchpad, reaproveitado da rodada do item sem descrição: `Orcamentos` real, Supabase falso em memória, 2 orçamentos semeados, um assinado; viewports 390, 320 e 1440; `pt-BR`, toque real por `page.touchscreen.tap`):
+    - **Controle no HEAD, 2×, saídas idênticas (24 passos):** painel sem botão; valor "05000", qtd "13".
+    - **Depois, 2×, idênticas:** a) painel com Editar, Assinatura e Excluir, 44px cada; b) Editar → painel fecha, "Editar Orçamento" com lead-1, "Portao", 8400; Salvar → 1 update, modal fecha; c) Assinatura → painel fecha, "Assinatura do Cliente" com "ORC-2026-001 — Cliente Teste"; c2) orçamento assinado → selo "Assinado", só Editar e Excluir; d) Excluir → "Confirmar ação" por cima do painel; Cancelar → painel aberto, lista inteira; d2) confirmar → 1 delete, some da lista, painel fechado; e) "5000" e "3". A 1440 o painel não abre (prévia ao lado), como antes.
+    - **Prints:** 1440 (lista, painel, assinatura, assinado, excluído) e 390/320 "lista" byte a byte iguais ao HEAD; só as telas com o painel aberto mudam. `comparar.html` no scratchpad da sessão.
+    - **tsc** 0 erros e **`vite build`** limpo na cópia `git archive` fora do repo.
+  - **Fora do escopo, só relatado:** `Modal`, `SlidePanel` e `SignatureModal` seguem sem portal e todos `z-50`; qualquer outro módulo que abra um `ConfirmDialog` declarado antes de um `SlidePanel` tem o mesmo empilhamento.
 - **IA: valor certo no Criar com IA + Analisar Lead reescreve os textos (16/11/2026) — 4 commits + este, sem push:** três defeitos provados em produção em 15/11.
   - **Commits:**
     1. `362674e0` `fix(ia): extractBudget le reais em formato brasileiro e nao soma` (`src/services/ai/ai.service.ts`);
