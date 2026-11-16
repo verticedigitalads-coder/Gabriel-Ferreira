@@ -280,27 +280,21 @@ export class AIService {
   // DETECTAR VALORES
   // =========================
   static extractBudget(text: string) {
-    const lines = text.split('\n');
+    // Reais no formato brasileiro: "R$ 7.500" = 7500, "R$ 55.664,00" = 55664, "R$ 1.200,50" = 1200.5.
+    // Um único valor distinto na conversa → usa; mais de um (faixa, concorrente) → null, sem somar.
+    const values = new Set<number>();
 
-    let values: number[] = [];
+    for (const match of text.matchAll(/R\$\s?(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?/gi)) {
+      const value = parseFloat(`${match[1].replace(/\./g, '')}.${match[2] ?? '0'}`);
 
-    lines.forEach((line) => {
-      const match = line.match(/R\$?\s?(\d+[.,]?\d{0,2})/);
-
-      if (match) {
-        const value = parseFloat(match[1].replace('.', '').replace(',', '.'));
-
-        if (value > 100 && value < 100000) {
-          values.push(value);
-        }
+      if (value > 100 && value < 100000) {
+        values.add(value);
       }
-    });
+    }
 
-    if (!values.length) return null;
+    if (values.size !== 1) return null;
 
-    const total = values.reduce((a, b) => a + b, 0);
-
-    return Math.round(total);
+    return [...values][0];
   }
 
   // =========================
