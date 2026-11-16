@@ -10,8 +10,8 @@ Crie e envie orçamentos profissionais em PDF, com sua logo, suas cores e QR Cod
 - Baixar o **PDF** de cada orçamento, já com a identidade visual da sua empresa.
 - Gerar um **PDF Agrupado**: selecione vários orçamentos e saia com um único PDF com total geral.
 - Enviar a cobrança **PIX pelo WhatsApp** (mensagem com o copia-e-cola pronta).
-- Coletar a **assinatura do cliente** na tela (ícone de caneta) — o card ganha o selo "Assinado".
-- Mudar o status (**Rascunho, Enviado, Aprovado, Recusado**), editar e excluir (com confirmação).
+- Coletar a **assinatura do cliente** na tela (ícone de caneta no card; no celular, botão **Assinatura** na prévia) — o card ganha o selo "Assinado".
+- Mudar o status (**Rascunho, Enviado, Aprovado, Recusado**), editar e excluir (com confirmação). No celular, Editar e Excluir ficam na prévia do orçamento.
 
 ## Passo a passo
 
@@ -52,7 +52,7 @@ Não — ele abre o WhatsApp com uma mensagem de texto pronta: valor, código co
 Ele exige duas coisas: sua chave PIX configurada (tela de Configurações) e o telefone preenchido no cadastro do cliente.
 
 **Não acho os botões de editar, excluir e assinatura no celular.**
-Na tela pequena ficam visíveis só PDF e PIX. Para editar, excluir ou colher assinatura, use o computador ou uma tela maior.
+No card ficam só PDF e PIX. Toque no orçamento: a prévia abre com **Editar**, **Assinatura** e **Excluir** embaixo. Orçamento já assinado mostra o selo "Assinado" no lugar do botão.
 
 **Dá para remover uma assinatura coletada?**
 Pela tela, não — depois de assinado, o card mostra o selo "Assinado" em definitivo. Confirme com o cliente antes de coletar.
