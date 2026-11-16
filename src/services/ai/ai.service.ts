@@ -50,6 +50,10 @@ Hoje é ${diaSemana}, ${hoje}. Para dataVisitaSugerida, converta datas relativas
 - "dia 5" sem mês: o próximo dia 5 a partir de hoje;
 - dia e mês sem ano ("12/11"): o ano atual, ou o próximo ano se essa data já passou há mais de 30 dias.
 
+Regras para valorOrcado e temperatura:
+- valorOrcado: o valor que a EMPRESA passou ao cliente, como número (7500 para "R$ 7.500,00"). Faixa ("entre X e Y"): use o menor valor. Preço de concorrente ou verba/limite do cliente NÃO conta. Se a empresa não passou valor, retorne null.
+- temperatura: quente = visita ou medição marcada com data, ou o cliente disse que quer fechar logo; morno = pediu preço ou detalhes, está comparando, sem data marcada; frio = só curiosidade, sumiu ou disse que vai deixar para depois.
+
 Responda SOMENTE em JSON válido com estas chaves (use null quando não tiver certeza):
 
 {
