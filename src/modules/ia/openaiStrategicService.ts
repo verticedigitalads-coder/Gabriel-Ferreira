@@ -47,7 +47,7 @@ export async function refineLeadStrategyWithAI(
   const prompt = `
 Você é um especialista em vendas B2B para serviços locais (serralheria, marcenaria, drywall, reformas).
 Você NÃO pode inventar dados.
-Você deve apenas refinar estrategicamente a análise existente.
+Você escreve os textos da análise a partir dos dados e do histórico do lead abaixo e revisa os números com cautela.
 
 ===== DADOS DO LEAD =====
 Nome: ${lead.nome}
@@ -61,6 +61,7 @@ Origem: ${lead.origem}
 Prazo do Cliente: ${lead.prazoCliente}
 Probabilidade Manual: ${lead.probabilidadeManual}
 Dias sem contato: ${diasSemContato}
+Resumo do lead: ${lead.resumo || 'Sem resumo.'}
 
 ===== HISTÓRICO RECENTE =====
 ${historicoRecente}
@@ -68,32 +69,29 @@ ${historicoRecente}
 ===== ANÁLISE BASE DO SISTEMA =====
 Risco Atual: ${baseAnalysis.riscoDePerda}
 Urgência (1-5): ${baseAnalysis.nivelDeUrgencia}
-Resumo Executivo: ${baseAnalysis.resumoExecutivo}
-Estratégia Base: ${baseAnalysis.estrategiaDeAbordagem}
-Mensagem Base: ${baseAnalysis.mensagemSugeridaWhatsApp}
+Probabilidade de conversão: ${baseAnalysis.probabilidadeConversao}
+Maturidade (1-5): ${baseAnalysis.maturidade}
+Risco de concorrência: ${baseAnalysis.riscoConcorrencia}
+Potencial futuro: ${baseAnalysis.potencialFuturo}
 
 ===== INSTRUÇÕES =====
-1. Ajuste apenas se realmente houver inconsistência estratégica.
-2. Não altere status sem justificativa clara.
-3. Seja conservador.
-4. Nunca invente fatos.
-5. Não reescreva tudo se estiver adequado.
+1. Escreva SEMPRE resumoExecutivo, estrategiaDeAbordagem e mensagemSugeridaWhatsApp a partir dos dados e do histórico acima, com 2 a 3 frases cada, específicos para este lead (serviço, valor, ponto da negociação, tempo sem contato).
+2. mensagemSugeridaWhatsApp: pronta para enviar, em tom de WhatsApp, chamando o cliente pelo primeiro nome, citando o serviço e o próximo passo.
+3. Nunca invente preço, data, prazo ou fato que não esteja nos dados acima.
+4. Os números (riscoDePerda, probabilidadeConversao, maturidade, riscoConcorrencia, potencialFuturo) são conservadores: inclua um só se os dados justificarem mudar o valor base; senão, omita a chave.
 
-Responda SOMENTE em JSON válido, usando EXATAMENTE estas chaves — inclua
-apenas as que você decidir ajustar (omita as demais, não repita o valor base):
+Responda SOMENTE em JSON válido, usando EXATAMENTE estas chaves (os 3 textos sempre; os números só quando mudar):
 
 {
-  "resumoExecutivo": "resumo executivo revisado, se necessário",
-  "estrategiaDeAbordagem": "estratégia revisada, se necessário",
-  "mensagemSugeridaWhatsApp": "mensagem melhorada mantendo contexto",
+  "resumoExecutivo": "2 a 3 frases sobre a situação do lead",
+  "estrategiaDeAbordagem": "2 a 3 frases com o que fazer agora",
+  "mensagemSugeridaWhatsApp": "mensagem pronta para enviar ao cliente",
   "riscoDePerda": "baixo | medio | alto | critico",
   "probabilidadeConversao": 0,
   "maturidade": 0,
   "riscoConcorrencia": "baixo | medio | alto",
   "potencialFuturo": "baixo | medio | alto"
 }
-
-Se tudo estiver adequado, retorne {}.
 `;
 
   const response = await apiFetch('/api/chat', {
@@ -104,7 +102,7 @@ Se tudo estiver adequado, retorne {}.
       messages: [
         {
           role: 'system',
-          content: 'Seja objetivo, conservador e retorne apenas JSON válido.',
+          content: 'Você escreve análises comerciais curtas e objetivas, sem inventar fatos, e retorna apenas JSON válido.',
         },
         { role: 'user', content: prompt },
       ],

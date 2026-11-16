@@ -155,6 +155,11 @@ export async function generateFullStrategicDiagnosisWithAI(
     // refined !== null significa que a IA respondeu com sucesso (mesmo que {}
     // — "está tudo adequado" é uma resposta válida, não uma falha).
     if (refined) {
+      // Texto vazio ou não-texto da IA não apaga o da base; os demais campos entram como vieram.
+      for (const k of ['resumoExecutivo', 'estrategiaDeAbordagem', 'mensagemSugeridaWhatsApp'] as const) {
+        const v = refined[k]
+        if (typeof v !== 'string' || !v.trim()) delete refined[k]
+      }
       return {
         ...baseDiagnosis,
         ...refined,
